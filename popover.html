@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<title></title>
+	
+	<meta charset="utf-8" />
+	
+	<link rel="stylesheet" href="css/poppy.css" type="text/css" />
+	<link rel="stylesheet" href="css/main.css" type="text/css" />
+</head>
+
+<body>
+	<header><h1>JavaScript Blocker</h1></header>
+	
+	<div id="container">
+		<div id="setup">
+			<p>Thanks for using JavaScript Blocker!</p>
+			<p>Which mode would you like to run in? This setting can be changed at any time from the extensions pane of
+				the Safari preferences. Rules created are specific to their mode, i.e., a rule created while in Blocking Mode
+				will have no effect if you were to switch to Allowing Mode later on.</p>
+			<p><input type="button" id="setup-block" value="Blocking Mode" /> <input type="button" id="setup-allow" value="Allowing Mode" /></p>
+		</div>
+		<div id="main">
+			<p id="page-href"><span class="label">Page:</span> <span id="page-href-real">http://javascript-blocker.toggleable.com/</span></p>
+			<div class="info-container">
+				<span class="allowed-label">Allowed:</span> <span id="allowed-scripts-count">0</span>
+				<select id="block-options" class="domain-options">
+					<optgroup label="Block on…">
+					</optgroup>
+				</select>
+				<input type="button" value="Block All" id="block-domain" />
+			</div>
+	
+			<div id="allowed-script-urls">
+				<ul></ul>
+			</div>
+	
+			<div class="info-container">
+				<span class="blocked-label">Blocked:</span> <span id="blocked-scripts-count">0</span>
+				<select id="allow-options" class="domain-options">
+					<optgroup label="Allow on…">
+					</optgroup>
+				</select>
+				<input type="button" value="Allow All" id="allow-domain" />
+			</div>
+	
+			<div id="blocked-script-urls">
+				<ul></ul>
+			</div>
+	
+			<div class="info-container">
+				<span class="unblocked-label">Unblockable:</span> <span id="unblocked-scripts-count">0</span>
+			</div>
+	
+			<div id="unblocked-script-urls">
+				<ul></ul>
+			</div>
+	
+			<input type="button" value="Show Active Rules" id="view-domain" />
+			<input type="button" value="Show All Rules" id="view-all" />
+	
+			<div id="disclaimer">
+				<p>This tool only blocks scripts when they are loaded from an external file or a data URI. What this means is that any scripts
+					that are within the page itself can still run. Unfortunately this is a limitation of the Safari extension design, not mine.
+					<input type="button" value="Disable JavaScript Blocker" id="disable" />
+					</p>
+			</div>
+		</div>
+		<div id="rules-list">
+			<div class="info-container">
+				<input type="button" value="Back" id="rules-list-back" />
+				<input type="button" value="Delete Below Rules" id="reset-domain" />
+			</div>
+			<div id="data">
+				<ul></ul>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Author</key>
+	<string>Travis Roman</string>
+	<key>Builder Version</key>
+	<string>7534.51.22</string>
+	<key>CFBundleDisplayName</key>
+	<string>JavaScript Blocker</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.toggleable.JavaScriptBlocker</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.8</string>
+	<key>CFBundleVersion</key>
+	<string>9</string>
+	<key>Chrome</key>
+	<dict>
+		<key>Database Quota</key>
+		<real>52428800</real>
+		<key>Global Page</key>
+		<string>global.html</string>
+		<key>Popovers</key>
+		<array>
+			<dict>
+				<key>Filename</key>
+				<string>popover.html</string>
+				<key>Height</key>
+				<real>400</real>
+				<key>Identifier</key>
+				<string>configureBlockedScripts</string>
+				<key>Width</key>
+				<real>460</real>
+			</dict>
+		</array>
+		<key>Toolbar Items</key>
+		<array>
+			<dict>
+				<key>Identifier</key>
+				<string>jsBlockerMenu</string>
+				<key>Image</key>
+				<string>images/toolbar.png</string>
+				<key>Label</key>
+				<string>JavaScript Blocker</string>
+				<key>Palette Label</key>
+				<string>JavaScript Blocker</string>
+				<key>Popover</key>
+				<string>configureBlockedScripts</string>
+				<key>Tool Tip</key>
+				<string>JavaScript Blocker</string>
+			</dict>
+		</array>
+	</dict>
+	<key>Content</key>
+	<dict>
+		<key>Scripts</key>
+		<dict>
+			<key>Start</key>
+			<array>
+				<string>js/blocker.js</string>
+			</array>
+		</dict>
+	</dict>
+	<key>Description</key>
+	<string>Blocks loading of external scripts in &lt;script&gt; tags.</string>
+	<key>ExtensionInfoDictionaryVersion</key>
+	<string>1.0</string>
+	<key>Permissions</key>
+	<dict>
+		<key>Website Access</key>
+		<dict>
+			<key>Include Secure Pages</key>
+			<true/>
+			<key>Level</key>
+			<string>All</string>
+		</dict>
+	</dict>
+	<key>Update Manifest URL</key>
+	<string>http://dl.dropbox.com/u/11967/jsblocker.plist</string>
+	<key>Website</key>
+	<string>http://javascript-blocker.toggleable.com/</string>
+</dict>
+</plist>

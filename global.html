@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+		<script src="js/poppy.js"></script>
+		<script src="js/predefined.js"></script>
+		<script src="js/global.js"></script>
+
+		<script>
+			safari.application.addEventListener('close', JavaScriptBlocker.open_popover.bind(JavaScriptBlocker), true);
+			safari.application.addEventListener('navigate', JavaScriptBlocker.open_popover.bind(JavaScriptBlocker), true);
+			safari.application.addEventListener('popover', JavaScriptBlocker.open_popover.bind(JavaScriptBlocker), true);
+			safari.application.addEventListener('validate', JavaScriptBlocker.validate.bind(JavaScriptBlocker), false);
+			safari.application.addEventListener('message', JavaScriptBlocker.handle_message.bind(JavaScriptBlocker), true);
+		</script>
+	</head>
+</html>

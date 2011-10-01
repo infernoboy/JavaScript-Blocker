@@ -1,0 +1,223 @@
+body {
+	font-family: 'Lucida Grande';
+	font-size: 10pt;
+	line-height: 1.5;
+	text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+	padding: 0;
+	margin: 0;
+	height: 392px;
+	overflow-x: hidden;
+	color: #3A3A3A;
+}
+header {
+	position: fixed;
+	top: 5px;
+	width: 460px;
+	height: 25px;
+	padding: 0;
+	margin: 0;
+}
+header h1 {
+	font-size: 10pt;
+	padding: 0;
+	margin: 0;
+	text-align: center;
+	font-weight: normal;
+	color: #626262;
+}
+#container {
+	z-index: 1;
+	position: absolute;
+	width: 456px;
+	overflow: hidden;
+	height: 373px;
+	margin: 25px 0 0 4px;
+	-webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,0)), color-stop(2%, rgba(0,0,0,1)), color-stop(98%, rgba(0,0,0,1)), to(rgba(0,0,0,0)))
+}
+	#container.double {
+		width: 916px;
+	}
+#main,
+#rules-list,
+#setup {
+	float: left;
+	width: 452px;
+	height: 367px;
+	overflow: auto;
+	padding-top: 6px;
+	padding-right: 4px;
+}
+#main {
+	margin-right: 4px;
+}
+input {
+	background: -webkit-gradient(linear, left top, left bottom, from(#F3F3F5), to(#EAEAEA));;
+	border: 1px solid #A4A4A4;
+	-webkit-border-radius: 4px;
+	color: #545554;
+	-webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.5);
+	text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+}
+	input[type="button"]:active {
+		background: -webkit-gradient(linear, left top, left bottom, from(#B9B9B9), color-stop(20%, #EAEAEA), to(#EAEAEA));;
+	}
+	input[type="text"] {
+		background: -webkit-gradient(linear, left top, left bottom, from(#EAEAEA), to(#F3F3F5));;
+	}
+
+input[type="button"].confirm-click {
+	color: #fff;
+	border: 1px solid #883A3D;
+	background: -webkit-gradient(linear, left top, left bottom, from(#FF6E70), to(#CF4D54));
+	text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+}
+	input[type="button"].confirm-click:active {
+		background: -webkit-gradient(linear, left top, left bottom, from(#883A3D), color-stop(20%, #CF4D54), to(#CF4D54));;
+	}
+.allowed-label {
+	color: #008913;
+}
+.blocked-label,
+.domain-name {
+	color: #920101;
+}
+.unblocked-label {
+	color: #888;
+}
+
+#block-domain,
+#allow-domain,
+#block-options,
+#allow-options,
+#reset-domain {
+	position: absolute;
+	right: 0;
+	top: -2px;
+}
+	#allow-options,
+	#block-options {
+		right: 68px;
+		top: -1px;
+	}
+
+#blocked-script-urls,
+#allowed-script-urls,
+#unblocked-script-urls {
+	margin-top: -4px;
+}
+.info-container {
+	position: relative;
+}
+ul {
+	list-style-type: none;
+	padding-left: 0;
+	padding-bottom: 1px;
+	margin-left: 10px;
+	overflow: hidden;
+	font-size: 8pt;
+	position: relative;
+}
+ul li {
+	position: relative;
+	padding-top: 5px;
+}
+ul li span {
+	display: inline-block;
+	width: 387px;
+	overflow: auto;
+	white-space: nowrap;
+}
+	#unblocked-script-urls li span {
+		width: 420px;
+	}
+	ul li ul li span {
+		width: 373px;
+	}
+	
+	::-webkit-scrollbar {
+		width: 5px;
+		height: 4px;
+	}
+
+	::-webkit-scrollbar-track {
+		-webkit-border-radius: 2px;
+	}
+
+	::-webkit-scrollbar-thumb {
+		-webkit-border-radius: 2px;
+		background: rgba(0,0,0,0.08); 
+		border: 1px solid rgba(0,0,0,0.11);
+	}
+		::-webkit-scrollbar-thumb:vertical {
+			-webkit-border-radius: 3px;
+			background: rgba(0,0,0,0.23); 
+			border: 1px solid rgba(0,0,0,0.3);
+		}
+ul li input {
+	position: absolute;
+	right: 0px;
+	top: 1px;
+}
+a {
+	text-decoration: none;
+	color: #0064E3;
+}
+#view-domain,
+#disable,
+#view-all {
+	float: right;
+	margin-left: 5px;
+	margin-bottom: 10px;
+}
+	#disable {
+		margin-top: 5px;
+		margin-right: 2px;
+		font-size: 6pt;
+	}
+#disclaimer {
+	font-size: 8pt;
+	color: #999;
+	clear: both;
+}
+#rules-list {
+	font-size: 8pt;
+	display: none;
+}
+.label {
+	color: #888;
+}
+#rules-list #data {
+	margin-top: 30px;
+}
+#rules-list #rules-list-back {
+	position: absolute;
+	top: -2px;
+	-webkit-border-top-left-radius: 10px;
+	-webkit-border-bottom-left-radius: 10px;
+	padding-left: 8px;
+}
+.divider {
+	width: 100%;
+	height: 1px;
+	margin-top: 5px;
+	background: rgba(0,0,0,0.13);
+	border-bottom: 1px solid rgba(255,255,255,0.5);
+	-webkit-mask-image: -webkit-gradient(linear, left top, right top, from(rgba(0,0,0,0)), color-stop(40%, rgba(0,0,0,1)), color-stop(60%, rgba(0,0,0,1)), to(rgba(0,0,0,0)))
+}
+.domain-name {
+	font-size: 9pt;
+}
+
+#setup {
+	display: none;
+}
+#page-href {
+	margin-top: -3px;
+	font-size: 8pt;
+}
+	#page-href-real {
+		display: inline-block;
+		max-width: 410px;
+		white-space: nowrap;
+		overflow: auto;
+	}
