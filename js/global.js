@@ -332,7 +332,7 @@ var JavaScriptBlocker = {
 				else {
 					var view = vs.join('');
 
-					new Poppy(off.left + 22, off.top + 8, 'The following rules will be deleted:<ul>' + view + '</ul>This may inadvertently affect other scripts also. <input type="button" value="Continue" id="delete-continue" />', function() {
+					new Poppy(off.left + 22, off.top + 8, 'The following rules will be deleted:<ul>' + view + '</ul>This may inadvertently affect other scripts. <input type="button" value="Continue" id="delete-continue" />', function() {
 						$('#poppy #delete-continue', JavaScriptBlocker.popover).click(function() {
 							self.rules.remove_matching_URL(host[2], url, true);
 							safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
