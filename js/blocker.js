@@ -14,6 +14,8 @@ var jsblocker = {
 	href: window.location.href
 };
 
+var frames = [], frameDataAdded = false;
+
 function allowedScript(event) {
 	if(event.target.nodeName == 'SCRIPT' && event.target.src.length > 0) {
 		var isAllowed = safari.self.tab.canLoad(event, [jsblocker.href, event.target.src, !(window == window.top)]);
@@ -35,23 +37,18 @@ function allowedScript(event) {
 		jsblocker.unblocked.count++;
 		jsblocker.unblocked.urls.push(event.target.outerHTML);
 		ready(event);
+	} else if(event.target.nodeName == 'IFRAME') ready(event);
+}
+
+function ready(event) {
+	if(window !== window.top && !frameDataAdded) {
+		frameDataAdded = true;
+		safari.self.tab.dispatchMessage('addFrameData', [window.location.href, jsblocker])
 	}
-}
 
-function loaded(event) {
-	ready(event);
-	
-	var frames = [], x = document.getElementsByTagName('iframe');
-
-	for(var i = 0, b = x.length; i < b; i++)
-		frames.push('Inline Frame Source: ' + x[i].src.toString());
-
-	safari.self.tab.dispatchMessage('updateFrameData', [frames, jsblocker]);
-}
-
-function ready(event) {	
 	try {
-		safari.self.tab.dispatchMessage('updatePopover', jsblocker);
+		if(window == window.top)
+			safari.self.tab.dispatchMessage('updatePopover', jsblocker);
 	} catch(e) {
 		if(!window._jsblocker_user_warned) {
 			window._jsblocker_user_warned = true;
@@ -60,9 +57,18 @@ function ready(event) {
 	}
 }
 
+function updateFrames(event) {
+	if(frames.indexOf(event.message[0]) > -1) return false;
+	
+	frames.push(event.message[0]);
+			
+	jsblocker.frames[event.message[1].href] = event.message[1];
+}
+
 function messageHandler(event) {
 	if(event.name == 'reload') window.location.reload();
 	else if(event.name == 'updatePopover') ready(event);
+	else if(event.name == 'updateFrames') updateFrames(event);
 }
 
 function unloadHandler(event) {
@@ -70,7 +76,12 @@ function unloadHandler(event) {
 }
 
 function hashUpdate(event) {
+	var ohref = jsblocker.href.toString();
+	
 	jsblocker.href = window.location.href;
+	
+	safari.self.tab.dispatchMessage('addFrameData', [window.location.href, jsblocker, ohref])
+	
 	ready(event);
 }
 
@@ -80,4 +91,4 @@ window.addEventListener('focus', ready, true);
 window.addEventListener('beforeunload', unloadHandler, true);
 document.addEventListener('beforeload', allowedScript, true);
 document.addEventListener('DOMNodeInserted', allowedScript, true);
-document.addEventListener('DOMContentLoaded', loaded, true);
+document.addEventListener('DOMContentLoaded', ready, true);

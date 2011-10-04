@@ -81,8 +81,9 @@ input[type="button"].confirm-click {
 .domain-name {
 	color: #920101;
 }
-.unblocked-label {
-	color: #888;
+.unblocked-label,
+.label {
+	color: #777;
 }
 
 #block-domain,
@@ -183,9 +184,6 @@ a {
 	font-size: 8pt;
 	display: none;
 }
-.label {
-	color: #888;
-}
 #rules-list #data {
 	margin-top: 30px;
 }
@@ -211,13 +209,7 @@ a {
 #setup {
 	display: none;
 }
-#page-href {
-	margin-top: -3px;
-	font-size: 8pt;
+#page-list {
+	max-width: 405px;
+	margin-bottom: 10px;
 }
-	#page-href-real {
-		display: inline-block;
-		max-width: 410px;
-		white-space: nowrap;
-		overflow: auto;
-	}

@@ -22,7 +22,17 @@
 			<p><input type="button" id="setup-block" value="Blocking Mode" /> <input type="button" id="setup-allow" value="Allowing Mode" /></p>
 		</div>
 		<div id="main">
-			<p id="page-href"><span class="label">Page:</span> <span id="page-href-real">http://javascript-blocker.toggleable.com/</span></p>
+			<div id="page-lists">
+				<span class="label">Page:</span>
+				<select id="page-list">
+					<optgroup label="Main Page">
+						<option>http://javascript-blocker.toggleable.com</option>
+					</optgroup>
+					<optgroup label="Inline Frame Pages">
+						<option>http://google.com</option>
+					</optgroup>
+				</select>
+			</div>
 			<div class="info-container">
 				<span class="allowed-label">Allowed:</span> <span id="allowed-scripts-count">0</span>
 				<select id="block-options" class="domain-options">

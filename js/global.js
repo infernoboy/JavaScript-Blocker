@@ -197,23 +197,46 @@ var JavaScriptBlocker = {
 			return ul;
 		}
 	},
-	do_update_popover: function(event) {
+	do_update_popover: function(event, index) {
 		var self = this, jsblocker = event.message;
-
-		if(jsblocker.href in this.frames) {
-			if(safari.extension.settings.allowFrames) {
-				jsblocker.unblocked.count = this.frames[jsblocker.href].length;
-	 			jsblocker.unblocked.urls = jsblocker.unblocked.urls.concat(this.frames[jsblocker.href]);
-			}
-		}
-		
+	
 		if(safari.application.activeBrowserWindow.activeTab.url == jsblocker.href) {
-			var host = this.active_host(), toolbarItem = safari.extension.toolbarItems[0];
+			var page_list = $('#page-list', this.popover), frames_blocked_count = 0, frames_allowed_count = 0;
 			
-			$('#page-href-real', this.popover).html(safari.application.activeBrowserWindow.activeTab.url);
+			page_list.find('optgroup:eq(1)').remove();
+			
+			if(jsblocker.href in this.frames) {
+				var frame, inline;
+
+				for(frame in this.frames[jsblocker.href]) {
+					xx = this.frames[jsblocker.href];
+					
+					if(page_list.find('optgroup').length == 1) inline = $('<optgroup label="Inline Frame Pages"></optgroup>').appendTo(page_list);
+					else inline = page_list.find('optgroup:eq(1)');
+				
+					frames_blocked_count += xx[frame].blocked.count;
+					frames_allowed_count += xx[frame].allowed.count;
+					frames_allowed_count += xx[frame].unblocked.count;
+				
+					$('<option></option>').addClass('frame-page').attr('value', xx[frame].href).html(xx[frame].href).appendTo(inline);
+				}
+			}
+						
+			page_list.find('optgroup:first option').attr('value', jsblocker.href).html(jsblocker.href);
+			
+			if(index) {
+				page_list[0].selectedIndex = index;
+				jsblocker = this.frames[jsblocker.href][page_list.val()];
+			}
+			
+			page_list.unbind('change').change(function() {
+				self.do_update_popover(event, this.selectedIndex);
+			});
+			
+			var host = this.active_host(page_list.val()), toolbarItem = safari.extension.toolbarItems[0];
 
 			toolbarItem.image = (this.disabled) ? safari.extension.baseURI + 'images/toolbar-disabled.png' : safari.extension.baseURI + 'images/toolbar.png';
-			toolbarItem.badge = (safari.extension.settings.toolbarAllowed) ? jsblocker.allowed.count + jsblocker.unblocked.count : jsblocker.blocked.count;
+			toolbarItem.badge = (safari.extension.settings.toolbarAllowed) ? jsblocker.allowed.count + jsblocker.unblocked.count + frames_allowed_count: jsblocker.blocked.count + frames_blocked_count;
 
 			$('.domain-options, #allow-domain, #block-domain', JavaScriptBlocker.popover).show();
 
@@ -436,7 +459,7 @@ var JavaScriptBlocker = {
 			case 'canLoad':
 				var allowFrames = safari.extension.settings.allowFrames;
 
-				if(this.disabled || (allowFrames && event.message[2])) {
+				if(this.disabled) {
 					event.message = true;
 					break theSwitch;
 				}
@@ -456,20 +479,41 @@ var JavaScriptBlocker = {
 			break;
 
 			case 'updatePopover':
+				if(event.target != safari.application.activeBrowserWindow.activeTab) break;
+			
 				var self = this;
 				if(this.updatePopoverTimeout) clearTimeout(this.updatePopoverTimeout);
 				this.updatePopoverTimeout = setTimeout(function() {
 					self.do_update_popover(event);
 				}, 100);
 			break;
-
+			
+			case 'addFrameData':
+				try {
+					delete this.frames[event.message[2]];
+				} catch (e) {}
+				
+				if(!(event.target.url in this.frames)) this.frames[event.target.url] = {};
+				
+				this.frames[event.target.url][event.message[0]] = event.message[1];
+				
+				var self = this;
+				if(this.updatePopoverTimeout) clearTimeout(this.updatePopoverTimeout);
+				this.updatePopoverTimeout = setTimeout(function() {
+					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
+				}, 100);
+			break;
+			
 			case 'updateFrameData':
-				this.frames[event.message[1].href] = event.message[0];
+				try {
+					this.frames[event.message[0]] = this.frames[event.message[1]];
+					delete this.frames[event.message[1]];
+				} catch(e) {}
 			break;
 
 			case 'unloadPage':
 				try {
-					delete _framesCache[event.message];
+					delete this.frames[event.message];
 				} catch (e) { }
 			break;
 		}
@@ -492,7 +536,7 @@ var JavaScriptBlocker = {
 							var newul = ul.append('<li class="domain-name">' + name + '</li><li><ul></ul></li>').find('li:last ul');
 							
 							for(var i = 0, b = list[name].length; i < b; i++) {
-								rule = list[name];
+								rule = list[name][i];
 								newul.append('<li><span class="rule">' + rule + '</span><div class="divider"></div></li>')
 							}
 							
@@ -531,12 +575,12 @@ var JavaScriptBlocker = {
 		$('#setup', JavaScriptBlocker.popover).hide(350);
 
 		try {
-			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updateToolbar');
+			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
 		} catch(e) { }
 
 		if(event && event.type && event.type == 'popover')
 			$('#rules-list-back', this.popover).click();
-		else if(event && event.type && ['navigate', 'close'].indexOf(event.type) > -1)
+		else if(!event || (event && event.type && ['navigate', 'close'].indexOf(event.type) > -1))
 			new Poppy(0,0,false);
 	},
 	validate: function(event) {
