@@ -457,8 +457,6 @@ var JavaScriptBlocker = {
 		theSwitch:
 		switch(event.name) {
 			case 'canLoad':
-				var allowFrames = safari.extension.settings.allowFrames;
-
 				if(this.disabled) {
 					event.message = true;
 					break theSwitch;

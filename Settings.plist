@@ -28,15 +28,5 @@
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
-	<dict>
-		<key>DefaultValue</key>
-		<true/>
-		<key>Key</key>
-		<string>allowFrames</string>
-		<key>Title</key>
-		<string>Allow scripts from inline frames</string>
-		<key>Type</key>
-		<string>CheckBox</string>
-	</dict>
 </array>
 </plist>
