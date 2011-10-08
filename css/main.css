@@ -50,7 +50,8 @@ header h1 {
 #main {
 	margin-right: 4px;
 }
-input {
+input,
+.select-replacement {
 	background: -webkit-gradient(linear, left top, left bottom, from(#F3F3F5), to(#EAEAEA));;
 	border: 1px solid #A4A4A4;
 	-webkit-border-radius: 4px;
@@ -74,11 +75,12 @@ input[type="button"].confirm-click {
 	input[type="button"].confirm-click:active {
 		background: -webkit-gradient(linear, left top, left bottom, from(#883A3D), color-stop(20%, #CF4D54), to(#CF4D54));;
 	}
+*.allowing-mode .domain-name,
 .allowed-label {
 	color: #008913;
 }
 .blocked-label,
-.domain-name {
+*.blocking-mode .domain-name {
 	color: #920101;
 }
 .unblocked-label,
@@ -213,3 +215,17 @@ a {
 	max-width: 405px;
 	margin-bottom: 10px;
 }
+
+.select-replacement {
+	height: 10px;
+	width: auto;
+	display: inline-block;
+	color: #000;
+	font-size: 11px;
+	-webkit-border-radius: 7px;
+	padding: 0 7px 4px;
+}
+	.select-replacement .selected-item {
+		margin-top: -6px;
+		display: inline-block;
+	}

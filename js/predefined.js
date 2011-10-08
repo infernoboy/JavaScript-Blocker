@@ -1,6 +1,6 @@
 var JavaScriptBlockerWhitelist = {
 	'Google Libraries API - A collection of JavaScript libraries hosted by Google.':
-		['^https?:\\/\\/ajax\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js$'],
+		['^https?:\\/\\/ajax\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js(\\?.*)?$'],
 	'jQuery - A JavaScript library used by many sites. Includes jQuery UI, an effects library to compliment jQuery.' :
 		[
 			'^https?:\\/\\/.*\\/jquery(\\-ui)?(\\.min)?\\.js$',
