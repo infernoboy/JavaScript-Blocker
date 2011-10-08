@@ -38,12 +38,19 @@ function allowedScript(event) {
 		jsblocker.unblocked.urls.push(event.target.outerHTML);
 	}
 	
-	if(window !== window.top && event.target.nodeName == 'SCRIPT') ready(event);
+	if(window !== window.top) {
+		clearTimeout(readyTimeout);
+		setTimeout(ready, 100);
+	}
 }
 
 function ready(event) {
-	if(window == window.top && event.type == 'DOMContentLoaded')
+	if(window == window.top && event && event.type == 'DOMContentLoaded')
 		safari.self.tab.dispatchMessage('setPopoverClass');
+	else if(window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
+		lastAddedFrameData = jsonBlocker;
+		safari.self.tab.dispatchMessage('addFrameData', [window.location.href, jsblocker]);
+	}
 		
 	clearTimeout(readyTimeout);
 	
@@ -53,15 +60,14 @@ function ready(event) {
 		//		for(var i = 0, b = frames.length; i < b; i++)
 		//			frames[i].contentWindow.postMessage('add_frame', '*');
 				safari.self.tab.dispatchMessage('updatePopover', jsblocker);
-			} else if(window !== window.top && ((event.message && JSON.stringify(event.message) != JSON.stringify(jsblocker)) || !event.message))
-				safari.self.tab.dispatchMessage('addFrameData', [window.location.href, jsblocker]);
+			}
 		} catch(e) {
 			if(!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
 				console.error('JavaScript blocker broke! This may be because of an issue with Safari itself. Reloading the page should resolve the issue.')
 			}
 		}
-	}, (event.type == 'focus') ? 0 : 300);
+	}, (event && event.type == 'focus') ? 0 : 300);
 }
 
 function updateFrames(event) {

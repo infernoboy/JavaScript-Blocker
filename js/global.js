@@ -515,12 +515,6 @@ var JavaScriptBlocker = {
 				if(!(event.target.url in this.frames)) this.frames[event.target.url] = {};
 				
 				this.frames[event.target.url][event.message[0]] = event.message[1];
-				
-				var self = this;
-				if(this.updatePopoverTimeout) clearTimeout(this.updatePopoverTimeout);
-				this.updatePopoverTimeout = setTimeout(function() {
-					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover', event.message[1]);
-				}, 100);
 			break;
 			
 			case 'updateFrameData':
