@@ -9,7 +9,7 @@
 
 		<script>
 			safari.application.addEventListener('close', JavaScriptBlocker.open_popover.bind(JavaScriptBlocker), true);
-			safari.application.addEventListener('navigate', JavaScriptBlocker.open_popover.bind(JavaScriptBlocker), true);
+			safari.application.addEventListener('beforeNavigate', JavaScriptBlocker.open_popover.bind(JavaScriptBlocker), true);
 			safari.application.addEventListener('popover', JavaScriptBlocker.open_popover.bind(JavaScriptBlocker), true);
 			safari.application.addEventListener('validate', JavaScriptBlocker.validate.bind(JavaScriptBlocker), false);
 			safari.application.addEventListener('message', JavaScriptBlocker.handle_message.bind(JavaScriptBlocker), true);

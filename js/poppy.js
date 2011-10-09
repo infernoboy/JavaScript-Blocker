@@ -1,19 +1,23 @@
 "use strict";
 
 var Poppy = function(x, y, content, cb) {
-	var self = this;
+	this.removeOnly = $.makeArray(arguments).length === 0;
+	this.callback = (cb && typeof cb == 'function') ? cb : $.noop;
+	this.popover = safari.extension.toolbarItems[0].popover.contentWindow.document;
+	this.p = $(this.popover.body);
 	
-	$(function() {
-		self.callback = (cb && typeof cb == 'function') ? cb : $.noop;
-		self.popover = safari.extension.toolbarItems[0].popover.contentWindow.document;
-		self.p = $(self.popover.body);
-		self.center = {
+	if(!this.removeOnly) {
+		this.center = {
 			x: x,
 			y: y
 		};
-		self.content = content;	
-		self.init();
-	});
+		this.content = content;	
+	} else {
+		this.center = { x: 0, y: 0 };
+		this.content = '';
+	}
+
+	this.init();
 	
 	return this;
 };
@@ -31,8 +35,8 @@ Poppy.prototype = {
 		var self = this;
 		clearTimeout(this.cT);
 		if($(this.e, this.p).length)
-			return this.remove((this.content === false) ? $.noop : this.create);
-		return (this.content === false) ? false : setTimeout(function() { self.create(); }, 1);
+			return this.remove((this.removeOnly !== false) ? $.noop : this.create);
+		return (this.removeOnly !== false) ? false : setTimeout(self.create.bind(this), 1);
 	},
 	remove: function(cb) {
 		var self = this;
@@ -55,7 +59,7 @@ Poppy.prototype = {
 		var aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask.png" alt=""/>';
 		
 		$(this.s, this.p).unbind('scroll').scroll(function() {
-			new Poppy(0,0,false);
+			new Poppy();
 			$(self.s, self.p).unbind('scroll');
 		})
 			
@@ -72,7 +76,7 @@ Poppy.prototype = {
 		
 		if(points.arrow.bottom == 'auto') $(this.a, m).attr('src', 'images/arrow-mask-reverse.png');
 		
-		this.callback.call();
+		this.callback.call($(this.e, this.p));
 		
 		if(points.overflow)
 			left = points.main.left;
@@ -106,7 +110,7 @@ Poppy.prototype = {
 			});
 			
 			$(self.s, self.p).unbind('click').click(function() {
-				new Poppy(0,0,false);
+				new Poppy();
 			});
 		}, 10);
 		

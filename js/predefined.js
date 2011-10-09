@@ -3,11 +3,11 @@ var JavaScriptBlockerWhitelist = {
 		['^https?:\\/\\/ajax\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js(\\?.*)?$'],
 	'jQuery - A JavaScript library used by many sites. Includes jQuery UI, an effects library to compliment jQuery.' :
 		[
-			'^https?:\\/\\/.*\\/jquery(\\-ui)?(\\.min)?\\.js$',
-			'^https?:\\/\\/.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js$'
+			'^https?:\\/\\/.*\\/jquery(\\-ui)?(\\.min)?\\.js(\\?.*)?$',
+			'^https?:\\/\\/.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js(\\?.*)?$'
 		],
 	'Prototype - A JavaScript library used by some sites.':
-		['^https?:\\/\\/.*\\/prototype\\.js$']
+		['^https?:\\/\\/.*\\/prototype\\.js(\\?.*)?$']
 };
 
 var JavaScriptBlockerBlacklist = {

@@ -79,14 +79,18 @@ function updateFrames(event) {
 }
 
 function messageHandler(event) {
-	if(event.name == 'reload') window.location.reload();
-	else if(event.name == 'updatePopover') ready(event);
-	else if(event.name == 'updateFrames') updateFrames(event);
+	switch(event.name) {
+		case 'reload': window.location.reload(); break;
+		case 'updatePopover': ready(event); break;
+		case 'updateFrames': updateFrames(event); break;
+		case 'unloadPage': unloadHandler(event); break;
+	}
 }
 
 function unloadHandler(event) {
 	try {
-		safari.self.tab.dispatchMessage('unloadPage', window.location.href);
+		if(window == window.top)
+			safari.self.tab.dispatchMessage('unloadPage', window.location.href);
 	} catch(e) { /* Exception occurs sometimes when closing a page sometimes. */ }
 }
 

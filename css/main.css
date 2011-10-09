@@ -165,9 +165,9 @@ a {
 	text-decoration: none;
 	color: #0064E3;
 }
-#view-domain,
 #disable,
-#view-all {
+#view-rules,
+#reset-always {
 	float: right;
 	margin-left: 5px;
 	margin-bottom: 10px;

@@ -15,6 +15,7 @@
 	
 	<div id="container">
 		<div id="setup">
+			<p><img src="images/toggleable.png" alt="Toggleable" /> <img src="Icon-48.png" alt="JS Blocker" /></p>
 			<p>Thanks for using JavaScript Blocker!</p>
 			<p>Which mode would you like to run in? This setting can be changed at any time from the extensions pane of
 				the Safari preferences. Rules created are specific to their mode, i.e., a rule created while in Blocking Mode
@@ -67,9 +68,9 @@
 				<ul></ul>
 			</div>
 	
-			<input type="button" value="Show Active Rules" id="view-domain" />
-			<input type="button" value="Show All Rules" id="view-all" />
-	
+			<input type="button" value="Show Rules" id="view-rules" />
+			<input type="button" value="Restore Automatic Rules" id="reset-always" />
+			
 			<div id="disclaimer">
 				<p>This tool only blocks scripts when they are loaded from an external file or a data URI. What this means is that any scripts
 					that are within the page itself can still run. Unfortunately this is a limitation of the Safari extension design, not mine.

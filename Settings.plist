@@ -28,5 +28,59 @@
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
+	<dict>
+		<key>Type</key>
+		<string>Separator</string>
+	</dict>
+	<dict>
+		<key>Title</key>
+		<string>Automatic Rules</string>
+		<key>Type</key>
+		<string>Group</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<string>nowhere</string>
+		<key>Key</key>
+		<string>alwaysBlock</string>
+		<key>Title</key>
+		<string>Allowing Mode: Block scripts from</string>
+		<key>Titles</key>
+		<array>
+			<string>Different sub domain</string>
+			<string>Different complete domain</string>
+			<string>Nowhere</string>
+		</array>
+		<key>Type</key>
+		<string>RadioButtons</string>
+		<key>Values</key>
+		<array>
+			<string>topLevel</string>
+			<string>domain</string>
+			<string>nowhere</string>
+		</array>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<string>nowhere</string>
+		<key>Key</key>
+		<string>alwaysAllow</string>
+		<key>Title</key>
+		<string>Blocking Mode: Allow scripts from</string>
+		<key>Titles</key>
+		<array>
+			<string>Any sub domain</string>
+			<string>Same complete domain</string>
+			<string>Nowhere</string>
+		</array>
+		<key>Type</key>
+		<string>RadioButtons</string>
+		<key>Values</key>
+		<array>
+			<string>topLevel</string>
+			<string>domain</string>
+			<string>nowhere</string>
+		</array>
+	</dict>
 </array>
 </plist>
