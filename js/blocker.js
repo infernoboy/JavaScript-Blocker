@@ -14,9 +14,7 @@ var jsblocker = {
 	},
 	href: window.location.href/*,
 	frames: {}*/
-};
-
-var frames = [], readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false, calls = 0;
+}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
 
 function allowedScript(event) {
 	if(event.target.nodeName == 'SCRIPT' && event.target.src.length > 0) {
@@ -40,11 +38,20 @@ function allowedScript(event) {
 	
 	if(window !== window.top) {
 		clearTimeout(readyTimeout);
-		setTimeout(ready, 100);
-	}
+		setTimeout(ready, 200);
+	}	
 }
 
 function ready(event) {
+	if(event && event.type == 'DOMContentLoaded') {
+		var script_tags = document.getElementsByTagName('script'), i, b;
+		for(i = 0, b = script_tags.length; i < b; i++) {
+			if(!script_tags[i].src || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
+				jsblocker.unblocked.count++;
+				jsblocker.unblocked.urls.push(script_tags[i].outerHTML);
+			}
+		}
+	}
 	if(window == window.top && event && event.type == 'DOMContentLoaded')
 		safari.self.tab.dispatchMessage('setPopoverClass');
 	else if(window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
@@ -70,19 +77,10 @@ function ready(event) {
 	}, (event && event.type == 'focus') ? 0 : 300);
 }
 
-function updateFrames(event) {
-	if(frames.indexOf(event.message[0]) > -1) return false;
-	
-	frames.push(event.message[0]);
-			
-	jsblocker.frames[event.message[1].href] = event.message[1];
-}
-
 function messageHandler(event) {
 	switch(event.name) {
 		case 'reload': window.location.reload(); break;
 		case 'updatePopover': ready(event); break;
-		case 'updateFrames': updateFrames(event); break;
 		case 'unloadPage': unloadHandler(event); break;
 	}
 }
@@ -91,7 +89,7 @@ function unloadHandler(event) {
 	try {
 		if(window == window.top)
 			safari.self.tab.dispatchMessage('unloadPage', window.location.href);
-	} catch(e) { /* Exception occurs sometimes when closing a page sometimes. */ }
+	} catch(e) { /* Exception occurs when closing a page sometimes. */ }
 }
 
 function hashUpdate(event) {

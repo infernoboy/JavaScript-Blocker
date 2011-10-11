@@ -19,18 +19,32 @@
 		<string>CheckBox</string>
 	</dict>
 	<dict>
-		<key>DefaultValue</key>
-		<false/>
-		<key>Key</key>
-		<string>toolbarAllowed</string>
 		<key>Title</key>
-		<string>Toolbar badge displays number of allowed scripts</string>
+		<string>Toolbar Badge</string>
 		<key>Type</key>
-		<string>CheckBox</string>
+		<string>Group</string>
 	</dict>
 	<dict>
+		<key>DefaultValue</key>
+		<string>blocked</string>
+		<key>Key</key>
+		<string>toolbarDisplay</string>
+		<key>Title</key>
+		<string>Display number of</string>
+		<key>Titles</key>
+		<array>
+			<string>Blocked scripts</string>
+			<string>Allowed scripts</string>
+			<string>Neither</string>
+		</array>
 		<key>Type</key>
-		<string>Separator</string>
+		<string>PopUpButton</string>
+		<key>Values</key>
+		<array>
+			<string>blocked</string>
+			<string>allowed</string>
+			<string>neither</string>
+		</array>
 	</dict>
 	<dict>
 		<key>Title</key>
@@ -44,7 +58,7 @@
 		<key>Key</key>
 		<string>alwaysBlock</string>
 		<key>Title</key>
-		<string>Allowing Mode: Block scripts from</string>
+		<string>When allowing, block scripts from</string>
 		<key>Titles</key>
 		<array>
 			<string>Different sub domain</string>
@@ -52,7 +66,7 @@
 			<string>Nowhere</string>
 		</array>
 		<key>Type</key>
-		<string>RadioButtons</string>
+		<string>PopUpButton</string>
 		<key>Values</key>
 		<array>
 			<string>topLevel</string>
@@ -66,7 +80,7 @@
 		<key>Key</key>
 		<string>alwaysAllow</string>
 		<key>Title</key>
-		<string>Blocking Mode: Allow scripts from</string>
+		<string>When blocking, allow scripts from</string>
 		<key>Titles</key>
 		<array>
 			<string>Any sub domain</string>
@@ -74,13 +88,19 @@
 			<string>Nowhere</string>
 		</array>
 		<key>Type</key>
-		<string>RadioButtons</string>
+		<string>PopUpButton</string>
 		<key>Values</key>
 		<array>
 			<string>topLevel</string>
 			<string>domain</string>
 			<string>nowhere</string>
 		</array>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<real>0.0</real>
+		<key>Key</key>
+		<string>debug</string>
 	</dict>
 </array>
 </plist>

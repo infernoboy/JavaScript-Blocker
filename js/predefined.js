@@ -1,4 +1,4 @@
-var JavaScriptBlockerWhitelist = {
+JavaScriptBlocker.rules.whitelist = {
 	'Google Libraries API - A collection of JavaScript libraries hosted by Google.':
 		['^https?:\\/\\/ajax\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js(\\?.*)?$'],
 	'jQuery - A JavaScript library used by many sites. Includes jQuery UI, an effects library to compliment jQuery.' :
@@ -10,7 +10,7 @@ var JavaScriptBlockerWhitelist = {
 		['^https?:\\/\\/.*\\/prototype\\.js(\\?.*)?$']
 };
 
-var JavaScriptBlockerBlacklist = {
+JavaScriptBlocker.rules.blacklist = {
 	'Modifies the text you copy on a webpage.':
 		['^https?:\\/\\/(.*\\.)?tynt\\.com\\/.*$'],
 	'Adds search links to random words on websites that may popup a box over the content if hovered on.':

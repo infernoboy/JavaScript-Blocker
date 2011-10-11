@@ -36,7 +36,7 @@ Poppy.prototype = {
 		clearTimeout(this.cT);
 		if($(this.e, this.p).length)
 			return this.remove((this.removeOnly !== false) ? $.noop : this.create);
-		return (this.removeOnly !== false) ? false : setTimeout(self.create.bind(this), 1);
+		return (this.removeOnly !== false) ? false : setTimeout($.proxy(self.create, this), 1);
 	},
 	remove: function(cb) {
 		var self = this;

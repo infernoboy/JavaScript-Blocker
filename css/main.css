@@ -76,11 +76,13 @@ input[type="button"].confirm-click {
 		background: -webkit-gradient(linear, left top, left bottom, from(#883A3D), color-stop(20%, #CF4D54), to(#CF4D54));;
 	}
 *.allowing-mode .domain-name,
-.allowed-label {
+.allowed-label,
+.rule.type-5 {
 	color: #008913;
 }
 .blocked-label,
-*.blocking-mode .domain-name {
+*.blocking-mode .domain-name,
+.rule.type-4 {
 	color: #920101;
 }
 .unblocked-label,
@@ -153,8 +155,8 @@ ul li span {
 	}
 		::-webkit-scrollbar-thumb:vertical {
 			-webkit-border-radius: 3px;
-			background: rgba(0,0,0,0.23); 
-			border: 1px solid rgba(0,0,0,0.3);
+			background: rgba(0,0,0,0.20); 
+			border: 1px solid rgba(0,0,0,0.25);
 		}
 ul li input {
 	position: absolute;
