@@ -79,10 +79,14 @@
 		</div>
 		<div id="rules-list">
 			<div class="info-container">
-				<input type="button" value="Back" id="rules-list-back" />
-				<input type="button" value="Delete Below Rules" id="reset-domain" />
+				<p id="rules-info">30 domains, 300 rules</p>
+				<input type="button" value="Close Rules List" id="rules-list-back" />
+				<input type="button" value="Delete Visible Rules" id="reset-domain" />
 			</div>
 			<div id="data">
+				<a href="javascript:void(0)" id="collapse-all">Collapse All</a> <span class="label">—</span>
+				<a href="javascript:void(0)" id="expand-all">Expand All</a>
+				<input type="search" placeholder="Filter Domains" id="domain-filter" />
 				<ul></ul>
 			</div>
 		</div>

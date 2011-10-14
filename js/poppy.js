@@ -32,6 +32,7 @@ Poppy.prototype = {
 	c: '#poppy-content',
 	a: '#poppy-arrow',
 	init: function() {
+		if(JavaScriptBlocker.shiftKey) this._time = this._time * 10;
 		var self = this;
 		clearTimeout(this.cT);
 		if($(this.e, this.p).length)
@@ -61,8 +62,8 @@ Poppy.prototype = {
 		$(this.s, this.p).unbind('scroll').scroll(function() {
 			new Poppy();
 			$(self.s, self.p).unbind('scroll');
-		})
-			
+		});
+		
 		var m = this.p.append(eC)
 			.find(this.e).append(cC)
 			.find(this.c).append(this.content)
@@ -90,7 +91,8 @@ Poppy.prototype = {
 			WebkitTransitionDuration: '0s',
 			WebkitTransitionTimingFunction: 'ease-in',
 			WebkitTransform: 'scale(0)',
-			opacity: 0,
+			WebkitTransformOrigin: (points.arrow.left + 15) + 'px ' + ((points.main.bottom === 'auto') ? '0%' : '100%'),
+			opacity: 1,
 			left: left,
 			bottom: points.main.bottom, /*(points.main.bottom - $(self.a, self.p).outerHeight() * 2),*/
 			top: points.main.top
@@ -121,9 +123,11 @@ Poppy.prototype = {
 				left: points.main.left,
 				WebkitTransform: 'scale(1)',
 				WebkitTransitionDuration: self._time + 's',
-				WebkitTransitionTimingFunction: 'ease'
+				WebkitTransitionTimingFunction: 'ease',
+				width: m.width(),
+				height: m.height()
 			});
-		}, (this._time * 1000) + 55);
+		}, (this._time * 1000) + 30);
 	},
 	calcPoints: function() {
 		var o = {

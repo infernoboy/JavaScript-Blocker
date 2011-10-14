@@ -1,4 +1,5 @@
 var JavaScriptBlocker = {
+	shiftKey: false,
 	disabled: false,
 	noDeleteWarning: false,
 	frames: {},
@@ -94,6 +95,204 @@ var JavaScriptBlocker = {
 			$e.removeClass('confirm-click');
 
 			return true;
+		},
+		zoom: function(e, hide, cb) {
+			var t = 0.5, self = this;
+			
+			if(this.__proto__.shiftKey) t = t * 10;
+			
+			if(e.is(':animated')) return setTimeout(function() { self.zoom(e, hide); }, 100);
+			
+			if(!hide) hide = $('<div></div>');
+			if(!cb) cb = $.noop;
+			
+			var start_value = (e.hasClass('zoom-window')) ? 1 : 0.3, end_value = (start_value === 1) ? 0.3 : 1;
+			
+			if(start_value !== 1) {
+				e.addClass('zoom-window').css('zIndex', 999);
+				hide.data('scrollTop', hide.scrollTop());
+			} else {
+				hide.css('zIndex', 0);
+				e.removeClass('zoom-window-open');
+			}
+			
+			var c = {
+				display: 'block',
+				WebkitTransitionProperty: '-webkit-transform, opacity, background-color',
+				WebkitTransitionDuration: t + 's',
+				WebkitTransitionTimingFunction: 'ease'
+			};
+			
+			e.css(c);
+			hide.css(c);
+			
+			e.css({
+				WebkitTransform: 'scale(' + (start_value & 1) + ')',
+				opacity: start_value,
+				backgroundColor: 'rgba(230,230,230,' + (end_value & 1) + ')'
+			});
+			
+			hide.css({
+				opacity: end_value & 1,
+				WebkitTransitionDuration: t + 's, ' + (t * .8) + 's, ' + t + 's',
+			});
+			
+			if(start_value === 1) hide.scrollTop(hide.data('scrollTop'));
+			
+			setTimeout(function() {
+				hide.css({
+					opacity: start_value & 1
+				});
+				
+				e.css({
+					WebkitTransform: 'scale(' + (end_value & 1) + ')',
+					opacity: (end_value & 1) === 0 ? end_value * .5 : end_value,
+					backgroundColor: 'rgba(230,230,230,' + (start_value & 1) + ')'
+				});
+				
+				setTimeout(function() {
+					if(start_value !== 1){
+						hide.hide().css('zIndex', 0);
+						e.addClass('zoom-window-open');
+					} else {
+						e.hide().removeClass('zoom-window zoom-window-open');
+						hide.css('zIndex', 999);
+						cb.call(JavaScriptBlocker);
+					}
+				}, t * 1000);
+			}, 10);
+		},
+/*		animate_background: function(args)
+		{
+			var self = this, jE = $(args.e), e_clean;
+			
+			if(jE.data('e_clean')) e_clean = jE.data('e_clean');
+			else jE.data('e_clean', (e_clean = Math.random().toString().substr(2)));
+			
+			this.timer.delete('interval', 'animate_background_' + e_clean);
+			
+			if(args.max_level === true) {
+				jE.data('animating', false);
+				return true;
+			}
+			
+			var original_width = (args.height) ? jE.height() : jE.width();
+			var width = current_level = in_reverse = current_position = 0;
+					
+			jE.data('animating', true);
+			
+			if(!(current_position = jE.data('animate_background')))
+				jE.data('animate_background', (current_position = jE.css('backgroundPosition')));
+			
+			if(typeof current_position != 'string')
+				current_position = '';
+				
+			current_position = current_position.split(' ');
+			
+			try {
+				var url_split = jE.css('backgroundImage').split('_'), settings = url_split[url_split.length - 1].split('-');
+				settings[0] = parseInt(settings[0]);
+				settings[1] = parseInt(settings[1]);
+								
+				if(!isNaN(settings[0]) && !isNaN(settings[1])) {
+					args.max_level = (typeof args.max_level != 'number') ? parseInt(settings[0]) : args.max_level;
+					args.speed = (typeof args.speed != 'number') ? settings[1] : args.speed;
+				}
+			} catch(e) {
+				console.error(args.e);
+			}
+							
+			var set_bg = function(level) {
+				if(args.height)
+					jE.css('backgroundPosition', current_position[0] + ' ' + -(original_width * level) + 'px');
+				else
+					jE.css('backgroundPosition', -(original_width * level) + 'px ' + current_position[1]);
+			};
+			
+			if(args.start) current_level = args.start;
+			
+			set_bg((args.start) ? args.start : 0);
+			
+			if(args.start === args.max_level) in_reverse = true;
+			
+			this.timer.create('interval', 'animate_background_' + e_clean, function() {
+				if(in_reverse) {
+					if(--current_level == 0) in_reverse = !in_reverse;
+				} else {
+					if(++current_level >= args.max_level) {
+						if(current_level > args.max_level) current_level = args.max_level;
+						if(args.loop) {
+							if(args.loop == 'reverse') current_level -= 2, in_reverse = !in_reverse;
+							else width = -original_width, current_level = 0;
+						} else {
+							if(args.hide) jE.data('animating', false).hide();
+														
+							self.timer.delete('interval', 'animate_background_' + e_clean);
+							
+							if(args.oncomplete) args.oncomplete.call(JavaScriptBlocker);
+							
+							return true;
+						}
+					}
+				}
+				
+				set_bg(current_level);
+			}, args.speed);
+		},*/
+		timer: {
+			timers: { intervals: {}, timeouts: {} },
+			create: function(type, name, script, time)
+			{
+				if(type != 'interval' && type != 'timeout') return false;
+
+				var self = this;
+
+				this.delete(type, name);
+
+				var timer_func = (type == 'interval') ? setInterval(script, time) : setTimeout(script, time);
+
+				if(type == 'timeout' && !name.match(/_auto_delete$/))
+					this.create('timeout', name + '_auto_delete', function() {
+						self.delete(type, name);
+					}, time + 100);
+
+				this.timers[type + 's'][name] = { name: name, timer: timer_func, script: script, time: time };
+
+				return this.timers[type + 's'][name];
+			},
+			delete: function()
+			{
+				var args = $.makeArray(arguments), type = args[0] + 's';
+
+				if(args[1] == null) {
+					for(name in this.timers[type]) {
+						if(!this.timers[type][name]) continue;
+
+						if(args[0] == 'timeout')
+							clearTimeout(this.timers[type][name]['timer']);
+						else if(args[0] == 'interval')
+							clearInterval(this.timers[type][name]['timer']);
+
+						delete this.timers[type][name];
+					}
+
+					return true;
+				}
+
+				for(var i = 1; (name = args[i]); i++) {
+					try {
+						if(args[0] == 'timeout') {
+							clearTimeout(this.timers[type][name]['timer']);
+							clearTimeout(this.timers[type][name + '_auto_delete']['timer']);
+						} else if(args[0] == 'interval')
+							clearInterval(this.timers[type][name]['timer']);
+
+						delete this.timers[type][name];
+					} catch(e) { }
+				}
+
+				return true;
+			},
 		}
 	},
 	_active_host_cache: {},
@@ -216,15 +415,17 @@ var JavaScriptBlocker = {
 			return window.localStorage.clear();
 		},
 		view: function(domain, url) {
-			var self = this, allowed = this.for_domain(domain, true), ul = $('<ul></ul>'), newul, rules, rule, append;
+			var self = this, allowed = this.for_domain(domain, true), ul = $('<ul class="rules-wrapper"></ul>'), newul, rules, rule, append;
 			
 			if(domain in allowed) {
 				allowed = allowed[domain];
 
 				if('{}' != JSON.stringify(allowed)) {
-					newul = ul.append('<li class="domain-name">' + ((domain[0] == '.' && domain != '.*') ? '*' + domain : (domain == '.*' ? 'All Domains' : domain)) + '</li><li><ul></ul></li>').find('li:last ul');
+					var j = this.__proto__.utils.parse_JSON(window.localStorage['CollapsedDomains']), domain_name = ((domain[0] == '.' && domain != '.*') ? '*' + domain : (domain == '.*' ? 'All Domains' : domain));
+					
+					newul = ul.append('<li class="domain-name">' + domain_name + '</li><li><ul></ul></li>').find('li:last ul');
 					rules = 0;
-
+		
 					for(rule in allowed) {
 						if((url && !(new RegExp(rule)).test(url)) || (!!(allowed[rule] % 2) === this.allowMode && allowed[rule] < 4)) continue;
 						rules++;
@@ -232,36 +433,102 @@ var JavaScriptBlocker = {
 						$('li:last', append).data('rule', rule).data('domain', domain);
 					}
 					
-					if(!rules) return $('<ul></ul>');
+					if(!rules) return $('<ul class="rules-wrapper"></ul>');
+					
+					if(j && j.indexOf(domain_name) > -1)
+						newul.parent().hide().prev().addClass('hidden');
 
 					$('.divider:last', newul).css('visibility', 'hidden');
-
-					$('#reset-domain', this.__proto__.popover).unbind('click').click(function() {
-						if(!self.__proto__.utils.confirm_click(this)) return false;
-
-						$('input[value="Delete"]', newul).click().click();
-
-						self.__proto__.do_update_popover(event);
-
-						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
-					});
 				}
+				
+				$('#reset-domain', this.__proto__.popover).unbind('click').click(function() {
+					if(!self.__proto__.utils.confirm_click(this)) return false;
+					
+					$('#rules-list li:visible input[value="Delete"]', self.__proto__.popover).click().click();
+
+					self.__proto__.do_update_popover(event);
+
+					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+				});
+				
+				$('#collapse-all, #expand-all', this.__proto__.popover).unbind('click').click(function(i) {
+					var is_collapse = this.id === 'collapse-all', d = $('#rules-list .domain-name:visible', self.__proto__.popover);
+					
+					if(is_collapse) d = d.not('.hidden');
+					else d = d.filter('.hidden');
+					
+					d.each(function(i) {
+						var e = $(this);
+						if(e.is(':visible'))
+							self.utils.timer.create('timeout', 'rule_collapse_expand_' + i, function() {
+								e.click();
+							}, 20 * i);
+					});
+				});
+				
+				$('#domain-filter', this.__proto__.popover).unbind('input').val('').bind('input', function() {
+					var d = $('.domain-name', self.popover), v = this.value;
+					
+					d.each(function() {
+						var e = $(this);
+						if(!(new RegExp(v, 'i')).test(e.html())) {
+							e.hide().next().hide();
+						} else {
+							e.show();
+							if(!e.hasClass('hidden')) e.next().show();
+						}
+					});
+					
+					var d = $('#rules-list .domain-name:visible', self.popover).length, r = $('#rules-list span.rule', self.popover);
+					r = r.filter(function() {
+						return $(this).parents('li').prev().is(':visible');
+					}).length;
+					
+					$('#rules-list #rules-info', self.popover).html(d + ' domain' + ((d === 1) ? '' : 's') + ', ' + r + ' rule' + ((r === 1) ? '' : 's'));
+				});
+				
+				$('.domain-name', ul).click(function() {
+					var d = this.innerHTML, j = self.__proto__.utils.parse_JSON(window.localStorage['CollapsedDomains']), t = $(this).next();
+					
+					if(t.is(':animated')) return false;
+								
+					if(j === false) j = [];
+					
+					if(!t.is(':visible')) {
+						e: $(this).removeClass('hidden');
+						j = $.map(j, function(v, i) {
+							return (v === d) ? null : v;
+						});
+					} else {
+						$(this).addClass('hidden');
+						j.push(d);
+					}
+					
+					t.slideToggle(300);
+						
+					window.localStorage.setItem('CollapsedDomains', JSON.stringify(j));
+				});
 
 				$('li input', ul).click(function() {
 					if(!self.__proto__.utils.confirm_click(this)) return false;
 
 					var li = $(this).parent(), parent = li.parent();
-				
+								
+					if($('span.rule.type-2, span.rule.type-3', li).length)
+						self.deleted_automatic_rule(li.data('domain'), li.data('rule'));
+					
 					self.remove(li.data('domain'), li.data('rule'));
 
 					li.remove();
 					
 					if(li.is(':last')) $('.divider:last', parent).css('visibility', 'hidden');
 
-					if($('li', parent).size() == 0) {
+					if($('li', parent).length === 0) {
 						parent.parent().prev().remove();
 						parent.remove();
 					}
+					
+					$('#domain-filter', self.__proto__.popover).trigger('input');
 				});
 			}
 
@@ -355,15 +622,19 @@ var JavaScriptBlocker = {
 
 				if(jsblocker[text].count > 3 && jsblocker[text].count - 3 > 1) {
 					$('li:eq(2)', ul).after('<li><a href="javascript:void(1)" class="show-more">Show ' + (jsblocker[text].count - 3) + ' more&hellip;</a></li>');
-					$('li:gt(3)', ul).hide();
+					$('li:gt(3)', ul).hide().addClass('show-more-hidden');
 				}
 
 				$('.divider:last', ul).css('visibility', 'hidden');
 
 				$('.show-more', ul).click(function() {
-					$(this).parent().siblings('li:hidden').slideDown(300);
-					$(this).parent().remove();
+					$(this).parent().siblings('li:hidden').slideDown(300).end().remove();
 				});
+				
+				if(window.localStorage[text + 'IsCollapsed'] === '1') {
+					$('li:not(.show-more-hidden)', ul).hide().addClass('was-hidden');
+					$('.' + text + '-label', self.popover).addClass('hidden');
+				}
 			}
 
 			makeList('blocked', 'Allow');
@@ -410,20 +681,21 @@ var JavaScriptBlocker = {
 				var off = $(this).offset(),
 					url = $(this).parent().data('url'),
 					to_delete = self.rules.remove_matching_URL(host[2], url, false),
-					ds = [], rs = [], vs = [];
+					ds = [], rs = [], vs = $('<div>The following rule(s) will be deleted:<ul class="rules-wrapper"></ul>This may inadvertently affect other scripts. <input type="button" value="Continue" id="delete-continue" /></div>');
 
 				for(d in to_delete) {
-					vs.push(self.rules.view(d, url).find('input').remove().end().html());
+					$('> ul.rules-wrapper', vs).append(self.rules.view(d, url).find('> li').find('input').remove().end());
 					ds.push(d);
 					rs.push(to_delete[d]);
 				}
-
+				
+				$('ul', vs).addClass((!self.allowMode ? 'allowing' : 'blocking') + '-mode');
+				$('li.domain-name', vs).filter('.hidden').removeClass('hidden').next().show().end().unbind('click').addClass('no-disclosure');
+				
 				if(self.noDeleteWarning)
 					self.rules.remove_matching_URL(host[2], url, true);
 				else {
-					var view = vs.join('');
-
-					new Poppy(off.left + 22, off.top + 8, 'The following rule(s) will be deleted:<ul class="' + (!self.allowMode ? 'allowing' : 'blocking') + '-mode">' + view + '</ul>This may inadvertently affect other scripts. <input type="button" value="Continue" id="delete-continue" />', function() {
+					new Poppy(off.left + 22, off.top + 8, vs, function() {
 						$('#poppy #delete-continue', self.popover).click(function() {
 							self.rules.remove_matching_URL(host[2], url, true);
 							safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
@@ -483,52 +755,46 @@ var JavaScriptBlocker = {
 				new Poppy(e.pageX, e.pageY, '<input type="button" value="All Rules" id="view-all" /> <input type="button" value="Active Rules" id="view-domain" />', function() {
 					$('#view-domain', self.popover).click(function() {
 						new Poppy();
-						
-						$('#rules-list', self.popover).show().parents('#container').addClass('double');
-						
+								
 						var ul = $('#rules-list #data > ul', self.popover).html(''), parts = self.domain_parts(host[2]);
-				
-						for(var i = 0, b = parts.length; i < b; i++)
-							ul.append($('> *', self.rules.view(((i > 0) ? '.' : '') + parts[i])));
-
-						if($('li', ul).length == 0)
-							ul.append('<li>No rules exist for ' + host[2] + '</li>');
-
-						$('body', self.popover).animate({
-							scrollLeft: $('body', self.popover).width()
-						}, 250, 'swing', function() {
-							$('#main', self.popover).hide().parents('#container').removeClass('double');
+						
+						parts = parts.map(function(v, i) {
+							var x = self.utils.escape_regexp(v);
+							if(i > 0) return '\\*\\.' + x;
+							return x;
 						});
+						
+						parts[parts.length - 1] = 'All Domains';
+						
+						$('#view-all', self.popover).click();
+						setTimeout(function() {
+							$('#domain-filter', self.popover).val('^' + parts.join('$|^') + '$').trigger('input');
+						}, 10);
 					}).siblings('#view-all').click(function() {
 						new Poppy();
-						
-						$('#rules-list', self.popover).show().parents('#container').addClass('double');
-				
-						var ul = $('#rules-list #data > ul', self.popover), s = self.utils.sort_object(window.localStorage), domain;
-
-						ul.html('');
+							
+						var ul = $('#rules-list #data > ul', self.popover).html(''), s = self.utils.sort_object(window.localStorage), domain;
 						
 						for(domain in s)
 							ul.append($('> *', self.rules.view(domain)));
 
-						if($('li', ul).length == 0)
+						if($('li', ul).length === 0)
 							ul.append('<li>No rules have been created.</li>');
 
-						$('body', self.popover).animate({
-							scrollLeft: $('body', self.popover).width()
-						}, 250, 'swing', function() {
-							$('#main', self.popover).hide().parents('#container').removeClass('double');
-						});
+						self.utils.zoom($('#rules-list', self.popover), $('#main', self.popover));
+					}).andSelf().click(function() {
+						var d = $('#rules-list .domain-name', self.popover).length, r = $('#rules-list span.rule', self.popover).length;
+						$('#rules-list #rules-info', self.popover).html(d + ' domain' + ((d === 1) ? '' : 's') + ', ' + r + ' rule' + ((r === 1) ? '' : 's'));
 					});
 				});
 			});
 			
 			$('#reset-always', this.popover).unbind('click').click(function(e) {
-				new Poppy(e.pageX, e.pageY, '<input type="button" value="For All Domains" id="dynamic-all" /> <input type="button" value="For ' + host[2].replace(/"/g, '&quot;') + '" id="dynamic-domain" />', function() {
-					$('#dynamic-all', this).click(function() {
+				new Poppy(e.pageX, e.pageY, '<input type="button" value="For All Domains" id="automatic-all" /> <input type="button" value="For ' + host[2].replace(/"/g, '&quot;') + '" id="automatic-domain" />', function() {
+					$('#automatic-all', this).click(function() {
 						self.deletedAutomaticRules = null;
 						new Poppy(e.pageX, e.pageY, 'All automatic rules have been restored.');
-					}).siblings('#dynamic-domain').click(function() {
+					}).siblings('#automatic-domain').click(function() {
 						var c = self.deletedAutomaticRules;
 						
 						if(c !== null && (host[2] in c)) delete c[host[2]];
@@ -541,61 +807,37 @@ var JavaScriptBlocker = {
 			});
 
 			$('#rules-list #rules-list-back', this.popover).unbind('click').click(function() {
-				$('#container', self.popover).addClass('double')
-					.parents('body').scrollLeft($('body', self.popover).width())
-					.find('#main').show()
-					.parents('body').animate({
-							scrollLeft: 0
-						}, 250, 'swing', function() {
-							$('#rules-list', self.popover).hide();
-							$('#container', self.popover).removeClass('double');
-						});
+				if($('#rules-list', self.popover).hasClass('zoom-window'))
+					self.utils.zoom($('#rules-list', self.popover), $('#main', self.popover), function() {
+						$('#rules-list #data ul', self.popover).html('');
 					});
+			});
+			
+			$('.allowed-label, .blocked-label, .unblocked-label', this.popover).unbind('click').click(function() {
+				var $this = $(this), which = this.className.substr(0, this.className.indexOf('-'));
+				
+				if($this.hasClass('hidden')) {
+					window.localStorage.setItem(which + 'IsCollapsed', 0);
+					$this.removeClass('hidden');
+					$('#' + which + '-script-urls ul li.was-hidden', self.popover).slideDown(300).removeClass('was-hidden');
+				} else {
+					window.localStorage.setItem(which + 'IsCollapsed', 1);
+					$this.addClass('hidden');
+					$('#' + which + '-script-urls ul li:visible', self.popover).slideUp(300).addClass('was-hidden');
+				}
+			})
 		}
 	},
 	setting_changed: function(event) {
 		if(['alwaysBlock', 'alwaysAllow', 'allowMode'].indexOf(event.key) > -1) {
-			var key, rules, rule, n;
-			
-			if(event.key === 'allowMode')	n = (event.newValue === false) ? 3 : 2;
-			else n = (event.key === 'alwaysBlock') ? 5 : 4;
-			
-			window.localStorage.removeItem('DeletedAutomaticRules');
-			
-			var is_nowhere = ((((event.key === 'allowMode') ? safari.extension.settings.alwaysBlock : safari.extension.settings.alwaysAllow) === 'nowhere') || event.newValue == 'nowhere');
-			
-			if(event.key === 'allowMode')
-				if(this.allowMode || event.newValue === false)
-					safari.extension.settings.alwaysBlock = 'nowhere';
-				else
-					safari.extension.settings.alwaysAllow = 'nowhere';
-			
-			for(key in window.localStorage) {
-				if(window.localStorage.hasOwnProperty(key)) {
-					rules = JSON.parse(window.localStorage[key], function(rule, action) {
-						if(rule === '') return action;
-						if(!(action > 1 && ((is_nowhere && action > 3 && action % 2 !== n % 2) || (action % 2 == n % 2))))
-							return action;
-						return undefined;
-					});
-					window.localStorage.setItem(key, JSON.stringify(rules));
-				}
-			}
-				
-			if(event.newValue !== 'nowhere' || event.key === 'allowMode') {
-				var str = (event.key === 'alwaysBlock' || event.newValue === false) ? 'Would you like to install a predefined whitelist of "safe" scripts to never block?' : 'Would you like to install a predefined blacklist of "bad" scripts to never allow?';
-				var c = confirm(str);
-			
-				if(c) {
-					var name, i, b, list = (event.key === 'alwaysBlock' || event.newValue === false) ? this.rules.whitelist : this.rules.blacklist;
-
-					for(name in list)
-						for(i = 0, b = list[name].length; i < b; i++)
-							this.rules.add('.*', list[name][i], n);
-						
-					alert('List installed.');
-				}
-			}
+			var wd, i, b, bd, e, c;
+			for(wd in this.rules.whitelist)
+				for(i = 0, b = this.rules.whitelist[wd].length; i < b; i++)
+					this.rules.add('.*', this.rules.whitelist[wd][i], 5);
+		
+			for(bd in this.rules.blacklist)
+				for(e = 0, c = this.rules.blacklist[bd].length; e < c; e++)
+					this.rules.add('.*', this.rules.blacklist[bd][e], 4);
 		}
 	},
 	handle_message: function(event) {
@@ -615,7 +857,7 @@ var JavaScriptBlocker = {
 				domainFor:
 				for(domain in domains) {
 					for(rule in domains[domain]) {
-						if(rule.length < 1 || (domains[domain][rule] < 4 && domains[domain][rule] % 2 == this.allowMode) || (domains[domain][rule] >= 4 && domains[domain][rule] % 2 != this.allowMode)) continue;
+						if(rule.length < 1 || (domains[domain][rule] < 4 && domains[domain][rule] % 2 == this.allowMode)) continue;
 						if((new RegExp(rule)).test(event.message[1])) {
 							rule_found = domains[domain][rule] % 2;
 							if(domains[domain][rule] < 2) break domainFor;
@@ -690,58 +932,45 @@ var JavaScriptBlocker = {
 	open_popover: function(event) {
 		if(typeof event !== 'undefined' && ('type' in event) && ['beforenavigate', 'close'].indexOf(event.type) > -1) safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('unloadPage');
 		
+		var self = this;
+		
+		$(this.popover).unbind('keydown').keydown(function(e) {
+			if(e.keyCode === 16) self.shiftKey = true;
+		}).keyup(function(e) {
+			if(e.keyCode === 16) self.shiftKey = false;
+		});
+		
+		var s = $('#setup', this.popover);
+		
 		if(!this.setupDone) {
-			var self = this;
-			$('#setup', this.popover).css('display', 'block').find('input').click(function(e) {
+			if(s.css('display') === 'block') return false;
+			
+			s.css('display', 'block').find('input').click(function(e) {
 				self.allowMode = !$(this).is('#setup-block');
+				self.setupDone = 1;
 				
-				new Poppy(e.pageX, e.pageY, '<p>Would you like to install a predefined ' + (self.allowMode ? 'blacklist' : 'whitelist') + ' of "' + (self.allowMode ? 'bad' : 'safe') + '" scripts? After installing the list, you can manually delete entries you don\'t want by clicking Show Rules > All Rules.</p><div class="inputs"><input type="button" value="No Thanks" id="setup-no" /><input type="button" value="View ' + (self.allowMode ? 'Blacklist' : 'Whitelist') + '" id="setup-view" /><input type="button" value="Install ' + (self.allowMode ? 'Blacklist' : 'Whitelist') + '" id="setup-install" /></div>', function() {
-					var list = (self.allowMode ? self.rules.blacklist : self.rules.whitelist);
-					
-					$('#setup-view', self.popover).click(function() {
-						var ele = $('<div class="' + (!self.allowMode ? 'allowing' : 'blocking') + '-mode"><ul></ul><div class="inputs"></div></div>'), ul = ele.find('ul'), name, rule;
-						
-						$('.inputs', ele).append($('#poppy-content .inputs', self.popover).find('#setup-no, #setup-install'));
-						
-						for(name in list) {
-							var newul = ul.append('<li class="domain-name">' + name + '</li><li><ul></ul></li>').find('li:last ul');
-							
-							for(var i = 0, b = list[name].length; i < b; i++)
-								newul.append('<li><span class="rule">' + list[name][i] + '</span><div class="divider"></div></li>')
-							
-							$('.divider:last', newul).css('visibility', 'hidden');
-						}
-						
-						new Poppy(e.pageX, e.pageY, ele);
-					});
-					
-					$('#setup-install', self.popover).click(function() {
-						self.setupDone = 1;
-						
-						var name, i, b;
-						
-						for(name in list)
-							for(i = 0, b = list[name].length; i < b; i++)
-								self.rules.add('.*', list[name][i], (self.allowMode ? 2 : 3));
-						
-						new Poppy(e.pageX, e.pageY, '<p>The ' + (self.allowMode ? 'blacklist' : 'whitelist') + ' has been successfully installed.</p><div class="inputs"><input type="button" value="Continue" id="setup-continue" /></div>', function() {
-							$('#setup-continue', self.popover).click(function() {
-								self.open_popover();
-							})
-						});
-					});
-					
-					$('#setup-no', self.popover).click(function() {
-						self.setupDone = 1;
-						self.open_popover();
-					});
-				});
+				var wd, bd, i, b, e, c;
+
+				for(wd in self.rules.whitelist)
+					for(i = 0, b = self.rules.whitelist[wd].length; i < b; i++)
+						self.rules.add('.*', self.rules.whitelist[wd][i], 5);
+			
+				for(bd in self.rules.blacklist)
+					for(e = 0, c = self.rules.blacklist[bd].length; e < c; e++)
+						self.rules.add('.*', self.rules.blacklist[bd][e], 4);
+				
+				self.open_popover();
 			});
+			
+			this.utils.zoom(s, $('#main', this.popover));
 			
 			return false;
 		}
 		
-		$('#setup', this.popover).hide(350);
+		var s = $('#setup', this.popover);
+		
+		if(s.is(':visible'))
+			this.utils.zoom(s, $('#main', this.popover));
 
 		try {
 			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
@@ -765,3 +994,4 @@ var JavaScriptBlocker = {
 };
 
 JavaScriptBlocker.rules.__proto__ = JavaScriptBlocker;
+JavaScriptBlocker.utils.__proto__ = JavaScriptBlocker;
