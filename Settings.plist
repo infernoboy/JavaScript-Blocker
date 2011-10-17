@@ -14,7 +14,7 @@
 		<key>Key</key>
 		<string>allowMode</string>
 		<key>Title</key>
-		<string>Allow scripts unless explicitly blocked (Allowing Mode)</string>
+		<string>Allow scripts unless explicitly blocked</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -34,7 +34,7 @@
 		<key>Titles</key>
 		<array>
 			<string>Blocked scripts</string>
-			<string>Allowed scripts</string>
+			<string>Allowed &amp; Unblocked scripts</string>
 			<string>Neither</string>
 		</array>
 		<key>Type</key>
@@ -45,6 +45,32 @@
 			<string>allowed</string>
 			<string>neither</string>
 		</array>
+	</dict>
+	<dict>
+		<key>Title</key>
+		<string>Predefined Rules</string>
+		<key>Type</key>
+		<string>Group</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<false/>
+		<key>Key</key>
+		<string>ignoreWhitelist</string>
+		<key>Title</key>
+		<string>Ignore Whitelist Rules</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<false/>
+		<key>Key</key>
+		<string>ignoreBlacklist</string>
+		<key>Title</key>
+		<string>Ignore Blacklist Rules</string>
+		<key>Type</key>
+		<string>CheckBox</string>
 	</dict>
 	<dict>
 		<key>Title</key>
@@ -61,8 +87,8 @@
 		<string>When allowing, block scripts from</string>
 		<key>Titles</key>
 		<array>
-			<string>Different sub domain</string>
-			<string>Different complete domain</string>
+			<string>Different sub domains</string>
+			<string>Different hostnames</string>
 			<string>Nowhere</string>
 		</array>
 		<key>Type</key>
@@ -84,7 +110,7 @@
 		<key>Titles</key>
 		<array>
 			<string>Any sub domain</string>
-			<string>Same complete domain</string>
+			<string>Same hostname</string>
 			<string>Nowhere</string>
 		</array>
 		<key>Type</key>
@@ -95,12 +121,6 @@
 			<string>domain</string>
 			<string>nowhere</string>
 		</array>
-	</dict>
-	<dict>
-		<key>DefaultValue</key>
-		<real>0.0</real>
-		<key>Key</key>
-		<string>debug</string>
 	</dict>
 </array>
 </plist>

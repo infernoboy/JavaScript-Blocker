@@ -3,11 +3,11 @@
 	padding: 8px 3px;
 	-webkit-border-radius: 5px;
 	z-index: 10000;
-	background: rgba(230,230,230,0.95);
+	background: rgba(239,239,239,0.93);
 	border: 1px solid rgba(0,0,0,0.25);
 	-webkit-box-shadow: 0 3px 15px rgba(0,0,0,0.2);
 	font-size: 8pt;
-	text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+	text-shadow: 0 1px 0 rgba(255,255,255,0.6);
 }
 	#poppy #poppy-arrow {
 		position: absolute;
@@ -19,8 +19,7 @@
 		padding: 0 7px;
 		max-height: 150px;
 		max-width: 420px;
-		overflow-y: scroll;
-		overflow-x: auto;
+		overflow: auto;
 	}
 	#poppy p {
 		margin: 0 3px 0 4px;

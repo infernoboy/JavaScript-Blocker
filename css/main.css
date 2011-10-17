@@ -34,6 +34,9 @@ header h1 {
 	margin: 25px 0 0 4px;
 /*	-webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,0)), color-stop(2%, rgba(0,0,0,1)), color-stop(98%, rgba(0,0,0,1)), to(rgba(0,0,0,0)))*/
 }
+	#container.loading > * {
+		display: none;
+	}
 #main,
 #rules-list,
 #setup {
@@ -97,6 +100,14 @@ select {
 .unblocked-label,
 .label {
 	color: #777;
+}
+
+.rule.type-2 {
+	color: #BF01A2;
+}
+
+.rule.type-3 {
+	color: #006889;
 }
 
 .allowed-label,
@@ -169,17 +180,16 @@ ul li span {
 
 	::-webkit-scrollbar-track {
 		-webkit-border-radius: 2px;
+		border: 1px solid rgba(0,0,0,0.12);
 	}
 
 	::-webkit-scrollbar-thumb {
 		-webkit-border-radius: 2px;
-		background: rgba(0,0,0,0.08); 
+		background: rgba(0,0,0,0.1); 
 		border: 1px solid rgba(0,0,0,0.11);
 	}
 		::-webkit-scrollbar-thumb:vertical {
 			-webkit-border-radius: 3px;
-			background: rgba(0,0,0,0.16); 
-			border: 1px solid rgba(0,0,0,0.21);
 		}
 ul li input {
 	position: absolute;
@@ -192,7 +202,7 @@ a {
 }
 #disable,
 #view-rules,
-#reset-always {
+#reset-automatic {
 	float: right;
 	margin-left: 5px;
 	margin-bottom: 10px;
@@ -261,6 +271,7 @@ a {
 
 #setup {
 	display: none;
+	font-size: 9pt;
 }
 #page-list {
 	max-width: 405px;

@@ -18,8 +18,7 @@
 			<p><img src="images/toggleable.png" alt="Toggleable" /> <img src="Icon-48.png" alt="JS Blocker" /></p>
 			<p>Thanks for using JavaScript Blocker!</p>
 			<p>Which mode would you like to run in? This setting can be changed at any time from the extensions pane of
-				the Safari preferences. Rules created are specific to their mode, i.e., a rule created while in Blocking Mode
-				will have no effect if you were to switch to Allowing Mode later on.</p>
+				the Safari preferences.</p>
 			<p><input type="button" id="setup-block" value="Blocking Mode" /> <input type="button" id="setup-allow" value="Allowing Mode" /></p>
 		</div>
 		<div id="main">
@@ -69,7 +68,7 @@
 			</div>
 	
 			<input type="button" value="Show Rules" id="view-rules" />
-			<input type="button" value="Restore Automatic Rules" id="reset-always" />
+			<input type="button" value="Restore Automatic Rules" id="reset-automatic" />
 			
 			<div id="disclaimer">
 				<p>This tool only blocks scripts when they are loaded from an external file or a data URI. What this means is that any scripts
@@ -81,7 +80,7 @@
 			<div class="info-container">
 				<p id="rules-info">30 domains, 300 rules</p>
 				<input type="button" value="Close Rules List" id="rules-list-back" />
-				<input type="button" value="Delete Visible Rules" id="reset-domain" />
+				<input type="button" value="Delete Expanded Rules" id="reset-domain" />
 			</div>
 			<div id="data">
 				<a href="javascript:void(0)" id="collapse-all">Collapse All</a> <span class="label">—</span>
