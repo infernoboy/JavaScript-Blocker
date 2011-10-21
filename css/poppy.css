@@ -38,3 +38,9 @@
 		white-space: wrap;
 		
 	}
+	#poppy p.misc-info {
+		margin-bottom: 7px;
+	}
+	#poppy #rules-radios {
+		margin: 4px 0 2px;
+	}

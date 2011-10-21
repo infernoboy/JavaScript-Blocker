@@ -8,6 +8,21 @@
 	
 	<link rel="stylesheet" href="css/poppy.css" type="text/css" />
 	<link rel="stylesheet" href="css/main.css" type="text/css" />
+	<link rel="stylesheet" href="css/highlight.css" />
+	
+	<script src="js/highlight.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			safari.extension.globalPage.contentWindow.JavaScriptBlocker.hljs = hljs;
+			setTimeout(function () {
+				safari.extension.globalPage.contentWindow.JavaScriptBlocker.bind_events();
+			}, 200);
+		});
+		
+		window.addEventListener('message', function (event) {
+			if (event.data === 'reloadOnce') window.location.reload();
+		});
+	</script>
 </head>
 
 <body>
@@ -68,8 +83,6 @@
 			</div>
 	
 			<input type="button" value="Show Rules" id="view-rules" />
-			<input type="button" value="Restore Automatic Rules" id="reset-automatic" />
-			
 			<div id="disclaimer">
 				<p>This tool only blocks scripts when they are loaded from an external file or a data URI. What this means is that any scripts
 					that are within the page itself can still run. Unfortunately this is a limitation of the Safari extension design, not mine.
@@ -78,16 +91,31 @@
 		</div>
 		<div id="rules-list">
 			<div class="info-container">
-				<p id="rules-info">30 domains, 300 rules</p>
+				<p class="misc-info">0 domains, 0 rules</p>
 				<input type="button" value="Close Rules List" id="rules-list-back" />
 				<input type="button" value="Delete Expanded Rules" id="reset-domain" />
 			</div>
 			<div id="data">
 				<a href="javascript:void(0)" id="collapse-all">Collapse All</a> <span class="label">—</span>
 				<a href="javascript:void(0)" id="expand-all">Expand All</a>
-				<input type="search" placeholder="Filter Domains" id="domain-filter" />
-				<ul></ul>
+				<div id="rules-filter-bar">
+					<ul>
+						<li id="filter-all"class="selected">All</li>
+						<li id="filter-collapsed">Collapsed</li>
+						<li id="filter-expanded">Expanded</li>
+						<li id="li-domain-filter"><input type="search" placeholder="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" /><br style="clear:both;" /></li>
+					</ul>
+					<br style="clear:both;" />
+				</div>
+				<ul id="rules-list-rules"></ul>
 			</div>
+		</div>
+		<div id="misc">
+			<div class="info-container">
+				<p class="misc-info"></p>
+				<input type="button" value="Close" id="misc-close" />
+			</div>
+			<div id="misc-content"></div>
 		</div>
 	</div>
 </body>

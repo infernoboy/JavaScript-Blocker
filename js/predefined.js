@@ -1,8 +1,8 @@
 JavaScriptBlocker.rules.whitelist = {
 	'Google Libraries API - A collection of JavaScript libraries hosted by Google.':
 		[
-			'^https?:\\/\\/ajax\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js(\\?.*)?$',
-			'^https?://www.google.com/jsapi$'
+			'^https?:\\/\\/ajax\\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js(\\?.*)?$',
+			'^https?:\\/\\/www\\.google\\.com\\/jsapi$'
 		],
 	'jQuery - A JavaScript library used by many sites. Includes jQuery UI, an effects library to compliment jQuery.' :
 		[
@@ -19,5 +19,5 @@ JavaScriptBlocker.rules.blacklist = {
 	'Adds search links to random words on websites that may popup a box over the content if hovered on.':
 		['^https?:\\/\\/(.*\\.)?kontera\\.com\\/.*$', '^https?:\\/\\/(.*\\.)?snap\\.com\\/.*$'],
 	'Used for tracking purposes.':
-		['^https?:\\/\\/(ssl|www)\\.google\\-analytics\\.com\\/ga\\.js$']
+		['^https?:\\/\\/(ssl|www)\\.google\\-analytics\\.com\\/ga\\.js$', '^https?:\\/\\/edge\\.quantserve\\.com\\/.*$']
 };

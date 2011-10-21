@@ -33,7 +33,7 @@ function allowedScript(event) {
 		}
 	} else if (event.target.nodeName == 'SCRIPT') {
 		jsblocker.unblocked.count++;
-		jsblocker.unblocked.urls.push(event.target.outerHTML);
+		jsblocker.unblocked.urls.push(event.target.innerHTML);
 	}
 	
 	if (window !== window.top) {
@@ -48,7 +48,7 @@ function ready(event) {
 		for (i = 0, b = script_tags.length; i < b; i++) {
 			if (!script_tags[i].src || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
 				jsblocker.unblocked.count++;
-				jsblocker.unblocked.urls.push(script_tags[i].outerHTML);
+				jsblocker.unblocked.urls.push(script_tags[i].innerHTML);
 			}
 		}
 	}

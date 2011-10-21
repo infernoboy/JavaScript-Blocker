@@ -1,10 +1,24 @@
 "use strict";
 
-var Poppy = function (x, y, content, cb) {
+var Poppy = function (x, y, content, cb, cb2, time) {
+	if (typeof content === 'object' && ('content' in content)) {
+		try {
+			var temporary = content.content;
+			cb = content.callback || $.noop;
+			cb2 = content.callback2 || $.noop;
+			time = typeof content.time === 'number' ? content.time : null;
+		} catch (e) { }
+		
+		content = temporary;
+	}
+	
 	this.removeOnly = $.makeArray(arguments).length === 0;
 	this.callback = (cb && typeof cb == 'function') ? cb : $.noop;
+	this.callback2 = (cb2 && typeof cb2 == 'function') ? cb2 : $.noop;
 	this.popover = safari.extension.toolbarItems[0].popover.contentWindow.document;
 	this.p = $(this.popover.body);
+	
+	this._time = typeof time === 'number' ? time : 0.3;
 	
 	if (!this.removeOnly) {
 		this.center = {
@@ -23,10 +37,7 @@ var Poppy = function (x, y, content, cb) {
 };
 
 Poppy.prototype = {
-	_time: 0.3,
 	_dT: null,
-	_cT: null,
-	_sT: null,
 	s: '#setup, #main, #rules-list',
 	e: '#poppy',
 	c: '#poppy-content',
@@ -37,7 +48,7 @@ Poppy.prototype = {
 		clearTimeout(this.cT);
 		if ($(this.e, this.p).length)
 			return this.remove((this.removeOnly !== false) ? $.noop : this.create);
-		return (this.removeOnly !== false) ? false : setTimeout($.proxy(self.create, this), 1);
+		return (this.removeOnly !== false) ? false : JavaScriptBlocker.utils.zero_timeout($.proxy(self.create, this));
 	},
 	remove: function (cb) {
 		var self = this;
@@ -48,7 +59,7 @@ Poppy.prototype = {
 		});
 		return (this._dT = setTimeout(function () {
 			$(self.e, self.p).remove();
-			setTimeout($.proxy(cb, self), 5);
+			JavaScriptBlocker.utils.zero_timeout($.proxy(cb, self));
 		}, (this._time / 2) * 1000));
 	},
 	create: function () {
@@ -69,15 +80,12 @@ Poppy.prototype = {
 			.find(this.c).append(this.content)
 			.end()
 			.append(aC);
-			
-		clearTimeout(this._cT);
-		clearTimeout(this._sT);
 		
+		this.callback.call($(this.e, this.p));
+			
 		var points = this.calcPoints(), left;
 		
 		if (points.arrow.bottom == 'auto') $(this.a, m).attr('src', 'images/arrow-mask-reverse.png');
-		
-		this.callback.call($(this.e, this.p));
 		
 		if (points.overflow)
 			left = points.main.left;
@@ -95,10 +103,12 @@ Poppy.prototype = {
 			opacity: 0.3,
 			left: left,
 			bottom: points.main.bottom, /*(points.main.bottom - $(self.a, self.p).outerHeight() * 2),*/
-			top: points.main.top
+			top: points.main.top,
+			width: m.width(),
+			height: m.height()
 		});
 		
-		this._cT = setTimeout(function () {
+		JavaScriptBlocker.utils.zero_timeout(function (self, m, points) {
 			m.css({
 				bottom: points.main.bottom, /*(points.main.bottom - $(self.a, self.p).height() + m.outerHeight() / 2),*/
 				top: points.main.top,
@@ -114,12 +124,14 @@ Poppy.prototype = {
 			$('> *:not(#poppy)', self.p).unbind('click').click(function () {
 				new Poppy();
 			});
-		}, 10);
+		}, [this, m, points]);
 		
-		JavaScriptBlocker.utils.timer.create('interval', 'poppy_view_finish', function () {
+		JavaScriptBlocker.utils.timer.interval('poppy_view_finish', function () {
 			if (parseFloat(m.css('opacity')) < 0.71) return false;
-			
+						
 			JavaScriptBlocker.utils.timer.delete('interval', 'poppy_view_finish');
+			
+			self.callback2.call($(self.e, self.p));
 			
 			m.css({
 				bottom: points.main.bottom,
@@ -127,9 +139,7 @@ Poppy.prototype = {
 				left: points.main.left,
 				WebkitTransform: 'scale(1)',
 				WebkitTransitionDuration: self._time + 's',
-				WebkitTransitionTimingFunction: 'ease',
-				width: m.width(),
-				height: m.height()
+				WebkitTransitionTimingFunction: 'ease'
 			});
 		}, 1);
 	},

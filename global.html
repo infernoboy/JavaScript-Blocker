@@ -5,9 +5,19 @@
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
 		<script src="js/poppy.js"></script>
 		<script src="js/global.js"></script>
+		<script src="js/poppies.js"></script>
 		<script src="js/predefined.js"></script>
 
 		<script>
+			window.addEventListener('message', function (event) {
+				if (event.source === window && event.data === 'zero-timeout') {
+					event.stopPropagation();
+					if (JavaScriptBlocker.utils._zero_timeouts.length) {
+						var o = JavaScriptBlocker.utils._zero_timeouts.shift();
+						o[0].apply(JavaScriptBlocker, o[1]);
+					}
+				}
+			}, true);
 			safari.application.addEventListener('close', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
 			safari.application.addEventListener('beforeNavigate', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
 			safari.application.addEventListener('popover', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
