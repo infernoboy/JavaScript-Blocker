@@ -510,6 +510,8 @@ var JavaScriptBlocker = {
 			new Poppy(e.pageX, off.top - 2, [
 				'<input type="button" value="View Script" id="view-script" />'].join(''), function () {
 					$('#poppy #view-script', self.popover).click(function () {
+						Behaviour.action('Viewed URL script');
+						
 						if (/^data/.test(t.text())) {
 							new Poppy(e.pageX, off.top - 2, '<p>Data URIs cannot be displayed.', $.noop, $.noop, 0.0);
 						} else {
@@ -545,6 +547,8 @@ var JavaScriptBlocker = {
 			remove_rule += '-script-urls ul input';
 
 			$(add_rule, this.popover).click(function (e) {
+				Behaviour.action('Adding a rule via main window');
+				
 				var off = $(this).offset(),
 					o = $('.domain-options:visible', self.popover)[0].value,
 					store = $('.domain-options:visible option[value="' + o + '"]', self.popover).data('store'),
@@ -555,6 +559,8 @@ var JavaScriptBlocker = {
 			}).siblings('span').dblclick(url_display);
 
 			$(remove_rule, this.popover).click(function (e) {
+				Behaviour.action('Removing a rule via main window');
+				
 				var m = $(this).parents('div').attr('id').indexOf('blocked') === -1,
 					off = $(this).offset(),
 					url = $(this).parent().data('url'),
@@ -575,6 +581,8 @@ var JavaScriptBlocker = {
 				else {
 					new Poppy(off.left + 22, off.top + 8, vs, function () {
 						$('#poppy #delete-continue', self.popover).click(function () {
+							Behaviour.action('Removed a rule via main window');
+							
 							self.rules.remove_matching_URL(host, url, true, m);
 							safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 							new Poppy();
@@ -584,6 +592,8 @@ var JavaScriptBlocker = {
 			}).siblings('span').dblclick(url_display);
 		
 			$('#unblocked-script-urls ul input', this.popover).click(function() {
+				Behaviour.action('Viewed unblocked script contents');
+				
 				$('<pre></pre>').append('<code class="javascript"></code>').find('code').html($(this).siblings('span').html()).end().appendTo($('#misc-content', self.popover));
 				self.utils.zoom($('#misc', self.popover).find('.misc-info').html('Unblocked Script').end(), $('#main', self.popover));
 				self.hljs.highlightBlock($('#misc pre code', self.popover)[0]);
@@ -601,6 +611,8 @@ var JavaScriptBlocker = {
 		$('#block-domain, #allow-domain', this.popover).unbind('click').click(function () {
 			if (!self.utils.confirm_click(this)) return false;
 			
+			Behaviour.action(this.id + ' clicked');
+			
 			var c = $('.domain-options:visible', self.popover),
 				o = (c.length) ? c[0].value : $('.domain-options', self.popover)[0].value,
 				store = $('.domain-options option[value="' + o + '"]', self.popover).data('store'),
@@ -615,20 +627,30 @@ var JavaScriptBlocker = {
 		
 		$('#disable', this.popover).unbind('click').click(function () {
 			if (!self.disabled && !self.utils.confirm_click(this)) return false;
-
+		
 			self.disabled = !self.disabled;
+			
+			Behaviour.action('JavaScript Blocker: ' + (self.disabled ? 'disabled' : 'enabled'));
 
 			this.value = ((self.disabled) ? 'Enable' : 'Disable') + ' JavaScript Blocker';
 			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 		});
 		
 		$('#view-rules', this.popover).unbind('click').click(function (e) {
-			new Poppy(e.pageX, e.pageY, [
+			Behaviour.action('View Rules');
+			
+			var offset = $(this).offset(),
+				left = offset.left + $(this).outerWidth() / 2,
+				top = offset.top + 8;
+			
+			new Poppy(left, top, [
 				'<input type="button" value="Color Key" id="rules-color" /> ',
 				'<input type="button" value="All Rules" id="view-all" /> ',
 				'<input type="button" value="Active Rules" id="view-domain" />'].join(''), function () {
 				$('#rules-color', self.popover).click(function() {
-					new Poppy(e.pageX, e.pageY, [
+					Behaviour.action('Color Key');
+					
+					new Poppy(left, top, [
 						'<p>',
 							'<span class="rule">User Defined Rule&mdash;Determined by color of domain header</span><br />',
 							'<span class="rule type-2">Automatic Blocking Rule</span><br />',
@@ -638,6 +660,8 @@ var JavaScriptBlocker = {
 						'</p><br />',
 						'<p>The last 2 rule types will override any other rule.</p>'].join(''), $.noop, $.noop, 0.2);
 				}).siblings('#view-domain').click(function () {
+					Behaviour.action('View rules for domain');
+					
 					self.busy = 1;
 					
 					var parts = self.domain_parts(self.active_host($('#page-list', self.popover).val())), x;
@@ -656,19 +680,22 @@ var JavaScriptBlocker = {
 				}).siblings('#view-all').click(function (event) {
 					self.busy = 1;
 					
-					new Poppy(e.pageX, e.pageY, '<p>Loading rules&hellip;</p>', $.noop, function () {
+					new Poppy(left, top, '<p>Loading rules&hellip;</p>', $.noop, function () {
 						var ul = $('#rules-list #data > ul#rules-list-rules', self.popover).html(''), s = self.utils.sort_object(window.localStorage), domain;
 				
 						var i = 0, filter = $('#domain-filter', self.popover);
 						
-						if ('srcElement' in event) filter.val('');
+						if ('srcElement' in event) {
+							Behaviour.action('View all rules');
+							filter.val('');
+						}
 				
 						for (domain in s) {
 							self.utils.zero_timeout(function (ul, domain, self) {
 								ul.append($('> *', self.rules.view(domain)));
-								self.utils.zero_timeout(function (self) {
+								self.utils.timer.timeout('filter_bar_click', function (self) {
 									$('#rules-filter-bar li.selected', self.popover).click();
-								}, [self]);
+								}, 10, [self]);
 							}, [ul, domain, self]);
 						}
 				
@@ -684,6 +711,8 @@ var JavaScriptBlocker = {
 		});
 
 		$('#rules-list #rules-list-back', this.popover).unbind('click').click(function () {
+			Behaviour.action('Close rules list');
+			
 			if ($('#rules-list', self.popover).hasClass('zoom-window-open'))
 				self.utils.zoom($('#rules-list', self.popover), $('#main', self.popover), function () {
 					$('#rules-list #data ul#rules-list-rules', self.popover).html('');
@@ -691,6 +720,8 @@ var JavaScriptBlocker = {
 		});
 		
 		$('#misc-close', self.popover).unbind('click').click(function() {
+			Behaviour.action('Close misc window');
+			
 			if ($('#misc', self.popover).hasClass('zoom-window-open'))
 				self.utils.zoom($('#misc', self.popover), $('#main', self.popover), function () {
 					$('#misc-content', self.popover).html('');
@@ -699,6 +730,8 @@ var JavaScriptBlocker = {
 		
 		$('.allowed-label, .blocked-label, .unblocked-label', this.popover).click(function () {
 			var $this = $(this), which = this.className.substr(0, this.className.indexOf('-'));
+			
+			Behaviour.action(this.className + ' clicked');
 			
 			if ($this.hasClass('hidden')) {
 				window.localStorage.setItem(which + 'IsCollapsed', 0);
@@ -714,6 +747,8 @@ var JavaScriptBlocker = {
 		$('#reset-domain', this.popover).unbind('click').click(function () {
 			if (!self.utils.confirm_click(this)) return false;
 			
+			Behaviour.action('Delete expanded rules');
+			
 			$('#rules-list ul#rules-list-rules li:visible input[value="Delete"]', self.popover).each(function (i) {
 				var $this = $(this);
 				self.utils.zero_timeout(function (e) {
@@ -728,6 +763,8 @@ var JavaScriptBlocker = {
 		
 		$('#collapse-all, #expand-all', this.popover).unbind('click').click(function () {
 			self.busy = 1;
+			
+			Behaviour.action(this.id + ' clicked');
 			
 			var is_collapse = this.id === 'collapse-all', d = $('#rules-list .domain-name:visible', self.popover);
 			
@@ -764,6 +801,8 @@ var JavaScriptBlocker = {
 		});
 		
 		$('#rules-filter-bar li:not(#li-domain-filter)', this.popover).unbind('click').click(function () {
+			Behaviour.action(this.id + ' clicked');
+			
 			$(this).siblings('li').removeClass('selected').end().addClass('selected');
 			
 			var x = $('#rules-list .domain-name', self.popover);
@@ -778,6 +817,10 @@ var JavaScriptBlocker = {
 			}
 			
 			$('#domain-filter', self.popover).trigger('search');
+		});
+		
+		$('#submit-information', this.popover).unbind('click').click(function () {
+			safari.application.activeBrowserWindow.openTab().url = 'mailto:jsblockerfeedback@toggleable.com?subject=' + window.localStorage.BehaviourIdentifier + '&body=' + JSON.stringify(Behaviour.logger, null, "\t");
 		});
 	},
 	make_list: function (text, button, jsblocker) {
@@ -905,6 +948,8 @@ var JavaScriptBlocker = {
 		}
 	},
 	setting_changed: function (event) {
+		Behaviour.action(['Setting changed:', event.key, 'New value:', event.newValue].join(' '));
+		
 		if (['alwaysBlock', 'alwaysAllow', 'allowMode'].indexOf(event.key) > -1) {
 			var wd, i, b, bd, e, c, mode, key, domain, new_rules, m = event.key === 'allowMode' ? parseInt(event.newValue, 10) : this.allowMode;
 				
@@ -1039,12 +1084,22 @@ var JavaScriptBlocker = {
 		
 		var s = $('#setup', this.popover);
 		
+		if (!('BehaviourIdentifier' in window.localStorage))
+			window.localStorage.setItem('BehaviourIdentifier', (Math.random() + Math.random() + Math.random()) * 10000000000000000);
+		
 		if (!this.setupDone) {
 			if (s.css('display') === 'block') return false;
 			
+			Behaviour.action('Setup');
+			var setupTime = Behaviour.timer('Setup timer');
+					
 			s.css('display', 'block').find('input').click(function (e) {
+				Behaviour.timerEnd(setupTime);
+				
 				self.allowMode = !$(this).is('#setup-block');
 				self.setupDone = 1;
+				
+				Behaviour.action('Setup in allowMode: ' + self.allowMode);
 				
 				var wd, bd, i, b, e, c;
 
@@ -1055,7 +1110,7 @@ var JavaScriptBlocker = {
 				for (bd in self.rules.blacklist)
 					for (e = 0, c = self.rules.blacklist[bd].length; e < c; e++)
 						self.rules.add('.*', self.rules.blacklist[bd][e], 4);
-				
+									
 				self.open_popover();
 			});
 			
@@ -1064,11 +1119,16 @@ var JavaScriptBlocker = {
 			return false;
 		}
 		
+		if (s.hasClass('zoom-window-open'))
+			this.utils.zoom(s, $('#main', this.popover));
+		
 		try {
 			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
 		} catch(e) { }
 
 		if (event && ('type' in event) && event.type == 'popover') {
+			Behaviour.action('Opened JavaScript Blocker');
+			
 			if (!this.reloaded) {
 				this.reloaded = true;
 				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();

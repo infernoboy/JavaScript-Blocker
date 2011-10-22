@@ -156,6 +156,7 @@ label {
 	#block-options {
 		right: 68px;
 		top: -1px;
+		max-width: 287px;
 	}
 
 #blocked-script-urls,
@@ -227,12 +228,14 @@ a {
 	}
 #disable,
 #view-rules,
-#reset-automatic {
+#reset-automatic,
+#submit-information {
 	float: right;
 	margin-left: 5px;
 	margin-bottom: 10px;
 }
-	#disable {
+	#disable,
+	#submit-information {
 		margin-top: 5px;
 		margin-right: 2px;
 		font-size: 6pt;
