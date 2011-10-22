@@ -140,7 +140,7 @@ var JavaScriptBlocker = {
 			var t = 0.6 * this.speedMultiplier, self = this, start_value, end_value, start_hide_zoom, end_hide_zoom, c;
 			
 			if (e.is(':animated') || e.data('isAnimating')) return false;
-			
+					
 			e.data('isAnimating', true);
 			
 			if (!hide) hide = $('<div></div>');
@@ -148,10 +148,10 @@ var JavaScriptBlocker = {
 			
 			start_value = (e.hasClass('zoom-window')) ? 1 : 0.3;
 			end_value = (start_value === 1) ? 0.3 : 1;
-			
+					
 			start_hide_zoom = (start_value === 1) ? 1.2 : 1;
 			end_hide_zoom = (start_hide_zoom === 1) ? 1.2 : 1;
-			
+					
 			if (start_value !== 1) {
 				e.addClass('zoom-window').css('zIndex', 999);
 				hide.data('scrollTop', hide.scrollTop());
@@ -169,7 +169,7 @@ var JavaScriptBlocker = {
 			
 			e.css(c);
 			hide.css(c);
-			
+					
 			e.css({
 				WebkitTransform: 'scale(' + (start_value & 1) + ')',
 				opacity: start_value,
@@ -180,7 +180,7 @@ var JavaScriptBlocker = {
 				opacity: end_value & 1,
 				WebkitTransitionDuration: t + 's, ' + (t * 0.8) + 's, ' + t + 's'
 			});
-			
+					
 			if (start_value === 1) hide.scrollTop(hide.data('scrollTop'));
 			
 			this.zero_timeout(function (hide, e, end_value, start_value, end_hide_zoom, cb, t) {
@@ -510,15 +510,24 @@ var JavaScriptBlocker = {
 			new Poppy(e.pageX, off.top - 2, [
 				'<input type="button" value="View Script" id="view-script" />'].join(''), function () {
 					$('#poppy #view-script', self.popover).click(function () {
-						new Poppy(e.pageX, off.top - 2, '<p>Loading script&hellip;</p>', $.noop, function () {
-							$.get(t.text(), function (data) {
-								codeify(data);
-								new Poppy();
-							}).error(function (req) {
-								codeify(req.responseText);
-								new Poppy();
-							});
-						}, 0.0);
+						if (/^data/.test(t.text())) {
+							new Poppy(e.pageX, off.top - 2, '<p>Data URIs cannot be displayed.', $.noop, $.noop, 0.0);
+						} else {
+							new Poppy(e.pageX, off.top - 2, '<p>Loading script&hellip;</p>', $.noop, function () {
+								$.ajax({
+									dataType: 'text',
+									url: t.text(),
+									success: function (data) {
+										codeify(data);
+										new Poppy();
+									},
+									error: function (req) {
+										codeify(data);
+										new Poppy();
+									}
+								});
+							}, 0.0);
+						}
 					});
 				});
 		}
