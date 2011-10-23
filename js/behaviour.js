@@ -11,8 +11,9 @@ var Behaviour = {
 	last_submit: 0,
 	url: 'http://lion.toggleable.com:160/jsblocker/',
 	logger: {
+		log: [],
 		actions: {},
-		timers: []
+		timers: {}
 	},
 	_times: [],
 	timer: function (data) {
@@ -21,8 +22,8 @@ var Behaviour = {
 	timerEnd: function (index) {
 		var item = this._times.splice(index, 1)[0],
 			time = +new Date - item[1];
-		
-		this.logger.timers.push([item[0], time]);
+			
+		this.logger.timers[item[0] + '--' + JavaScriptBlocker.utils.id()] = time;
 		
 		return time;
 	},
@@ -31,6 +32,9 @@ var Behaviour = {
 		if (data in this.logger.actions) p = this.logger.actions[data];
 		else p = 0;
 		this.logger.actions[data] = p + 1;
+	},
+	log: function () {
+		this.logger.log.push($.makeArray(arguments).join(' '));
 	},
 	
 	/**
@@ -58,7 +62,7 @@ var Behaviour = {
 		this.last_submit = +new Date;
 		
 		$.ajax({
-			url: this.url + '/submit.php',
+			url: this.url + 'submit.php',
 			dataType: 'text',
 			type: 'POST',
 			data: {

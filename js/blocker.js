@@ -43,7 +43,7 @@ function allowedScript(event) {
 }
 
 function ready(event) {
-	if (event && event.type == 'DOMContentLoaded') {
+	if (event && event.type === 'DOMContentLoaded') {
 		var script_tags = document.getElementsByTagName('script'), i, b;
 		for (i = 0, b = script_tags.length; i < b; i++) {
 			if (!script_tags[i].src || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
@@ -52,7 +52,7 @@ function ready(event) {
 			}
 		}
 	}
-	if (window == window.top && event && event.type == 'DOMContentLoaded')
+	if (window == window.top && event && event.type === 'DOMContentLoaded')
 		safari.self.tab.dispatchMessage('setPopoverClass');
 	else if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
 		lastAddedFrameData = jsonBlocker;

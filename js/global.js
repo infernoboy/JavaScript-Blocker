@@ -29,21 +29,27 @@ var JavaScriptBlocker = {
 	_cleanup: function () {
 		Behaviour.action('Clean up code started');
 		
-		var i, b, j, c, key, e, new_collapsed = [], new_frames = {}, timed = Behaviour.timer('Clean up');
+		var i, b, j, c, key, e, new_collapsed = [], new_frames = {}, removed_frames = 0, timed = Behaviour.timer('Clean up');
 		for (i = 0, b = safari.application.browserWindows.length; i < b; i++) {
 			for (j = 0, c = safari.application.browserWindows[i].tabs.length; j < c; j++) {
 				if (this.frames[safari.application.browserWindows[i].tabs[j].url])
 					new_frames[safari.application.browserWindows[i].tabs[j].url] = this.frames[safari.application.browserWindows[i].tabs[j].url];
+				else
+					removed_frames++;
 			}
 		}
+		
+		Behaviour.log('Number of frames cleaned up:', removed_frames);
 	
 		this.frames = new_frames;
 		this.caches.active_host = {};
 		this.caches.domain_parts = {};
 		
 		function clean_empty_ruleset (key) {
-			if (window.localStorage[key] === '{}')
+			if (window.localStorage[key] === '{}') {
+				Behaviour.action('Empty rule deleted');
 				window.localStorage.removeItem(key);
+			}
 		}
 	
 		for (key in window.localStorage) {
@@ -55,6 +61,7 @@ var JavaScriptBlocker = {
 		if (typeof this.collapsedDomains === 'object') {
 			for (var x = 0; x < this.collapsedDomains.length; x++) {
 				if (this.collapsedDomains[x] === 'All Domains' || (this.collapsedDomains[x] in window.localStorage)) new_collapsed.push(this.collapsedDomains[x]);
+				else Behaviour.action('A collapsed domain was removed');
 			}
 		}
 		
@@ -310,6 +317,13 @@ var JavaScriptBlocker = {
 
 				return true;
 			}
+		},
+		id: function () {
+			return ((Math.random() + Math.random() + Math.random()) * 10000000000000000).toString().split('').map(function (e) {
+					var v = (parseInt(Math.random() * 10)) + parseInt(e),
+							x = String.fromCharCode('1' + (v < 10 ? '0' + v : v));
+					return (Math.random() > 0.5) ? x : x.toUpperCase();
+			}).join('');
 		}
 	},
 	_active_host_cache: {},
@@ -350,22 +364,38 @@ var JavaScriptBlocker = {
 	rules: {
 		cache: {},
 		for_domain: function (domain, one) {
-			if (domain in this.cache) return this.cache[domain];
+			if (domain in this.cache) {
+				var temp = {};
+				
+				if (one) {
+					if (domain in this.cache[domain] && typeof this.cache[domain][domain] === 'object')
+						temp[domain] = this.cache[domain][domain];
+					else
+						temp[domain] = {};
+				} else
+					temp = this.cache[domain];
+					
+				return temp;
+			}
 			
 			var parts = this.domain_parts(domain), o = {}, i, b, c, r;
-
-			if (one) parts = [parts[0]];
 
 			for (i = 0, b = parts.length; i < b; i++) {
 				c = (i > 0 ? '.' : '') + parts[i];
 				r = window.localStorage.getItem(c);
 				if (r == null) continue;
+				if (c === '.*') {
+					if (!(c in this.cache)) this.cache[c] = this.utils.parse_JSON(r);
+					o[c] = this.cache[c];
+					continue;
+				} 
+				
 				o[c] = this.utils.parse_JSON(r);
 			}
-
+	
 			this.cache[domain] = o;
 
-			return o;
+			return this.for_domain(domain, one);
 		},
 		add: function (domain, pattern, action, add_to_beginning) {
 			if (pattern.length === 0) return this.remove(domain, pattern, true);
@@ -1301,6 +1331,7 @@ var JavaScriptBlocker = {
 			
 			case 'unloadPage':
 				try {
+					Behaviour.action('A page was unloaded');
 					delete this.frames[event.message];
 				} catch (e) { }
 			break;
@@ -1362,6 +1393,9 @@ var JavaScriptBlocker = {
 		if (event && ('type' in event) && event.type == 'popover') {
 			Behaviour.action('Opened JavaScript Blocker');
 			
+			/**
+			 * Fixes issues with mouse hover events not working
+			 */
 			if (!this.reloaded) {
 				this.reloaded = true;
 				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
