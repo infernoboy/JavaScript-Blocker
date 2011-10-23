@@ -17,11 +17,11 @@ var jsblocker = {
 }, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
 
 function allowedScript(event) {
-	if (event.target.nodeName == 'SCRIPT' && event.target.src.length > 0) {
+	if (event.target.nodeName === 'SCRIPT' && event.target.src.length > 0) {
 		var isAllowed = safari.self.tab.canLoad(event, [jsblocker.href, event.target.src, !(window == window.top)]);
 
 		if (!isAllowed) {
-			if (typeof event.target.src == 'string' && event.target.src.length > 0) {
+			if (typeof event.target.src === 'string' && event.target.src.length > 0) {
 				jsblocker.blocked.count++;
 				jsblocker.blocked.urls.push(event.target.src);
 	
@@ -31,7 +31,7 @@ function allowedScript(event) {
 			jsblocker.allowed.count++;
 			jsblocker.allowed.urls.push(event.target.src);
 		}
-	} else if (event.target.nodeName == 'SCRIPT') {
+	} else if (event.target.nodeName === 'SCRIPT') {
 		jsblocker.unblocked.count++;
 		jsblocker.unblocked.urls.push(event.target.innerHTML);
 	}
