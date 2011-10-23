@@ -1,3 +1,10 @@
+/***************************************
+ * @file js/predefined.js
+ * @author Travis Roman (travis@toggleable.com)
+ * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.4
+ ***************************************/
+
 JavaScriptBlocker.rules.whitelist = {
 	'Google Libraries API - A collection of JavaScript libraries hosted by Google.':
 		[

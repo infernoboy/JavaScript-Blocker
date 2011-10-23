@@ -1,3 +1,10 @@
+/***************************************
+ * @file js/behaviour.js
+ * @author Travis Roman (travis@toggleable.com)
+ * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.4
+ ***************************************/
+
 "use strict";
 
 var Behaviour = {
@@ -25,9 +32,13 @@ var Behaviour = {
 		else p = 0;
 		this.logger.actions[data] = p + 1;
 	},
+	
+	/**
+	 * Tracks number of installs
+	 */
 	installed: function () {
 		$.ajax({
-			url: 'http://lion.toggleable.com:160/jsblocker/installed.php',
+			url: this.url + 'installed.php',
 			dataType: 'text',
 			data: {
 				identifier: window.localStorage.getItem('BehaviourIdentifier')
@@ -36,11 +47,18 @@ var Behaviour = {
 			error: function (data) { }
 		});
 	},
+	
+	/**
+	 * Submits anonymous usage information about JS Blocker
+	 *
+	 * @param {function} cb_success Callback to call if submission was successful, not necessarily completed
+	 * @param {function} cb_fail Callback called when submission fails
+	 */
 	submit: function (cb_success, cb_fail) {
 		this.last_submit = +new Date;
 		
 		$.ajax({
-			url: 'http://lion.toggleable.com:160/jsblocker/submit.php',
+			url: this.url + '/submit.php',
 			dataType: 'text',
 			type: 'POST',
 			data: {

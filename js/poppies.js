@@ -1,3 +1,10 @@
+/***************************************
+ * @file js/poppies.js
+ * @author Travis Roman (travis@toggleable.com)
+ * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.4
+ ***************************************/
+
 JavaScriptBlocker.poppies = {
 	add_rule: function (main) {
 		var zoo = {

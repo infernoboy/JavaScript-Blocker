@@ -1,3 +1,10 @@
+/***************************************
+ * @file js/global.js
+ * @author Travis Roman (travis@toggleable.com)
+ * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.4
+ ***************************************/
+
 "use strict";
 
 var JavaScriptBlocker = {
@@ -11,8 +18,17 @@ var JavaScriptBlocker = {
 	disabled: false,
 	noDeleteWarning: false,
 	frames: {},
+	
+	/**
+	 * Removes frames that no longer exist.
+	 * Removes any empty rules.
+	 * Removes any collapsed domains that no longer exist.
+	 *
+	 * @this {JavaScriptBlocker}
+	 */
 	_cleanup: function () {
 		Behaviour.action('Clean up code started');
+		
 		var i, b, j, c, key, e, new_collapsed = [], new_frames = {}, timed = Behaviour.timer('Clean up');
 		for (i = 0, b = safari.application.browserWindows.length; i < b; i++) {
 			for (j = 0, c = safari.application.browserWindows[i].tabs.length; j < c; j++) {
@@ -91,6 +107,13 @@ var JavaScriptBlocker = {
 	},
 	utils: {
 		_zero_timeouts: [],
+		
+		/**
+		 * Creates an immediate timeout.
+		 *
+		 * @param {function} fn The function to be executed.
+		 * @param {Array} args Arguments to be based to fn.
+		 */
 		zero_timeout: function(fn, args) {
 			this._zero_timeouts.push([fn, args]);
 			window.postMessage('zero-timeout', '*');
@@ -120,6 +143,12 @@ var JavaScriptBlocker = {
 			if (!text || !text.length) return text;
 			return text.replace(new RegExp('(\\' + ['/', '.', '*', '+', '?', '|', '$', '^', '(', ')', '[', ']', '{', '}', '\\'].join('|\\') + ')', 'g'), '\\$1');
 		},
+		
+		/**
+		 * Requires the user to click twice on an element to execute an action.
+		 *
+		 * @param {Element} e The HTML element the user clicks on.
+		 */
 		confirm_click: function (e) {
 			var $e = $(e);
 
@@ -139,6 +168,14 @@ var JavaScriptBlocker = {
 
 			return true;
 		},
+		
+		/**
+		 * Creates a fancy zoom-in/out window effect.
+		 *
+		 * @param {jQuery.Element} e The element to be zoomed in or out.
+		 * @param {jQuery.Element} hide The element to be hidden/revealed when e is zoomed in or out.
+		 * @param {function} cb Callback function to call once zoom window execution is completed.
+		 */
 		zoom: function (e, hide, cb) {
 			var t = 0.6 * this.speedMultiplier, self = this, start_value, end_value, start_hide_zoom, end_hide_zoom, c;
 			
@@ -276,6 +313,13 @@ var JavaScriptBlocker = {
 		}
 	},
 	_active_host_cache: {},
+	
+	/**
+	 * Retrieves the hostname of the currently active tab or of the passed in url.
+	 *
+	 * @param {string}(optional) url An optional url to retrieve a hostname from.
+	 * @return {string} The hostname of a url, either from the passed in argument or active tab.
+	 */
 	active_host: function (url) {
 		if (url in this.caches.active_host) return this.caches.active_host[url];
 		var r = /^(https?|file):\/\/([^\/]+)\//;
@@ -287,6 +331,13 @@ var JavaScriptBlocker = {
 			return 'ERROR';
 		}
 	},
+	
+	/**
+	 * Separates a hostname into its subdomain parts.
+ 	 *
+	 * @param {string} domain The hostname to separate into pieces.
+	 * @return {Array} Parts of the hostname, including itself.
+	 */
 	domain_parts: function (domain) {
 		var x;
 		if (domain in this.caches.domain_parts) return this.caches.domain_parts[domain];
@@ -361,6 +412,16 @@ var JavaScriptBlocker = {
 
 			return $.isEmptyObject(current_rules[domain]) ? window.localStorage.removeItem(domain) : window.localStorage.setItem(domain, JSON.stringify(current_rules[domain]));
 		},
+		
+		/**
+		 * Retrieves a list of or removes any rule matching a given url.
+		 *
+		 * @param {string} domain Hostname to check against
+		 * @param {string} url The url the rules must match
+		 * @param {Boolean} confirmed Wether or not actually remove the rules or just return a list
+		 * @param {number} block_allow The action the rule must be to match
+		 * @param {Boolean} allow_disabled Wether or not to return/delete disabled rules
+		 */
 		remove_matching_URL: function (domain, url, confirmed, block_allow, allow_disabled) {
 			var current_rules = this.for_domain(domain), to_delete = {}, sub, rule;
 
@@ -394,6 +455,14 @@ var JavaScriptBlocker = {
 			delete this.cache[domain];
 			return window.localStorage.removeItem(domain);
 		},
+		
+		/**
+		 * Creates a <ul> displaying rules with actions to affect them.
+		 *
+		 * @param {string} domain Domain to display rules for
+		 * @param {string|Boolean} url A url the rule must match in order to be displayed
+		 * @param {Boolean} no_dbl_click Wether or not to enable double clicking on a rule
+		 */
 		view: function (domain, url, no_dbl_click) {
 			var self = this, allowed = this.for_domain(domain, true), ul = $('<ul class="rules-wrapper"></ul>'), newul, rules, rule, append;
 			
@@ -961,6 +1030,14 @@ var JavaScriptBlocker = {
 			}
 		});
 	},
+	
+	/**
+	 * Creates the list of rules in the main window
+	 *
+	 * @param {string} text One of: blocked, allowed, or unblocked.
+	 * @param {string} button Text to appear on the button to create or delete a rule
+	 * @param {Object} jsblocker Information about scripts allowed, blocked, or unblocked and frames.
+	 */
 	make_list: function (text, button, jsblocker) {
 		var self = this, ul = $('#' + text + '-script-urls ul', self.popover);
 		

@@ -1,5 +1,22 @@
+/***************************************
+ * @file js/poppy.js
+ * @author Travis Roman (travis@toggleable.com)
+ * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.4
+ ***************************************/
+
 "use strict";
 
+/**
+ * Creates the mini popover bubbles.
+ *
+ * @param {number} x The left position of poppy
+ * @param {number} y The top position of poppy
+ * @param {string|jQuery.Element} content Content to be displayed in poppy
+ * @param {function|$.noop|null|undefined} cb A callback called as soon as the content is placed in a poppy
+ * @param {function|$.noop|null|undefined} cb2 A callback called when the popover finishes displaying
+ * @param {number|null|undefined} time Animation speed of popover in seconds
+ */
 var Poppy = function (x, y, content, cb, cb2, time) {
 	if (typeof content === 'object' && ('content' in content)) {
 		try {
