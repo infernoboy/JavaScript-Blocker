@@ -71,7 +71,8 @@ function ready(event) {
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
-				console.error('JavaScript blocker broke! This may be because of an issue with Safari itself. Reloading the page should resolve the issue.')
+				console.error('JavaScript blocker broke! This may be because of an issue with Safari itself. ' +
+						'Reloading the page should resolve the issue.')
 			}
 		}
 	}, (event && event.type == 'focus') ? 0 : 300);

@@ -32,7 +32,7 @@ header h1 {
 	overflow: hidden;
 	height: 373px;
 	margin: 25px 0 0 4px;
-/*	-webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,0)), color-stop(2%, rgba(0,0,0,1)), color-stop(98%, rgba(0,0,0,1)), to(rgba(0,0,0,0)))*/
+/*	-webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,0)), color-stop(2%, rgba(0,0,0,1)), color-stop(98%, rgba(0,0,0,1)), to(rgba(0,0,0,0)));*/
 }
 	#container.loading > * {
 		display: none;
@@ -134,12 +134,12 @@ label {
 .unblocked-label {
 	cursor: default;
 	padding-left: 13px;
-	background: url(../images/disclosure.png) no-repeat -2px -90px;
+	background: url(../images/disclosure-open.png) no-repeat left 4px;
 }
 	.allowed-label.hidden,
 	.blocked-label.hidden,
 	.unblocked-label.hidden {
-		background-position: -2px 0;
+		background-image: url(../images/disclosure-closed.png);
 		margin-bottom: 20px;
 	}
 
@@ -273,15 +273,15 @@ p.misc-info {
 	-webkit-mask-image: -webkit-gradient(linear, left top, right top, from(rgba(0,0,0,0)), color-stop(40%, rgba(0,0,0,1)), color-stop(60%, rgba(0,0,0,1)), to(rgba(0,0,0,0)))
 }
 .domain-name {
-	margin-left: -12px;
+	margin-left: -10px;
 	margin-top: 5px;
-	background: url(../images/disclosure.png) no-repeat left -90px;
-	padding: 0 0 0 15px;
+	background: url(../images/disclosure-open.png) no-repeat left 4px;
+	padding: 0 0 0 12px;
 	font-size: 9pt;
 	cursor: default;
 }
 	.domain-name.hidden {
-		background-position: 0 0;
+		background-image: url(../images/disclosure-closed.png);
 	}
 		.domain-name.hidden + li {
 			display: none;

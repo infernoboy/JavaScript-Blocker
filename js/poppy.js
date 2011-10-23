@@ -38,7 +38,7 @@ var Poppy = function (x, y, content, cb, cb2, time) {
 
 Poppy.prototype = {
 	_dT: null,
-	s: '#setup, #main, #rules-list',
+	s: '#setup, #main, #rules-list, #misc',
 	e: '#poppy',
 	c: '#poppy-content',
 	a: '#poppy-arrow',
@@ -55,7 +55,7 @@ Poppy.prototype = {
 		clearTimeout(this._dT);
 		this.p.find(this.e).css({
 			opacity: 0,
-			WebkitTransitionDuration: (this._time / 2) + 's',
+			WebkitTransitionDuration: (this._time / 2) + 's'
 		});
 		return (this._dT = setTimeout(function () {
 			$(self.e, self.p).remove();
@@ -87,13 +87,6 @@ Poppy.prototype = {
 		
 		if (points.arrow.bottom == 'auto') $(this.a, m).attr('src', 'images/arrow-mask-reverse.png');
 		
-		if (points.overflow)
-			left = points.main.left;
-		else if (points.underflow)
-			left = 10;
-		else
-			left = $(this.a, this.p).width() / 2 + ((points.main.left + points.arrow.left) - m.width() / 2) - 4;
-		
 		m.css({
 			WebkitTransitionProperty: '-webkit-transform, opacity, bottom, left',
 			WebkitTransitionDuration: '0s',
@@ -101,8 +94,8 @@ Poppy.prototype = {
 			WebkitTransform: 'scale(0)',
 			WebkitTransformOrigin: (points.arrow.left + 15) + 'px ' + ((points.main.bottom === 'auto') ? '0%' : '100%'),
 			opacity: 0.3,
-			left: left,
-			bottom: points.main.bottom, /*(points.main.bottom - $(self.a, self.p).outerHeight() * 2),*/
+			left: points.main.left,
+			bottom: points.main.bottom,
 			top: points.main.top,
 			width: m.width(),
 			height: m.height()
@@ -110,8 +103,6 @@ Poppy.prototype = {
 		
 		JavaScriptBlocker.utils.zero_timeout(function (self, m, points) {
 			m.css({
-				bottom: points.main.bottom, /*(points.main.bottom - $(self.a, self.p).height() + m.outerHeight() / 2),*/
-				top: points.main.top,
 				WebkitTransitionDuration: [self._time, self._time * 1.4, self._time, self._time].join('s,') + 's',
 				opacity: 1,
 				WebkitTransform: 'scale(1.15)'
@@ -129,14 +120,11 @@ Poppy.prototype = {
 		JavaScriptBlocker.utils.timer.interval('poppy_view_finish', function () {
 			if (parseFloat(m.css('opacity')) < 0.71) return false;
 						
-			JavaScriptBlocker.utils.timer.delete('interval', 'poppy_view_finish');
+			JavaScriptBlocker.utils.timer.remove('interval', 'poppy_view_finish');
 			
 			self.callback2.call($(self.e, self.p));
 			
 			m.css({
-				bottom: points.main.bottom,
-				top: points.main.top,
-				left: points.main.left,
 				WebkitTransform: 'scale(1)',
 				WebkitTransitionDuration: self._time + 's',
 				WebkitTransitionTimingFunction: 'ease'
@@ -172,7 +160,7 @@ Poppy.prototype = {
 				
 		if (this.center.x - my_width / 2 <= base_width) { // If overflow on left side
 			o.main.left = base_width;
-			o.arrow.left = this.center.x - half_arrow - base_width
+			o.arrow.left = this.center.x - half_arrow - base_width;
 			
 			if (o.arrow.left < half_arrow / 2) o.arrow.left = half_arrow - 10;
 			
