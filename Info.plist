@@ -78,7 +78,7 @@
 		</dict>
 	</dict>
 	<key>Update Manifest URL</key>
-	<string>http://dl.dropbox.com/u/11967/jsblocker.plist</string>
+	<string>https://raw.github.com/infernoboy/JavaScript-Blocker/master/jsblocker.plist</string>
 	<key>Website</key>
 	<string>http://javascript-blocker.toggleable.com/</string>
 </dict>
