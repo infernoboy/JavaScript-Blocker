@@ -2,7 +2,7 @@
  * @file css/poppy.css
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.4
+ * @version 1.2.5-1
  ***************************************/
 
 #poppy {
@@ -21,6 +21,7 @@
 		height: 22px;
 		width: 30px;
 		z-index: 10000;
+		opacity: 0.95;
 	}
 	#poppy #poppy-content {
 		padding: 0 7px;

@@ -2,7 +2,7 @@
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.4
+ * @version 1.2.5-1
  ***************************************/
 
 "use strict";
@@ -19,26 +19,25 @@ var JavaScriptBlocker = {
 	noDeleteWarning: false,
 	frames: {},
 	
-	load_language: function () {
-		function set_popover_css (self) {
-			if (self.popover && $('#lang-css-' + load_language, self.popover).length === 0)
+	load_language: function (css) {
+		function set_popover_css (self, load_language) {
+			if (self.popover && $('#lang-css-' + load_language, self.popover).length === 0) {
 				$('<link />').appendTo(self.popover.head).attr({
 						href: 'i18n/' + load_language + '.css',
 						type: 'text/css',
 						rel: 'stylesheet',
 						id: 'lang-css-' + load_language
 				});
-			else
-				self.utils.zero_timeout(set_popover_css, [self]);
+			} else
+				self.utils.zero_timeout(set_popover_css, [self, load_language]);
 		}
 		
 		var load_language = (safari.extension.settings.language !== 'Automatic') ? safari.extension.settings.language : window.navigator.language;
 	
-		this.utils.zero_timeout(set_popover_css, [this]);
-		
-		if (load_language !== 'en-us' && !(load_language in Strings)) {
+		if (css)
+			this.utils.zero_timeout(set_popover_css, [this, load_language]);
+		else if (load_language !== 'en-us' && !(load_language in Strings))
 			$.getScript('i18n/' + load_language + '.js', function (data, status) { });
-		}
 	},
 	
 	/**
@@ -1053,10 +1052,10 @@ var JavaScriptBlocker = {
 
 			x.filter('.filter-hidden').removeClass('filter-hidden');
 
-			switch(this.innerHTML) {
-				case Localize('Collapsed'):
+			switch(this.id) {
+				case 'filter-collapsed':
 					x.not('.hidden').addClass('filter-hidden'); break;
-				case Localize('Expanded'):
+				case 'filter-expanded':
 					x.filter('.hidden').addClass('filter-hidden'); break;
 			}
 			
@@ -1381,11 +1380,12 @@ var JavaScriptBlocker = {
 			 */
 			if (!this.reloaded) {
 				this.reloaded = true;
-				this.load_language();
+				this.load_language(false);
 				
 				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
-				
+							
 				setTimeout(function (e) {
+					e.load_language(true);
 					e.open_popover(event);
 				}, 500, this);
 				
