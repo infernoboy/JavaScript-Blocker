@@ -62,7 +62,7 @@
 		</div>
 		<div id="main">
 			<div id="page-lists">
-				<label class="label"><script>document.write(Localize('Page:'));</script></span>
+				<label class="label"><script>document.write(Localize('Page:'));</script></label>
 				<select id="page-list">
 					<optgroup label="Main Page">
 						<option>http://javascript-blocker.toggleable.com</option>
@@ -74,28 +74,30 @@
 			</div>
 			<div class="info-container">
 				<label class="allowed-label" for="allowed-scripts-count"><script>document.write(Localize('Allowed:'));</script></label> <span id="allowed-scripts-count">0</span>
+				<input type="button" value="Block All" id="block-domain" />
 				<select id="block-options" class="domain-options">
 					<optgroup label="Block on">
 					</optgroup>
 				</select>
-				<input type="button" value="Block All" id="block-domain" />
+				<br style="clear:both;">
 			</div>
 	
 			<div id="allowed-script-urls">
-				<ul></ul>
+				<ul class="main-wrapper"></ul>
 			</div>
 	
 			<div class="info-container">
 				<label class="blocked-label" for="blocked-scripts-count"><script>document.write(Localize('Blocked:'));</script></label> <span id="blocked-scripts-count">0</span>
+				<input type="button" value="Allow All" id="allow-domain" />
 				<select id="allow-options" class="domain-options">
 					<optgroup label="Allow on">
 					</optgroup>
 				</select>
-				<input type="button" value="Allow All" id="allow-domain" />
+				<br style="clear:both;">
 			</div>
 	
 			<div id="blocked-script-urls">
-				<ul></ul>
+				<ul class="main-wrapper"></ul>
 			</div>
 	
 			<div class="info-container">
@@ -103,7 +105,7 @@
 			</div>
 	
 			<div id="unblocked-script-urls">
-				<ul></ul>
+				<ul class="main-wrapper"></ul>
 			</div>
 	
 			<input type="button" value="Show Rules" id="view-rules" />

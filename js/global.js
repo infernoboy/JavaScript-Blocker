@@ -19,6 +19,12 @@ var JavaScriptBlocker = {
 	noDeleteWarning: false,
 	frames: {},
 	
+	load_language: function () {
+		var load_language = (safari.extension.settings.language !== 'Automatic') ? safari.extension.settings.language : window.navigator.language;
+		if (load_language !== 'en-us' && !(load_language in Strings))
+			$.getScript('i18n/' + load_language + '.js', function (data, status) { });
+	},
+	
 	/**
 	 * Removes frames that no longer exist.
 	 * Removes any empty rules.
@@ -1193,7 +1199,9 @@ var JavaScriptBlocker = {
 	setting_changed: function (event) {
 		Behaviour.action(['Setting changed:', event.key, 'New value:', event.newValue].join(' '));
 		
-		if (['alwaysBlock', 'alwaysAllow', 'allowMode'].indexOf(event.key) > -1) {
+		if (event.key === 'language')
+			this.reloaded = false;
+		else if (['alwaysBlock', 'alwaysAllow', 'allowMode'].indexOf(event.key) > -1) {
 			var wd, i, b, bd, e, c, mode, key, domain, m = event.key === 'allowMode' ? parseInt(event.newValue, 10) : this.allowMode;
 				
 			if (['alwaysAllow', 'alwaysBlock'].indexOf(event.key) > -1) {
@@ -1393,6 +1401,7 @@ var JavaScriptBlocker = {
 			 */
 			if (!this.reloaded) {
 				this.reloaded = true;
+				this.load_language();
 				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
 			}
 			
