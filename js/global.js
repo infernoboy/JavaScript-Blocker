@@ -20,9 +20,25 @@ var JavaScriptBlocker = {
 	frames: {},
 	
 	load_language: function () {
+		function set_popover_css (self) {
+			if (self.popover && $('#lang-css-' + load_language, self.popover).length === 0)
+				$('<link />').appendTo(self.popover.head).attr({
+						href: 'i18n/' + load_language + '.css',
+						type: 'text/css',
+						rel: 'stylesheet',
+						id: 'lang-css-' + load_language
+				});
+			else
+				self.utils.zero_timeout(set_popover_css, [self]);
+		}
+		
 		var load_language = (safari.extension.settings.language !== 'Automatic') ? safari.extension.settings.language : window.navigator.language;
-		if (load_language !== 'en-us' && !(load_language in Strings))
+	
+		this.utils.zero_timeout(set_popover_css, [this]);
+		
+		if (load_language !== 'en-us' && !(load_language in Strings)) {
 			$.getScript('i18n/' + load_language + '.js', function (data, status) { });
+		}
 	},
 	
 	/**
@@ -702,6 +718,7 @@ var JavaScriptBlocker = {
 				Behaviour.action('Adding a rule via main window');
 				
 				var off = $(this).offset(),
+					left = off.left + $(this).outerWidth() / 2,
 					o = $('.domain-options:visible', self.popover)[0].value,
 					store = $('.domain-options:visible option[value="' + o + '"]', self.popover).data('store'),
 					url = $(this).parent().data('url'),
@@ -726,7 +743,7 @@ var JavaScriptBlocker = {
 					if (rs.length) {
 						Behaviour.action('Automatic rule restore prompt');
 						
-						new Poppy(off.left + 22, off.top + 8, [
+						new Poppy(left, off.top + 8, [
 							'<p>' + Localize('The following automatic rules were disabled, thus ' + (self.allowMode ? 'allowing' : 'blocking') + ' this script:') + '</p>',
 							'<ul class="rules-wrapper">',
 								'<li class="domain-name no-disclosure">' + store + '</li>',
@@ -751,7 +768,7 @@ var JavaScriptBlocker = {
 									Behaviour.action('New rule instead of restore');
 									
 									padd.time = 0.2;
-									new Poppy(off.left + 22, off.top + 8, padd);
+									new Poppy(left, off.top + 8, padd);
 								}).siblings('#auto-restore').val(Localize('Restore Rule' + (rs.length === 1 ? '' : 's'))).click(function () {
 									Behaviour.action('Restored automatic rule(s)');
 									
@@ -767,7 +784,7 @@ var JavaScriptBlocker = {
 					}
 				}
 		
-				new Poppy(off.left + 22, off.top + 8, padd);
+				new Poppy(left, off.top + 8, padd);
 			}).siblings('span').dblclick(url_display);
 
 			$(remove_rule, this.popover).click(function (e) {
@@ -775,6 +792,7 @@ var JavaScriptBlocker = {
 				
 				var m = $(this).parents('div').attr('id').indexOf('blocked') === -1,
 						off = $(this).offset(),
+						left = off.left + $(this).outerWidth() / 2,
 						url = $(this).parent().data('url'),
 						to_delete = self.rules.remove_matching_URL(host, url, false, m),
 						d,
@@ -793,7 +811,7 @@ var JavaScriptBlocker = {
 				if (self.noDeleteWarning)
 					self.rules.remove_matching_URL(host, url, true, m);
 				else {
-					new Poppy(off.left + 22, off.top + 8, vs, function () {
+					new Poppy(left, off.top + 8, vs, function () {
 						$('#poppy #delete-continue', self.popover).click(function () {
 							Behaviour.action('Removed a rule via main window');
 							
@@ -1352,6 +1370,30 @@ var JavaScriptBlocker = {
 		if (!('BehaviourIdentifier' in window.localStorage))
 			window.localStorage.setItem('BehaviourIdentifier', (Math.random() + Math.random() + Math.random()) * 10000000000000000);
 		
+		if (event && ('type' in event) && event.type == 'popover') {
+			Behaviour.action('Opened JavaScript Blocker');
+
+			/**
+			 * Fixes issues with mouse hover events not working
+			 */
+			if (!this.reloaded) {
+				this.reloaded = true;
+				this.load_language();
+				
+				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
+				
+				setTimeout(function (e) {
+					e.open_popover(event);
+				}, 500, this);
+				
+				if (!this.setupDone)
+					return false;
+			}
+
+			$('#rules-list-back:visible, #misc-close:visible', this.popover).click();
+		} else if (!event || (event && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1))
+			new Poppy();
+		
 		if (!this.setupDone) {
 			if (s.css('display') === 'block') return false;
 		
@@ -1360,7 +1402,7 @@ var JavaScriptBlocker = {
 			Behaviour.action('Setup');
 			var setupTime = Behaviour.timer('Setup timer');
 					
-			s.css('display', 'block').find('input').click(function (e) {
+			s.find('input').click(function (e) {
 				Behaviour.timerEnd(setupTime);
 				
 				self.allowMode = !$(this).is('#setup-block');
@@ -1392,22 +1434,6 @@ var JavaScriptBlocker = {
 		try {
 			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
 		} catch(e) { }
-
-		if (event && ('type' in event) && event.type == 'popover') {
-			Behaviour.action('Opened JavaScript Blocker');
-			
-			/**
-			 * Fixes issues with mouse hover events not working
-			 */
-			if (!this.reloaded) {
-				this.reloaded = true;
-				this.load_language();
-				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
-			}
-			
-			$('#rules-list-back:visible, #misc-close:visible', this.popover).click();
-		} else if (!event || (event && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1))
-			new Poppy();
 	},
 	validate: function (event) {
 		if (!('cleanup' in this.utils.timer.timers.intervals))

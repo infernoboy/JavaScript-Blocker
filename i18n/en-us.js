@@ -25,9 +25,11 @@ Strings['en-us'] = {
 	
 	/** BUTTONS **/
 	'Allow': 'Allow',
+	'Allowing Mode': 'Allowing Mode',
 	'Allow All': 'Allow All',
 	'Block All': 'Block All',
 	'Block': 'Block',
+	'Blocking Mode': 'Blocking Mode',
 	'View': 'View',
 	'Disable': 'Disable',
 	'Delete': 'Delete',

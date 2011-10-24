@@ -60,6 +60,9 @@ header h1 {
 	padding-top: 6px;
 	padding-right: 4px;
 }
+	#misc {
+		overflow-x: auto;
+	}
 
 input,
 select,
@@ -160,6 +163,8 @@ label {
 #block-domain,
 #allow-domain {
 	float: right;
+	margin-right: 0;
+	margin-left: 5px;
 }
 	.domain-options {
 		float: right;
@@ -223,7 +228,7 @@ ul li input {
 	top: 1px;
 }
 	ul li input[type="button"] {
-		max-width: 15%;
+		width: 13%;
 	}
 a {
 	text-decoration: none;
