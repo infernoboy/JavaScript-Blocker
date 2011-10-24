@@ -42,6 +42,7 @@
 	}
 	#poppy ul li span {
 		width: auto;
+		max-width: 100%;
 		white-space: wrap;
 		
 	}

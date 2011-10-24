@@ -749,7 +749,9 @@ var JavaScriptBlocker = {
 								'<li class="domain-name no-disclosure">' + store + '</li>',
 								'<li>',
 									'<ul>',
-										'<li><span class="rule">', rs.join('</span><div class="divider"></div></li><li><span class="rule">'), '</span></li>',
+										'<li><span class="rule">',
+											rs.join('</span><div class="divider"></div></li><li><span class="rule">'),
+										'</span><div class="divider" style="visibility:hidden;"></div></li>',
 									'</ul>',
 								'</li>',
 							'</ul>',
@@ -798,14 +800,15 @@ var JavaScriptBlocker = {
 						d,
 						rs = [],
 						vs = $('<div><p>' + Localize('The following rule(s) will be deleted or disabled:') + '</p><ul class="rules-wrapper"></ul>' +
-								'<span>' + Localize('This may inadvertently affect other scripts.') + ' <input type="button" value="' + Localize('Continue') + '" id="delete-continue" /></span></div>');
-			
+								'<p>' + Localize('This may inadvertently affect other scripts.') + '</p>' +
+								'<div class="inputs"><input type="button" value="' + Localize('Continue') + '" id="delete-continue" /></div></div>'),
+						wrapper = vs.find('ul.rules-wrapper');
+
 				for (d in to_delete) {
-					$('ul.rules-wrapper', vs).append(self.rules.view(d, url, true).find('> li').find('input').remove().end());
+					wrapper.append(self.rules.view(d, url, true).find('> li').find('input').remove().end());
 					rs.push(to_delete[d][0]);
 				}
 						
-				$('ul.rules-wrapper', vs).addClass((!self.allowMode ? 'allowing' : 'blocking') + '-mode');
 				$('li.domain-name', vs).removeClass('hidden').unbind('click').addClass('no-disclosure');
 			
 				if (self.noDeleteWarning)
