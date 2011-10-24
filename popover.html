@@ -11,6 +11,8 @@
 
 <html lang="en">
 <head>
+	<meta charset="utf-8">
+	
 	<title></title>
 	
 	<meta charset="utf-8" />
@@ -21,11 +23,25 @@
 	
 	<script src="js/highlight.js"></script>
 	<script>
+		Localize = safari.extension.globalPage.contentWindow.Localize;
+		
 		document.addEventListener('DOMContentLoaded', function () {
 			safari.extension.globalPage.contentWindow.JavaScriptBlocker.hljs = hljs;
 			setTimeout(function () {
 				safari.extension.globalPage.contentWindow.JavaScriptBlocker.bind_events();
 			}, 200);
+			
+			var inputs = document.getElementsByTagName('input'),
+					ogroups = document.getElementsByTagName('optgroup'),
+					i,
+					b;
+					
+			for (i = 0; i < inputs.length; i++) {
+				inputs[i].value = Localize(inputs[i].value);
+				if (inputs[i].placeholder) inputs[i].placeholder = Localize(inputs[i].placeholder);
+			}
+			for (b = 0; b < ogroups.length; b++)
+				ogroups[b].label = Localize(ogroups[b].label);
 		});
 		
 		window.addEventListener('message', function (event) {
@@ -35,19 +51,18 @@
 </head>
 
 <body>
-	<header><h1>JavaScript Blocker</h1></header>
+	<header><h1><script>document.write(Localize('JavaScript Blocker'));</script></h1></header>
 	
 	<div id="container">
 		<div id="setup">
 			<p><img src="images/toggleable.png" alt="Toggleable" /> <img src="Icon-48.png" alt="JS Blocker" /></p>
-			<p>Thanks for using JavaScript Blocker!</p>
-			<p>Which mode would you like to run in? This setting can be changed at any time from the extensions pane of
-				the Safari preferences.</p>
+			<p><script>document.write(Localize('Thanks for using {1}', [Localize('JavaScript Blocker')]));</script></p>
+			<p><script>document.write(Localize('Which mode would you like to run in?'));</script></p>
 			<p><input type="button" id="setup-block" value="Blocking Mode" /> <input type="button" id="setup-allow" value="Allowing Mode" /></p>
 		</div>
 		<div id="main">
 			<div id="page-lists">
-				<label class="label">Page:</span>
+				<label class="label"><script>document.write(Localize('Page:'));</script></span>
 				<select id="page-list">
 					<optgroup label="Main Page">
 						<option>http://javascript-blocker.toggleable.com</option>
@@ -58,9 +73,9 @@
 				</select>
 			</div>
 			<div class="info-container">
-				<label class="allowed-label" for="allowed-scripts-count">Allowed:</label> <span id="allowed-scripts-count">0</span>
+				<label class="allowed-label" for="allowed-scripts-count"><script>document.write(Localize('Allowed:'));</script></label> <span id="allowed-scripts-count">0</span>
 				<select id="block-options" class="domain-options">
-					<optgroup label="Block on…">
+					<optgroup label="Block on">
 					</optgroup>
 				</select>
 				<input type="button" value="Block All" id="block-domain" />
@@ -71,9 +86,9 @@
 			</div>
 	
 			<div class="info-container">
-				<label class="blocked-label" for="blocked-scripts-count">Blocked:</label> <span id="blocked-scripts-count">0</span>
+				<label class="blocked-label" for="blocked-scripts-count"><script>document.write(Localize('Blocked:'));</script></label> <span id="blocked-scripts-count">0</span>
 				<select id="allow-options" class="domain-options">
-					<optgroup label="Allow on…">
+					<optgroup label="Allow on">
 					</optgroup>
 				</select>
 				<input type="button" value="Allow All" id="allow-domain" />
@@ -84,7 +99,7 @@
 			</div>
 	
 			<div class="info-container">
-				<label class="unblocked-label" for="unblocked-scripts-count">Unblockable:</label> <span id="unblocked-scripts-count">0</span>
+				<label class="unblocked-label" for="unblocked-scripts-count"><script>document.write(Localize('Unblocked:'));</script></label> <span id="unblocked-scripts-count">0</span>
 			</div>
 	
 			<div id="unblocked-script-urls">
@@ -93,8 +108,7 @@
 	
 			<input type="button" value="Show Rules" id="view-rules" />
 			<div id="disclaimer">
-				<p>This tool only blocks scripts when they are loaded from an external file or a data URI. What this means is that any scripts
-					that are within the page itself can still run. Unfortunately this is a limitation of the Safari extension design, not mine.
+				<p><script>document.write(Localize('Disclaimer.'));</script>
 					<input type="button" value="Submit Anonymous Usage Information" id="submit-information" />
 					<input type="button" value="Disable JavaScript Blocker" id="disable" /></p>
 			</div>
@@ -106,13 +120,13 @@
 				<input type="button" value="Delete Expanded Rules" id="reset-domain" />
 			</div>
 			<div id="data">
-				<a href="javascript:void(0)" id="collapse-all">Collapse All</a> <span class="label">—</span>
-				<a href="javascript:void(0)" id="expand-all">Expand All</a>
+				<a href="javascript:void(0)" id="collapse-all"><script>document.write(Localize('Collapse All'));</script></a> <span class="label">—</span>
+				<a href="javascript:void(0)" id="expand-all"><script>document.write(Localize('Expand All'));</script></a>
 				<div id="rules-filter-bar">
 					<ul>
-						<li id="filter-all"class="selected">All</li>
-						<li id="filter-collapsed">Collapsed</li>
-						<li id="filter-expanded">Expanded</li>
+						<li id="filter-all"class="selected"><script>document.write(Localize('All'));</script></li>
+						<li id="filter-collapsed"><script>document.write(Localize('Collapsed'));</script></li>
+						<li id="filter-expanded"><script>document.write(Localize('Expanded'));</script></li>
 						<li id="li-domain-filter"><input type="search" placeholder="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" /><br style="clear:both;" /></li>
 					</ul>
 					<br style="clear:both;" />

@@ -11,9 +11,13 @@
 
 <html>
 	<head>
+		<meta charset="utf-8">
+		
 		<title>JavaScript Blocker</title>
 		
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+		<script src="i18n/i18n.js"></script>
+		<script src="i18n/en-us.js"></script>
 		<script src="js/poppy.js"></script>
 		<script src="js/behaviour.js"></script>
 		<script src="js/global.js"></script>
@@ -21,6 +25,11 @@
 		<script src="js/predefined.js"></script>
 
 		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				if (window.navigator.language !== 'en-us')
+					$.getScript('i18n/' + window.navigator.language + '.js', function (data, status) { });
+			});
+			
 			window.addEventListener('message', function (event) {
 				if (event.source === window && event.data === 'zero-timeout') {
 					event.stopPropagation();
