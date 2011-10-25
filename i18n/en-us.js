@@ -2,7 +2,7 @@
  * @file i18n/en-us.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-1
+ * @version 1.2.5-2
  ***************************************/
 
 Strings['en-us'] = {
@@ -40,7 +40,7 @@ Strings['en-us'] = {
 	'Restore Rules': 'Restore Rules',
 	'Restore Rule': 'Restore Rule',
 	'Remove Rules For {1}': 'Remove Rules For <b>{1}</b>',
-	'Do you want to delete all rules for this domain?': 'Do you want to delete all rules for this domain?',
+	'Do you want to completely remove all rules for this domain?': 'Do you want to completely remove all rules for this domain?',
 	'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.':
 			'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.',
 	'Close Rules List': 'Close Rules List',

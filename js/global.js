@@ -2,7 +2,7 @@
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-2
+ * @version 1.2.5-3
  ***************************************/
 
 "use strict";
@@ -549,7 +549,7 @@ var JavaScriptBlocker = {
 					self.utils.timer.timeout('domain_name_clickery', function (e) {
 						Behaviour.action('Expanding or collapsing a domain');
 					
-						var d = e.innerHTML, t = $(e).next();
+						var d = $('span', this).html(), t = $(e).next();
 					
 						if (t.is(':animated')) return false;
 					
@@ -1034,7 +1034,7 @@ var JavaScriptBlocker = {
 			d.toggleClass('hidden');
 			
 			self.collapsedDomains = $.map($('#rules-list .domain-name', self.popover), function (e) {
-				return e.className.indexOf('hidden') > -1 ? e.innerHTML : null;
+				return e.className.indexOf('hidden') > -1 ? $('span', e).html() : null;
 			});
 			
 			if (is_collapse) $('#rules-filter-bar li#filter-collapsed', self.popover).click();
