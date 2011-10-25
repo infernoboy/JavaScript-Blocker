@@ -2,7 +2,7 @@
  * @file js/poppy.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.4
+ * @version 1.2.5-1
  ***************************************/
 
 "use strict";
@@ -135,7 +135,7 @@ Poppy.prototype = {
 		}, [this, m, points]);
 		
 		JavaScriptBlocker.utils.timer.interval('poppy_view_finish', function () {
-			if (parseFloat(m.css('opacity')) < 0.71) return false;
+			if (m.css('WebkitTransform') !== 'matrix(1.15, 0, 0, 1.15, 0, 0)') return false;
 						
 			JavaScriptBlocker.utils.timer.remove('interval', 'poppy_view_finish');
 			

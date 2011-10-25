@@ -29,7 +29,8 @@
 		<array>
 			<string>Automatic</string>
 			<string>US English</string>
-			<string>Française (French)</string>
+			<string>British English (Incomplete)</string>
+			<string>Française (Incomplete)</string>
 		</array>
 		<key>Type</key>
 		<string>PopUpButton</string>
@@ -37,6 +38,7 @@
 		<array>
 			<string>Automatic</string>
 			<string>en-us</string>
+			<string>en-gb</string>
 			<string>fr-fr</string>
 		</array>
 	</dict>

@@ -2,7 +2,7 @@
  * @file css/main.css
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-2
+ * @version 1.2.5-3
  ***************************************/
 
 ::-webkit-scrollbar {
@@ -109,7 +109,7 @@ button {
 	}
 	input[type="text"],
 	input[type="search"] {
-		background: -webkit-linear-gradient(top, #ededed, #F6F6F6);
+		background: -webkit-linear-gradient(top, #f3f3f3, #FbFbFb);
 		-webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.15), 0 1px 0 #eee;
 	}
 
@@ -258,7 +258,7 @@ a {
 }
 	a:hover {
 		color: #0B37B4;
-		text-shadow: 0 1px 2px #ccc;
+		text-shadow: 0 1px 0 #fff;
 	}
 #disable,
 #view-rules,
@@ -302,8 +302,8 @@ p.misc-info {
 	width: 100%;
 	height: 1px;
 	margin-top: 5px;
-	background: #d0d0d0;
-	border-bottom: 1px solid #f7f7f7;
+	background: rgba(0,0,0,0.17);
+	border-bottom: 1px solid rgba(255,255,255,0.7);
 	-webkit-mask-image: -webkit-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,1) 40%, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
 	clear: both;
 }

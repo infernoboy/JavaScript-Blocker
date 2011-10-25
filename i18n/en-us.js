@@ -2,7 +2,7 @@
  * @file i18n/en-us.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-2
+ * @version 1.2.5-3
  ***************************************/
 
 Strings['en-us'] = {
@@ -34,6 +34,7 @@ Strings['en-us'] = {
 	'Disable': 'Disable',
 	'Delete': 'Delete',
 	'Restore': 'Restore',
+	'Save': 'Save',
 	'Show Rules': 'Show Rules',
 	'Edit Rule': 'Edit Rule',
 	'New Rule': 'New Rule',
@@ -61,6 +62,11 @@ Strings['en-us'] = {
 	'Disable JavaScript Blocker': 'Disable JavaScript Blocker',
 	'Show {1} more': 'Show {1} more', // {1} = number of hidden items
 	'Submit Anonymous Usage Information': 'Submit Anonymous Usage Information',
+	
+	'Normal Block': 'Normal Block',
+	'Normal Allow': 'Normal Allow',
+	'High-priority Block': 'High-priority Block',
+	'High-priority Allow': 'High-priority Allow',
 	/** /BUTTONS */
 	
 	/** ERRORS-ISH **/
@@ -77,6 +83,7 @@ Strings['en-us'] = {
 	'The last 2 rule types will override any other rule.': 'The last 2 rule types will override any other rule.',
 	/** /RULE TYPES **/
 	
+	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
 	'Adding a Rule For {1}': 'Adding a Rule For <b>{1}</b>', // {1} = domain name
 	'Editing a Rule For {1}': 'Editing a Rule For <b>{1}</b>', // *
 	'Rule succesfully edited.': 'Rule succesfully edited.',
