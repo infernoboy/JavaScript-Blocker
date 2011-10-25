@@ -2,7 +2,7 @@
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-4
+ * @version 1.2.5-5
  ***************************************/
 
 "use strict";
@@ -644,7 +644,7 @@ var JavaScriptBlocker = {
 											url: u,
 											domain: domain,
 											e: t,
-											header: Localize((is_new ? 'Adding' : 'Editing') + ' a Rule For {1}', [domain])
+											header: Localize((is_new ? 'Adding' : 'Editing') + ' a Rule For {1}', [domain === '.*' ? Localize('All Domains') : domain])
 									}, self);
 								
 								Behaviour.action('Double click action: ' + this.id);
