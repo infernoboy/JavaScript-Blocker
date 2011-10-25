@@ -2,7 +2,7 @@
  * @file css/poppy.css
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-1
+ * @version 1.2.5-2
  ***************************************/
 
 #poppy {
@@ -30,7 +30,7 @@
 		overflow: auto;
 	}
 	#poppy p {
-		margin: 0 3px 0 4px;
+		margin: 0 3px 3px 4px;
 	}
 	#poppy #rule-input {
 		width: 330px;

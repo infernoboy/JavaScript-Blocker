@@ -2,12 +2,12 @@
  * @file css/main.css
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.4
+ * @version 1.2.5-1
  ***************************************/
 
 ::-webkit-scrollbar {
-	width: 5px;
-	height: 5px;
+	width: 6px;
+	height: 6px;
 }
 ::-webkit-scrollbar-corner {
 	background: transparent;

@@ -2,7 +2,7 @@
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-3
+ * @version 1.2.5-4
  ***************************************/
 
 "use strict";
@@ -632,9 +632,10 @@ var JavaScriptBlocker = {
 					
 						var t = $(this), off = t.offset(), domain = t.parent().data('domain'), rule = t.parent().data('rule');
 					
-						new Poppy(e.pageX, off.top - 2, [
-							t.hasClass('type-4') || t.hasClass('type-5') ? Localize('Predefined rules cannot be edited.') : '<input type="button" value="' + Localize('Edit Rule') + '" id="rule-edit" /> ',
-							'<button id="rule-new">' + Localize('New Rule') + '</button>'].join(''), function () {
+						new Poppy(e.pageX, off.top - 2, [t.hasClass('type-4') || t.hasClass('type-5') ?
+								Localize('Predefined rules cannot be edited.') :
+								'<input type="button" value="' + Localize('Edit Rule') + '" id="rule-edit" /> ',
+								'<button id="rule-new">' + Localize('New Rule') + '</button>'].join(''), function () {
 							$('#poppy #rule-edit, #poppy #rule-new', self.popover).filter('#rule-new')
 									.html(Localize('New rule for {1}', [(domain === '.*' ? Localize('All Domains') : domain)])).end().click(function () {
 								var is_new = this.id === 'rule-new',
@@ -689,7 +690,7 @@ var JavaScriptBlocker = {
 			}
 			
 			new Poppy(e.pageX, off.top - 2, [
-				'<input type="button" value="' + Localize('View Script') + '" id="view-script" />'].join(''), function () {
+				'<input type="button" value="', Localize('View Script'), '" id="view-script" />'].join(''), function () {
 					$('#poppy #view-script', self.popover).click(function () {
 						Behaviour.action('Viewed URL script');
 						
@@ -764,9 +765,9 @@ var JavaScriptBlocker = {
 						Behaviour.action('Automatic rule restore prompt');
 						
 						new Poppy(left, off.top + 8, [
-							'<p>' + Localize('The following automatic rules were disabled, thus ' + (self.allowMode ? 'allowing' : 'blocking') + ' this script:') + '</p>',
+							'<p>', Localize('The following automatic rules were disabled, thus ' + (self.allowMode ? 'allowing' : 'blocking') + ' this script:'), '</p>',
 							'<ul class="rules-wrapper">',
-								'<li class="domain-name no-disclosure">' + store + '</li>',
+								'<li class="domain-name no-disclosure">', store, '</li>',
 								'<li>',
 									'<ul>',
 										'<li><span class="rule">',
@@ -775,10 +776,10 @@ var JavaScriptBlocker = {
 									'</ul>',
 								'</li>',
 							'</ul>',
-							'<p>' + Localize('Would you like to re-enable the above rule' + (rs.length === 1 ? '' : 's') + ' or add a new one?') + '</p>',
+							'<p>', Localize('Would you like to re-enable the above rule' + (rs.length === 1 ? '' : 's') + ' or add a new one?'), '</p>',
 							'<div class="inputs">',
-								'<input type="button" value="' + Localize('New Rule') + '" id="auto-new" /> ',
-								'<input type="button" value="' + Localize('Restore Rules') + '" id="auto-restore" />',
+								'<input type="button" value="', Localize('New Rule'), '" id="auto-new" /> ',
+								'<input type="button" value="', Localize('Restore Rules'), '" id="auto-restore" />',
 							'</div>'].join(''), function () {
 								var b;
 								
@@ -819,9 +820,15 @@ var JavaScriptBlocker = {
 						to_delete = self.rules.remove_matching_URL(host, url, false, m),
 						d,
 						rs = [],
-						vs = $('<div><p>' + Localize('The following rule(s) will be deleted or disabled:') + '</p><ul class="rules-wrapper"></ul>' +
-								'<p>' + Localize('This may inadvertently affect other scripts.') + '</p>' +
-								'<div class="inputs"><input type="button" value="' + Localize('Continue') + '" id="delete-continue" /></div></div>'),
+						vs = $([
+								'<div>',
+									'<p>', Localize('The following rule(s) will be deleted or disabled:'), '</p>',
+									'<ul class="rules-wrapper"></ul>',
+									'<p>', Localize('This may inadvertently affect other scripts.'), '</p>',
+									'<div class="inputs">',
+										'<input type="button" value="', Localize('Continue'), '" id="delete-continue" />',
+									'</div>',
+								'</div>'].join('')),
 						wrapper = vs.find('ul.rules-wrapper');
 
 				for (d in to_delete) {
@@ -900,21 +907,21 @@ var JavaScriptBlocker = {
 				top = offset.top + 8;
 			
 			new Poppy(left, top, [
-				'<input type="button" value="' + Localize('Color Key') + '" id="rules-color" /> ',
-				'<input type="button" value="' + Localize('All Rules') + '" id="view-all" /> ',
-				'<input type="button" value="' + Localize('Active Rules') + '" id="view-domain" />'].join(''), function () {
+				'<input type="button" value="', Localize('Color Key'), '" id="rules-color" /> ',
+				'<input type="button" value="', Localize('All Rules'), '" id="view-all" /> ',
+				'<input type="button" value="', Localize('Active Rules'), '" id="view-domain" />'].join(''), function () {
 				$('#rules-color', self.popover).click(function() {
 					Behaviour.action('Color Key');
 					
 					new Poppy(left, top, [
 						'<p>',
-							'<span class="rule">' + Localize('User Defined Rule') + '</span><br />',
-							'<span class="rule type-2">' + Localize('Automatic Blocking Rule') + '</span><br />',
-							'<span class="rule type-3">' + Localize('Automatic Allowing Rule') + '</span><br />',
-							'<span class="rule type-4">' + Localize('Blacklist/High-priority Block Rule') + '</span><br />',
-							'<span class="rule type-5">' + Localize('Whitelist/High-priority Allow Rule') + '</span>',
+							'<span class="rule">', Localize('User Defined Rule'), '</span><br />',
+							'<span class="rule type-2">', Localize('Automatic Blocking Rule'), '</span><br />',
+							'<span class="rule type-3">', Localize('Automatic Allowing Rule'), '</span><br />',
+							'<span class="rule type-4">', Localize('Blacklist/High-priority Block Rule'), '</span><br />',
+							'<span class="rule type-5">', Localize('Whitelist/High-priority Allow Rule'), '</span>',
 						'</p><br />',
-						'<p>' + Localize('The last 2 rule types will override any other rule.') + '</p>'].join(''), $.noop, $.noop, 0.2);
+						'<p>', Localize('The last 2 rule types will override any other rule.'), '</p>'].join(''), $.noop, $.noop, 0.2);
 				}).siblings('#view-domain').click(function () {
 					Behaviour.action('View rules for domain');
 					
@@ -1047,7 +1054,7 @@ var JavaScriptBlocker = {
 			var d = $('.domain-name:not(.filter-hidden)', self.popover), v = this.value;
 						
 			d.each(function () {
-				$(this).toggleClass('not-included', !(new RegExp(v, 'i')).test(this.innerHTML));
+				$(this).toggleClass('not-included', !(new RegExp(v, 'i')).test(this.getElementsByTagName('span')[0].innerHTML));
 			});
 			
 			var d = $('#rules-list .domain-name:visible', self.popover).length,
