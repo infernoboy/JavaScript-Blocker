@@ -2,7 +2,7 @@
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-1
+ * @version 1.2.5-2
  ***************************************/
 
 "use strict";
@@ -120,8 +120,7 @@ var JavaScriptBlocker = {
 		return $('#container', this.popover).hasClass('busy');
 	},
 	set busy(value) {
-		if (value === 1) $('#container', this.popover).addClass('busy');
-		else $('#container', this.popover).removeClass('busy');
+		$('#container', this.popover).toggleClass('busy', value === 1);
 	},
 	animate_badge: function(start) {
 		if (start === false) return this.utils.timer.remove('interval', 'badge_animation');
@@ -356,7 +355,7 @@ var JavaScriptBlocker = {
 	 * @return {string} The hostname of a url, either from the passed in argument or active tab.
 	 */
 	active_host: function (url) {
-		if (url in this.caches.active_host) return this.caches.active_host[url];
+		if (url && (url in this.caches.active_host)) return this.caches.active_host[url];
 		var r = /^(https?|file):\/\/([^\/]+)\//;
 		if (url) return /^data/.test(url) ? (this.caches.active_host[url] = 'DataURI') : (this.caches.active_host[url] = url.match(r)[2]);
 
@@ -374,7 +373,6 @@ var JavaScriptBlocker = {
 	 * @return {Array} Parts of the hostname, including itself.
 	 */
 	domain_parts: function (domain) {
-		var x;
 		if (domain in this.caches.domain_parts) return this.caches.domain_parts[domain];
 		var s = domain.split(/\./g).reverse(), t = s[0], p = ['*'], i, b;
 		for (i = 1, b = s.length; i < b; i++)
@@ -431,11 +429,10 @@ var JavaScriptBlocker = {
 			}
 			
 			if (add_to_beginning) {
-				var new_rules = {};
+				var new_rules = {}, e;
 				new_rules[domain] = {};
 				new_rules[domain][pattern] = action;
 				
-				var e;
 				if (domain in current_rules)
 					for (e in current_rules[domain])
 						new_rules[domain][e] = current_rules[domain][e];
@@ -515,7 +512,7 @@ var JavaScriptBlocker = {
 		 * @param {Boolean} no_dbl_click Wether or not to enable double clicking on a rule
 		 */
 		view: function (domain, url, no_dbl_click) {
-			var self = this, allowed = this.for_domain(domain, true), ul = $('<ul class="rules-wrapper"></ul>'), newul, rules, rule, append;
+			var self = this, allowed = this.for_domain(domain, true), ul = $('<ul class="rules-wrapper"></ul>'), newul, rules, rule;
 			
 			if (domain in allowed) {
 				allowed = allowed[domain];
@@ -524,7 +521,8 @@ var JavaScriptBlocker = {
 					var j = this.collapsedDomains,
 							domain_name = (domain.charAt(0) === '.' && domain !== '.*' ? domain : (domain === '.*' ? Localize('All Domains') : domain));
 					
-					newul = ul.append('<li class="domain-name">' + domain_name + '</li><li><ul></ul></li>').find('li:last ul');
+					newul = ul.append('<li class="domain-name"><span>' + domain_name + '</span></li><li><ul></ul></li>')
+							.find('.domain-name:last').data('domain', domain).end().find('li:last ul');
 					rules = 0;
 		
 					for (rule in allowed) {
@@ -533,13 +531,13 @@ var JavaScriptBlocker = {
 								(safari.extension.settings.ignoreWhitelist && allowed[rule] === 5) ||
 								(!!(allowed[rule] % 2) === this.allowMode && allowed[rule] < 4)) continue;
 						rules++;
-						append = newul.append('<li><span class="rule type-' + allowed[rule] + '">' + rule + '</span> ' +
+						newul.append('<li><span class="rule type-' + allowed[rule] + '">' + rule + '</span> ' +
 								'<input type="button" value="' + (allowed[rule] < 0 ? Localize('Restore') : (allowed[rule] === 2 || allowed[rule] === 3 ? Localize('Disable') : Localize('Delete'))) + '" />' +
-								'<div class="divider"></div></li>');
-						$('li:last', append).data('rule', rule).data('domain', domain).data('type', allowed[rule]);
+								'<div class="divider"></div></li>')
+								.find('li:last').data('rule', rule).data('domain', domain).data('type', allowed[rule]);
 					}
 					
-					if (!rules) return $('<ul class="rules-wrapper"></ul>');
+					if (rules === 0) return $('<ul class="rules-wrapper"></ul>');
 					
 					if (j && j.indexOf(domain_name) > -1)
 						newul.parent().prev().addClass('hidden');
@@ -548,25 +546,48 @@ var JavaScriptBlocker = {
 				}
 				
 				$('.domain-name', ul).click(function () {
-					Behaviour.action('Expanding or collapsing a domain');
+					self.utils.timer.timeout('domain_name_clickery', function (e) {
+						Behaviour.action('Expanding or collapsing a domain');
 					
-					var d = this.innerHTML, t = $(this).next();
+						var d = e.innerHTML, t = $(e).next();
 					
-					if (t.is(':animated')) return false;
+						if (t.is(':animated')) return false;
 					
-					var dex = self.collapsedDomains.indexOf(d);
+						var dex = self.collapsedDomains.indexOf(d);
 					
-					$(this).toggleClass('hidden');
+						$(e).toggleClass('hidden');
 					
-					if (this.className.indexOf('hidden') === -1) {
-						if (dex > -1) self.collapsedDomains.splice(dex, 1);
-					} else {
-						if (dex === -1) self.collapsedDomains.push(d);
-					}
+						if (e.className.indexOf('hidden') === -1) {
+							if (dex > -1) self.collapsedDomains.splice(dex, 1);
+						} else {
+							if (dex === -1) self.collapsedDomains.push(d);
+						}
 					
-					t.toggle().slideToggle(300 * self.speedMultiplier, function () {
-						this.style.display = null;
-					});
+						t.toggle().slideToggle(300 * self.speedMultiplier, function () {
+							this.style.display = null;
+						});
+					}, 150, [this]);
+				}).find('span').dblclick(function (e) {
+					self.utils.timer.remove('timeout', 'domain_name_clickery');
+					var off = $(this).offset(), p = $(this).parent();
+					
+					new Poppy(e.pageX, off.top + 4, [
+							'<p>', Localize('Do you want to completely remove all rules for this domain?'), ' ',
+									Localize('Keep in mind that if automatic rules are enabled, rules will be recreated if you visit ' +
+											'the webpage again.'),
+							'</p>',
+							'<button id="delete-rules-domain">', Localize('Remove Rules For {1}', [this.innerHTML]), '</button>'
+						].join(''), function () {
+							$('#poppy-content #delete-rules-domain', self.popover).click(function () {
+								if (!self.utils.confirm_click(this)) return false;
+								
+								self.rules.remove_domain(p.data('domain'));
+								p.next().remove().end().remove();
+								self._cleanup();
+								
+								new Poppy();
+							})
+						})
 				});
 
 				var sss = $('li input', ul).click(function () {
@@ -838,9 +859,9 @@ var JavaScriptBlocker = {
 		}
 		
 		$(this.popover.body).unbind('keydown').keydown(function (e) {
-			if (e.keyCode === 16) self.speedMultiplier = 10;
+			if (e.which === 16) self.speedMultiplier = 10;
 		}).keyup(function (e) {
-			if (e.keyCode === 16) self.speedMultiplier = 1;
+			if (e.which === 16) self.speedMultiplier = 1;
 		});
 	
 		$('#block-domain, #allow-domain', this.popover).unbind('click').click(function () {
@@ -1026,11 +1047,7 @@ var JavaScriptBlocker = {
 			var d = $('.domain-name:not(.filter-hidden)', self.popover), v = this.value;
 						
 			d.each(function () {
-				var e = $(this);
-				if (!(new RegExp(v, 'i')).test(this.innerHTML))
-					e.addClass('not-included');
-				else
-					e.removeClass('not-included');
+				$(this).toggleClass('not-included', !(new RegExp(v, 'i')).test(this.innerHTML));
 			});
 			
 			var d = $('#rules-list .domain-name:visible', self.popover).length,

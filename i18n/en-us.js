@@ -2,7 +2,7 @@
  * @file i18n/en-us.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.4
+ * @version 1.2.5-1
  ***************************************/
 
 Strings['en-us'] = {
@@ -39,6 +39,10 @@ Strings['en-us'] = {
 	'New Rule': 'New Rule',
 	'Restore Rules': 'Restore Rules',
 	'Restore Rule': 'Restore Rule',
+	'Remove Rules For {1}': 'Remove Rules For <b>{1}</b>',
+	'Do you want to delete all rules for this domain?': 'Do you want to delete all rules for this domain?',
+	'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.':
+			'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.',
 	'Close Rules List': 'Close Rules List',
 	'Close': 'Close',
 	'Delete Expanded Rules': 'Delete Expanded Rules',
@@ -47,7 +51,7 @@ Strings['en-us'] = {
 	'Active Rules': 'Active Rules',
 	'Continue': 'Continue',
 	'View Script': 'View Script',
-	'New rule for {1}': 'New rule for <b>{1}</b>',
+	'New rule for {1}': 'New rule for <b>{1}</b>', // {1} = domain name
 	'All': 'All',
 	'Collapsed': 'Collapsed',
 	'Expanded': 'Expanded',
@@ -55,7 +59,7 @@ Strings['en-us'] = {
 	'Expand All': 'Expand All',
 	'Enable JavaScript Blocker': 'Enable JavaScript Blocker',
 	'Disable JavaScript Blocker': 'Disable JavaScript Blocker',
-	'Show {1} more': 'Show {1} more',
+	'Show {1} more': 'Show {1} more', // {1} = number of hidden items
 	'Submit Anonymous Usage Information': 'Submit Anonymous Usage Information',
 	/** /BUTTONS */
 	
@@ -73,10 +77,10 @@ Strings['en-us'] = {
 	'The last 2 rule types will override any other rule.': 'The last 2 rule types will override any other rule.',
 	/** /RULE TYPES **/
 	
-	'Adding a Rule For {1}': 'Adding a Rule For <b>{1}</b>',
-	'Editing a Rule For {1}': 'Editing a Rule For <b>{1}</b>',
+	'Adding a Rule For {1}': 'Adding a Rule For <b>{1}</b>', // {1} = domain name
+	'Editing a Rule For {1}': 'Editing a Rule For <b>{1}</b>', // *
 	'Rule succesfully edited.': 'Rule succesfully edited.',
-	'Rule succesfully added for {1}': 'Rule succesfully added for <b>{1}</b>',
+	'Rule succesfully added for {1}': 'Rule succesfully added for <b>{1}</b>', // {1} = domain name
 	'Changes will appear when you reload the rules list.': 'Changes will appear when you reload the rules list.',
 	'Loading script': 'Loading script&hellip;',
 	'Loading rules': 'Loading rules&hellip;',
@@ -84,10 +88,10 @@ Strings['en-us'] = {
 	'Domains': 'Domains',
 	
 	/** MISC HEADERS **/
-	'{1} domain, {2} rule': '{1} domain, {2} rule',
-	'{1} domain, {2} rules': '{1} domain, {2} rules',
-	'{1} domains, {2} rule': '{1} domains, {2} rule',
-	'{1} domains, {2} rules': '{1} domains, {2} rules',
+	'{1} domain, {2} rule': '{1} domain, {2} rule', // {1} = number of domains in list, {2} = number of rules in list
+	'{1} domain, {2} rules': '{1} domain, {2} rules', // *
+	'{1} domains, {2} rule': '{1} domains, {2} rule', // *
+	'{1} domains, {2} rules': '{1} domains, {2} rules', // *
 	'Unblocked Script': 'Unblocked Script',
 	/** /MISC HEADERS **/
 	
@@ -103,5 +107,5 @@ Strings['en-us'] = {
 	'Usage information can be submitted only once every 10 minutes.': 'Usage information can be submitted only once every 10 minutes.',
 	'Usage information successfully submited.': 'Usage information successfully submited.',
 	'Error occurred while submitting usage information. Please try again later.': 'Error occurred while submitting usage information. Please try again later.',
-	'Error Code: {1}': 'Error Code: {1}'
+	'Error Code: {1}': 'Error Code: {1}' // {1} = reason why submission failed
 };

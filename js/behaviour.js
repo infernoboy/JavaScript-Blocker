@@ -2,7 +2,7 @@
  * @file js/behaviour.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.4
+ * @version 1.2.5-1
  ***************************************/
 
 "use strict";
@@ -44,6 +44,7 @@ var Behaviour = {
 		$.ajax({
 			url: this.url + 'installed.php',
 			dataType: 'text',
+			timeout: 10000,
 			data: {
 				identifier: window.localStorage.getItem('BehaviourIdentifier')
 			},
@@ -65,6 +66,7 @@ var Behaviour = {
 			url: this.url + 'submit.php',
 			dataType: 'text',
 			type: 'POST',
+			timeout: 10000,
 			data: {
 				identifier: window.localStorage.getItem('BehaviourIdentifier'),
 				data: JSON.stringify(this.logger, null, "\t")

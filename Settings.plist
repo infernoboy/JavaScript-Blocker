@@ -28,6 +28,7 @@
 		<key>Titles</key>
 		<array>
 			<string>Automatic</string>
+			<string>US English</string>
 			<string>Française (French)</string>
 		</array>
 		<key>Type</key>
@@ -35,6 +36,7 @@
 		<key>Values</key>
 		<array>
 			<string>Automatic</string>
+			<string>en-us</string>
 			<string>fr-fr</string>
 		</array>
 	</dict>
