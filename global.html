@@ -34,7 +34,7 @@
 					event.stopPropagation();
 					if (JavaScriptBlocker.utils._zero_timeouts.length) {
 						var o = JavaScriptBlocker.utils._zero_timeouts.shift();
-						if (typeof [0] === 'function')
+						if (typeof o[0] === 'function')
 							o[0].apply(JavaScriptBlocker, o[1]);
 					}
 				}

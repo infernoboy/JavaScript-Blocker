@@ -338,11 +338,13 @@ var JavaScriptBlocker = {
 				return true;
 			}
 		},
-		id: function () {
+		id: function (c) {
 			return ((Math.random() + Math.random() + Math.random()) * 10000000000000000).toString().split('').map(function (e) {
 					var v = (parseInt(Math.random() * 10)) + parseInt(e),
-							x = String.fromCharCode('1' + (v < 10 ? '0' + v : v));
-					return (Math.random() > 0.5) ? x : x.toUpperCase();
+							x = String.fromCharCode('1' + (v < 10 ? '0' + v : v)),
+							r = String.fromCharCode(65 + Math.round(Math.random() * (90 - 65))),
+					 		b = Math.random() > Math.random() ? (Math.random() > Math.random() ? x : x.toUpperCase()) : (Math.random() > Math.random() ? r : r.toLowerCase());
+					return typeof c === 'number' ? (c === 0 ? b.toLowerCase() : b.toUpperCase()) : b;
 			}).join('');
 		}
 	},
