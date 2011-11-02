@@ -23,7 +23,7 @@ Strings['en-us'] = {
 		'What this means is that any scripts that are within the page itself can still run. ' +
 		'Unfortunately this is a limitation of the Safari extension design, not mine.',
 	
-	/** BUTTONS **/
+	/** BUTTONS & LABELS **/
 	'Allow': 'Allow',
 	'Allowing Mode': 'Allowing Mode',
 	'Allow All': 'Allow All',
@@ -63,11 +63,11 @@ Strings['en-us'] = {
 	'Show {1} more': 'Show {1} more', // {1} = number of hidden items
 	'Submit Anonymous Usage Information': 'Submit Anonymous Usage Information',
 	
-	'Normal Block': 'Normal Block',
-	'Normal Allow': 'Normal Allow',
-	'High-priority Block': 'High-priority Block',
-	'High-priority Allow': 'High-priority Allow',
-	/** /BUTTONS */
+	'Normal Block': 'Normal block',
+	'Normal Allow': 'Normal allow',
+	'High-priority Block': 'High-priority block',
+	'High-priority Allow': 'High-priority allow',
+	/** /BUTTONS & LABELS */
 	
 	/** ERRORS-ISH **/
 	'This data URI cannot be displayed.': 'This data URI cannot be displayed.',	

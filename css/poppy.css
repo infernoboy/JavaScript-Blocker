@@ -33,10 +33,17 @@
 		margin: 0 3px 3px 4px;
 	}
 	#poppy #rule-input {
-		width: 330px;
+		height: 17px;
+		width: 360px;
 		padding: 2px 3px 3px;
 		margin-right: 3px;
+		margin-bottom: -7px;
+		overflow-x: scroll;
+		resize: none;
 	}
+		#poppy #rule-input::-webkit-scrollbar {
+			height: 4px;
+		}
 	#poppy .inputs {
 		margin-top: 3px;
 		float: right;

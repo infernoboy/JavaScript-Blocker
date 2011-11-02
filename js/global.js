@@ -20,22 +20,22 @@ var JavaScriptBlocker = {
 	frames: {},
 	
 	load_language: function (css) {
-		function set_popover_css (self, load_language) {
+		function set_popover_css (self, load_language, f) {
 			if (self.popover && $('#lang-css-' + load_language, self.popover).length === 0) {
 				$('<link />').appendTo(self.popover.head).attr({
 						href: 'i18n/' + load_language + '.css',
 						type: 'text/css',
 						rel: 'stylesheet',
-						id: 'lang-css-' + load_language
-				});
+						id: 'lang-css-' + load_language,
+				}).addClass('language-css');
 			} else
-				self.utils.zero_timeout(set_popover_css, [self, load_language]);
+				self.utils.zero_timeout(f, [self, load_language, f]);
 		}
 		
 		var load_language = (safari.extension.settings.language !== 'Automatic') ? safari.extension.settings.language : window.navigator.language;
 	
 		if (css)
-			this.utils.zero_timeout(set_popover_css, [this, load_language]);
+			this.utils.zero_timeout(set_popover_css, [this, load_language, set_popover_css]);
 		else if (load_language !== 'en-us' && !(load_language in Strings))
 			$.getScript('i18n/' + load_language + '.js', function (data, status) { });
 	},
@@ -370,7 +370,7 @@ var JavaScriptBlocker = {
 	 * Separates a hostname into its subdomain parts.
  	 *
 	 * @param {string} domain The hostname to separate into pieces.
-	 * @return {Array} Parts of the hostname, including itself.
+	 * @return {Array} Parts of the hostname, including itself and * (All Domains)
 	 */
 	domain_parts: function (domain) {
 		if (domain in this.caches.domain_parts) return this.caches.domain_parts[domain];
@@ -549,15 +549,13 @@ var JavaScriptBlocker = {
 					self.utils.timer.timeout('domain_name_clickery', function (e) {
 						Behaviour.action('Expanding or collapsing a domain');
 					
-						var d = $('span', this).html(), t = $(e).next();
+						var d = $('span', e).html(), t = $(e).next();
 					
 						if (t.is(':animated')) return false;
 					
 						var dex = self.collapsedDomains.indexOf(d);
-					
-						$(e).toggleClass('hidden');
-					
-						if (e.className.indexOf('hidden') === -1) {
+								
+						if (!$(e).toggleClass('hidden').hasClass('hidden')) {
 							if (dex > -1) self.collapsedDomains.splice(dex, 1);
 						} else {
 							if (dex === -1) self.collapsedDomains.push(d);
@@ -572,9 +570,10 @@ var JavaScriptBlocker = {
 					var off = $(this).offset(), p = $(this).parent();
 					
 					new Poppy(e.pageX, off.top + 4, [
-							'<p>', _('Do you want to completely remove all rules for this domain?'), ' ',
-									_('Keep in mind that if automatic rules are enabled, rules will be recreated if you visit ' +
-											'the webpage again.'),
+							'<p>',
+								_('Do you want to completely remove all rules for this domain?'), ' ',
+								_('Keep in mind that if automatic rules are enabled, rules will be recreated if you visit ' +
+										'the webpage again.'),
 							'</p>',
 							'<button id="delete-rules-domain">', _('Remove Rules For {1}', [this.innerHTML]), '</button>'
 						].join(''), function () {

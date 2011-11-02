@@ -25,7 +25,7 @@ JavaScriptBlocker.poppies = {
 						'<label for="select-type-high-opposite">', _('High-priority ' + (!main.allowMode ? 'Block' : 'Allow')), '</label>',
 					'</p>',
 					'<div class="inputs">',
-						'<input type="text" id="rule-input" value="" /> ',
+						'<textarea id="rule-input" wrap="off"></textarea> ',
 						'<input type="button" value="', _('Save'), '" id="rule-save" />',
 					'</div>',
 				'</div>'].join(''),
@@ -43,7 +43,10 @@ JavaScriptBlocker.poppies = {
 				$('#poppy p.misc-info', main.popover).html(zoo.me.header);
 		
 				i.keypress(function (e) {
-					if (e.keyCode == 13 || e.keyCode == 3) zoo.save.call(i);
+					if (e.keyCode == 13 || e.keyCode == 3) {
+						zoo.save.call(i);
+						e.preventDefault();
+					}
 				}).siblings('#rule-save').click(function () {
 					zoo.save.call(i);
 				});
