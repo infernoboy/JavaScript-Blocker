@@ -2,7 +2,7 @@
  * @file i18n/en-us.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-1
+ * @version 1.2.6-2
  ***************************************/
 
 Strings['en-us'] = {
@@ -27,6 +27,7 @@ Strings['en-us'] = {
 	'Edit': 'Edit',
 	'Done Editing': 'Done Editing',
 	'Remove': 'Remove',
+	'Beautify Script': 'Beautify Script',
 	'Allow': 'Allow',
 	'Allowing Mode': 'Allowing Mode',
 	'Allow All': 'Allow All',

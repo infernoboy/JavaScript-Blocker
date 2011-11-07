@@ -2,7 +2,7 @@
  * @file css/main.css
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-2
+ * @version 1.2.6-3
  ***************************************/
 
 ::-webkit-scrollbar {
@@ -193,7 +193,8 @@ label {
 		background-image: url(../images/disclosure-closed.png);
 	}
 
-#reset-domain {
+#reset-domain,
+#beautify-script {
 	position: absolute;
 	top: -2px;
 	right: -2px;

@@ -2,7 +2,7 @@
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-2
+ * @version 1.2.6-3
  ***************************************/
 
 "use strict";
@@ -209,7 +209,7 @@ var JavaScriptBlocker = {
 			var t = 0.6 * this.speedMultiplier, self = this, start_value, end_value, start_hide_zoom, end_hide_zoom, c;
 			
 			if (e.is(':animated') || e.data('isAnimating')) return false;
-					
+							
 			e.data('isAnimating', true);
 			
 			if (!hide) hide = $('<div></div>');
@@ -688,9 +688,26 @@ var JavaScriptBlocker = {
 			var t = $(this), off = t.offset();
 			
 			function codeify(data) {
-				$('<pre></pre>').append('<code class="javascript"></code>').find('code').text(data).end().appendTo($('#misc-content', self.popover));
-				self.utils.zoom($('#misc', self.popover).find('.misc-info').text(t.text()).end(), $('#main', self.popover));
-				self.hljs.highlightBlock($('#misc pre code', self.popover)[0]);
+				function do_highlight (data, no_zoom) {
+					$('#misc-content pre', self.popover).remove();
+					
+					$('<pre></pre>').append('<code class="javascript"></code>').find('code').text(data).end().appendTo($('#misc-content', self.popover));
+					if (!no_zoom) self.utils.zoom($('#misc', self.popover).find('.misc-info').text(t.text()).end(), $('#main', self.popover));
+					self.hljs.highlightBlock($('#misc-content pre code', self.popover)[0]);
+				}
+				
+				$('#misc .info-container #beautify-script', self.popover).remove();
+				
+				$('<input type="button" value="' + _('Beautify Script') + '" id="beautify-script" />')
+						.appendTo($('#misc .info-container', self.popover)).click(function () {
+							data = js_beautify(data, {
+								indent_size: 2
+							});
+								
+							do_highlight(data, true);
+						});
+				
+				do_highlight(data);
 			}
 			
 			new Poppy(e.pageX, off.top - 2, [
@@ -863,10 +880,29 @@ var JavaScriptBlocker = {
 			$('#unblocked-script-urls ul input', this.popover).click(function() {
 				Behaviour.action('Viewed unblocked script contents');
 				
-				$('<pre></pre>').append('<code class="javascript"></code>').find('code')
-						.html($(this).siblings('span').html()).end().appendTo($('#misc-content', self.popover));
-				self.utils.zoom($('#misc', self.popover).find('.misc-info').html(_('Unblocked Script')).end(), $('#main', self.popover));
-				self.hljs.highlightBlock($('#misc pre code', self.popover)[0]);
+				var t = $(this).siblings('span').text();
+				
+				function do_highlight (t, no_zoom) {
+					$('#misc-content pre', self.popover).remove();
+					
+					$('<pre></pre>').append('<code class="javascript"></code>').find('code')
+							.text(t).end().appendTo($('#misc-content', self.popover));
+					if (!no_zoom) self.utils.zoom($('#misc', self.popover).find('.misc-info').html(_('Unblocked Script')).end(), $('#main', self.popover));
+					self.hljs.highlightBlock($('#misc-content pre code', self.popover)[0]);
+				}
+				
+				$('#misc .info-container #beautify-script', self.popover).remove();
+				
+				$('<input type="button" value="' + _('Beautify Script') + '" id="beautify-script" />')
+						.appendTo($('#misc .info-container', self.popover)).click(function () {
+							t = js_beautify(t, {
+								indent_size: 2
+							});
+							
+							do_highlight(t, true);
+						});
+				
+				do_highlight(t);
 			});
 			
 			return false;
