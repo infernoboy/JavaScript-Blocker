@@ -2,7 +2,7 @@
  * @file css/main.css
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-1
+ * @version 1.2.6-2
  ***************************************/
 
 ::-webkit-scrollbar {
@@ -152,9 +152,12 @@ select {
 .rule.type-6 {
 	color: #920101;
 }
-.unblocked-label,
-.label {
+.unblocked-label {
 	color: #777;
+}
+
+.label {
+	color: #888;
 }
 
 label {
@@ -193,7 +196,7 @@ label {
 #reset-domain {
 	position: absolute;
 	top: -2px;
-	right: 0;
+	right: -2px;
 }
 #block-domain,
 #allow-domain {

@@ -2,7 +2,7 @@
  * @file js/behaviour.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-1
+ * @version 1.2.6-1
  ***************************************/
 
 "use strict";
@@ -28,10 +28,7 @@ var Behaviour = {
 		return time;
 	},
 	action: function (data) {
-		var p;
-		if (data in this.logger.actions) p = this.logger.actions[data];
-		else p = 0;
-		this.logger.actions[data] = p + 1;
+		this.logger.actions[data] = (data in this.logger.actions) ? this.logger.actions[data] + 1 : 1;
 	},
 	log: function () {
 		this.logger.log.push($.makeArray(arguments).join(' '));

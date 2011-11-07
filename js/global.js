@@ -2,7 +2,7 @@
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-1
+ * @version 1.2.6-2
  ***************************************/
 
 "use strict";
@@ -81,8 +81,10 @@ var JavaScriptBlocker = {
 		
 		if (typeof this.collapsedDomains === 'object') {
 			for (var x = 0; x < this.collapsedDomains.length; x++) {
-				if (this.collapsedDomains[x] === _('All Domains') || (this.collapsedDomains[x] in window.localStorage)) new_collapsed.push(this.collapsedDomains[x]);
-				else Behaviour.action('A collapsed domain was removed');
+				if (this.collapsedDomains[x] === _('All Domains') || (this.collapsedDomains[x] in window.localStorage))
+					new_collapsed.push(this.collapsedDomains[x]);
+				else
+					Behaviour.action('A collapsed domain was removed');
 			}
 		}
 		
@@ -343,7 +345,8 @@ var JavaScriptBlocker = {
 					var v = (parseInt(Math.random() * 10)) + parseInt(e),
 							x = String.fromCharCode('1' + (v < 10 ? '0' + v : v)),
 							r = String.fromCharCode(65 + Math.round(Math.random() * (90 - 65))),
-							b = Math.random() > Math.random() ? (Math.random() > Math.random() ? x : x.toUpperCase()) : (Math.random() > Math.random() ? r : r.toLowerCase());
+							b = Math.random() > Math.random() ?
+									(Math.random() > Math.random() ? x : x.toUpperCase()) : (Math.random() > Math.random() ? r : r.toLowerCase());
 					return typeof c === 'number' ? (c === 0 ? b.toLowerCase() : b.toUpperCase()) : b;
 			}).join('');
 		}
@@ -460,7 +463,8 @@ var JavaScriptBlocker = {
 					delete current_rules[domain][rule];
 			} catch(e) { }
 
-			return $.isEmptyObject(current_rules[domain]) ? window.localStorage.removeItem(domain) : window.localStorage.setItem(domain, JSON.stringify(current_rules[domain]));
+			return $.isEmptyObject(current_rules[domain]) ?
+					window.localStorage.removeItem(domain) : window.localStorage.setItem(domain, JSON.stringify(current_rules[domain]));
 		},
 		
 		/**
@@ -534,7 +538,8 @@ var JavaScriptBlocker = {
 								(!!(allowed[rule] % 2) === this.allowMode && allowed[rule] < 4)) continue;
 						rules++;
 						newul.append('<li><span class="rule type-' + allowed[rule] + '">' + rule + '</span> ' +
-								'<input type="button" value="' + (allowed[rule] < 0 ? _('Restore') : (allowed[rule] === 2 || allowed[rule] === 3 ? _('Disable') : _('Delete'))) + '" />' +
+								'<input type="button" value="' + (allowed[rule] < 0 ?
+										_('Restore') : (allowed[rule] === 2 || allowed[rule] === 3 ? _('Disable') : _('Delete'))) + '" />' +
 								'<div class="divider"></div></li>')
 								.find('li:last').data('rule', rule).data('domain', domain).data('type', allowed[rule]);
 					}
@@ -556,17 +561,37 @@ var JavaScriptBlocker = {
 				
 					if (t.is(':animated')) return false;
 				
-					var dex = self.collapsedDomains.indexOf(d);
+					var dex = self.collapsedDomains.indexOf(d), height, sTop, rulesList;
+					
+					rulesList = $('#rules-list', self.popover);
+					
+					sTop = rulesList.scrollTop();
 							
 					if (!$(this).toggleClass('hidden').hasClass('hidden')) {
 						if (dex > -1) self.collapsedDomains.splice(dex, 1);
 					} else {
 						if (dex === -1) self.collapsedDomains.push(d);
 					}
-				
-					t.toggle().slideToggle(300 * self.speedMultiplier, function () {
+					
+					t.toggle();
+					
+					height = t.height();
+					
+					t.slideToggle(300 * self.speedMultiplier, function () {
 						this.style.display = null;
 					});
+					
+					rulesList.scrollTop(sTop);
+					
+					if (this.className.indexOf('hidden') === -1) {
+						var offset = t.offset(),
+							bottomView = offset.top + height - $('header', self.popover).height();
+						
+						if (bottomView > rulesList.height())
+							rulesList.animate({
+								scrollTop: rulesList.scrollTop() + bottomView - rulesList.height(),
+							}, 300 * self.speedMultiplier);
+					}
 				});
 
 				var sss = $('li input', ul).click(function () {
@@ -776,7 +801,10 @@ var JavaScriptBlocker = {
 									
 									for (b = 0; b < ds.length; b++)
 										self.rules.add(store, ds[b][0], ds[b][1] * -1);
-								//	new Poppy(off.left + 22, off.top + 8, (rs.length === 1 ? 'The d' : 'D') + 'isabled rule' + (rs.length === 1 ? ' ' : 's ') + (self.allowMode ? 'to block' : 'to allow') + ' this script ' + (rs.length === 1 ? 'has' : 'have') + ' been restored.');
+								//	new Poppy(off.left + 22, off.top + 8,
+								//			rs.length === 1 ? 'The d' : 'D') + 'isabled rule' + (rs.length === 1 ? ' ' : 's ') +
+								//			(self.allowMode ? 'to block' : 'to allow') + ' this script ' + (rs.length === 1 ? 'has' : 'have') +
+								//			' been restored.');
 									new Poppy();
 									safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 								});
@@ -815,7 +843,7 @@ var JavaScriptBlocker = {
 					rs.push(to_delete[d][0]);
 				}
 						
-				$('li.domain-name', vs).removeClass('hidden').unbind('click').addClass('no-disclosure');
+				$('li.domain-name', vs).removeClass('hidden').addClass('no-disclosure');
 			
 				if (self.noDeleteWarning)
 					self.rules.remove_matching_URL(host, url, true, m);
@@ -1343,7 +1371,8 @@ var JavaScriptBlocker = {
 						rr = '^' + this.utils.escape_regexp(event.message[1]) + '$';
 					else
 						rr = '^https?:\\/\\/' + (alwaysFrom === 'topLevel' ?
-								('([^\\/]+\\.' + this.utils.escape_regexp(script_parts[script_parts.length - 2]) + '|' + this.utils.escape_regexp(script_parts[script_parts.length - 2]) + ')') :
+								('([^\\/]+\\.' + this.utils.escape_regexp(script_parts[script_parts.length - 2]) + '|' +
+										this.utils.escape_regexp(script_parts[script_parts.length - 2]) + ')') :
 								this.utils.escape_regexp(script_parts[0])) + '\\/.*$';
 					
 					if (this.allowMode) {
