@@ -2,7 +2,7 @@
  * @file css/main.css
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-3
+ * @version 1.2.6-1
  ***************************************/
 
 ::-webkit-scrollbar {
@@ -64,7 +64,6 @@ header h1 {
 	position: absolute;
 	width: 456px;
 	overflow: hidden;
-	height: 373px;
 	height: 375px;
 	margin: 25px 0 0 4px;
 /*	-webkit-mask-image: -webkit-linear-gradient(top, rgba(0,0,0,0), rgba(0,0,0,1) 2%, rgba(0,0,0,1) 98%, rgba(0,0,0,0)); */
@@ -82,7 +81,6 @@ header h1 {
 	position: absolute;
 	left: 0;
 	width: 452px;
-	height: 367px;
 	height: 369px;
 	overflow-y: scroll;
 	overflow-x: hidden;
@@ -104,6 +102,10 @@ textarea {
 	-webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.5);
 	text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
+	input:focus, select:focus, button:focus, textarea:focus {
+		outline: none !important;
+		-webkit-box-shadow: 0 0 4px rgb(20, 158, 255), inset 0 0 3px rgb(20, 158, 255) !important;
+	}
 	input[type="button"]:active,
 	button:active {
 		background: -webkit-linear-gradient(top, #B9B9B9, #DFDFDF 20%, #DFDFDF);
@@ -268,13 +270,13 @@ a {
 #reset-automatic,
 #submit-information {
 	float: right;
+	margin-right: 0px;
 	margin-left: 5px;
 	margin-bottom: 10px;
 }
 	#disable,
 	#submit-information {
 		margin-top: 5px;
-		margin-right: 2px;
 		font-size: 6pt;
 	}
 #disclaimer {
@@ -310,6 +312,18 @@ p.misc-info {
 	-webkit-mask-image: -webkit-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,1) 40%, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
 	clear: both;
 }
+	.domain-name .divider {
+		margin-bottom: 5px;
+		display: none;
+	}
+	.domain-name input {
+		margin-top: 5px;
+		display: none;
+	}
+		.domain-name.editing .divider,
+		.domain-name.editing input {
+			display: block;
+		}
 .domain-name {
 	margin-left: -10px;
 	margin-top: 5px;
@@ -377,7 +391,7 @@ p.misc-info {
 		-webkit-border-radius: 10px;
 		padding: 2px;
 		margin-top: -3px;
-		width: 200px;
+		width: 230px;
 	}
 	#rules-filter-bar ul {
 		margin: 0;

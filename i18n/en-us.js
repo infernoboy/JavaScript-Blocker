@@ -2,7 +2,7 @@
  * @file i18n/en-us.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-3
+ * @version 1.2.6-1
  ***************************************/
 
 Strings['en-us'] = {
@@ -24,6 +24,9 @@ Strings['en-us'] = {
 		'Unfortunately this is a limitation of the Safari extension design, not mine.',
 	
 	/** BUTTONS & LABELS **/
+	'Edit': 'Edit',
+	'Done Editing': 'Done Editing',
+	'Remove': 'Remove',
 	'Allow': 'Allow',
 	'Allowing Mode': 'Allowing Mode',
 	'Allow All': 'Allow All',

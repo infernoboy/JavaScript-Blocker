@@ -2,7 +2,7 @@
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-6
+ * @version 1.2.6-1
  ***************************************/
 
 "use strict";
@@ -229,7 +229,7 @@ var JavaScriptBlocker = {
 			
 			c = {
 				display: 'block',
-				WebkitTransitionProperty: '-webkit-transform, opacity, background-color',
+				WebkitTransitionProperty: '-webkit-transform, opacity',
 				WebkitTransitionDuration: t + 's',
 				WebkitTransitionTimingFunction: 'ease'
 			};
@@ -343,7 +343,7 @@ var JavaScriptBlocker = {
 					var v = (parseInt(Math.random() * 10)) + parseInt(e),
 							x = String.fromCharCode('1' + (v < 10 ? '0' + v : v)),
 							r = String.fromCharCode(65 + Math.round(Math.random() * (90 - 65))),
-					 		b = Math.random() > Math.random() ? (Math.random() > Math.random() ? x : x.toUpperCase()) : (Math.random() > Math.random() ? r : r.toLowerCase());
+							b = Math.random() > Math.random() ? (Math.random() > Math.random() ? x : x.toUpperCase()) : (Math.random() > Math.random() ? r : r.toLowerCase());
 					return typeof c === 'number' ? (c === 0 ? b.toLowerCase() : b.toUpperCase()) : b;
 			}).join('');
 		}
@@ -370,7 +370,7 @@ var JavaScriptBlocker = {
 	
 	/**
 	 * Separates a hostname into its subdomain parts.
- 	 *
+	 *
 	 * @param {string} domain The hostname to separate into pieces.
 	 * @return {Array} Parts of the hostname, including itself and * (All Domains)
 	 */
@@ -548,47 +548,25 @@ var JavaScriptBlocker = {
 				}
 				
 				$('.domain-name', ul).click(function () {
-					self.utils.timer.timeout('domain_name_clickery', function (e) {
-						Behaviour.action('Expanding or collapsing a domain');
+					if (this.className.indexOf('no-disclosure') > -1) return false;
 					
-						var d = $('span', e).html(), t = $(e).next();
-					
-						if (t.is(':animated')) return false;
-					
-						var dex = self.collapsedDomains.indexOf(d);
-								
-						if (!$(e).toggleClass('hidden').hasClass('hidden')) {
-							if (dex > -1) self.collapsedDomains.splice(dex, 1);
-						} else {
-							if (dex === -1) self.collapsedDomains.push(d);
-						}
-					
-						t.toggle().slideToggle(300 * self.speedMultiplier, function () {
-							this.style.display = null;
-						});
-					}, 150, [this]);
-				}).find('span').dblclick(function (e) {
-					self.utils.timer.remove('timeout', 'domain_name_clickery');
-					var off = $(this).offset(), p = $(this).parent();
-					
-					new Poppy(e.pageX, off.top + 4, [
-							'<p>',
-								_('Do you want to completely remove all rules for this domain?'), ' ',
-								_('Keep in mind that if automatic rules are enabled, rules will be recreated if you visit ' +
-										'the webpage again.'),
-							'</p>',
-							'<button id="delete-rules-domain">', _('Remove Rules For {1}', [this.innerHTML]), '</button>'
-						].join(''), function () {
-							$('#poppy-content #delete-rules-domain', self.popover).click(function () {
-								if (!self.utils.confirm_click(this)) return false;
-								
-								self.rules.remove_domain(p.data('domain'));
-								p.next().remove().end().remove();
-								self._cleanup();
-								
-								new Poppy();
-							})
-						})
+					Behaviour.action('Expanding or collapsing a domain');
+				
+					var d = $('span', this).html(), t = $(this).next();
+				
+					if (t.is(':animated')) return false;
+				
+					var dex = self.collapsedDomains.indexOf(d);
+							
+					if (!$(this).toggleClass('hidden').hasClass('hidden')) {
+						if (dex > -1) self.collapsedDomains.splice(dex, 1);
+					} else {
+						if (dex === -1) self.collapsedDomains.push(d);
+					}
+				
+					t.toggle().slideToggle(300 * self.speedMultiplier, function () {
+						this.style.display = null;
+					});
 				});
 
 				var sss = $('li input', ul).click(function () {
@@ -615,7 +593,7 @@ var JavaScriptBlocker = {
 						} else {
 							li.remove();
 				
-							if (li.is(':last')) $('.divider:last', parent).css('visibility', 'hidden');
+							$('.divider:last', parent).css('visibility', 'hidden');
 
 							if ($('li', parent).length === 0) {
 								parent.parent().prev().remove();
@@ -944,6 +922,8 @@ var JavaScriptBlocker = {
 				}).siblings('#view-all').click(function (event) {
 					self.busy = 1;
 					
+					$('#edit-domains', self.popover).removeClass('edit-mode').html(_('Edit'));
+					
 					new Poppy(left, top, '<p>' + _('Loading rules') + '</p>', $.noop, function () {
 						var ul = $('#rules-list #data > ul#rules-list-rules', self.popover).html(''),
 								s = self.utils.sort_object(window.localStorage), domain;
@@ -964,7 +944,27 @@ var JavaScriptBlocker = {
 				
 						for (domain in s)
 							self.utils.zero_timeout(append_rules, [ul, domain, self]);
-				
+							
+						function remove_domain (event) {
+							event.stopPropagation();
+							if (!self.utils.confirm_click(this)) return false;
+							
+							self.rules.remove_domain($(this.parentNode).data('domain'));
+							
+							var rs = $(this.parentNode).next();
+							
+							$(this.parentNode).remove();
+							rs.remove();
+							
+							$('#domain-filter', self.popover).trigger('search');
+						}
+							
+						self.utils.zero_timeout(function (ul) {
+							$('.domain-name', ul).prepend('<div class="divider"></div><input type="button" value="' + _('Remove') + '" />')
+									.find('input').click(remove_domain).end()
+									.filter(':first').find('.divider').css('visibility', 'hidden');
+						}, [ul]);
+									
 						self.busy = 0;
 						new Poppy();
 						self.utils.zoom($('#rules-list', self.popover), $('#main', self.popover));
@@ -1036,6 +1036,8 @@ var JavaScriptBlocker = {
 			
 			var is_collapse = this.id === 'collapse-all', d = $('#rules-list .domain-name:visible', self.popover);
 			
+			if (!is_collapse && $('#edit-domains', self.popover).hasClass('edit-mode')) return self.busy = 0;
+			
 			if (is_collapse) d = d.not('.hidden');
 			else d = d.filter('.hidden');
 			
@@ -1051,6 +1053,21 @@ var JavaScriptBlocker = {
 			self.busy = 0;
 		});
 		
+		$('#edit-domains', this.popover).unbind('click').click(function () {
+			$(this).toggleClass('edit-mode');
+			
+			this.innerHTML = this.className.indexOf('edit-mode') > -1 ? _('Done Editing') : _('Edit');
+			
+			var ul = $('#rules-list-rules', self.popover);
+			
+			$('#collapse-all', self.popover).click();
+			
+			$('.domain-name', ul)
+					.toggleClass('no-disclosure').find('.divider')
+					.slideToggle(300 * self.speedMultiplier).siblings('input')
+					.fadeToggle(300 * self.speedMultiplier);
+		});
+		
 		$('#domain-filter', this.popover).unbind('search').bind('search', function () {
 			var d = $('.domain-name:not(.filter-hidden)', self.popover), v = this.value;
 						
@@ -1064,8 +1081,9 @@ var JavaScriptBlocker = {
 			$('#rules-list .misc-info', self.popover).html(
 					_('{1} domain' + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
 			);
-			
-			$('#rules-list .domain-name:visible', self.popover).removeClass('no-divider').eq(0).addClass('no-divider');
+						
+			$('#rules-list-rules .domain-name', self.popover).find('.divider').css('visibility', 'visible').end().filter(':visible:first')
+					.find('.divider').css('visibility', 'hidden');
 		});
 		
 		$('#rules-filter-bar li:not(#li-domain-filter)', this.popover).unbind('click').click(function () {
