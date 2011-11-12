@@ -2,18 +2,20 @@
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-3
+ * @version 1.2.6-4
  ***************************************/
 
 "use strict";
 
 var JavaScriptBlocker = {
+	finding: false,
 	reloaded: false,
 	caches: {
 		domain_parts: {},
 		active_host: {},
 		collapsed_domains: null
 	},
+	commandKey: false,
 	speedMultiplier: 1,
 	disabled: false,
 	noDeleteWarning: false,
@@ -170,7 +172,7 @@ var JavaScriptBlocker = {
 		},
 		escape_regexp: function (text) {
 			if (!text || !text.length) return text;
-			return text.replace(new RegExp('(\\' + ['/', '.', '*', '+', '?', '|', '$', '^', '(', ')', '[', ']', '{', '}', '\\'].join('|\\') + ')', 'g'), '\\$1');
+			return text.replace(new RegExp('(\\' + ['/','.','*','+','?','|','$','^','(',')','[',']','{','}','\\'].join('|\\') + ')', 'g'), '\\$1');
 		},
 		
 		/**
@@ -693,7 +695,9 @@ var JavaScriptBlocker = {
 					
 					$('<pre></pre>').append('<code class="javascript"></code>').find('code').text(data).end().appendTo($('#misc-content', self.popover));
 					if (!no_zoom) self.utils.zoom($('#misc', self.popover).find('.misc-info').text(t.text()).end(), $('#main', self.popover));
-					self.hljs.highlightBlock($('#misc-content pre code', self.popover)[0]);
+					var p = $('#misc-content pre code', self.popover);
+					p.data('unhighlighted', p.html());
+					self.hljs.highlightBlock(p[0]);
 				}
 				
 				$('#misc .info-container #beautify-script', self.popover).remove();
@@ -786,7 +790,8 @@ var JavaScriptBlocker = {
 						Behaviour.action('Automatic rule restore prompt');
 						
 						new Poppy(left, off.top + 8, [
-							'<p>', _('The following automatic rules were disabled, thus ' + (self.allowMode ? 'allowing' : 'blocking') + ' this script:'), '</p>',
+							'<p>', _('The following automatic rules were disabled, thus ' + (self.allowMode ? 
+								'allowing' : 'blocking') + ' this script:'), '</p>',
 							'<ul class="rules-wrapper">',
 								'<li class="domain-name no-disclosure">', store, '</li>',
 								'<li>',
@@ -888,7 +893,9 @@ var JavaScriptBlocker = {
 					$('<pre></pre>').append('<code class="javascript"></code>').find('code')
 							.text(t).end().appendTo($('#misc-content', self.popover));
 					if (!no_zoom) self.utils.zoom($('#misc', self.popover).find('.misc-info').html(_('Unblocked Script')).end(), $('#main', self.popover));
-					self.hljs.highlightBlock($('#misc-content pre code', self.popover)[0]);
+					var p = $('#misc-content pre code', self.popover);
+					p.data('unhighlighted', p.html());
+					self.hljs.highlightBlock(p[0]);
 				}
 				
 				$('#misc .info-container #beautify-script', self.popover).remove();
@@ -908,10 +915,149 @@ var JavaScriptBlocker = {
 			return false;
 		}
 		
+		var toggle_find_bar = function (show_only) {
+			var f = $('#find-bar', self.popover),
+					v = f.is(':visible');
+			
+			if (v && show_only) return false;
+			
+			var	h = f.show().outerHeight(),
+					a = v ? f.show() : f.hide(),
+					m = (f.slideToggle(300 * self.speedMultiplier).toggleClass('visible').hasClass('visible')) ? '-' : '+',
+					mM = m === '-' ? '+' : '-';
+			$('#main, #rules-list, #misc, #setup', self.popover).animate({
+				height: m + '=' + h,
+				top: mM + '=' + h
+			}, 300 * self.speedMultiplier);
+			
+			if (v) $('#find-bar-search', f).blur();
+			
+			return true;
+		}
+		
 		$(this.popover.body).unbind('keydown').keydown(function (e) {
 			if (e.which === 16) self.speedMultiplier = 10;
+			else if (e.which === 93 || e.which === 91) self.commandKey = true;
+			else if (e.which === 70 && self.commandKey) {
+				e.preventDefault();
+				
+				setTimeout(function (self) {
+					var b = $('#find-bar #find-bar-search', self.popover).focus();
+					b[0].selectionStart = 0;
+					b[0].selectionEnd = b[0].value.length;
+				}, 10, self);
+				
+				if (toggle_find_bar(true)) return false;
+			} else if (e.which === 27 && $('#find-bar #find-bar-search', self.popover).is(':focus')) {
+				e.preventDefault();
+				toggle_find_bar();
+			}
 		}).keyup(function (e) {
 			if (e.which === 16) self.speedMultiplier = 1;
+			else if (e.which === 93 || e.which === 91) self.commandKey = false;
+		});
+		
+		$('#find-bar #find-bar-done', this.popover).unbind('click').click(function() {
+			toggle_find_bar();
+			
+			self.utils.timer.timeout('hide_results', function () {
+				var b = $('#find-bar-search', self.popover),
+						s = b.val();
+					
+				b.val('').trigger('search');
+			
+				self.utils.timer.timeout('set_back_find', function (b, s) {
+					b.val(s);
+				}, 3000, [b, s]);
+			}, 300 * self.speedMultiplier);
+		}).siblings('#find-bar-search').bind('search', function () {
+			if (self.finding)
+				return self.utils.timer.timeout('redo_search', function (me) {
+					me.trigger('search');
+				}, 100, [$(this)]);
+			
+			var s = $(this).val(),
+					matches = 0;
+						
+			$('.find-scroll', self.popover).remove();
+			
+			$('*', self.popover).removeClass('found').each(function () {
+				self.utils.zero_timeout(function (e) {
+					if (e.data('orig_html'))
+						e.html(e.data('orig_html')).data('orig_html', null);
+				}, [$(this)]);
+			});
+			
+			if (s.length === 0) {
+				$('#find-bar-matches', self.popover).html('');
+				return false;
+			}
+			
+			self.busy = 1;
+			self.finding = true;
+			
+			var visible = $('#main, #rules-list, #misc, #setup', self.popover).filter(':visible'),
+					offset = $('header', self.popover).outerHeight() + $('#find-bar', self.popover).outerHeight(),
+					oST = oST = visible.scrollTop();
+					
+			var end_find = function (self, visible, oST) {
+				visible[0].scrollTop = oST;
+				self.busy = 0;
+				self.finding = false;
+			}
+			
+			visible.find('code.javascript:visible').html(visible.find('code.javascript:visible').data('unhighlighted'));
+			
+			var x = visible.find('*:visible');
+			x.each(function (index) {
+				var me = this;
+				if (['MARK', 'OPTION', 'SCRIPT'].indexOf(this.nodeName) === -1 && this.innerHTML && this.innerHTML.length)
+					self.utils.zero_timeout(function (self, e, s) {
+						var $e = $(e),
+								t = $('<div>').text($e.text()).html(),
+								s = $('<div>').text(s).html(),
+								h = $e.html(),
+								r = new RegExp('(' + s + ')', 'ig');
+
+						if (t.length && t === h && r.test(t) > -1) {
+							$e.addClass('found').data('orig_html', $e.html()).html(h.replace(r, '<mark>$1</mark>'));
+							
+							var nOne, dOne, dTwo, nTwo;
+							
+							$('mark', $e).each(function () {
+								matches++;
+
+								self.utils.zero_timeout(function (visible, self, ss, offset, oST) {
+									visible[0].scrollTop = 0;
+														
+									nOne = ss.offset().top;
+							
+									dOne = visible[0].scrollHeight;
+							
+									dTwo = visible.outerHeight();
+									nTwo = dTwo * (nOne / dOne);
+							
+									self.utils.zero_timeout(function (self, nTwo, offset) {
+										$('<div class="find-scroll" />').appendTo(self.popover.body).css({
+											top: Math.round(nTwo + offset) - 2
+										});
+									}, [self, nTwo, offset]);
+									
+									self.utils.timer.timeout('end_find', end_find, 100, [self, visible, oST]);
+								}, [visible, self, $(this), offset, oST]);
+							});
+						}
+					}, [self, this, self.utils.escape_regexp(s)]);
+					
+					self.utils.zero_timeout(function (index, matches, end_find, self, visible, oST) {
+						if (index === x.length - 1 && matches === 0)
+							self.utils.timer.timeout('end_find', end_find, 100, [self, visible, oST]);
+					}, [index, matches, end_find, self, visible, oST]);
+			});
+			
+			self.utils.zero_timeout(function () {
+				$('#find-bar-matches', self.popover).html(_('{1} matches', [matches]));
+			})
 		});
 	
 		$('#block-domain, #allow-domain', this.popover).unbind('click').click(function () {
@@ -1206,7 +1352,9 @@ var JavaScriptBlocker = {
 					.data('url', jsblocker[text].urls[i]).find('span').text(jsblocker[text].urls[i]).siblings('input').val(button);
 
 		if (jsblocker[text].count > 3 && jsblocker[text].count - 3 > 1) {
-			$('li:eq(2)', ul).after('<li><a href="javascript:void(1)" class="show-more">' + _('Show {1} more', [jsblocker[text].count - 3]) + '</a></li>');
+			$('li:eq(2)', ul).after(['<li>',
+						'<a href="javascript:void(1)" class="show-more">' + _('Show {1} more', [jsblocker[text].count - 3]) + '</a>',
+					'</li>'].join(''));
 			$('li:gt(3)', ul).hide().addClass('show-more-hidden');
 		}
 
@@ -1248,7 +1396,8 @@ var JavaScriptBlocker = {
 					frames_allowed_count += jsblocker.frames[frame].unblocked.count;
 				}
 				
-				$('<option></option>').addClass('frame-page').attr('value', jsblocker.frames[frame].href).html(jsblocker.frames[frame].href).appendTo(inline);
+				$('<option></option>').addClass('frame-page').attr('value', jsblocker.frames[frame].href)
+						.html(jsblocker.frames[frame].href).appendTo(inline);
 			}
 */
 
@@ -1258,8 +1407,10 @@ var JavaScriptBlocker = {
 				for (frame in this.frames[jsblocker.href]) {
 					xx = this.frames[jsblocker.href];
 					
-					if (page_list.find('optgroup').length == 1) inline = $('<optgroup label="' + _('Inline Frame Pages') + '"></optgroup>').appendTo(page_list);
-					else inline = page_list.find('optgroup:eq(1)');
+					if (page_list.find('optgroup').length == 1)
+						inline = $('<optgroup label="' + _('Inline Frame Pages') + '"></optgroup>').appendTo(page_list);
+					else
+						inline = page_list.find('optgroup:eq(1)');
 				
 					if (typeof index === 'undefined') {
 						frames_blocked_count += xx[frame].blocked.count;
@@ -1501,7 +1652,7 @@ var JavaScriptBlocker = {
 					return false;
 			}
 
-			$('#rules-list-back:visible, #misc-close:visible', this.popover).click();
+			$('#rules-list-back:visible, #misc-close:visible, #find-bar-done:visible', this.popover).click();
 		} else if (!event || (event && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1))
 			new Poppy();
 		

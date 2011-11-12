@@ -3,7 +3,7 @@
  * @file popover.html
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-2
+ * @version 1.2.6-3
  ***************************************/
 -->
 
@@ -11,12 +11,10 @@
 
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	
-	<title></title>
-	
 	<meta charset="utf-8" />
 	
+	<title></title>
+		
 	<link rel="stylesheet" href="css/poppy.css" type="text/css" />
 	<link rel="stylesheet" href="css/main.css" type="text/css" />
 	<link rel="stylesheet" href="css/highlight.css" />
@@ -37,8 +35,8 @@
 					b;
 					
 			for (i = 0; i < inputs.length; i++) {
-				inputs[i].value = _(inputs[i].value);
-				if (inputs[i].placeholder) inputs[i].placeholder = _(inputs[i].placeholder);
+				if (inputs[i].value && inputs[i].value.length) inputs[i].value = _(inputs[i].value);
+				if (inputs[i].placeholder && inputs[i].placeholder.length) inputs[i].placeholder = _(inputs[i].placeholder);
 			}
 			for (b = 0; b < ogroups.length; b++)
 				ogroups[b].label = _(ogroups[b].label);
@@ -54,13 +52,18 @@
 	<header><h1><script>document.write(_('JavaScript Blocker'));</script></h1></header>
 	
 	<div id="container">
-		<div id="setup">
+		<div id="find-bar">
+			<input type="button" id="find-bar-done" value="Done" />
+			<input type="search" id="find-bar-search" incremental="incremental" results="10" autosave="find_on" />
+			<label for="find-bar-search" id="find-bar-matches"></label>
+		</div>
+		<div id="setup" class="whoop">
 			<p><img src="images/toggleable.png" alt="Toggleable" /> <img src="Icon-48.png" alt="JS Blocker" /></p>
 			<p><script>document.write(_('Thanks for using {1}', [_('JavaScript Blocker')]));</script></p>
 			<p><script>document.write(_('Which mode would you like to run in?'));</script></p>
 			<p><input type="button" id="setup-block" value="Blocking Mode" /> <input type="button" id="setup-allow" value="Allowing Mode" /></p>
 		</div>
-		<div id="main">
+		<div id="main" class="whoop">
 			<div id="page-lists">
 				<label><script>document.write(_('Page:'));</script></label>
 				<select id="page-list">
@@ -115,7 +118,7 @@
 					<input type="button" value="Disable JavaScript Blocker" id="disable" /></p>
 			</div>
 		</div>
-		<div id="rules-list">
+		<div id="rules-list" class="whoop">
 			<div class="info-container">
 				<p class="misc-info">0 domains, 0 rules</p>
 				<input type="button" value="Close Rules List" id="rules-list-back" />
@@ -137,7 +140,7 @@
 				<ul id="rules-list-rules"></ul>
 			</div>
 		</div>
-		<div id="misc">
+		<div id="misc" class="whoop">
 			<div class="info-container">
 				<p class="misc-info"></p>
 				<input type="button" value="Close" id="misc-close" />

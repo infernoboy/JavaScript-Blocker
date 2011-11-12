@@ -2,7 +2,7 @@
  * @file css/main.css
  * @author Travis Roman (travis@toggleable.com)
  * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-3
+ * @version 1.2.6-4
  ***************************************/
 
 ::-webkit-scrollbar {
@@ -82,13 +82,13 @@ header h1 {
 	left: 0;
 	width: 452px;
 	height: 369px;
-	overflow-y: scroll;
+	overflow-y: scroll !important;
 	overflow-x: hidden;
 	padding-top: 6px;
 	padding-right: 4px;
 }
 	#misc {
-		overflow-x: auto;
+		overflow-x: auto !important;
 	}
 
 input,
@@ -116,6 +116,11 @@ textarea {
 		-webkit-border-radius: 3px;
 		background: -webkit-linear-gradient(top, #f3f3f3, #FbFbFb);
 		-webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.15), 0 1px 0 #eee;
+	}
+	input[type="search"] {
+		padding: 2px;
+		-webkit-appearance: none;
+		-webkit-border-radius: 10px;
 	}
 
 input[type="button"].confirm-click,
@@ -269,6 +274,7 @@ a {
 		color: #0B37B4;
 		text-shadow: 0 1px 0 #fff;
 	}
+
 #disable,
 #view-rules,
 #reset-automatic,
@@ -380,7 +386,8 @@ p.misc-info {
 		-webkit-border-radius: 0;
 	}
 
-#rules-filter-bar {
+#rules-filter-bar,
+#find-bar {
 	margin-top: 5px;
 	-webkit-box-shadow: 0 -1px 0 #bfbfbf;
 	border-top: 1px solid #f8f8f8;
@@ -391,9 +398,6 @@ p.misc-info {
 	-webkit-user-select: none;
 }
 	#rules-filter-bar #domain-filter {
-		-webkit-appearance: none;
-		-webkit-border-radius: 10px;
-		padding: 2px;
 		margin-top: -3px;
 		width: 230px;
 	}
@@ -427,4 +431,80 @@ p.misc-info {
 		}
 		#rules-filter-bar #li-domain-filter {
 			float: right;
+		}
+
+#find-bar {
+	display: none;
+	width: 454px;
+	height: 17px;
+	margin: 0;
+	top: 26px;
+	left: 0;
+	position: fixed;
+	z-index: 99999;
+	-webkit-box-shadow: 0 -1px 0 #bfbfbf, 0 3px 5px rgba(0,0,0,0.1);
+}
+	#find-bar #find-bar-search {
+		width: 200px;
+		margin-top: -1px;
+		margin-right: 3px;
+		margin-left: 5px;
+		float: right;
+	}
+	#find-bar #find-bar-matches {
+		float: right;
+		font-size: 9pt;
+	}
+	#find-bar #find-bar-done {
+		float: right;
+		margin-top: 0px;
+		height: 18px;
+		-webkit-border-radius: 10px;
+		padding-top: 1px !important;
+		padding-bottom: 1px !important;
+	}
+	.find-scroll {
+		position: fixed;
+		right: 0;
+		width: 4px;
+		background: #FE0;
+		height: 1px;
+		z-index: 99999999;
+		border: 1px solid #888;
+		border-top: none;
+		border-bottom: none;
+		-webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.2);
+		opacity: 0.9;
+	}
+	mark {
+		display: inline-block;
+		padding: 0 1px;
+		margin-left: -1px;
+		margin-right: -2px;
+		-webkit-transition-property: padding, margin;
+		-webkit-transition-duration: 0.3s;
+		background: -webkit-linear-gradient(top, #FF0, #E9C700);
+		-webkit-border-radius: 5px;
+		color: #3a3a3a;
+		text-decoration: none;
+		-webkit-box-shadow: inset 0 0 4px #CFC004, inset 0 1px 0 rgba(0,0,0,0.2), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.1),
+				inset 1px 0 0 rgba(0,0,0,0.2), inset -1px 0 0 rgba(0,0,0,0.2);
+		white-space: pre;
+	}
+	@-webkit-keyframes enlarge {
+		0% {
+			padding: 0 1px;
+			margin-left: -1px;
+			margin-right: -2px;
+		}
+		100% {
+			padding: 0 8px;
+			margin-left: -8px;
+			margin-right: -9px;
+		}
+	}
+		mark.enlarge {
+			-webkit-animation: enlarge 0.15s 2;
+			-webkit-animation-direction: alternate;
+			-webkit-animation-timing-function: ease-out;
 		}
