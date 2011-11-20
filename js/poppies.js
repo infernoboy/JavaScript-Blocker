@@ -1,8 +1,8 @@
 /***************************************
  * @file js/poppies.js
  * @author Travis Roman (travis@toggleable.com)
- * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.5-1
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.7-1
  ***************************************/
 
 JavaScriptBlocker.poppies = {
@@ -32,9 +32,10 @@ JavaScriptBlocker.poppies = {
 			save: function (no_refresh) {
 				main.rules.add(zoo.me.domain, this.val(), this.parent().prev().find('input:checked').val());
 
-				if (!no_refresh) safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
-
-				new Poppy();
+				if (!no_refresh) {
+					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+					new Poppy();
+				}
 				
 				return this.parent().prev().find('input:checked').val();
 			},

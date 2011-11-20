@@ -1,8 +1,8 @@
 /***************************************
  * @file css/main.css
  * @author Travis Roman (travis@toggleable.com)
- * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-4
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.7-1
  ***************************************/
 
 ::-webkit-scrollbar {
@@ -33,7 +33,7 @@
 }
 	
 body {
-	font-family: 'Lucida Grande';
+	font-family: 'Lucida Grande', sans-serif;
 	font-size: 10pt;
 	line-height: 1.5;
 	text-shadow: 0 1px 0 rgba(255,255,255,0.7);
@@ -71,7 +71,7 @@ header h1 {
 	#container.loading > * {
 		display: none;
 	}
-	#container.busy * {
+	body.busy * {
 		cursor: wait !important;
 	}
 #main,
@@ -108,7 +108,8 @@ textarea {
 	}
 	input[type="button"]:active,
 	button:active {
-		background: -webkit-linear-gradient(top, #B9B9B9, #DFDFDF 20%, #DFDFDF);
+		background: -webkit-linear-gradient(top, #CCC, #DFDFDF 20%, #DFDFDF);
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.5);
 	}
 	input[type="text"],
 	input[type="search"],
@@ -182,7 +183,6 @@ label {
 	.rule.type--3 {
 		text-decoration: line-through;
 	}
-
 .allowed-label,
 .blocked-label,
 .unblocked-label {
@@ -238,6 +238,9 @@ ul li {
 	position: relative;
 	padding-top: 5px;
 }
+	ul li.none {
+		display: none;
+	}
 ul li span {
 	display: inline-block;
 	max-width: 86%;
@@ -334,6 +337,9 @@ p.misc-info {
 		.domain-name.editing input {
 			display: block;
 		}
+		.domain-name.editing + li {
+			display: none;
+		}
 .domain-name {
 	margin-left: -10px;
 	margin-top: 5px;
@@ -349,11 +355,13 @@ p.misc-info {
 			display: none;
 		}
 	.domain-name.not-included,
-	.domain-name.filter-hidden {
+	.domain-name.filter-hidden,
+	.domain-name.state-hidden {
 		display: none;
 	}
 	.domain-name.not-included + li,
-	.domain-name.filter-hidden + li {
+	.domain-name.filter-hidden + li,
+	.domain-name.state-hidden + li {
 		display: none;
 	}
 	.domain-name.no-disclosure {
@@ -386,7 +394,7 @@ p.misc-info {
 		-webkit-border-radius: 0;
 	}
 
-#rules-filter-bar,
+.filter-bar,
 #find-bar {
 	margin-top: 5px;
 	-webkit-box-shadow: 0 -1px 0 #bfbfbf;
@@ -397,40 +405,51 @@ p.misc-info {
 	background: -webkit-linear-gradient(top, #ececec, #d9d9d9);
 	-webkit-user-select: none;
 }
-	#rules-filter-bar #domain-filter {
+	#rules-filter-bar-two {
+		margin-top: 0;
+		padding-top: 3px;
+	}
+	.filter-bar #domain-filter,
+	.filter-bar #li-domain-filter {
 		margin-top: -3px;
-		width: 230px;
+		width: 300px;
 	}
-	#rules-filter-bar ul {
-		margin: 0;
+		.filter-bar #li-domain-filter {
+			margin-top: 0;
+			margin-left: -13px;
+		}
+	.filter-bar ul {
+		margin: 0 0 -1px 0;
+		float: left;
 	}
-	#rules-filter-bar ul li {
+	.filter-bar ul li {
 		float: left;
 		margin: 0 2px 0 0;
-		padding: 0 8px;
+		padding: 0 6px;
 		-webkit-border-radius: 10px;
 		border: 1px solid transparent;
 		font-weight: bold;
 		cursor: default;
 	}
-		#rules-filter-bar ul li:not(#li-domain-filter).selected,
-		#rules-filter-bar ul li:not(#li-domain-filter):active,
-		#rules-filter-bar ul li:not(#li-domain-filter):hover {
+		.filter-bar .filter-divider {
+			padding: 0;
+			color: #888;
+		}
+		.filter-bar ul li:not(#li-domain-filter):not(.filter-divider).selected,
+		.filter-bar ul li:not(#li-domain-filter):not(.filter-divider):active,
+		.filter-bar ul li:not(#li-domain-filter):not(.filter-divider):hover {
 			background: -webkit-linear-gradient(top, #888, #969696 10%, #969696);
 			color: #fff;
 			text-shadow: 0 1px 0 rgba(0,0,0,0.4);
 			-webkit-box-shadow: inset 0 1px 0 rgba(0,0,0,0.4), 0 1px rgba(255,255,255,0.7);
 		}
-			#rules-filter-bar ul li:not(#li-domain-filter):not(.selected):hover {
+			.filter-bar ul li:not(#li-domain-filter):not(.filter-divider):not(.selected):hover {
 				background: #afafaf;
 				-webkit-box-shadow: none;
 			}
-		#rules-filter-bar ul li:not(#li-domain-filter):active {
+		.filter-bar ul li:not(#li-domain-filter):not(.filter-divider):active {
 			background: -webkit-linear-gradient(top, #676767, #767676 10%, #767676) !important;
 			-webkit-box-shadow: inset 0 1px 0 rgba(0,0,0,0.45), 0 1px rgba(255,255,255,0.7) !important;
-		}
-		#rules-filter-bar #li-domain-filter {
-			float: right;
 		}
 
 #find-bar {
@@ -468,8 +487,11 @@ p.misc-info {
 		right: 0;
 		width: 4px;
 		background: #FE0;
+		background: -webkit-linear-gradient(right, #FF0, #E9C700);
+		background: -webkit-linear-gradient(right, #FAFF00, #E0C200);
+
 		height: 1px;
-		z-index: 99999999;
+		z-index: 9999;
 		border: 1px solid #888;
 		border-top: none;
 		border-bottom: none;
@@ -484,11 +506,12 @@ p.misc-info {
 		-webkit-transition-property: padding, margin;
 		-webkit-transition-duration: 0.3s;
 		background: -webkit-linear-gradient(top, #FF0, #E9C700);
-		-webkit-border-radius: 5px;
+		background: -webkit-linear-gradient(top, #FAFF00, #E0C200);
+		-webkit-border-radius: 4px;
 		color: #3a3a3a;
 		text-decoration: none;
-		-webkit-box-shadow: inset 0 0 4px #CFC004, inset 0 1px 0 rgba(0,0,0,0.2), inset 0 -1px 0 rgba(0,0,0,0.3), inset 0 -2px 0 rgba(0,0,0,0.1),
-				inset 1px 0 0 rgba(0,0,0,0.2), inset -1px 0 0 rgba(0,0,0,0.2);
+		-webkit-box-shadow: inset 0 0 4px #CFC004, inset 0 1px 0 rgba(0,0,0,0.2), inset 0 -1px 0 rgba(0,0,0,0.4), inset 0 -2px 0 rgba(0,0,0,0.1),
+				inset 1px 0 0 rgba(0,0,0,0.3), inset -1px 0 0 rgba(0,0,0,0.3);
 		white-space: pre;
 	}
 	@-webkit-keyframes enlarge {
@@ -504,7 +527,5 @@ p.misc-info {
 		}
 	}
 		mark.enlarge {
-			-webkit-animation: enlarge 0.15s 2;
-			-webkit-animation-direction: alternate;
-			-webkit-animation-timing-function: ease-out;
+			-webkit-animation: enlarge 0.15s ease-out 0 2 alternate;
 		}

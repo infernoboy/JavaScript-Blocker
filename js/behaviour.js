@@ -1,8 +1,8 @@
 /***************************************
  * @file js/behaviour.js
  * @author Travis Roman (travis@toggleable.com)
- * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-1
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.7-1
  ***************************************/
 
 "use strict";

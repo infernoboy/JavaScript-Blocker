@@ -1,8 +1,8 @@
 /***************************************
  * @file js/global.js
  * @author Travis Roman (travis@toggleable.com)
- * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-4
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.7-1
  ***************************************/
 
 "use strict";
@@ -121,10 +121,10 @@ var JavaScriptBlocker = {
 		window.localStorage.setItem('CollapsedDomains', JSON.stringify(value));
 	},
 	get busy() {
-		return $('#container', this.popover).hasClass('busy');
+		return $('body', this.popover).hasClass('busy');
 	},
 	set busy(value) {
-		$('#container', this.popover).toggleClass('busy', value === 1);
+		$('body', this.popover).toggleClass('busy', value === 1);
 	},
 	animate_badge: function(start) {
 		if (start === false) return this.utils.timer.remove('interval', 'badge_animation');
@@ -405,6 +405,8 @@ var JavaScriptBlocker = {
 			}
 			
 			var parts = this.domain_parts(domain), o = {}, i, b, c, r;
+			
+			if (parts.length === 1 && domain !== '.*') return this.for_domain('.*', true);
 
 			for (i = 0, b = parts.length; i < b; i++) {
 				c = (i > 0 ? '.' : '') + parts[i];
@@ -525,7 +527,7 @@ var JavaScriptBlocker = {
 			if (domain in allowed) {
 				allowed = allowed[domain];
 
-				if ('{}' != JSON.stringify(allowed)) {
+				if (!$.isEmptyObject(allowed)) {
 					var j = this.collapsedDomains,
 							domain_name = (domain.charAt(0) === '.' && domain !== '.*' ? domain : (domain === '.*' ? _('All Domains') : domain));
 					
@@ -539,19 +541,22 @@ var JavaScriptBlocker = {
 								(safari.extension.settings.ignoreWhitelist && allowed[rule] === 5) ||
 								(!!(allowed[rule] % 2) === this.allowMode && allowed[rule] < 4)) continue;
 						rules++;
-						newul.append('<li><span class="rule type-' + allowed[rule] + '">' + rule + '</span> ' +
-								'<input type="button" value="' + (allowed[rule] < 0 ?
-										_('Restore') : (allowed[rule] === 2 || allowed[rule] === 3 ? _('Disable') : _('Delete'))) + '" />' +
-								'<div class="divider"></div></li>')
+						newul.append([
+								'<li>',
+									'<span class="rule type-', allowed[rule], '">', rule, '</span> ',
+											'<input type="button" value="', (allowed[rule] < 0 ?
+													_('Restore') : (allowed[rule] === 2 || allowed[rule] === 3 ? _('Disable') : _('Delete'))) + '" />',
+									'<div class="divider"></div>',
+								'</li>'].join(''))
 								.find('li:last').data('rule', rule).data('domain', domain).data('type', allowed[rule]);
 					}
+					
+					$('.divider:last', newul).css('visibility', 'hidden');
 					
 					if (rules === 0) return $('<ul class="rules-wrapper"></ul>');
 					
 					if (j && j.indexOf(domain_name) > -1)
 						newul.parent().prev().addClass('hidden');
-
-					$('.divider:last', newul).css('visibility', 'hidden');
 				}
 				
 				$('.domain-name', ul).click(function () {
@@ -663,9 +668,9 @@ var JavaScriptBlocker = {
 									if (!is_new) {
 										Behaviour.action('Rule edited');
 									
-										t.text(this.val()).removeClass('type-0 type-1 type-2 type-3 type-4 type-5 type-6 type-7').addClass('type-' + v)
+										t.text(this.val()).removeClass('type-0 type-1 type-2 type-3 type--2 type--3 type-4 type-5 type-6 type-7').addClass('type-' + v)
 												.siblings('input').val(_('Delete')).parent().data('rule', this.val()).data('type', v);
-										new Poppy(e.pageX, off.top - 2, '<p>' + _('Rule succesfully edited.') + '</p>');
+										new Poppy(e.pageX, off.top - 2, '<p>' + _('Rule succesfully edited.') + '</p>', $.noop, $.noop, 0.2);
 									} else {
 										Behaviour.action('Rule added');
 									
@@ -679,7 +684,7 @@ var JavaScriptBlocker = {
 						});
 					});
 			}
-
+		
 			return ul;
 		}
 	},
@@ -984,10 +989,10 @@ var JavaScriptBlocker = {
 			$('*', self.popover).removeClass('found').each(function () {
 				self.utils.zero_timeout(function (e) {
 					if (e.data('orig_html'))
-						e.html(e.data('orig_html')).data('orig_html', null);
+						e.html(e.data('orig_html')).removeData('orig_html');
 				}, [$(this)]);
 			});
-			
+					
 			if (s.length === 0) {
 				$('#find-bar-matches', self.popover).html('');
 				return false;
@@ -1011,7 +1016,7 @@ var JavaScriptBlocker = {
 			var x = visible.find('*:visible');
 			x.each(function (index) {
 				var me = this;
-				if (['MARK', 'OPTION', 'SCRIPT'].indexOf(this.nodeName) === -1 && this.innerHTML && this.innerHTML.length)
+				if (['MARK', 'OPTION', 'SCRIPT'].indexOf(this.nodeName.toUpperCase()) === -1 && this.innerHTML && this.innerHTML.length)
 					self.utils.zero_timeout(function (self, e, s) {
 						var $e = $(e),
 								t = $('<div>').text($e.text()).html(),
@@ -1022,7 +1027,7 @@ var JavaScriptBlocker = {
 						if (t.length && t === h && r.test(t) > -1) {
 							$e.addClass('found').data('orig_html', $e.html()).html(h.replace(r, '<mark>$1</mark>'));
 							
-							var nOne, dOne, dTwo, nTwo;
+							var nOne, dOne, dTwo, nTwo, off;
 							
 							$('mark', $e).each(function () {
 								matches++;
@@ -1113,7 +1118,6 @@ var JavaScriptBlocker = {
 						'<p>', _('The last 2 rule types will override any other rule.'), '</p>'].join(''), $.noop, $.noop, 0.2);
 				}).siblings('#view-domain').click(function () {
 					Behaviour.action('View rules for domain');
-					
 					self.busy = 1;
 					
 					var parts = self.domain_parts(self.active_host($('#page-list', self.popover).val())), x;
@@ -1136,22 +1140,21 @@ var JavaScriptBlocker = {
 					
 					new Poppy(left, top, '<p>' + _('Loading rules') + '</p>', $.noop, function () {
 						var ul = $('#rules-list #data > ul#rules-list-rules', self.popover).html(''),
-								s = self.utils.sort_object(window.localStorage), domain;
-				
-						var i = 0, filter = $('#domain-filter', self.popover);
+								s = self.utils.sort_object(window.localStorage), domain,
+			 					i = 0, filter = $('#domain-filter', self.popover), rs = [];
 						
 						if ('srcElement' in event) {
 							Behaviour.action('View all rules');
 							filter.val('');
 						}
-						
+							
 						function append_rules (ul, domain, self) {
-							ul.append($('> *', self.rules.view(domain)));
+							ul.append($('> li', self.rules.view(domain)));
 							self.utils.timer.timeout('filter_bar_click', function (self) {
-								$('#rules-filter-bar li.selected', self.popover).click();
+								$('.filter-bar li.selected', self.popover).click();
 							}, 10, [self]);
 						}
-				
+						
 						for (domain in s)
 							self.utils.zero_timeout(append_rules, [ul, domain, self]);
 							
@@ -1171,13 +1174,14 @@ var JavaScriptBlocker = {
 							
 						self.utils.zero_timeout(function (ul) {
 							$('.domain-name', ul).prepend('<div class="divider"></div><input type="button" value="' + _('Remove') + '" />')
-									.find('input').click(remove_domain).end()
-									.filter(':first').find('.divider').css('visibility', 'hidden');
+									.find('input').click(remove_domain);
 						}, [ul]);
-									
-						self.busy = 0;
-						new Poppy();
-						self.utils.zoom($('#rules-list', self.popover), $('#main', self.popover));
+						
+						self.utils.zero_timeout(function (self) {
+							self.busy = 0;
+							new Poppy();
+							self.utils.zoom($('#rules-list', self.popover), $('#main', self.popover));
+						}, [self]);
 					}, 0.0);
 				});
 			});
@@ -1202,20 +1206,25 @@ var JavaScriptBlocker = {
 		});
 		
 		$('.allowed-label, .blocked-label, .unblocked-label', this.popover).click(function () {
-			var $this = $(this), which = this.className.substr(0, this.className.indexOf('-'));
+			var $this = $(this), which = this.className.substr(0, this.className.indexOf('-')), e = $('#' + which + '-script-urls ul', self.popover);
+			
+			if (e.is(':animated')) return false;
 			
 			Behaviour.action(this.className + ' clicked');
 			
 			if ($this.hasClass('hidden')) {
 				window.localStorage.setItem(which + 'IsCollapsed', 0);
 				$this.removeClass('hidden');
-				$('#' + which + '-script-urls ul', self.popover)
-						.slideDown(300 * self.speedMultiplier).removeClass('was-hidden');
+				e.slideDown(300 * self.speedMultiplier).removeClass('was-hidden');
 			} else {
 				window.localStorage.setItem(which + 'IsCollapsed', 1);
 				$this.addClass('hidden');
-				$('#' + which + '-script-urls ul', self.popover).slideUp(300 * self.speedMultiplier).addClass('was-hidden');
+				e.slideUp(300 * self.speedMultiplier).addClass('was-hidden');
 			}
+			
+			self.utils.timer.timeout('label_search', function (self) {
+				$('#find-bar-search:visible', self.popover).trigger('search');
+			}, 400 * self.speedMultiplier, [self]);
 		});
 		
 		$('#reset-domain', this.popover).unbind('click').click(function () {
@@ -1269,50 +1278,107 @@ var JavaScriptBlocker = {
 			this.innerHTML = this.className.indexOf('edit-mode') > -1 ? _('Done Editing') : _('Edit');
 			
 			var ul = $('#rules-list-rules', self.popover);
-			
-			$('#collapse-all', self.popover).click();
-			
-			$('.domain-name', ul)
-					.toggleClass('no-disclosure').find('.divider')
-					.slideToggle(300 * self.speedMultiplier).siblings('input')
-					.fadeToggle(300 * self.speedMultiplier);
+					
+			$('.domain-name', ul).toggleClass('no-disclosure').toggleClass('editing')
 		});
 		
-		$('#domain-filter', this.popover).unbind('search').bind('search', function () {
-			var d = $('.domain-name:not(.filter-hidden)', self.popover), v = this.value;
-						
-			d.each(function () {
-				$(this).toggleClass('not-included', !(new RegExp(v, 'i')).test(this.getElementsByTagName('span')[0].innerHTML));
-			});
-			
+		var counter = function (self) {
 			var d = $('#rules-list .domain-name:visible', self.popover).length,
-				r = $('#rules-list .domain-name:visible + li > ul li span.rule', self.popover).length;
+				r = $('#rules-list .domain-name:visible + li > ul li span.rule:not(.hidden)', self.popover).length;
 						
 			$('#rules-list .misc-info', self.popover).html(
 					_('{1} domain' + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
-			);
+			).removeData('orig_html');
+		}
+		
+		$('#domain-filter', this.popover).unbind('search').bind('search', function () {
+			var d = $('.domain-name:not(.filter-hidden) span', self.popover), v;
+			
+			try {
+				v = new RegExp(this.value, 'i');
+			} catch (e) {
+				v = /.*/;
+			}
 						
-			$('#rules-list-rules .domain-name', self.popover).find('.divider').css('visibility', 'visible').end().filter(':visible:first')
-					.find('.divider').css('visibility', 'hidden');
+			d.each(function () {
+				$(this.parentNode).toggleClass('not-included', !v.test(this.innerHTML));
+			});
+			
+			var d = $('#rules-list .domain-name:visible', self.popover).length,
+				r = $('#rules-list .domain-name:visible + li > ul li span.rule:not(.hidden)', self.popover).length;
+						
+			counter(self);
 		});
 		
-		$('#rules-filter-bar li:not(#li-domain-filter)', this.popover).unbind('click').click(function () {
+		$('#rules-filter-bar #filter-type-collapse li:not(#li-domain-filter)', this.popover).unbind('click').click(function () {
 			Behaviour.action(this.id + ' clicked');
 			
 			$(this).siblings('li').removeClass('selected').end().addClass('selected');
 			
-			var x = $('#rules-list .domain-name', self.popover);
+			self.utils.zero_timeout(function (self, that) {
+				var x = $('#rules-list .domain-name', self.popover);
+				
+				x.filter('.filter-hidden').removeClass('filter-hidden');
+				
+				switch(that.id) {
+					case 'filter-collapsed':
+						x.not('.hidden').addClass('filter-hidden'); break;
+					case 'filter-expanded':
+						x.filter('.hidden').addClass('filter-hidden'); break;
+				}
+				
+				$('#domain-filter', self.popover).trigger('search');
+			}, [self, this]);
+		});
+		
+		$('#rules-filter-bar #filter-type-state li:not(.filter-divider)', this.popover).unbind('click').click(function () {
+			Behaviour.action(this.id + ' clicked');
+			
+			var that = this;
+			
+			$(this).siblings('li').removeClass('selected').end().addClass('selected');
+			
+			var fix_dividers = function (self, that) {
+				var d = $('#rules-list-rules ul li .divider', self.popover).css('visibility', 'visible').parent().parent();
 
-			x.filter('.filter-hidden').removeClass('filter-hidden');
-
-			switch(this.id) {
-				case 'filter-collapsed':
-					x.not('.hidden').addClass('filter-hidden'); break;
-				case 'filter-expanded':
-					x.filter('.hidden').addClass('filter-hidden'); break;
+				if (that.id === 'filter-state-all')
+					d.find('.divider:last').css('visibility', 'hidden');
+				else
+					d.find('li:not(.none) .divider:last').css('visibility', 'hidden');
 			}
 			
-			$('#domain-filter', self.popover).trigger('search');
+			switch (this.id) {
+				case 'filter-state-all':
+					$('.rule', self.popover).removeClass('hidden').parent().removeClass('none');
+					fix_dividers(self, that);
+					break;
+				case 'filter-enabled':
+					self.utils.zero_timeout(function (self) {
+						$('.rule', self.popover).removeClass('hidden').not('.rule.type--2, .rule.type--3').parent().removeClass('none');
+					}, [self]);
+					self.utils.zero_timeout(function (self, fix_dividers) {
+						$('.rule.type--2, .rule.type--3', self.popover).addClass('hidden').parent().addClass('none');
+						fix_dividers(self, that);
+					}, [self, fix_dividers]);
+					break;
+				case 'filter-disabled':
+					self.utils.zero_timeout(function (self) {
+						$('.rule', self.popover).removeClass('hidden').parent().removeClass('none');
+					}, [self]);
+					self.utils.zero_timeout(function (self, fix_dividers) {
+						$('.rule', self.popover).not('.type--2, .type--3').addClass('hidden').parent().addClass('none');
+						fix_dividers(self, that);
+					}, [self, fix_dividers]); 
+					break;
+			}
+			
+			$('li.domain-name', self.popover).next().each(function () {
+				self.utils.zero_timeout(function (t) {
+					$(t).prev().toggleClass('state-hidden', $('ul li.none', t).length === $('ul li', t).length);
+				}, [this]);
+			});
+			
+			self.utils.zero_timeout(counter, [self]);
 		});
 		
 		$('#submit-information', this.popover).unbind('click').click(function () {
@@ -1357,13 +1423,14 @@ var JavaScriptBlocker = {
 					'</li>'].join(''));
 			$('li:gt(3)', ul).hide().addClass('show-more-hidden');
 		}
-
+		
 		$('.divider:last', ul).css('visibility', 'hidden');
 
 		$('.show-more', ul).click(function () {
 			$(this).parent().siblings('li:hidden').slideDown(300 * self.speedMultiplier).end().slideUp(300  * self.speedMultiplier, function () {
 				$(this).remove();
 			});
+			$('#find-bar-search:visible', self.popover).trigger('search');
 		});
 		
 		if (window.localStorage[text + 'IsCollapsed'] === '1') {

@@ -2,8 +2,8 @@
 /***************************************
  * @file popover.html
  * @author Travis Roman (travis@toggleable.com)
- * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-3
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.7-1
  ***************************************/
 -->
 
@@ -113,7 +113,7 @@
 	
 			<input type="button" value="Show Rules" id="view-rules" />
 			<div id="disclaimer">
-				<p><script>document.write(_('Disclaimer.'));</script>
+				<p><script>document.write(_('Disclaimer.'));</script><br />
 					<input type="button" value="Submit Anonymous Usage Information" id="submit-information" />
 					<input type="button" value="Disable JavaScript Blocker" id="disable" /></p>
 			</div>
@@ -128,11 +128,22 @@
 				<a href="javascript:void(0)" id="collapse-all"><script>document.write(_('Collapse All'));</script></a> <span class="label">—</span>
 				<a href="javascript:void(0)" id="expand-all"><script>document.write(_('Expand All'));</script></a> <span class="label">￨</span>
 				<a href="javascript:void(0)" id="edit-domains"><script>document.write(_('Edit'));</script></a>
-				<div id="rules-filter-bar">
-					<ul>
+				<div id="rules-filter-bar" class="filter-bar">
+					<ul id="filter-type-collapse">
 						<li id="filter-all"class="selected"><script>document.write(_('All'));</script></li>
 						<li id="filter-collapsed"><script>document.write(_('Collapsed'));</script></li>
 						<li id="filter-expanded"><script>document.write(_('Expanded'));</script></li>
+						<li class="filter-divider">|</li>
+					</ul>
+					<ul id="filter-type-state">
+						<li id="filter-state-all" class="selected"><script>document.write(_('Any'));</script></li>
+						<li id="filter-enabled"><script>document.write(_('Enabled'));</script></li>
+						<li id="filter-disabled"><script>document.write(_('Disabled'));</script></li>
+					</ul>
+					<br style="clear:both;" />
+				</div>
+				<div id="rules-filter-bar-two" class="filter-bar">
+					<ul>
 						<li id="li-domain-filter"><input type="search" placeholder="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" /><br style="clear:both;" /></li>
 					</ul>
 					<br style="clear:both;" />

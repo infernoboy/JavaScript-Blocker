@@ -1,3 +1,10 @@
+/***************************************
+ * @file js/blocker.js
+ * @author Travis Roman (travis@toggleable.com)
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.7-1
+ ***************************************/
+
 var jsblocker = {
 	javascript_blocker_1: 1,
 	allowed: {
@@ -17,7 +24,7 @@ var jsblocker = {
 }, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
 
 function allowedScript(event) {
-	if (event.target.nodeName === 'SCRIPT' && event.target.src.length > 0) {
+	if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length > 0) {
 		var isAllowed = safari.self.tab.canLoad(event, [jsblocker.href, event.target.src, !(window == window.top)]);
 
 		if (!isAllowed) {
@@ -31,7 +38,7 @@ function allowedScript(event) {
 			jsblocker.allowed.count++;
 			jsblocker.allowed.urls.push(event.target.src);
 		}
-	} else if (event.target.nodeName === 'SCRIPT') {
+	} else if (event.target.nodeName.toUpperCase() === 'SCRIPT') {
 		jsblocker.unblocked.count++;
 		jsblocker.unblocked.urls.push(event.target.innerHTML);
 	}

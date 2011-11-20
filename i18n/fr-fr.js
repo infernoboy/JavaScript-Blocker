@@ -1,8 +1,8 @@
 /***************************************
  * @file i18n/fr-fr.js
  * @author Travis Roman (travis@toggleable.com)
- * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.4
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.7-1
  ***************************************/
 
 Strings['fr-fr'] = {

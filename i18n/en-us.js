@@ -1,8 +1,8 @@
 /***************************************
  * @file i18n/en-us.js
  * @author Travis Roman (travis@toggleable.com)
- * @project JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.6-3
+ * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @version 1.2.7-1
  ***************************************/
 
 Strings['en-us'] = {
@@ -60,6 +60,10 @@ Strings['en-us'] = {
 	'View Script': 'View Script',
 	'New rule for {1}': 'New rule for <b>{1}</b>', // {1} = domain name
 	'All': 'All',
+	'State:': 'Rule State:',
+	'Any': 'Any',
+	'Enabled': 'Enabled',
+	'Disabled': 'Disabled',
 	'Collapsed': 'Collapsed',
 	'Expanded': 'Expanded',
 	'Collapse All': 'Collapse All',
