@@ -43,6 +43,9 @@ body {
 	overflow-x: hidden;
 	color: #3A3A3A;
 }
+	body.windows {
+		background: rgba(239,239,239,0.93);
+	}
 header {
 	position: fixed;
 	top: 5px;
@@ -102,6 +105,12 @@ textarea {
 	-webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.5);
 	text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
+	body.windows input,
+	body.windows select,
+	body.windows button,
+	body.windows textarea {
+		font-size: 8pt;
+	}
 	input:focus, select:focus, button:focus, textarea:focus {
 		outline: none !important;
 		-webkit-box-shadow: 0 0 4px rgb(20, 158, 255), inset 0 0 3px rgb(20, 158, 255) !important;
@@ -486,12 +495,9 @@ p.misc-info {
 		position: fixed;
 		right: 0;
 		width: 4px;
-		background: #FE0;
-		background: -webkit-linear-gradient(right, #FF0, #E9C700);
 		background: -webkit-linear-gradient(right, #FAFF00, #E0C200);
-
 		height: 1px;
-		z-index: 9999;
+		z-index: 999;
 		border: 1px solid #888;
 		border-top: none;
 		border-bottom: none;
@@ -521,11 +527,14 @@ p.misc-info {
 			margin-right: -2px;
 		}
 		100% {
-			padding: 0 8px;
-			margin-left: -8px;
-			margin-right: -9px;
+			padding: 0 4px;
+			margin-left: -4px;
+			margin-right: -5px;
+			top: -5px;
+			font-size: 11pt;
 		}
 	}
 		mark.enlarge {
-			-webkit-animation: enlarge 0.15s ease-out 0 2 alternate;
+			position: relative;
+			-webkit-animation: enlarge 0.15s ease-in 0 2 alternate;
 		}

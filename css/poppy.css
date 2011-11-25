@@ -39,8 +39,15 @@
 		margin-right: 3px;
 		margin-bottom: -7px;
 		overflow-x: scroll;
+		overflow-y: hidden;
 		resize: none;
 	}
+		body.windows #poppy #rule-input {
+			float: left !important;
+		}
+		body.windows #poppy #rule-save {
+			float: left !important;
+		}
 		#poppy #rule-input::-webkit-scrollbar {
 			height: 4px;
 		}

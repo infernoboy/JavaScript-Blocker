@@ -40,6 +40,9 @@
 			}
 			for (b = 0; b < ogroups.length; b++)
 				ogroups[b].label = _(ogroups[b].label);
+				
+			if (window.navigator.platform.indexOf('Win') > -1) document.body.className += ' windows';
+			else if (window.navigator.platform.indexOf('Mac') > -1) document.body.className += ' macos';
 		});
 		
 		window.addEventListener('message', function (event) {
@@ -76,7 +79,7 @@
 				</select>
 			</div>
 			<div class="info-container">
-				<label class="allowed-label" for="allowed-scripts-count"><script>document.write(_('Allowed:'));</script></label> <span id="allowed-scripts-count">0</span>
+				<label class="allowed-label"><script>document.write(_('Allowed:'));</script></label> <span id="allowed-scripts-count">0</span>
 				<input type="button" value="Block All" id="block-domain" />
 				<select id="block-options" class="domain-options">
 					<optgroup label="Block on">
@@ -90,7 +93,7 @@
 			</div>
 	
 			<div class="info-container">
-				<label class="blocked-label" for="blocked-scripts-count"><script>document.write(_('Blocked:'));</script></label> <span id="blocked-scripts-count">0</span>
+				<label class="blocked-label"><script>document.write(_('Blocked:'));</script></label> <span id="blocked-scripts-count">0</span>
 				<input type="button" value="Allow All" id="allow-domain" />
 				<select id="allow-options" class="domain-options">
 					<optgroup label="Allow on">
@@ -104,7 +107,7 @@
 			</div>
 	
 			<div class="info-container">
-				<label class="unblocked-label" for="unblocked-scripts-count"><script>document.write(_('Unblocked:'));</script></label> <span id="unblocked-scripts-count">0</span>
+				<label class="unblocked-label"><script>document.write(_('Unblocked:'));</script></label> <span id="unblocked-scripts-count">0</span>
 			</div>
 	
 			<div id="unblocked-script-urls">
@@ -114,7 +117,7 @@
 			<input type="button" value="Show Rules" id="view-rules" />
 			<div id="disclaimer">
 				<p><script>document.write(_('Disclaimer.'));</script><br />
-					<input type="button" value="Submit Anonymous Usage Information" id="submit-information" />
+				<!--<input type="button" value="Submit Anonymous Usage Information" id="submit-information" />-->
 					<input type="button" value="Disable JavaScript Blocker" id="disable" /></p>
 			</div>
 		</div>

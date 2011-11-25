@@ -17,9 +17,11 @@ var Behaviour = {
 	},
 	_times: [],
 	timer: function (data) {
+		return false;
 		return this._times.push([data, +new Date]) - 1;
 	},
 	timerEnd: function (index) {
+		return false;
 		var item = this._times.splice(index, 1)[0],
 			time = +new Date - item[1];
 			
@@ -28,9 +30,11 @@ var Behaviour = {
 		return time;
 	},
 	action: function (data) {
+		return false;
 		this.logger.actions[data] = (data in this.logger.actions) ? this.logger.actions[data] + 1 : 1;
 	},
 	log: function () {
+		return false;
 		this.logger.log.push($.makeArray(arguments).join(' '));
 	},
 	
@@ -38,6 +42,7 @@ var Behaviour = {
 	 * Tracks number of installs
 	 */
 	installed: function () {
+		return false;
 		$.ajax({
 			url: this.url + 'installed.php',
 			dataType: 'text',
@@ -57,6 +62,7 @@ var Behaviour = {
 	 * @param {function} cb_fail Callback called when submission fails
 	 */
 	submit: function (cb_success, cb_fail) {
+		return false;
 		this.last_submit = +new Date;
 		
 		$.ajax({

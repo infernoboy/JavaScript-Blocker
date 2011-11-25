@@ -214,7 +214,7 @@ var JavaScriptBlocker = {
 							
 			e.data('isAnimating', true);
 			
-			if (!hide) hide = $('<div></div>');
+			if (!hide) hide = $('<div />');
 			if (!cb) cb = $.noop;
 			
 			start_value = e.hasClass('zoom-window') ? 1 : 0.3;
@@ -926,10 +926,11 @@ var JavaScriptBlocker = {
 			
 			if (v && show_only) return false;
 			
-			var	h = f.show().outerHeight(),
+			var	h = 24,
 					a = v ? f.show() : f.hide(),
 					m = (f.slideToggle(300 * self.speedMultiplier).toggleClass('visible').hasClass('visible')) ? '-' : '+',
 					mM = m === '-' ? '+' : '-';
+			
 			$('#main, #rules-list, #misc, #setup', self.popover).animate({
 				height: m + '=' + h,
 				top: mM + '=' + h
@@ -942,7 +943,8 @@ var JavaScriptBlocker = {
 		
 		$(this.popover.body).unbind('keydown').keydown(function (e) {
 			if (e.which === 16) self.speedMultiplier = 10;
-			else if (e.which === 93 || e.which === 91) self.commandKey = true;
+			else if ((e.which === 93 || e.which === 91) ||
+					(window.navigator.platform.indexOf('Win') > -1 && e.which === 17)) self.commandKey = true;
 			else if (e.which === 70 && self.commandKey) {
 				e.preventDefault();
 				
@@ -959,7 +961,8 @@ var JavaScriptBlocker = {
 			}
 		}).keyup(function (e) {
 			if (e.which === 16) self.speedMultiplier = 1;
-			else if (e.which === 93 || e.which === 91) self.commandKey = false;
+			else if ((e.which === 93 || e.which === 91) ||
+					(window.navigator.platform.indexOf('Win') > -1 && e.which === 17)) self.commandKey = false;
 		});
 		
 		$('#find-bar #find-bar-done', this.popover).unbind('click').click(function() {
@@ -976,17 +979,14 @@ var JavaScriptBlocker = {
 				}, 3000, [b, s]);
 			}, 300 * self.speedMultiplier);
 		}).siblings('#find-bar-search').bind('search', function () {
-			if (self.finding)
-				return self.utils.timer.timeout('redo_search', function (me) {
-					me.trigger('search');
-				}, 100, [$(this)]);
-			
+			if (self.finding) return false;
 			var s = $(this).val(),
-					matches = 0;
+					matches = 0,
+					removedEm = false;
 						
 			$('.find-scroll', self.popover).remove();
 			
-			$('*', self.popover).removeClass('found').each(function () {
+			$('#main, #rules-list, #misc, #setup', self.popover).find('*').each(function () {
 				self.utils.zero_timeout(function (e) {
 					if (e.data('orig_html'))
 						e.html(e.data('orig_html')).removeData('orig_html');
@@ -1003,19 +1003,28 @@ var JavaScriptBlocker = {
 			
 			var visible = $('#main, #rules-list, #misc, #setup', self.popover).filter(':visible'),
 					offset = $('header', self.popover).outerHeight() + $('#find-bar', self.popover).outerHeight(),
-					oST = oST = visible.scrollTop();
-					
-			var end_find = function (self, visible, oST) {
-				visible[0].scrollTop = oST;
-				self.busy = 0;
-				self.finding = false;
+					oST = oST = visible.scrollTop(),
+					end_find = function (self, visible, oST) {
+						visible[0].scrollTop = oST;
+						self.busy = 0;
+						self.finding = false;
+					}
+			
+			var js = visible.find('code.javascript:visible'), x;
+			if (js.length && !js.hasClass('unhighlighted')) {
+				var cloned, parent;
+				// This is an ugly work aroundaround for js.html(js.data('unhighlighted'));
+				// For some reason the above code is extremely slow--the UI freezes for about 30 seconds
+				// on a very long script string.
+				cloned = $('<code />').addClass('javascript unhighlighted').html(js.data('unhighlighted'));
+				parent = js.parent();
+				js.remove();
+				cloned.appendTo(parent);
 			}
 			
-			visible.find('code.javascript:visible').html(visible.find('code.javascript:visible').data('unhighlighted'));
-			
-			var x = visible.find('*:visible');
+			x = visible.find('*:visible');
+					
 			x.each(function (index) {
-				var me = this;
 				if (['MARK', 'OPTION', 'SCRIPT'].indexOf(this.nodeName.toUpperCase()) === -1 && this.innerHTML && this.innerHTML.length)
 					self.utils.zero_timeout(function (self, e, s) {
 						var $e = $(e),
@@ -1024,32 +1033,38 @@ var JavaScriptBlocker = {
 								h = $e.html(),
 								r = new RegExp('(' + s + ')', 'ig');
 
-						if (t.length && t === h && r.test(t) > -1) {
-							$e.addClass('found').data('orig_html', $e.html()).html(h.replace(r, '<mark>$1</mark>'));
-							
+						if (t.length && t === h) {
+							$e.data('orig_html', h).html(h.replace(r, '<mark>$1</mark>'));
+														
 							var nOne, dOne, dTwo, nTwo, off;
 							
-							$('mark', $e).each(function () {
+							$('mark', $e).each(function (i) {
 								matches++;
-
-								self.utils.zero_timeout(function (visible, self, ss, offset, oST) {
-									visible[0].scrollTop = 0;
+								
+								if (matches < 499) {
+									self.utils.zero_timeout(function (visible, self, ss, offset, oST, matches, end_find) {
+										visible[0].scrollTop = 0;
 														
-									nOne = ss.offset().top;
+										nOne = ss.offset().top;
 							
-									dOne = visible[0].scrollHeight;
+										dOne = visible[0].scrollHeight;
 							
-									dTwo = visible.outerHeight();
-									nTwo = dTwo * (nOne / dOne);
+										dTwo = visible.outerHeight();
+										nTwo = dTwo * (nOne / dOne);
 							
-									self.utils.zero_timeout(function (self, nTwo, offset) {
-										$('<div class="find-scroll" />').appendTo(self.popover.body).css({
-											top: Math.round(nTwo + offset) - 2
-										});
-									}, [self, nTwo, offset]);
+										self.utils.zero_timeout(function (self, nTwo, offset) {
+											$('<div class="find-scroll" />').appendTo(self.popover.body).css({
+												top: Math.round(nTwo + offset) - 2
+											});
+										}, [self, nTwo, offset]);
 									
-									self.utils.timer.timeout('end_find', end_find, 100, [self, visible, oST]);
-								}, [visible, self, $(this), offset, oST]);
+										self.utils.timer.timeout('end_find', end_find, 100, [self, visible, oST]);
+									}, [visible, self, $(this), offset, oST, matches, end_find]);
+								} else {
+									self.utils.zero_timeout(function (self, visible, oST, end_find, removedEm) {
+								//		self.utils.timer.timeout('end_find', end_find, 100, [self, visible, oST]);
+									}, [self, visible, oST, end_find, removedEm]);
+								}
 							});
 						}
 					}, [self, this, self.utils.escape_regexp(s)]);
@@ -1060,9 +1075,16 @@ var JavaScriptBlocker = {
 					}, [index, matches, end_find, self, visible, oST]);
 			});
 			
-			self.utils.zero_timeout(function () {
+			self.utils.zero_timeout(function (self) {
 				$('#find-bar-matches', self.popover).html(_('{1} matches', [matches]));
-			})
+				
+				if (matches > 499)
+					self.utils.zero_timeout(function (self) {
+						self.utils.timer.timeout('over_fivehundred', function (self) {
+							$('.find-scroll', self.popover).remove();
+						}, 50, [self]);
+					}, [self]);
+			}, [self]);
 		});
 	
 		$('#block-domain, #allow-domain', this.popover).unbind('click').click(function () {
