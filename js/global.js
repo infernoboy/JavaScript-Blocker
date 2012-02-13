@@ -522,8 +522,8 @@ var JavaScriptBlocker = {
 		 * @param {Boolean} no_dbl_click Wether or not to enable double clicking on a rule
 		 */
 		view: function (domain, url, no_dbl_click) {
-			var self = this, allowed = this.for_domain(domain, true), ul = $('<ul class="rules-wrapper"></ul>'), newul, rules, rule;
-			
+			var self = this, allowed = this.for_domain(domain, true), ul = $('<ul class="rules-wrapper"></ul>'), newul, rules, rule;			
+						
 			if (domain in allowed) {
 				allowed = allowed[domain];
 
@@ -534,7 +534,7 @@ var JavaScriptBlocker = {
 					newul = ul.append('<li class="domain-name"><span>' + domain_name + '</span></li><li><ul></ul></li>')
 							.find('.domain-name:last').data('domain', domain).end().find('li:last ul');
 					rules = 0;
-		
+					
 					for (rule in allowed) {
 						if ((url && (allowed[rule] < 0 || !(new RegExp(rule)).test(url))) ||
 								(safari.extension.settings.ignoreBlacklist && allowed[rule] === 4) ||
@@ -1094,12 +1094,10 @@ var JavaScriptBlocker = {
 			
 			var c = $('.domain-options:visible', self.popover),
 				o = c.length ? c[0].value : $('.domain-options', self.popover)[0].value,
-				store = $('.domain-options option[value="' + o + '"]', self.popover).data('store'),
-				tvalue = this.id === 'allow-domain' ? 7 : 6,
-				fvalue = tvalue === 7 ? 6 : 7;
+				store = $('.domain-options option[value="' + o + '"]', self.popover).data('store');
 								
 			self.rules.remove_domain(store);
-			self.rules.add(store, '.*(All Scripts)?', self.allowMode ? tvalue : fvalue);
+			self.rules.add(store, '.*(All Scripts)?', self.allowMode ? 6 : 7);
 
 			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 		});
@@ -1169,12 +1167,14 @@ var JavaScriptBlocker = {
 							Behaviour.action('View all rules');
 							filter.val('');
 						}
-							
+						
 						function append_rules (ul, domain, self) {
 							ul.append($('> li', self.rules.view(domain)));
-							self.utils.timer.timeout('filter_bar_click', function (self) {
-								$('.filter-bar li.selected', self.popover).click();
-							}, 10, [self]);
+							self.utils.zero_timeout(function (self) {
+								self.utils.timer.timeout('filter_bar_click', function (self) {
+									$('.filter-bar li.selected', self.popover).click();
+								}, 10, [self]);
+							}, [self]);
 						}
 						
 						for (domain in s)
@@ -1200,9 +1200,11 @@ var JavaScriptBlocker = {
 						}, [ul]);
 						
 						self.utils.zero_timeout(function (self) {
-							self.busy = 0;
-							new Poppy();
-							self.utils.zoom($('#rules-list', self.popover), $('#main', self.popover));
+							self.utils.zero_timeout(function (self) {
+								self.busy = 0;
+								new Poppy();
+								self.utils.zoom($('#rules-list', self.popover), $('#main', self.popover));
+							}, [self]);
 						}, [self]);
 					}, 0.0);
 				});
@@ -1301,7 +1303,7 @@ var JavaScriptBlocker = {
 			
 			var ul = $('#rules-list-rules', self.popover);
 					
-			$('.domain-name', ul).toggleClass('no-disclosure').toggleClass('editing')
+			$('.domain-name', ul).toggleClass('no-disclosure').toggleClass('editing');
 		});
 		
 		var counter = function (self) {
@@ -1355,6 +1357,7 @@ var JavaScriptBlocker = {
 		
 		$('#rules-filter-bar #filter-type-state li:not(.filter-divider)', this.popover).unbind('click').click(function () {
 			Behaviour.action(this.id + ' clicked');
+			self.busy = 1;
 			
 			var that = this;
 			
@@ -1401,6 +1404,9 @@ var JavaScriptBlocker = {
 			});
 			
 			self.utils.zero_timeout(counter, [self]);
+			self.utils.zero_timeout(function (self) {
+				self.busy = 0;
+			}, [self]);
 		});
 		
 		$('#submit-information', this.popover).unbind('click').click(function () {
@@ -1440,10 +1446,9 @@ var JavaScriptBlocker = {
 					.data('url', jsblocker[text].urls[i]).find('span').text(jsblocker[text].urls[i]).siblings('input').val(button);
 
 		if (jsblocker[text].count > 3 && jsblocker[text].count - 3 > 1) {
-			$('li:eq(2)', ul).after(['<li>',
-						'<a href="javascript:void(1)" class="show-more">' + _('Show {1} more', [jsblocker[text].count - 3]) + '</a>',
-					'</li>'].join(''));
-			$('li:gt(3)', ul).hide().addClass('show-more-hidden');
+			$('li', ul).eq(2).after(['<li>',
+						'<a href="javascript:void(1)" class="show-more">', _('Show {1} more', [jsblocker[text].count - 3]), '</a>',
+					'</li>'].join('')).end().filter(':gt(2)').hide().addClass('show-more-hidden');
 		}
 		
 		$('.divider:last', ul).css('visibility', 'hidden');

@@ -9,7 +9,7 @@ Strings['en-us'] = {
 	'JavaScript Blocker': 'JavaScript Blocker',
 	'Thanks for using {1}': 'Thanks for using {1}!',
 	'Which mode would you like to run in?': 'Which mode would you like to run in? ' +
-			'This setting can be changed at any time from the extensions pane ofthe Safari preferences.',
+			'This setting can be changed at any time from the extensions pane of Safari\'s preferences.',
 	'All Domains': 'All Domains',
 	'Page:': 'Page:',
 	'Allow on': 'Allow on…',
@@ -115,8 +115,8 @@ Strings['en-us'] = {
 	'The following automatic rules were disabled, thus blocking this script:': 'The following automatic rules were disabled, thus blocking this script:',
 	'The following automatic rules were disabled, thus allowing this script:': 'The following automatic rules were disabled, thus allowing this script:',
 	
-	'Would you like to re-enable the above rule or add a new one?': 'Would you like to re-enable the above rule or add a new one?',
-	'Would you like to re-enable the above rules or add a new one?': 'Would you like to re-enable the above rules or add a new one?',
+	'Would you like to re-enable the above rule or add a new one?': 'Would you like to restore the above rule or add a new one?',
+	'Would you like to re-enable the above rules or add a new one?': 'Would you like to restore the above rules or add a new one?',
 	
 	'The following rule(s) will be deleted or disabled:': 'The following rule(s) will be deleted or disabled:',
 	'This may inadvertently affect other scripts.': 'This may inadvertently affect other scripts.',

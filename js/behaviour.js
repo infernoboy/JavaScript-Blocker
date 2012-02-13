@@ -9,7 +9,7 @@
 
 var Behaviour = {
 	last_submit: 0,
-	url: 'http://lion.toggleable.com:160/jsblocker/',
+	url: null,
 	logger: {
 		log: [],
 		actions: {},

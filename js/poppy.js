@@ -18,7 +18,7 @@
  * @param {number|null|undefined} time Animation speed of popover in seconds
  */
 var Poppy = function (x, y, content, cb, cb2, time) {
-	if (typeof content === 'object' && ('content' in content)) {
+	if (content !== null && typeof content === 'object' && ('content' in content)) {
 		try {
 			var temporary = content.content;
 			cb = content.callback || $.noop;
@@ -29,7 +29,7 @@ var Poppy = function (x, y, content, cb, cb2, time) {
 		content = temporary;
 	}
 	
-	this.removeOnly = $.makeArray(arguments).length === 0;
+	this.removeOnly = $.makeArray(arguments).length === 0 || x === null;
 	this.callback = (cb && typeof cb == 'function') ? cb : $.noop;
 	this.callback2 = (cb2 && typeof cb2 == 'function') ? cb2 : $.noop;
 	this.popover = safari.extension.toolbarItems[0].popover.contentWindow.document;
@@ -77,6 +77,10 @@ Poppy.prototype = {
 		return (this._dT = setTimeout(function () {
 			$(self.e, self.p).remove();
 			JavaScriptBlocker.utils.zero_timeout($.proxy(cb, self));
+			if (self.removeOnly) {
+				JavaScriptBlocker.utils.zero_timeout(self.callback);
+				JavaScriptBlocker.utils.zero_timeout(self.callback2);
+			}
 		}, (this._time / 2) * 1000));
 	},
 	create: function () {
