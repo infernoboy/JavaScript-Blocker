@@ -492,24 +492,38 @@ var JavaScriptBlocker = {
 		 * @param {number} block_allow The action the rule must be to match
 		 * @param {Boolean} allow_disabled Wether or not to return/delete disabled rules
 		 */
-		remove_matching_URL: function (domain, url, confirmed, block_allow, allow_disabled) {
-			var current_rules = this.for_domain(domain), to_delete = {}, sub, rule;
+		remove_matching_URL: function (domain, urls, confirmed, block_allow, allow_disabled) {
+			var current_rules = this.for_domain(domain), to_delete = {}, being_deleted = {}, sub, rule, url;
 
 			for (sub in current_rules) {
 				to_delete[sub] = [];
+				being_deleted[sub] = [];
 
 				for (rule in current_rules[sub]) {
 					if (!!(current_rules[sub][rule] % 2) !== block_allow || (!allow_disabled && current_rules[sub][rule] < 0)) continue;
-									
-					if ((new RegExp(rule)).test(url)) {
-						if (confirmed) {
-							delete this.cache[sub];
+					
+					for (var i = 0; i < urls.length; i++) {
+						url = urls[i];
+
+						if ((new RegExp(rule)).test(url)) {
+							if (confirmed) {
+								delete this.cache[sub];
+								
+								if (!(rule in current_rules[sub])) continue;
 							
-							if (current_rules[sub][rule] > 1 && current_rules[sub][rule] < 4) {
-								current_rules[sub][rule] *= -1;
-							} else
-								delete current_rules[sub][rule];
-						} else to_delete[sub].push([rule, current_rules[sub][rule]]);
+								if (current_rules[sub][rule] > 1 && current_rules[sub][rule] < 4) {
+									current_rules[sub][rule] *= -1;
+								} else
+									delete current_rules[sub][rule];
+							} else {
+								if (being_deleted[sub].indexOf(rule) > -1)
+									continue;
+								else
+									being_deleted[sub].push(rule);
+								
+								to_delete[sub].push([rule, current_rules[sub][rule]]);
+							}
+						}
 					}
 				}
 
@@ -534,7 +548,7 @@ var JavaScriptBlocker = {
 		 * @param {Boolean} no_dbl_click Wether or not to enable double clicking on a rule
 		 */
 		view: function (domain, url, no_dbl_click) {
-			var self = this, allowed = this.for_domain(domain, true), ul = $('<ul class="rules-wrapper"></ul>'), newul, rules, rule;			
+			var self = this, allowed = this.for_domain(domain, true), ul = $('<ul class="rules-wrapper"></ul>'), newul, rules, rule, did_match;
 						
 			if (domain in allowed) {
 				allowed = allowed[domain];
@@ -548,7 +562,14 @@ var JavaScriptBlocker = {
 					rules = 0;
 					
 					for (rule in allowed) {
-						if ((url && (allowed[rule] < 0 || !(new RegExp(rule)).test(url))) ||
+						if (typeof url === 'object')
+							for (var i = 0; i < url.length; i++) {
+								did_match = (new RegExp(rule)).test(url[i]);
+							
+								if (did_match) break;
+							}
+						
+						if ((url && (allowed[rule] < 0 || !did_match)) ||
 								(safari.extension.settings.ignoreBlacklist && allowed[rule] === 4) ||
 								(safari.extension.settings.ignoreWhitelist && allowed[rule] === 5) ||
 								(!!(allowed[rule] % 2) === this.allowMode && allowed[rule] < 4)) continue;
@@ -793,7 +814,7 @@ var JavaScriptBlocker = {
 							domain: store,
 							header: _('Adding a Rule For {1}', [(store === '.*' ? _('All Domains') : store)])
 					}, self),
-					auto_test = self.rules.remove_matching_URL(store, self.simpleMode ? script : url, false, !self.allowMode, true);
+					auto_test = self.rules.remove_matching_URL(store, script, false, !self.allowMode, true);
 				
 				if (!$.isEmptyObject(auto_test)) {
 					var d, rs = [], ds = [], i;
@@ -882,6 +903,7 @@ var JavaScriptBlocker = {
 
 				for (d in to_delete) {
 					wrapper.append(self.rules.view(d, url, true).find('> li').find('input').remove().end());
+
 					rs.push(to_delete[d][0]);
 				}
 						
@@ -1457,7 +1479,7 @@ var JavaScriptBlocker = {
 		
 		function append_url(ul, use_url, script, button) {
 			ul.append('<li><span></span> <small></small><input type="button" value="" /><div class="divider"></div></li>').find('li:last')
-					.data('url', use_url).data('script', script).find('span').text(use_url).siblings('input').val(button);
+					.data('url', use_url).data('script', [script]).find('span').text(use_url).siblings('input').val(button);
 		}
 		
 		$('#' + text + '-scripts-count', self.popover).html(jsblocker[text].count);
@@ -1470,8 +1492,10 @@ var JavaScriptBlocker = {
 					shost_track[use_url] = [shost_list.length, 1];
 					shost_list.push(use_url);
 					append_url(ul, use_url, jsblocker[text].urls[i], button);
-				} else
+				} else {
 					shost_track[use_url][1]++;
+					$('li', ul).eq(shost_track[use_url][0]).data('script').push(jsblocker[text].urls[i]);
+				}
 			} else
 				append_url(ul, jsblocker[text].urls[i], jsblocker[text].urls[i], button);
 		}
