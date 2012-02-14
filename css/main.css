@@ -256,6 +256,10 @@ ul li span {
 	overflow: auto;
 	white-space: nowrap;
 }
+	ul li small {
+		font-size: 8pt;
+		color: #555;
+	}
 	ul li span::-webkit-scrollbar {
 		height: 3px;
 	}

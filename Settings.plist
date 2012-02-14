@@ -20,11 +20,21 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
+		<false/>
+		<key>Key</key>
+		<string>simpleMode</string>
+		<key>Title</key>
+		<string>Show hostnames instead of individual scripts</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
 		<string>Automatic</string>
 		<key>Key</key>
 		<string>language</string>
 		<key>Title</key>
-		<string>Language</string>
+		<string>Language/Langue</string>
 		<key>Titles</key>
 		<array>
 			<string>Automatic</string>

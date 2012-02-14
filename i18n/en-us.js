@@ -10,6 +10,7 @@ Strings['en-us'] = {
 	'Thanks for using {1}': 'Thanks for using {1}!',
 	'Which mode would you like to run in?': 'Which mode would you like to run in? ' +
 			'This setting can be changed at any time from the extensions pane of Safari\'s preferences.',
+	'Setup:Simple Mode': 'Show hostnames instead of individual scripts',
 	'All Domains': 'All Domains',
 	'Page:': 'Page:',
 	'Allow on': 'Allow on…',
@@ -112,8 +113,8 @@ Strings['en-us'] = {
 	'Unblocked Script': 'Unblocked Script',
 	/** /MISC HEADERS **/
 	
-	'The following automatic rules were disabled, thus blocking this script:': 'The following automatic rules were disabled, thus blocking this script:',
-	'The following automatic rules were disabled, thus allowing this script:': 'The following automatic rules were disabled, thus allowing this script:',
+	'The following automatic rules were disabled, thus blocking this item:': 'The following automatic rules were disabled, thus blocking this item:',
+	'The following automatic rules were disabled, thus allowing this item:': 'The following automatic rules were disabled, thus allowing this item:',
 	
 	'Would you like to re-enable the above rule or add a new one?': 'Would you like to restore the above rule or add a new one?',
 	'Would you like to re-enable the above rules or add a new one?': 'Would you like to restore the above rules or add a new one?',

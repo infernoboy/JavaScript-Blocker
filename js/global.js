@@ -103,6 +103,12 @@ var JavaScriptBlocker = {
 	set allowMode(value) {
 		safari.extension.settings.allowMode = value;
 	},
+	get simpleMode() {
+		return safari.extension.settings.simpleMode;
+	},
+	set simpleMode(value) {
+		safari.extension.settings.simpleMode = value;
+	},
 	get setupDone() {
 		return parseInt(safari.extension.settings.setupDone, 10);
 	},
@@ -364,8 +370,14 @@ var JavaScriptBlocker = {
 	active_host: function (url) {
 		if (url && (url in this.caches.active_host)) return this.caches.active_host[url];
 		var r = /^(https?|file):\/\/([^\/]+)\//;
-		if (url) return /^data/.test(url) ? (this.caches.active_host[url] = 'DataURI') : (this.caches.active_host[url] = url.match(r)[2]);
-
+		if (url) {
+			if (/^data/.test(url)) return (this.caches.active_host[url] = 'DataURI');
+			else if (url.match(r) && url.match(r).length > 2) return (this.caches.active_host[url] = url.match(r)[2]);
+			else {
+				console.error('Error finding host in string:', url);
+			}
+		}
+		
 		try {
 			return (this.caches.active_host[url] = safari.application.activeBrowserWindow.activeTab.url.match(r)[2]);
 		} catch(e) {
@@ -692,6 +704,8 @@ var JavaScriptBlocker = {
 		var add_rule, remove_rule, self = this;
 		
 		function url_display (e) {
+			if (self.simpleMode) return false;
+			
 			var t = $(this), off = t.offset();
 			
 			function codeify(data) {
@@ -773,12 +787,13 @@ var JavaScriptBlocker = {
 					o = $('.domain-options:visible', self.popover)[0].value,
 					store = $('.domain-options:visible option[value="' + o + '"]', self.popover).data('store'),
 					url = $(this).parent().data('url'),
+					script = $(this).parent().data('script'),
 					padd = self.poppies.add_rule.call({
-							url: '^' + self.utils.escape_regexp(url) + '$',
+							url: '^' + (self.simpleMode ? 'https?:\\/\\/' : '') + self.utils.escape_regexp(url) + (self.simpleMode ? '/.*' : '') + '$',
 							domain: store,
 							header: _('Adding a Rule For {1}', [(store === '.*' ? _('All Domains') : store)])
 					}, self),
-					auto_test = self.rules.remove_matching_URL(store, url, false, !self.allowMode, true);
+					auto_test = self.rules.remove_matching_URL(store, self.simpleMode ? script : url, false, !self.allowMode, true);
 				
 				if (!$.isEmptyObject(auto_test)) {
 					var d, rs = [], ds = [], i;
@@ -796,7 +811,7 @@ var JavaScriptBlocker = {
 						
 						new Poppy(left, off.top + 8, [
 							'<p>', _('The following automatic rules were disabled, thus ' + (self.allowMode ? 
-								'allowing' : 'blocking') + ' this script:'), '</p>',
+								'allowing' : 'blocking') + ' this item:'), '</p>',
 							'<ul class="rules-wrapper">',
 								'<li class="domain-name no-disclosure">', store, '</li>',
 								'<li>',
@@ -850,7 +865,7 @@ var JavaScriptBlocker = {
 				var m = $(this).parents('div').attr('id').indexOf('blocked') === -1,
 						off = $(this).offset(),
 						left = off.left + $(this).outerWidth() / 2,
-						url = $(this).parent().data('url'),
+						url = $(this).parent().data('script'),
 						to_delete = self.rules.remove_matching_URL(host, url, false, m),
 						d,
 						rs = [],
@@ -858,7 +873,7 @@ var JavaScriptBlocker = {
 								'<div>',
 									'<p>', _('The following rule(s) will be deleted or disabled:'), '</p>',
 									'<ul class="rules-wrapper"></ul>',
-									'<p>', _('This may inadvertently affect other scripts.'), '</p>',
+									'<p>', self.simpleMode ? '' : _('This may inadvertently affect other scripts.'), '</p>',
 									'<div class="inputs">',
 										'<input type="button" value="', _('Continue'), '" id="delete-continue" />',
 									'</div>',
@@ -1094,10 +1109,11 @@ var JavaScriptBlocker = {
 			
 			var c = $('.domain-options:visible', self.popover),
 				o = c.length ? c[0].value : $('.domain-options', self.popover)[0].value,
-				store = $('.domain-options option[value="' + o + '"]', self.popover).data('store');
-								
+				store = $('.domain-options option[value="' + o + '"]', self.popover).data('store'),
+				rule_type;
+				
 			self.rules.remove_domain(store);
-			self.rules.add(store, '.*(All Scripts)?', self.allowMode ? 6 : 7);
+			self.rules.add(store, '.*(All Scripts)?', this.id === 'block-domain' ? 6 : 7);
 
 			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 		});
@@ -1437,17 +1453,38 @@ var JavaScriptBlocker = {
 	 * @param {Object} jsblocker Information about scripts allowed, blocked, or unblocked and frames.
 	 */
 	make_list: function (text, button, jsblocker) {
-		var self = this, ul = $('#' + text + '-script-urls ul', self.popover);
+		var self = this, ul = $('#' + text + '-script-urls ul', self.popover), shost_list = [], use_url, shost_track = {};
+		
+		function append_url(ul, use_url, script, button) {
+			ul.append('<li><span></span> <small></small><input type="button" value="" /><div class="divider"></div></li>').find('li:last')
+					.data('url', use_url).data('script', script).find('span').text(use_url).siblings('input').val(button);
+		}
 		
 		$('#' + text + '-scripts-count', self.popover).html(jsblocker[text].count);
 
-		for (var i = 0; i < jsblocker[text].urls.length; i++)
-			ul.append('<li><span></span><input type="button" value="" /><div class="divider"></div></li>').find('li:last')
-					.data('url', jsblocker[text].urls[i]).find('span').text(jsblocker[text].urls[i]).siblings('input').val(button);
+		for (var i = 0; i < jsblocker[text].urls.length; i++) {
+			if (text !== 'unblocked' && this.simpleMode) {
+				use_url = this.utils.active_host(jsblocker[text].urls[i]);
+				
+				if (shost_list.indexOf(use_url) == -1) {
+					shost_track[use_url] = [shost_list.length, 1];
+					shost_list.push(use_url);
+					append_url(ul, use_url, jsblocker[text].urls[i], button);
+				} else
+					shost_track[use_url][1]++;
+			} else
+				append_url(ul, jsblocker[text].urls[i], jsblocker[text].urls[i], button);
+		}
+		
+		if (this.simpleMode && shost_list.length) {
+			for (var poopy in shost_track)
+				$('li', ul).eq(shost_track[poopy][0]).find('small').html('(' + shost_track[poopy][1] + ')');
+		}
 
-		if (jsblocker[text].count > 3 && jsblocker[text].count - 3 > 1) {
+		if ((this.simpleMode && shost_list.length > 3 && shost_list.length - 3 > 1) ||
+				(!this.simpleMode && jsblocker[text].count > 3 && jsblocker[text].count - 3 > 1)) {
 			$('li', ul).eq(2).after(['<li>',
-						'<a href="javascript:void(1)" class="show-more">', _('Show {1} more', [jsblocker[text].count - 3]), '</a>',
+						'<a href="javascript:void(1)" class="show-more">', _('Show {1} more', [this.simpleMode ? shost_list.length - 3 : jsblocker[text].count - 3]), '</a>',
 					'</li>'].join('')).end().filter(':gt(2)').hide().addClass('show-more-hidden');
 		}
 		
@@ -1758,7 +1795,7 @@ var JavaScriptBlocker = {
 			Behaviour.action('Setup');
 			var setupTime = Behaviour.timer('Setup timer');
 					
-			s.find('input').click(function (e) {
+			s.find('input[type="button"]').click(function (e) {
 				Behaviour.timerEnd(setupTime);
 				
 				self.allowMode = !$(this).is('#setup-block');
@@ -1777,6 +1814,8 @@ var JavaScriptBlocker = {
 						self.rules.add('.*', self.rules.blacklist[bd][e], 4);
 									
 				self.open_popover();
+			}).parent().prev().find('#setup-simple').click(function () {
+				self.simpleMode = this.checked ? 1 : 0;
 			});
 			
 			this.utils.zoom(s, $('#main', this.popover));
