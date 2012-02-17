@@ -98,7 +98,7 @@ function ready(event) {
 						'Reloading the page should resolve the issue.')
 			}
 		}
-	}, (event && event.type == 'focus') ? 0 : 300);
+	}, (event && event.type == 'focus') ? 10 : 300);
 }
 
 function messageHandler(event) {

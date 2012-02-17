@@ -495,26 +495,26 @@ var JavaScriptBlocker = {
 		 */
 		remove_matching_URL: function (domain, urls, confirmed, block_allow, allow_disabled) {
 			var current_rules = this.for_domain(domain), to_delete = {}, being_deleted = {}, sub, rule, url;
-
+			
 			for (sub in current_rules) {
 				to_delete[sub] = [];
 				being_deleted[sub] = [];
 
 				for (rule in current_rules[sub]) {
 					if (!!(current_rules[sub][rule] % 2) !== block_allow || (!allow_disabled && current_rules[sub][rule] < 0)) continue;
-					
+									
 					for (var i = 0; i < urls.length; i++) {
 						url = urls[i];
 
 						if ((new RegExp(rule)).test(url)) {
 							if (confirmed) {
 								delete this.cache[sub];
-								
+												
 								if (!(rule in current_rules[sub])) continue;
 							
 								if (current_rules[sub][rule] > 1 && current_rules[sub][rule] < 4) {
 									current_rules[sub][rule] *= -1;
-								} else
+								} else if (current_rules[sub][rule] > -1)
 									delete current_rules[sub][rule];
 							} else {
 								if (being_deleted[sub].indexOf(rule) > -1)
@@ -533,7 +533,7 @@ var JavaScriptBlocker = {
 				} else
 			 		window.localStorage.setItem(sub, JSON.stringify(current_rules[sub]));
 			}
-
+			
 			return confirmed ? 1 : to_delete;
 		},
 		remove_domain: function (domain) {
@@ -883,7 +883,7 @@ var JavaScriptBlocker = {
 
 			$(remove_rule, this.popover).click(function (e) {
 				Behaviour.action('Removing a rule via main window');
-				
+								
 				var m = $(this).parents('div').attr('id').indexOf('blocked') === -1,
 						off = $(this).offset(),
 						left = off.left + $(this).outerWidth() / 2,
@@ -901,7 +901,7 @@ var JavaScriptBlocker = {
 									'</div>',
 								'</div>'].join('')),
 						wrapper = vs.find('ul.rules-wrapper');
-
+				
 				for (d in to_delete) {
 					wrapper.append(self.rules.view(d, url, true).find('> li').find('input').remove().end());
 
@@ -1532,7 +1532,7 @@ var JavaScriptBlocker = {
 	},
 	do_update_popover: function (event, index) {
 		var self = this, jsblocker = event.message;
-	
+			
 		if (safari.application.activeBrowserWindow.activeTab.url == jsblocker.href) {
 			$('#container', this.popover).addClass('loading');
 			
@@ -1754,12 +1754,9 @@ var JavaScriptBlocker = {
 			break;
 			
 			case 'addFrameData':
-				try {
-					delete this.frames[event.message[2]];
-				} catch (e) {}
-				
-				if (!(event.target.url in this.frames)) this.frames[event.target.url] = {};
-				
+				if (!(event.target.url in this.frames) || typeof this.frames[event.target.url] === 'undefined')
+					this.frames[event.target.url] = {};
+		
 				this.frames[event.target.url][event.message[0]] = event.message[1];
 				
 				safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
