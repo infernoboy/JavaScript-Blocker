@@ -10,7 +10,7 @@ function pageHost() {
 		case 'http:':
 		case 'https:':
 		case 'file:':
-			var base = window.location.origin + escape(window.location.pathname);
+			var base = window.location.origin + escape(window.location.pathname) + window.location.search;
 			if (window.location.hash.length > 0) return base + window.location.hash;
 			else if (window.location.href.substr(-1) === '#') return base + '#';
 			else return base;
