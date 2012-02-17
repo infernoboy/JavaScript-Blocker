@@ -1,0 +1,12 @@
+#page-lists > label {
+	max-width: 15%;
+}
+#page-list {
+	max-width: 90%;
+}
+ul li span {
+	max-width: 83%;
+}
+ul li input[type="button"] {
+	width: 16%;
+}

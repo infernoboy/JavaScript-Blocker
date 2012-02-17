@@ -375,6 +375,7 @@ var JavaScriptBlocker = {
 			else if (url.match(r) && url.match(r).length > 2) return (this.caches.active_host[url] = url.match(r)[2]);
 			else {
 				console.error('Error finding host in string:', url);
+				return 'ERROR';
 			}
 		}
 		
@@ -1149,6 +1150,9 @@ var JavaScriptBlocker = {
 
 			this.value = _((self.disabled ? 'Enable' : 'Disable') + ' JavaScript Blocker');
 			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+		}).siblings('#switch-interface').unbind('click').click(function () {
+			self.simpleMode = !self.simpleMode;
+			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
 		});
 		
 		$('#view-rules', this.popover).unbind('click').click(function (e) {
@@ -1372,7 +1376,7 @@ var JavaScriptBlocker = {
 			counter(self);
 		});
 		
-		$('#rules-filter-bar #filter-type-collapse li:not(#li-domain-filter)', this.popover).unbind('click').click(function () {
+		$('#rules-filter-bar #filter-type-collapse li', this.popover).unbind('click').click(function () {
 			Behaviour.action(this.id + ' clicked');
 			
 			$(this).siblings('li').removeClass('selected').end().addClass('selected');
@@ -1634,6 +1638,8 @@ var JavaScriptBlocker = {
 		
 		if (event.key === 'language')
 			this.reloaded = false;
+		else if (event.key === 'simpleMode')
+			$('#switch-interface', this.popover).val(event.newValue ? _('Expert Interface') : _('Simple Interface'));
 		else if (['alwaysBlock', 'alwaysAllow', 'allowMode'].indexOf(event.key) > -1) {
 			var wd, i, b, bd, e, c, mode, key, domain, m = event.key === 'allowMode' ? parseInt(event.newValue, 10) : this.allowMode;
 				
@@ -1761,8 +1767,9 @@ var JavaScriptBlocker = {
 			
 			case 'updateFrameData':
 				try {
-					this.frames[event.message[0]] = this.frames[event.message[1]];
-					delete this.frames[event.message[1]];
+					this.frames[event.message[0]] = this.frames[event.message[2]];
+				
+					delete this.frames[event.message[2]];
 				} catch(e) {}
 			break;
 			
@@ -1795,10 +1802,11 @@ var JavaScriptBlocker = {
 			if (!this.reloaded) {
 				this.reloaded = true;
 				this.load_language(false);
-				
+							
 				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
 							
 				setTimeout(function (e) {
+					$('#switch-interface', e.popover).val(e.simpleMode ? _('Expert Interface') : _('Simple Interface'));
 					e.load_language(true);
 					e.open_popover(event);
 				}, 500, this);

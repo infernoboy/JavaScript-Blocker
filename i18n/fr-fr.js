@@ -10,6 +10,7 @@ Strings['fr-fr'] = {
 	'Thanks for using {1}': 'Merci d\'utiliser la {1}!',
 	'Which mode would you like to run in?': 'Quelle méthode voulez-vous lancer dedans? ' +
 			'Ce réglage peut être modifié à tout moment à partir du volet des extensions des préférences de Safari.',
+	'Setup:Simple Mode': 'Utilisez un affichage simplifié montrant seuls noms d\'hôtes plutôt que de les scripts individuels chargé à partir d\'un hôte',
 	'All Domains': 'Tous les Domaines',
 	'Page:': 'La page:',
 	'Allow on': 'Autoriser le…',
@@ -26,5 +27,7 @@ Strings['fr-fr'] = {
 	'Allow': 'Permettre',
 	'Allow All': 'Permettre Todos',
 	'Block All': 'Bloquer Todos',
-	'Block': 'Bloquer'
+	'Block': 'Bloquer',
+	'Simple Interface': 'Utilisez l\'interface Simple',
+	'Expert Interface': 'Utilisez l\'interface d\'experts',
 };

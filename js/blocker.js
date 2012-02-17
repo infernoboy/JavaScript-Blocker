@@ -5,6 +5,22 @@
  * @version 1.2.7-1
  ***************************************/
 
+function pageHost() {
+	switch(window.location.protocol) {
+		case 'http:':
+		case 'https:':
+		case 'file:':
+			var base = window.location.origin + escape(window.location.pathname);
+			if (window.location.hash.length > 0) return base + window.location.hash;
+			else if (window.location.href.substr(-1) === '#') return base + '#';
+			else return base;
+		break;
+		
+		default:
+			return window.location.href; break;
+	}
+}
+
 var jsblocker = {
 	javascript_blocker_1: 1,
 	allowed: {
@@ -19,7 +35,7 @@ var jsblocker = {
 		count: 0,
 		urls: []
 	},
-	href: window.location.href/*,
+	href: pageHost()/*,
 	frames: {}*/
 }, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
 
@@ -63,7 +79,7 @@ function ready(event) {
 		safari.self.tab.dispatchMessage('setPopoverClass');
 	else if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
 		lastAddedFrameData = jsonBlocker;
-		safari.self.tab.dispatchMessage('addFrameData', [window.location.href, jsblocker]);
+		safari.self.tab.dispatchMessage('addFrameData', [pageHost(), jsblocker]);
 	}
 		
 	clearTimeout(readyTimeout);
@@ -96,16 +112,16 @@ function messageHandler(event) {
 function unloadHandler(event) {
 	try {
 		if (window == window.top)
-			safari.self.tab.dispatchMessage('unloadPage', window.location.href);
+			safari.self.tab.dispatchMessage('unloadPage', pageHost());
 	} catch(e) { /* Exception occurs when closing a page sometimes. */ }
 }
 
 function hashUpdate(event) {
 	var ohref = jsblocker.href.toString();
 	
-	jsblocker.href = window.location.href;
+	jsblocker.href = pageHost();
 	
-	safari.self.tab.dispatchMessage('addFrameData', [window.location.href, jsblocker, ohref])
+	safari.self.tab.dispatchMessage('updateFrameData', [pageHost(), jsblocker, ohref])
 	
 	ready(event);
 }

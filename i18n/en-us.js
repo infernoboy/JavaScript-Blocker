@@ -10,7 +10,7 @@ Strings['en-us'] = {
 	'Thanks for using {1}': 'Thanks for using {1}!',
 	'Which mode would you like to run in?': 'Which mode would you like to run in? ' +
 			'This setting can be changed at any time from the extensions pane of Safari\'s preferences.',
-	'Setup:Simple Mode': 'Show hostnames instead of individual scripts',
+	'Setup:Simple Mode': 'Use a simplified display showing only hostnames instead of the individual scripts loaded from a host',
 	'All Domains': 'All Domains',
 	'Page:': 'Page:',
 	'Allow on': 'Allow on…',
@@ -42,6 +42,8 @@ Strings['en-us'] = {
 	'Delete': 'Delete',
 	'Restore': 'Restore',
 	'Save': 'Save',
+	'Simple Interface': 'Use Simple Interface',
+	'Expert Interface': 'Use Expert Interface',
 	'Show Rules': 'Show Rules',
 	'Edit Rule': 'Edit Rule',
 	'New Rule': 'New Rule',

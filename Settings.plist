@@ -34,13 +34,14 @@
 		<key>Key</key>
 		<string>language</string>
 		<key>Title</key>
-		<string>Language/Langue</string>
+		<string>Language/Langue/Sprache</string>
 		<key>Titles</key>
 		<array>
 			<string>Automatic</string>
 			<string>US English</string>
 			<string>British English (Incomplete)</string>
-			<string>Française (Incomplete)</string>
+			<string>Française (Partiel)</string>
+			<string>Deutsch (Unfertig)</string>
 		</array>
 		<key>Type</key>
 		<string>PopUpButton</string>
@@ -50,6 +51,7 @@
 			<string>en-us</string>
 			<string>en-gb</string>
 			<string>fr-fr</string>
+			<string>de-de</string>
 		</array>
 	</dict>
 	<dict>

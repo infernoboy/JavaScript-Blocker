@@ -133,12 +133,23 @@ textarea {
 		-webkit-border-radius: 10px;
 	}
 
+@-webkit-keyframes redPulse {
+	0% {
+		background-color: #ff7578;
+	}
+	100% {
+		background-color: #CF4D54;
+	}
+}
+
 input[type="button"].confirm-click,
 button.confirm-click {
 	color: #fff;
 	border: 1px solid #883A3D;
-	background: -webkit-linear-gradient(top, #FF6E70, #CF4D54);
+	background-image: -webkit-linear-gradient(top, rgba(0,0,0,0), rgba(0,0,0,0.15));
+	background-color: #ff7578;
 	text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+	-webkit-animation: redPulse 0.5s ease-in 0 infinite alternate;
 }
 	input[type="button"].confirm-click:active,
 	button.confirm-click:active {
@@ -293,6 +304,7 @@ a {
 
 #disable,
 #view-rules,
+#switch-interface,
 #reset-automatic,
 #submit-information {
 	float: right;
@@ -301,6 +313,7 @@ a {
 	margin-bottom: 10px;
 }
 	#disable,
+	#switch-interface,
 	#submit-information {
 		margin-top: 5px;
 		font-size: 6pt;
