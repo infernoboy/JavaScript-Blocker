@@ -113,7 +113,10 @@ function messageHandler(event) {
 			
 			for (var y = 0; y < f.length; y++) {
 				if (!('src' in f[y]) || f[y].src.length < 1) continue;
-				else if (f[y].src === event.message) a.push(f[y].src);
+				else if (f[y].src === event.message) {
+					a.push(f[y].src);
+					break;
+				}
 			}
 			
 			if (a.length < 3) a.push(-1);
