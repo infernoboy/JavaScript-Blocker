@@ -49,7 +49,7 @@ var JavaScriptBlocker = {
 	 *
 	 * @this {JavaScriptBlocker}
 	 */
-	_cleanup: function () {
+	_cleanup: function (frames_only) {
 		Behaviour.action('Clean up code started');
 		
 		var i, b, j, c, key, e, new_collapsed = [], new_frames = {}, removed_frames = 0, timed = Behaviour.timer('Clean up');
@@ -65,6 +65,9 @@ var JavaScriptBlocker = {
 		Behaviour.log('Number of frames cleaned up:', removed_frames);
 	
 		this.frames = new_frames;
+		
+		if (frames_only) return true;
+		
 		this.caches.active_host = {};
 		this.caches.domain_parts = {};
 		
@@ -371,12 +374,9 @@ var JavaScriptBlocker = {
 		if (url && (url in this.caches.active_host)) return this.caches.active_host[url];
 		var r = /^(https?|file):\/\/([^\/]+)\//;
 		if (url) {
-			if (/^data/.test(url)) return (this.caches.active_host[url] = 'DataURI');
+			if (/^data/.test(url)) return (this.caches.active_host[url] = 'Data URI');
 			else if (url.match(r) && url.match(r).length > 2) return (this.caches.active_host[url] = url.match(r)[2]);
-			else {
-				console.error('Error finding host in string:', url);
-				return 'ERROR';
-			}
+			else return 'ERROR';
 		}
 		
 		try {
@@ -1533,7 +1533,7 @@ var JavaScriptBlocker = {
 	do_update_popover: function (event, index) {
 		var self = this, jsblocker = event.message;
 			
-		if (safari.application.activeBrowserWindow.activeTab.url == jsblocker.href) {
+		if (safari.application.activeBrowserWindow.activeTab.url === jsblocker.href) {
 			$('#container', this.popover).addClass('loading');
 			
 			var page_list = $('#page-list', this.popover), frames_blocked_count = 0, frames_allowed_count = 0, frame, inline, c, c0;
@@ -1561,7 +1561,7 @@ var JavaScriptBlocker = {
 */
 
 			if (jsblocker.href in this.frames) {
-				var frame, inline, xx;
+				var frame, inline, xx, d;
 
 				for (frame in this.frames[jsblocker.href]) {
 					xx = this.frames[jsblocker.href];
@@ -1576,8 +1576,10 @@ var JavaScriptBlocker = {
 						frames_allowed_count += xx[frame].allowed.count;
 						frames_allowed_count += xx[frame].unblocked.count;
 					}
+					
+					d = ('display' in xx[frame]) ? xx[frame].display : xx[frame].href;
 				
-					$('<option></option>').addClass('frame-page').attr('value', xx[frame].href).text(xx[frame].href).appendTo(inline);
+					$('<option></option>').addClass('frame-page').attr('value', xx[frame].href).text(d).appendTo(inline);
 				}
 			}
 			
@@ -1593,13 +1595,17 @@ var JavaScriptBlocker = {
 				self.do_update_popover(event, this.selectedIndex);
 			});
 			
-			var host = this.active_host(page_list.val()), toolbarItem = safari.extension.toolbarItems[0];
+			var host = this.active_host(page_list.val()), toolbarItem = null;
+			
+			for (var y = 0; y < safari.extension.toolbarItems.length; y++) {
+				toolbarItem = safari.extension.toolbarItems[y];
 
-			toolbarItem.image = this.disabled ? safari.extension.baseURI + 'images/toolbar-disabled.png' : safari.extension.baseURI + 'images/toolbar.png';
-			toolbarItem.badge = safari.extension.settings.toolbarDisplay === 'allowed' ?
-					jsblocker.allowed.count + jsblocker.unblocked.count + frames_allowed_count :
-					(safari.extension.settings.toolbarDisplay === 'blocked' ? jsblocker.blocked.count + frames_blocked_count : 0);
-
+				toolbarItem.image = this.disabled ? safari.extension.baseURI + 'images/toolbar-disabled.png' : safari.extension.baseURI + 'images/toolbar.png';
+				toolbarItem.badge = safari.extension.settings.toolbarDisplay === 'allowed' ?
+						jsblocker.allowed.count + jsblocker.unblocked.count + frames_allowed_count :
+						(safari.extension.settings.toolbarDisplay === 'blocked' ? jsblocker.blocked.count + frames_blocked_count : 0);
+			}
+			
 			$('.domain-options, #allow-domain, #block-domain', this.popover).show();
 
 			if (jsblocker.blocked.count == 0) $('#allow-domain', this.popover).hide();
@@ -1756,10 +1762,18 @@ var JavaScriptBlocker = {
 			case 'addFrameData':
 				if (!(event.target.url in this.frames) || typeof this.frames[event.target.url] === 'undefined')
 					this.frames[event.target.url] = {};
-		
+				
+				if (event.target.url === event.message[0] && event.message.length < 3) {
+					event.target.page.dispatchMessage('validateFrame', event.message[0]);
+					break;
+				} else if (event.target.url === event.message[0] && event.message.length === 3)
+					event.message[1].display = event.message[2] === -1 ? _('Custom Frame') : event.message[2];
+					
 				this.frames[event.target.url][event.message[0]] = event.message[1];
 				
-				safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
+				try {
+					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
+				} catch (e) {}
 			break;
 			
 			case 'updateFrameData':
@@ -1779,9 +1793,12 @@ var JavaScriptBlocker = {
 		}
 	},
 	open_popover: function (event) {
-		if (typeof event !== 'undefined' && ('type' in event) && ['beforenavigate', 'close'].indexOf(event.type) > -1) {
+		if (typeof event !== 'undefined' && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1) {
 			try {
-				safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('unloadPage');
+				if (event.type === 'beforeNavigate')
+					event.target.page.dispatchMessage('unloadPage');
+				else
+					delete this.frames[event.target.url];
 			} catch (e) {}
 		}
 		
@@ -1799,7 +1816,7 @@ var JavaScriptBlocker = {
 			if (!this.reloaded) {
 				this.reloaded = true;
 				this.load_language(false);
-							
+						
 				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
 							
 				setTimeout(function (e) {

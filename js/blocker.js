@@ -10,7 +10,8 @@ function pageHost() {
 		case 'http:':
 		case 'https:':
 		case 'file:':
-			var base = window.location.origin + escape(window.location.pathname) + window.location.search;
+			var base = window.location.origin + (bv >= 535185 ?
+					window.location.pathname : escape(window.location.pathname)) + window.location.search;
 			if (window.location.hash.length > 0) return base + window.location.hash;
 			else if (window.location.href.substr(-1) === '#') return base + '#';
 			else return base;
@@ -21,23 +22,24 @@ function pageHost() {
 	}
 }
 
-var jsblocker = {
-	javascript_blocker_1: 1,
-	allowed: {
-		count: 0,
-		urls: []
-	},
-	blocked: {
-		count: 0,
-		urls: []
-	},
-	unblocked: {
-		count: 0,
-		urls: []
-	},
-	href: pageHost()/*,
-	frames: {}*/
-}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
+var bv = parseInt(window.navigator.appVersion.split('Safari/')[1].replace(/\./g, '')),
+		jsblocker = {
+			javascript_blocker_1: 1,
+			allowed: {
+				count: 0,
+				urls: []
+			},
+			blocked: {
+				count: 0,
+				urls: []
+			},
+			unblocked: {
+				count: 0,
+				urls: []
+			},
+			href: pageHost()/*,
+			frames: {}*/
+		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
 
 function allowedScript(event) {
 	if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length > 0) {
@@ -106,6 +108,18 @@ function messageHandler(event) {
 		case 'reload': window.location.reload(); break;
 		case 'updatePopover': ready(event); break;
 		case 'unloadPage': unloadHandler(event); break;
+		case 'validateFrame':
+			var f = document.getElementsByTagName('iframe'), a = [pageHost(), jsblocker];
+			
+			for (var y = 0; y < f.length; y++) {
+				if (!('src' in f[y]) || f[y].src.length < 1) continue;
+				else if (f[y].src === event.message) a.push(f[y].src);
+			}
+			
+			if (a.length < 3) a.push(-1);
+			
+			safari.self.tab.dispatchMessage('addFrameData', a);
+		break;
 	}
 }
 
@@ -141,7 +155,6 @@ safari.self.addEventListener('message', messageHandler, true);
 window.addEventListener('hashchange', hashUpdate, true);
 window.addEventListener('focus', ready, true);
 //window.addEventListener('message', frameUpdater, false);
-window.addEventListener('beforeunload', unloadHandler, true);
 document.addEventListener('beforeload', allowedScript, true);
 document.addEventListener('DOMNodeInserted', allowedScript, true);
 document.addEventListener('DOMContentLoaded', ready, true);

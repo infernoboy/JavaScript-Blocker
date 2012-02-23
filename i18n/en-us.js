@@ -17,6 +17,7 @@ Strings['en-us'] = {
 	'Block on': 'Block on…',
 	'Main Page': 'Main Page',
 	'Inline Frame Pages': 'Inline Frame Pages',
+	'Custom Frame': '(Non-URL Based Frame)',
 	'Allowed:': 'Allowed:',
 	'Blocked:': 'Blocked:',
 	'Unblocked:': 'Unblocked:',
