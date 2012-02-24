@@ -40,6 +40,7 @@
 					}
 				}
 			}, true);
+			
 			safari.application.addEventListener('close', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
 			safari.application.addEventListener('beforeNavigate', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
 			safari.application.addEventListener('popover', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);

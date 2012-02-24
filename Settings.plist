@@ -14,9 +14,15 @@
 		<key>Key</key>
 		<string>allowMode</string>
 		<key>Title</key>
-		<string>Allow scripts unless explicitly blocked</string>
+		<string>Block scripts manually</string>
 		<key>Type</key>
 		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>Title</key>
+		<string>User Interface</string>
+		<key>Type</key>
+		<string>Group</string>
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
@@ -25,6 +31,16 @@
 		<string>simpleMode</string>
 		<key>Title</key>
 		<string>Show hostnames instead of individual scripts</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>animations</string>
+		<key>Title</key>
+		<string>Use animations</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -120,7 +136,7 @@
 		<key>Key</key>
 		<string>alwaysBlock</string>
 		<key>Title</key>
-		<string>When allowing, block scripts from</string>
+		<string>Blocking manually, automatically block</string>
 		<key>Titles</key>
 		<array>
 			<string>Different sub domains</string>
@@ -142,7 +158,7 @@
 		<key>Key</key>
 		<string>alwaysAllow</string>
 		<key>Title</key>
-		<string>When blocking, allow scripts from</string>
+		<string>Allowing manually, automatically allow</string>
 		<key>Titles</key>
 		<array>
 			<string>Any sub domain</string>

@@ -37,12 +37,11 @@ var bv = parseInt(window.navigator.appVersion.split('Safari/')[1].replace(/\./g,
 				count: 0,
 				urls: []
 			},
-			href: pageHost()/*,
-			frames: {}*/
+			href: pageHost()
 		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
 
 function allowedScript(event) {
-	if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length > 0) {
+	if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length > 0 && event.type !== 'DOMNodeInserted') {
 		var isAllowed = safari.self.tab.canLoad(event, [jsblocker.href, event.target.src, !(window == window.top)]);
 
 		if (!isAllowed) {
@@ -56,19 +55,19 @@ function allowedScript(event) {
 			jsblocker.allowed.count++;
 			jsblocker.allowed.urls.push(event.target.src);
 		}
-	} else if (event.target.nodeName.toUpperCase() === 'SCRIPT') {
+	} else if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.type === 'DOMNodeInserted') {
 		jsblocker.unblocked.count++;
 		jsblocker.unblocked.urls.push(event.target.innerHTML);
 	}
 	
 	if (window !== window.top) {
 		clearTimeout(readyTimeout);
-		setTimeout(ready, 200);
+		readyTimeout = setTimeout(determine, 200, { type: event.type });
 	}	
 }
 
-function ready(event) {
-	if (event && event.type === 'DOMContentLoaded') {
+function ready(event, type, badge_only) {
+	if (type === 'DOMContentLoaded') {
 		var script_tags = document.getElementsByTagName('script'), i, b;
 		for (i = 0, b = script_tags.length; i < b; i++) {
 			if (!script_tags[i].src || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
@@ -77,7 +76,7 @@ function ready(event) {
 			}
 		}
 	}
-	if (window == window.top && event && event.type === 'DOMContentLoaded')
+	if (window == window.top && type === 'DOMContentLoaded')
 		safari.self.tab.dispatchMessage('setPopoverClass');
 	else if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
 		lastAddedFrameData = jsonBlocker;
@@ -85,28 +84,35 @@ function ready(event) {
 	}
 		
 	clearTimeout(readyTimeout);
-	
-	readyTimeout = setTimeout(function () {
+		
+	readyTimeout = setTimeout(function (z) {
 		try {
 			if (window == window.top) {
-		//		for (var i = 0, b = frames.length; i < b; i++)
-		//			frames[i].contentWindow.postMessage('add_frame', '*');
-				safari.self.tab.dispatchMessage('updatePopover', jsblocker);
+				if (badge_only)
+					safari.self.tab.dispatchMessage('updateBadge', jsblocker);
+				else
+					safari.self.tab.dispatchMessage('updatePopover', jsblocker);
 			}
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
-				console.error('JavaScript blocker broke! This may be because of an issue with Safari itself. ' +
-						'Reloading the page should resolve the issue.')
+				console.error('JavaScript blocker broke! This is an issue with Safari itself. ' +
+						'Reloading the page should resolve the problem.')
 			}
 		}
-	}, (event && event.type == 'focus') ? 10 : 300);
+	}, (type === 'focus') ? 10 : 300, event || null);
+}
+
+function determine(event) {
+	safari.self.tab.dispatchMessage('determineUpdateType', event.type);
 }
 
 function messageHandler(event) {
 	switch (event.name) {
 		case 'reload': window.location.reload(); break;
-		case 'updatePopover': ready(event); break;
+		case 'updatePopover': ready(event, event.message); break;
+		case 'updateBadge': ready(event, event.message, true); break;
+		case 'determineUpdateType': determine(event); break;
 		case 'unloadPage': unloadHandler(event); break;
 		case 'validateFrame':
 			var f = document.getElementsByTagName('iframe'), a = [pageHost(), jsblocker];
@@ -140,24 +146,12 @@ function hashUpdate(event) {
 	
 	safari.self.tab.dispatchMessage('updateFrameData', [pageHost(), jsblocker, ohref])
 	
-	ready(event);
+	determine(event);
 }
 
-/*
-function frameUpdater(event) {
-	if (event.data == 'add_frame') event.source.postMessage(jsblocker, '*');
-	else if (typeof event.data == 'object' && event.data.javascript_blocker_1) {
-		if (window == window.top) {
-			jsblocker.frames[event.data.href] = event.data;
-			safari.self.tab.dispatchMessage('updatePopover', jsblocker);
-		}
-	}
-}
-*/
 safari.self.addEventListener('message', messageHandler, true);
 window.addEventListener('hashchange', hashUpdate, true);
-window.addEventListener('focus', ready, true);
-//window.addEventListener('message', frameUpdater, false);
+window.addEventListener('focus', determine, true);
 document.addEventListener('beforeload', allowedScript, true);
 document.addEventListener('DOMNodeInserted', allowedScript, true);
-document.addEventListener('DOMContentLoaded', ready, true);
+document.addEventListener('DOMContentLoaded', determine, true);

@@ -30,4 +30,6 @@ Strings['fr-fr'] = {
 	'Block': 'Bloquer',
 	'Simple Interface': 'Utilisez l\'interface Simple',
 	'Expert Interface': 'Utilisez l\'interface d\'experts',
+	'Block scripts manually': 'Scripts de blocs manuellement',
+	'Finish Setup': 'Terminer l\'installation',
 };

@@ -28,4 +28,6 @@ Strings['de-de'] = {
 	'Block': 'Blockieren',
 	'Simple Interface': 'Verwenden Sie einfache Schnittstelle',
 	'Expert Interface': 'Verwenden Sie den Experten-Schnittstelle',
+	'Block scripts manually': 'Block-Skripte manuell',
+	'Finish Setup': 'Fertig-Setup',
 };

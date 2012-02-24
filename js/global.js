@@ -118,6 +118,9 @@ var JavaScriptBlocker = {
 	set setupDone(value) {
 		safari.extension.settings.setupDone = value;
 	},
+	get useAnimations() {
+		return safari.extension.settings.animations;
+	},
 	get collapsedDomains() {
 		if (this.caches.collapsed_domains) return this.caches.collapsed_domains;
 		
@@ -980,7 +983,7 @@ var JavaScriptBlocker = {
 		}
 		
 		$(this.popover.body).unbind('keydown').keydown(function (e) {
-			if (e.which === 16) self.speedMultiplier = 10;
+			if (e.which === 16) self.speedMultiplier = self.useAnimations ? 0.01 : 10;
 			else if ((e.which === 93 || e.which === 91) ||
 					(window.navigator.platform.indexOf('Win') > -1 && e.which === 17)) self.commandKey = true;
 			else if (e.which === 70 && self.commandKey) {
@@ -998,7 +1001,7 @@ var JavaScriptBlocker = {
 				toggle_find_bar();
 			}
 		}).keyup(function (e) {
-			if (e.which === 16) self.speedMultiplier = 1;
+			if (e.which === 16) self.speedMultiplier = self.useAnimations ? 0.01 : 1;
 			else if ((e.which === 93 || e.which === 91) ||
 					(window.navigator.platform.indexOf('Win') > -1 && e.which === 17)) self.commandKey = false;
 		});
@@ -1530,12 +1533,12 @@ var JavaScriptBlocker = {
 			$('.' + text + '-label', self.popover).addClass('hidden');
 		}
 	},
-	do_update_popover: function (event, index) {
-		var self = this, jsblocker = event.message;
+	do_update_popover: function (event, index, badge_only) {
+		var self = this, jsblocker = event.message, toolbarItem = null;
+		
+		this.busy = 1;
 			
 		if (safari.application.activeBrowserWindow.activeTab.url === jsblocker.href) {
-			$('#container', this.popover).addClass('loading');
-			
 			var page_list = $('#page-list', this.popover), frames_blocked_count = 0, frames_allowed_count = 0, frame, inline, c, c0;
 			
 			c = (!this.allowMode ? 'allowing' : 'blocking');
@@ -1544,22 +1547,7 @@ var JavaScriptBlocker = {
 			$(this.popover.body).addClass(c + '-mode').removeClass(c0 + '-mode');
 			
 			page_list.find('optgroup:eq(1)').remove();
-	
-/*			for (frame in jsblocker.frames) {
-				if (page_list.find('optgroup').length == 1) inline = $('<optgroup label="Inline Frame Pages"></optgroup>').appendTo(page_list);
-				else inline = page_list.find('optgroup:eq(1)');
 			
-				if (typeof index == 'undefined') {
-					frames_blocked_count += jsblocker.frames[frame].blocked.count;
-					frames_allowed_count += jsblocker.frames[frame].allowed.count;
-					frames_allowed_count += jsblocker.frames[frame].unblocked.count;
-				}
-				
-				$('<option></option>').addClass('frame-page').attr('value', jsblocker.frames[frame].href)
-						.html(jsblocker.frames[frame].href).appendTo(inline);
-			}
-*/
-
 			if (jsblocker.href in this.frames) {
 				var frame, inline, xx, d;
 
@@ -1571,31 +1559,15 @@ var JavaScriptBlocker = {
 					else
 						inline = page_list.find('optgroup:eq(1)');
 				
-					if (typeof index === 'undefined') {
-						frames_blocked_count += xx[frame].blocked.count;
-						frames_allowed_count += xx[frame].allowed.count;
-						frames_allowed_count += xx[frame].unblocked.count;
-					}
+					frames_blocked_count += xx[frame].blocked.count;
+					frames_allowed_count += xx[frame].allowed.count;
+					frames_allowed_count += xx[frame].unblocked.count;
 					
 					d = ('display' in xx[frame]) ? xx[frame].display : xx[frame].href;
 				
 					$('<option></option>').addClass('frame-page').attr('value', xx[frame].href).text(d).appendTo(inline);
 				}
 			}
-			
-			page_list.find('optgroup:first option').attr('value', jsblocker.href).text(jsblocker.href);
-			
-			if (typeof index == 'number' && index > 0) {
-				page_list[0].selectedIndex = index;
-			//	jsblocker = jsblocker.frames[page_list.val()];
-				jsblocker = this.frames[jsblocker.href][page_list.val()];
-			}
-						
-			page_list.unbind('change').change(function () {
-				self.do_update_popover(event, this.selectedIndex);
-			});
-			
-			var host = this.active_host(page_list.val()), toolbarItem = null;
 			
 			for (var y = 0; y < safari.extension.toolbarItems.length; y++) {
 				toolbarItem = safari.extension.toolbarItems[y];
@@ -1606,38 +1578,53 @@ var JavaScriptBlocker = {
 						(safari.extension.settings.toolbarDisplay === 'blocked' ? jsblocker.blocked.count + frames_blocked_count : 0);
 			}
 			
-			$('.domain-options, #allow-domain, #block-domain', this.popover).show();
-
-			if (jsblocker.blocked.count == 0) $('#allow-domain', this.popover).hide();
-			if (jsblocker.allowed.count == 0) $('#block-domain', this.popover).hide();
-
-			if (jsblocker.blocked.count == 0 || this.allowMode) $('#allow-options', this.popover).hide();
-			if (jsblocker.allowed.count == 0 || !this.allowMode) $('#block-options', this.popover).hide();
-
-			toolbarItem.popover.contentWindow.active_tab_url = safari.application.activeBrowserWindow.activeTab.url;
-
-			$('#main ul', this.popover).html('');
-
-			this.make_list('blocked', _('Allow'), jsblocker);
-			this.make_list('allowed', _('Block'), jsblocker);
-			this.make_list('unblocked', _('View'), jsblocker);
+			if (!badge_only) {
+				page_list.find('optgroup:first option').attr('value', jsblocker.href).text(jsblocker.href);
 			
-			var domains = this.domain_parts(host), optgroups = $('.domain-options', this.popover).find('optgroup').html('');
+				if (typeof index == 'number' && index > 0) {
+					page_list[0].selectedIndex = index;
+					jsblocker = this.frames[jsblocker.href][page_list.val()];
+				}
+						
+				page_list.unbind('change').change(function () {
+					self.do_update_popover(event, this.selectedIndex);
+				});
+			
+				var host = this.active_host(page_list.val());
+			
+				$('.domain-options, #allow-domain, #block-domain', this.popover).show();
 
-			for (var i = 0, b = domains.length; i < b; i++) {
-				if (domains[i] == host) continue;
+				if (jsblocker.blocked.count == 0) $('#allow-domain', this.popover).hide();
+				if (jsblocker.allowed.count == 0) $('#block-domain', this.popover).hide();
 
-				optgroups.append('<option value="' + i + '">' + (domains[i] === '*' ? _('All Domains') : '.' + domains[i]) + '</option>');
-				$('option:last', optgroups).data('store', '.' + domains[i]);
+				if (jsblocker.blocked.count == 0 || this.allowMode) $('#allow-options', this.popover).hide();
+				if (jsblocker.allowed.count == 0 || !this.allowMode) $('#block-options', this.popover).hide();
+
+				toolbarItem.popover.contentWindow.active_tab_url = safari.application.activeBrowserWindow.activeTab.url;
+
+				$('#main ul', this.popover).html('');
+
+				this.make_list('blocked', _('Allow'), jsblocker);
+				this.make_list('allowed', _('Block'), jsblocker);
+				this.make_list('unblocked', _('View'), jsblocker);
+			
+				var domains = this.domain_parts(host), optgroups = $('.domain-options', this.popover).find('optgroup').html('');
+
+				for (var i = 0, b = domains.length; i < b; i++) {
+					if (domains[i] == host) continue;
+
+					optgroups.append('<option value="' + i + '">' + (domains[i] === '*' ? _('All Domains') : '.' + domains[i]) + '</option>');
+					$('option:last', optgroups).data('store', '.' + domains[i]);
+				}
+
+				optgroups.prepend('<option value="0">' + host + '</option>');
+				$('option:first', optgroups).data('store', host);
+			
+				this.bind_events(true, host);
 			}
-
-			optgroups.prepend('<option value="0">' + host + '</option>');
-			$('option:first', optgroups).data('store', host);
-			
-			this.bind_events(true, host);
-			
-			$('#container', this.popover).removeClass('loading');
 		}
+		
+		this.busy = 0;
 	},
 	setting_changed: function (event) {
 		Behaviour.action(['Setting changed:', event.key + ',', 'New value:', event.newValue].join(' '));
@@ -1751,14 +1738,24 @@ var JavaScriptBlocker = {
 
 			case 'updatePopover':
 				if (event.target != safari.application.activeBrowserWindow.activeTab) break;
-			
-				var self = this;
+				
 				if (this.updatePopoverTimeout) clearTimeout(this.updatePopoverTimeout);
-				this.updatePopoverTimeout = setTimeout(function () {
+					
+				this.updatePopoverTimeout = setTimeout(function (self) {
 					self.do_update_popover(event);
-				}, 100);
+				}, 50, this);
 			break;
 			
+			case 'updateBadge':
+				if (event.target != safari.application.activeBrowserWindow.activeTab) break;
+				
+				if (this.updatePopoverTimeout) clearTimeout(this.updatePopoverTimeout);
+				
+				this.updatePopoverTimeout = setTimeout(function (self) {
+					self.do_update_popover(event, undefined, true);
+				}, 50, this);
+			break;
+
 			case 'addFrameData':
 				if (!(event.target.url in this.frames) || typeof this.frames[event.target.url] === 'undefined')
 					this.frames[event.target.url] = {};
@@ -1770,10 +1767,14 @@ var JavaScriptBlocker = {
 					event.message[1].display = event.message[2] === -1 ? _('Custom Frame') : event.message[2];
 					
 				this.frames[event.target.url][event.message[0]] = event.message[1];
-				
+			
+			case 'determineUpdateType':
 				try {
-					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
-				} catch (e) {}
+					if (this.popover_visible())
+						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover', event.message);
+					else
+						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updateBadge', event.message);
+				} catch(e) {}
 			break;
 			
 			case 'updateFrameData':
@@ -1809,6 +1810,8 @@ var JavaScriptBlocker = {
 		
 		if (event && ('type' in event) && event.type == 'popover') {
 			Behaviour.action('Opened JavaScript Blocker');
+			
+			this.popover_open = true;
 
 			/**
 			 * Fixes issues with mouse hover events not working
@@ -1844,7 +1847,6 @@ var JavaScriptBlocker = {
 			s.find('input[type="button"]').click(function (e) {
 				Behaviour.timerEnd(setupTime);
 				
-				self.allowMode = !$(this).is('#setup-block');
 				self.setupDone = 1;
 				
 				Behaviour.action('Setup in allowMode: ' + self.allowMode);
@@ -1860,8 +1862,12 @@ var JavaScriptBlocker = {
 						self.rules.add('.*', self.rules.blacklist[bd][e], 4);
 									
 				self.open_popover();
-			}).parent().prev().find('#setup-simple').click(function () {
-				self.simpleMode = this.checked ? 1 : 0;
+			});
+			s.find('#setup-simple').click(function () {
+				self.simpleMode = this.checked;
+			});
+			s.find('#block-manual').click(function () {
+				self.allowMode = this.checked;
 			});
 			
 			this.utils.zoom(s, $('#main', this.popover));
@@ -1876,7 +1882,14 @@ var JavaScriptBlocker = {
 			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
 		} catch(e) { }
 	},
+	popover_visible: function () {
+		for (var y = 0; y < safari.extension.toolbarItems.length; y++)
+			if (safari.extension.toolbarItems[y].popover.visible) return true;
+		return false;
+	},
 	validate: function (event) {
+		if (!this.useAnimations) this.speedMultiplier = 0.01;
+		
 		if (!('cleanup' in this.utils.timer.timers.intervals))
 			this.utils.timer.interval('cleanup', $.proxy(this._cleanup, this), 1000 * 60 * 5);
 			
