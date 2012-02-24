@@ -1742,17 +1742,7 @@ var JavaScriptBlocker = {
 				if (this.updatePopoverTimeout) clearTimeout(this.updatePopoverTimeout);
 					
 				this.updatePopoverTimeout = setTimeout(function (self) {
-					self.do_update_popover(event);
-				}, 50, this);
-			break;
-			
-			case 'updateBadge':
-				if (event.target != safari.application.activeBrowserWindow.activeTab) break;
-				
-				if (this.updatePopoverTimeout) clearTimeout(this.updatePopoverTimeout);
-				
-				this.updatePopoverTimeout = setTimeout(function (self) {
-					self.do_update_popover(event, undefined, true);
+					self.do_update_popover(event, undefined, !self.popover_visible());
 				}, 50, this);
 			break;
 
@@ -1768,12 +1758,8 @@ var JavaScriptBlocker = {
 					
 				this.frames[event.target.url][event.message[0]] = event.message[1];
 			
-			case 'determineUpdateType':
 				try {
-					if (this.popover_visible())
-						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover', event.message);
-					else
-						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updateBadge', event.message);
+					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover', event.message);
 				} catch(e) {}
 			break;
 			

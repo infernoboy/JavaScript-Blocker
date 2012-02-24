@@ -55,19 +55,19 @@ function allowedScript(event) {
 			jsblocker.allowed.count++;
 			jsblocker.allowed.urls.push(event.target.src);
 		}
-	} else if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.type === 'DOMNodeInserted') {
+	} else if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length === 0 && event.type === 'DOMNodeInserted') {
 		jsblocker.unblocked.count++;
 		jsblocker.unblocked.urls.push(event.target.innerHTML);
 	}
 	
 	if (window !== window.top) {
 		clearTimeout(readyTimeout);
-		readyTimeout = setTimeout(determine, 200, { type: event.type });
+		readyTimeout = setTimeout(ready, 200, event);
 	}	
 }
 
-function ready(event, type, badge_only) {
-	if (type === 'DOMContentLoaded') {
+function ready(event) {
+	if (event.type === 'DOMContentLoaded') {
 		var script_tags = document.getElementsByTagName('script'), i, b;
 		for (i = 0, b = script_tags.length; i < b; i++) {
 			if (!script_tags[i].src || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
@@ -76,7 +76,7 @@ function ready(event, type, badge_only) {
 			}
 		}
 	}
-	if (window == window.top && type === 'DOMContentLoaded')
+	if (window == window.top && event.type === 'DOMContentLoaded')
 		safari.self.tab.dispatchMessage('setPopoverClass');
 	else if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
 		lastAddedFrameData = jsonBlocker;
@@ -85,14 +85,10 @@ function ready(event, type, badge_only) {
 		
 	clearTimeout(readyTimeout);
 		
-	readyTimeout = setTimeout(function (z) {
+	readyTimeout = setTimeout(function () {
 		try {
-			if (window == window.top) {
-				if (badge_only)
-					safari.self.tab.dispatchMessage('updateBadge', jsblocker);
-				else
-					safari.self.tab.dispatchMessage('updatePopover', jsblocker);
-			}
+			if (window === window.top)
+				safari.self.tab.dispatchMessage('updatePopover', jsblocker);
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
@@ -100,19 +96,14 @@ function ready(event, type, badge_only) {
 						'Reloading the page should resolve the problem.')
 			}
 		}
-	}, (type === 'focus') ? 10 : 300, event || null);
-}
-
-function determine(event) {
-	safari.self.tab.dispatchMessage('determineUpdateType', event.type);
+	}, (event.type === 'focus') ? 10 : 300);
 }
 
 function messageHandler(event) {
 	switch (event.name) {
 		case 'reload': window.location.reload(); break;
-		case 'updatePopover': ready(event, event.message); break;
-		case 'updateBadge': ready(event, event.message, true); break;
-		case 'determineUpdateType': determine(event); break;
+		case 'updatePopover': ready(event); break;
+		case 'updateBadge': ready(event); break;
 		case 'unloadPage': unloadHandler(event); break;
 		case 'validateFrame':
 			var f = document.getElementsByTagName('iframe'), a = [pageHost(), jsblocker];
@@ -146,12 +137,15 @@ function hashUpdate(event) {
 	
 	safari.self.tab.dispatchMessage('updateFrameData', [pageHost(), jsblocker, ohref])
 	
-	determine(event);
+	ready(event);
 }
 
 safari.self.addEventListener('message', messageHandler, true);
 window.addEventListener('hashchange', hashUpdate, true);
-window.addEventListener('focus', determine, true);
+
+if (window === window.top)
+	window.addEventListener('focus', ready, true);
+
+document.addEventListener('DOMContentLoaded', ready, false);
 document.addEventListener('beforeload', allowedScript, true);
 document.addEventListener('DOMNodeInserted', allowedScript, true);
-document.addEventListener('DOMContentLoaded', determine, true);
