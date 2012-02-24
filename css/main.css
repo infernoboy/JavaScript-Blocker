@@ -13,7 +13,7 @@
 	background: transparent;
 }
 ::-webkit-scrollbar-track {
-	-webkit-border-radius: 4px;
+	-webkit-border-radius: 5px;
 	border-top: 1px solid rgba(0,0,0,0.15);
 	background: -webkit-linear-gradient(top, rgba(0,0,0,0.1), rgba(0,0,0,0.02));
 }
@@ -23,7 +23,7 @@
 	background: -webkit-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.02));
 }
 ::-webkit-scrollbar-thumb {
-	-webkit-border-radius: 4px;
+	-webkit-border-radius: 5px;
 	border-top: 1px solid rgba(0,0,0,0.01);
 	background: -webkit-linear-gradient(top, #bbb, #999);
 }

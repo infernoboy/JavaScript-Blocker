@@ -18,7 +18,6 @@ var JavaScriptBlocker = {
 	commandKey: false,
 	speedMultiplier: 1,
 	disabled: false,
-	noDeleteWarning: false,
 	frames: {},
 	
 	load_language: function (css) {
@@ -807,7 +806,8 @@ var JavaScriptBlocker = {
 			$(add_rule, this.popover).click(function (e) {
 				Behaviour.action('Adding a rule via main window');
 				
-				var off = $(this).offset(),
+				var butt = this,
+					off = $(this).offset(),
 					left = off.left + $(this).outerWidth() / 2,
 					o = $('.domain-options:visible', self.popover)[0].value,
 					store = $('.domain-options:visible option[value="' + o + '"]', self.popover).data('store'),
@@ -833,6 +833,8 @@ var JavaScriptBlocker = {
 					
 					if (rs.length) {
 						Behaviour.action('Automatic rule restore prompt');
+						
+						if (self.simpleMode && !self.utils.confirm_click(butt)) return false;
 						
 						new Poppy(left, off.top + 8, [
 							'<p>', _('The following automatic rules were disabled, thus ' + (self.allowMode ? 
@@ -875,13 +877,19 @@ var JavaScriptBlocker = {
 									new Poppy();
 									safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 								});
-							});
+							}, function () {
+								if (self.simpleMode) $('#auto-restore', self.popover).click();
+							}, self.simpleMode ? 0 : undefined);
 						
 						return false;
 					}
 				}
-		
-				new Poppy(left, off.top + 8, padd);
+				
+				if (self.simpleMode && self.utils.confirm_click(this)) {
+					self.rules.add(store, padd.me.url, self.allowMode ? 0 : 1);
+					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');	
+				} else if (!self.simpleMode)
+					new Poppy(left, off.top + 8, padd);
 			}).siblings('span').dblclick(url_display);
 
 			$(remove_rule, this.popover).click(function (e) {
@@ -913,9 +921,10 @@ var JavaScriptBlocker = {
 						
 				$('li.domain-name', vs).removeClass('hidden').addClass('no-disclosure');
 			
-				if (self.noDeleteWarning)
+				if (self.simpleMode && self.utils.confirm_click(this)) {
 					self.rules.remove_matching_URL(host, url, true, m);
-				else {
+					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+				} else if (!self.simpleMode) {
 					new Poppy(left, off.top + 8, vs, function () {
 						$('#poppy #delete-continue', self.popover).click(function () {
 							Behaviour.action('Removed a rule via main window');
@@ -983,7 +992,7 @@ var JavaScriptBlocker = {
 		}
 		
 		$(this.popover.body).unbind('keydown').keydown(function (e) {
-			if (e.which === 16) self.speedMultiplier = self.useAnimations ? 0.01 : 10;
+			if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.01 : 10;
 			else if ((e.which === 93 || e.which === 91) ||
 					(window.navigator.platform.indexOf('Win') > -1 && e.which === 17)) self.commandKey = true;
 			else if (e.which === 70 && self.commandKey) {
@@ -1001,7 +1010,7 @@ var JavaScriptBlocker = {
 				toggle_find_bar();
 			}
 		}).keyup(function (e) {
-			if (e.which === 16) self.speedMultiplier = self.useAnimations ? 0.01 : 1;
+			if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.01 : 1;
 			else if ((e.which === 93 || e.which === 91) ||
 					(window.navigator.platform.indexOf('Win') > -1 && e.which === 17)) self.commandKey = false;
 		});
@@ -1874,7 +1883,7 @@ var JavaScriptBlocker = {
 		return false;
 	},
 	validate: function (event) {
-		if (!this.useAnimations) this.speedMultiplier = 0.01;
+		this.speedMultiplier = this.useAnimations ? 1 : 0.01;
 		
 		if (!('cleanup' in this.utils.timer.timers.intervals))
 			this.utils.timer.interval('cleanup', $.proxy(this._cleanup, this), 1000 * 60 * 5);

@@ -30,7 +30,7 @@
 		<key>Key</key>
 		<string>simpleMode</string>
 		<key>Title</key>
-		<string>Show hostnames instead of individual scripts</string>
+		<string>Use a simplified display showing hosts instead of scripts</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -126,7 +126,7 @@
 	</dict>
 	<dict>
 		<key>Title</key>
-		<string>Automatic Rules</string>
+		<string>Automatic Rules When Blocking Manually</string>
 		<key>Type</key>
 		<string>Group</string>
 	</dict>
@@ -136,7 +136,7 @@
 		<key>Key</key>
 		<string>alwaysBlock</string>
 		<key>Title</key>
-		<string>Blocking manually, automatically block</string>
+		<string>Create a block rule for scripts from</string>
 		<key>Titles</key>
 		<array>
 			<string>Different sub domains</string>
@@ -153,12 +153,18 @@
 		</array>
 	</dict>
 	<dict>
+		<key>Title</key>
+		<string>Automatic Rules When Allowing Manually</string>
+		<key>Type</key>
+		<string>Group</string>
+	</dict>
+	<dict>
 		<key>DefaultValue</key>
 		<string>nowhere</string>
 		<key>Key</key>
 		<string>alwaysAllow</string>
 		<key>Title</key>
-		<string>Allowing manually, automatically allow</string>
+		<string>Create an allow rule for scripts from</string>
 		<key>Titles</key>
 		<array>
 			<string>Any sub domain</string>
