@@ -119,10 +119,11 @@
 			<input type="button" value="Show Rules" id="view-rules" />
 			
 			<div id="disclaimer">
-				<p><script>document.write(_('Disclaimer.'));</script><br />
-				<!--<input type="button" value="Submit Anonymous Usage Information" id="submit-information" />-->
+				<p>
 					<input type="button" value="Disable JavaScript Blocker" id="disable" />
-					<input type="button" value="Simple Interface" id="switch-interface" /></p>
+					<input type="button" value="Simple Interface" id="switch-interface" />
+				</p>
+				<br style="clear:both;">
 			</div>
 		</div>
 		<div id="rules-list" class="whoop">
@@ -134,7 +135,8 @@
 			<div id="data">
 				<a href="javascript:void(0)" id="collapse-all"><script>document.write(_('Collapse All'));</script></a> <span class="label">—</span>
 				<a href="javascript:void(0)" id="expand-all"><script>document.write(_('Expand All'));</script></a> <span class="label">￨</span>
-				<a href="javascript:void(0)" id="edit-domains"><script>document.write(_('Edit'));</script></a>
+				<a href="javascript:void(0)" id="edit-domains"><script>document.write(_('Edit'));</script></a> <span class="label">￨</span>
+				<a href="javascript:void(0)" id="reinstall-pre"><script>document.write(_('Reinstall Whitelist & Blacklist'));</script></a>
 				<div id="rules-filter-bar" class="filter-bar">
 					<ul id="filter-type-collapse">
 						<li id="filter-all"class="selected"><script>document.write(_('All'));</script></li>
@@ -160,7 +162,7 @@
 		</div>
 		<div id="misc" class="whoop">
 			<div class="info-container">
-				<p class="misc-info"></p>
+				<p class="misc-header"></p>
 				<input type="button" value="Close" id="misc-close" />
 			</div>
 			<div id="misc-content"></div>

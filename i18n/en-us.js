@@ -48,8 +48,11 @@ Strings['en-us'] = {
 	'Show Rules': 'Show Rules',
 	'Edit Rule': 'Edit Rule',
 	'New Rule': 'New Rule',
-	'Restore Rules': 'Restore Rules',
+	'Restore/Delete Rules': 'Restore/Delete Rules',
 	'Restore Rule': 'Restore Rule',
+	'Restore Rules': 'Restore Rules',
+	'Delete Rule': 'Delete Rule',
+	'Delete Rules': 'Delete Rules',
 	'Remove Rules For {1}': 'Remove Rules For <b>{1}</b>',
 	'Do you want to completely remove all rules for this domain?': 'Do you want to completely remove all rules for this domain?',
 	'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.':
@@ -57,6 +60,8 @@ Strings['en-us'] = {
 	'Close Rules List': 'Close Rules List',
 	'Close': 'Close',
 	'Delete Expanded Rules': 'Delete Expanded Rules',
+	'Reinstall Whitelist & Blacklist': 'Reinstall Whitelist & Blacklist',
+	'Whitelist and blacklist rules have been reinstalled.': 'Whitelist and blacklist rules have been reinstalled.',
 	'Color Key': 'Color Key',
 	'All Rules': 'All Rules',
 	'Active Rules': 'Active Rules',
@@ -91,7 +96,9 @@ Strings['en-us'] = {
 	/** RULE TYPES **/
 	'User Defined Rule': 'User Defined Rule&mdash;Determined by color of domain header',
 	'Automatic Blocking Rule': 'Automatic Blocking Rule',
+	'Disabled Automatic Blocking Rule': 'Disabled Automatic Blocking Rule',
 	'Automatic Allowing Rule': 'Automatic Allowing Rule',
+	'Disabled Automatic Allowing Rule': 'Disabled Automatic Allowing Rule',
 	'Blacklist/High-priority Block Rule': 'Blacklist/High-priority Block Rule',
 	'Whitelist/High-priority Allow Rule': 'Whitelist/High-priority Allow Rule',
 	'The last 2 rule types will override any other rule.': 'The last 2 rule types will override any other rule.',
@@ -116,15 +123,19 @@ Strings['en-us'] = {
 	'Unblocked Script': 'Unblocked Script',
 	/** /MISC HEADERS **/
 	
-	'The following automatic rules were disabled, thus blocking this item:': 'The following automatic rules were disabled, thus blocking this item:',
-	'The following automatic rules were disabled, thus allowing this item:': 'The following automatic rules were disabled, thus allowing this item:',
+	'The following rules are blocking this item:': 'The following rules are blocking this item:',
+	'The following rules are allowing this item:': 'The following rules are allowing this item:',
 	
-	'Would you like to re-enable the above rule or add a new one?': 'Would you like to restore the above rule or add a new one?',
-	'Would you like to re-enable the above rules or add a new one?': 'Would you like to restore the above rules or add a new one?',
+	'Would you like to delete it, or add a new one?': 'Would you like to delete it, or add a new one?',
+	'Would you like to delete them, or add a new one?': 'Would you like to delete them, or add a new one?',
+	'Would you like to restore it, or add a new one?': 'Would you like to restore it, or add a new one?',
+	'Would you like to restore them, or add a new one?': 'Would you like to restore them, or add a new one?',
+	'Would you like to restore/delete them, or add a new one?': 'Would you like to restore/delete them, or add a new one?',
+	'Automatic rules will be restored instead of deleted.': 'Automatic rules will be restored instead of deleted.',
 	
-	'The following rule(s) will be deleted or disabled:': 'The following rule(s) will be deleted or disabled:',
+	'The following rule(s) would be deleted or disabled:': 'The following rule(s) would be deleted or disabled:',
 	'This may inadvertently affect other scripts.': 'This may inadvertently affect other scripts.',
-	
+	'You can also create a high-priority rule to affect just this one.': 'You can also create a high-priority rule to affect just this one.',
 	'Usage information can be submitted only once every 10 minutes.': 'Usage information can be submitted only once every 10 minutes.',
 	'Usage information successfully submited.': 'Usage information successfully submited.',
 	'Error occurred while submitting usage information. Please try again later.': 'Error occurred while submitting usage information. Please try again later.',

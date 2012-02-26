@@ -26,11 +26,15 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
-		<false/>
+		<true/>
+		<key>FalseValue</key>
+		<true/>
 		<key>Key</key>
 		<string>simpleMode</string>
 		<key>Title</key>
-		<string>Use a simplified display showing hosts instead of scripts</string>
+		<string>Enable expert features</string>
+		<key>TrueValue</key>
+		<false/>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -110,7 +114,7 @@
 		<key>Key</key>
 		<string>ignoreWhitelist</string>
 		<key>Title</key>
-		<string>Ignore Whitelist Rules</string>
+		<string>Ignore whitelist rules</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -120,7 +124,7 @@
 		<key>Key</key>
 		<string>ignoreBlacklist</string>
 		<key>Title</key>
-		<string>Ignore Blacklist Rules</string>
+		<string>Ignore blacklist rules</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
