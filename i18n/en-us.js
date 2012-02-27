@@ -123,7 +123,9 @@ Strings['en-us'] = {
 	'Unblocked Script': 'Unblocked Script',
 	/** /MISC HEADERS **/
 	
+	'The following rule is blocking this item:': 'The following rule is blocking this item:',
 	'The following rules are blocking this item:': 'The following rules are blocking this item:',
+	'The following rule is allowing this item:': 'The following rule is allowing this item:',
 	'The following rules are allowing this item:': 'The following rules are allowing this item:',
 	
 	'Would you like to delete it, or add a new one?': 'Would you like to delete it, or add a new one?',

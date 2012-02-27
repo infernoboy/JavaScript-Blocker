@@ -71,8 +71,9 @@ Poppy.prototype = {
 		var self = this;
 		clearTimeout(this._dT);
 		this.p.find(this.e).css({
-			opacity: 0,
-			WebkitTransitionDuration: (this._time / 2) + 's'
+			opacity: 0.3,
+			WebkitTransitionDuration: (this._time * .8) + 's',
+			WebkitTransform: 'scale(0)'
 		});
 		return (this._dT = setTimeout(function () {
 			$(self.e, self.p).remove();
@@ -92,7 +93,7 @@ Poppy.prototype = {
 			aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask.png" alt=""/>';
 		
 		$(this.s, this.p).unbind('scroll').scroll(function () {
-			new Poppy();
+			new Poppy(null, null, null, null, null, 0.5);
 			$(self.s, self.p).unbind('scroll');
 		});
 		
@@ -109,11 +110,11 @@ Poppy.prototype = {
 		if (points.arrow.bottom == 'auto') $(this.a, m).attr('src', 'images/arrow-mask-reverse.png');
 		
 		m.css({
-			WebkitTransitionProperty: '-webkit-transform, opacity, bottom, left',
+			WebkitTransitionProperty: '-webkit-transform, opacity',
 			WebkitTransitionDuration: '0s',
 			WebkitTransitionTimingFunction: 'ease-in',
 			WebkitTransform: 'scale(0)',
-			WebkitTransformOrigin: (points.arrow.left + 15) + 'px ' + ((points.main.bottom === 'auto') ? '0%' : '100%'),
+			WebkitTransformOrigin: (points.arrow.left + 15) + 'px ' + ((points.main.bottom === 'auto') ? '-5%' : '105%'),
 			opacity: 0.3,
 			left: points.main.left,
 			bottom: points.main.bottom,
@@ -138,19 +139,19 @@ Poppy.prototype = {
 			});
 		}, [this, m, points]);
 		
-		JavaScriptBlocker.utils.timer.interval('poppy_view_finish', function () {
-			if (m.css('WebkitTransform') !== 'matrix(1.15, 0, 0, 1.15, 0, 0)') return false;
-						
-			JavaScriptBlocker.utils.timer.remove('interval', 'poppy_view_finish');
+		var listener = function (event) {
+			m[0].removeEventListener('webkitTransitionEnd', listener, false);
 			
 			self.callback2.call($(self.e, self.p));
-			
+		
 			m.css({
 				WebkitTransform: 'scale(1)',
 				WebkitTransitionDuration: self._time + 's',
 				WebkitTransitionTimingFunction: 'ease'
 			});
-		}, 1);
+		};
+		
+		m[0].addEventListener('webkitTransitionEnd', listener, false);
 	},
 	calcPoints: function () {
 		var o = {

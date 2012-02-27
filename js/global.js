@@ -814,7 +814,7 @@ var JavaScriptBlocker = {
 										new Poppy();
 									}
 								});
-							}, 0.0);
+							}, 0.1);
 						}
 					});
 				});
@@ -892,10 +892,9 @@ var JavaScriptBlocker = {
 							para = 'If you\'re reading this, something went horribly wrong.';
 							button = 'Hmph!';
 						}
-							
+											
 						new Poppy(left, off.top + 8, [
-							'<p>', _('The following rules are ' + (self.allowMode ? 
-								'allowing' : 'blocking') + ' this item:'), '</p>',
+							'<p>', _('The following rule' + (rs.length === 1 ? ' is ' : 's are ') + (self.allowMode ? 'allowing ' : 'blocking ') + 'this item:'), '</p>',
 							'<ul class="rules-wrapper">',
 								'<li class="domain-name no-disclosure">', store, '</li>',
 								'<li>',
@@ -1003,6 +1002,7 @@ var JavaScriptBlocker = {
 										header: _('Adding a Rule For {1}', [(store === '.*' ? _('All Domains') : store)])
 									}, self);
 							
+							padd.time = 0.2;
 							padd.callback2 = function () {
 								$('#select-type-high-opposite', self.popover).click();
 							};
@@ -1338,7 +1338,7 @@ var JavaScriptBlocker = {
 								self.utils.zoom($('#rules-list', self.popover), $('#main', self.popover));
 							}, [self]);
 						}, [self]);
-					}, 0.0);
+					}, 0.1);
 				});
 			});
 		});
@@ -1606,12 +1606,14 @@ var JavaScriptBlocker = {
 			for (var poopy in shost_track)
 				$('li', ul).eq(shost_track[poopy][0]).find('small').html('(' + shost_track[poopy][1] + ')');
 		}
+		
+		var ref = safari.extension.settings.sourceCount;
 
-		if ((this.simpleMode && shost_list.length > 3 && shost_list.length - 3 > 1) ||
-				(!this.simpleMode && jsblocker[text].count > 3 && jsblocker[text].count - 3 > 1)) {
-			$('li', ul).eq(2).after(['<li>',
-						'<a href="javascript:void(1)" class="show-more">', _('Show {1} more', [this.simpleMode ? shost_list.length - 3 : jsblocker[text].count - 3]), '</a>',
-					'</li>'].join('')).end().filter(':gt(2)').hide().addClass('show-more-hidden');
+		if ((this.simpleMode && shost_list.length > ref && shost_list.length - ref > 1) ||
+				(!this.simpleMode && jsblocker[text].count > ref && jsblocker[text].count - ref > 1)) {
+			$('li', ul).eq(ref - 1).after(['<li>',
+						'<a href="javascript:void(1)" class="show-more">', _('Show {1} more', [this.simpleMode ? shost_list.length - ref : jsblocker[text].count - ref]), '</a>',
+					'</li>'].join('')).end().filter(':gt(' + (ref - 1) + ')').hide().addClass('show-more-hidden');
 		}
 		
 		$('.divider:last', ul).css('visibility', 'hidden');

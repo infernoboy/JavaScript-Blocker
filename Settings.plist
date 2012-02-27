@@ -75,6 +75,34 @@
 		</array>
 	</dict>
 	<dict>
+		<key>DefaultValue</key>
+		<real>3</real>
+		<key>Key</key>
+		<string>sourceCount</string>
+		<key>Title</key>
+		<string>Sources displayed by default</string>
+		<key>Titles</key>
+		<array>
+			<string>1</string>
+			<string>2</string>
+			<string>3</string>
+			<string>4</string>
+			<string>5</string>
+			<string>All of them</string>
+		</array>
+		<key>Type</key>
+		<string>PopUpButton</string>
+		<key>Values</key>
+		<array>
+			<real>1</real>
+			<real>2</real>
+			<real>3</real>
+			<real>4</real>
+			<real>5</real>
+			<real>99999999</real>
+		</array>
+	</dict>
+	<dict>
 		<key>Title</key>
 		<string>Toolbar Badge</string>
 		<key>Type</key>
