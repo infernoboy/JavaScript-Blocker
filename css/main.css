@@ -345,6 +345,7 @@ a {
 }
 #rules-list #data {
 	margin-top: 15px;
+	padding-bottom: 1px;
 }
 p.misc-info {
 	text-align: center;
