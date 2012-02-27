@@ -33,7 +33,7 @@
 }
 	
 body {
-	font-family: 'Lucida Grande', sans-serif;
+	font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif;
 	font-size: 10pt;
 	line-height: 1.5;
 	text-shadow: 0 1px 0 rgba(255,255,255,0.7);
@@ -107,7 +107,7 @@ textarea {
 	body.windows select,
 	body.windows button,
 	body.windows textarea {
-		font-size: 8pt;
+		font-size: 9pt;
 	}
 	input:focus, select:focus, button:focus, textarea:focus {
 		outline: none !important;
@@ -245,6 +245,7 @@ label {
 		float: right;
 		margin-top: 3px;
 		max-width: 260px;
+		margin-right: 0;
 	}
 
 #blocked-script-urls,

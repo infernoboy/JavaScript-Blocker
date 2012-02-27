@@ -915,7 +915,7 @@ var JavaScriptBlocker = {
 								$('#poppy ul span.rule', self.popover).each(function (i) {
 									this.className += ' type-' + ds[i][1];
 								});
-								
+															
 								$('#poppy #auto-new', self.popover).click(function () {
 									Behaviour.action('New rule instead of restore');
 									
@@ -1694,8 +1694,8 @@ var JavaScriptBlocker = {
 				if (jsblocker.blocked.count == 0) $('#allow-domain', this.popover).hide();
 				if (jsblocker.allowed.count == 0) $('#block-domain', this.popover).hide();
 
-				if (jsblocker.blocked.count == 0 || this.allowMode) $('#allow-options', this.popover).hide();
-				if (jsblocker.allowed.count == 0 || !this.allowMode) $('#block-options', this.popover).hide();
+				if (this.allowMode) $('#allow-options', this.popover).hide();
+				else $('#block-options', this.popover).hide();
 
 				toolbarItem.popover.contentWindow.active_tab_url = safari.application.activeBrowserWindow.activeTab.url;
 
