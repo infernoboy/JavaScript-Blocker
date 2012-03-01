@@ -586,8 +586,8 @@ var JavaScriptBlocker = {
 					if (t.is(':animated')) return false;
 				
 					var dex = self.collapsedDomains.indexOf(d),
-							sTop = rulesList.scrollTop(),
 							rulesList = $('#rules-list', self.popover),
+							sTop = rulesList.scrollTop(),
 							height;
 						
 					if (!$(this).toggleClass('hidden').hasClass('hidden')) {

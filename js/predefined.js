@@ -25,5 +25,5 @@ JavaScriptBlocker.rules.blacklist = {
 	'Adds search links to random words on websites that may popup a box over the content if hovered on.':
 		['^https?:\\/\\/(.*\\.)?kontera\\.com\\/.*$', '^https?:\\/\\/(.*\\.)?snap\\.com\\/.*$'],
 	'Used for tracking purposes.':
-		['^https?:\\/\\/(ssl|www)\\.google\\-analytics\\.com\\/ga\\.js$', '^https?:\\/\\/edge\\.quantserve\\.com\\/.*$']
+		['^https?:\\/\\/(ssl|www)\\.google\\-analytics\\.com\\/(ga|urchin)\\.js$', '^https?:\\/\\/edge\\.quantserve\\.com\\/.*$']
 };
