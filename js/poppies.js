@@ -2,7 +2,6 @@
  * @file js/poppies.js
  * @author Travis Roman (travis@toggleable.com)
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.7-1
  ***************************************/
 
 JavaScriptBlocker.poppies = {
@@ -12,7 +11,7 @@ JavaScriptBlocker.poppies = {
 			main: main,
 			content: [
 				'<div>',
-					'<p class="misc-info">~</p>',
+					'<p class="misc-info">', this.header, '</p>',
 					'<p>',
 						_('Enter the pattern for the URL(s) you want to affect.'),
 					'</p>',
@@ -41,7 +40,6 @@ JavaScriptBlocker.poppies = {
 			},
 			callback: function () {
 				var i = $('#poppy #rule-input', main.popover).val(zoo.me.url).focus();
-				$('#poppy p.misc-info', main.popover).html(zoo.me.header);
 		
 				i.keypress(function (e) {
 					if (e.keyCode == 13 || e.keyCode == 3) {

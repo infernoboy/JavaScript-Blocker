@@ -2,7 +2,6 @@
  * @file js/blocker.js
  * @author Travis Roman (travis@toggleable.com)
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.7-1
  ***************************************/
 
 function pageHost() {
@@ -103,7 +102,6 @@ function messageHandler(event) {
 	switch (event.name) {
 		case 'reload': window.location.reload(); break;
 		case 'updatePopover': ready(event); break;
-		case 'updateBadge': ready(event); break;
 		case 'unloadPage': unloadHandler(event); break;
 		case 'validateFrame':
 			var f = document.getElementsByTagName('iframe'), a = [pageHost(), jsblocker];

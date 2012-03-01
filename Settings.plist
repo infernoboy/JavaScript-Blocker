@@ -10,7 +10,7 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
-		<false/>
+		<true/>
 		<key>Key</key>
 		<string>allowMode</string>
 		<key>Title</key>
@@ -164,7 +164,7 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
-		<string>nowhere</string>
+		<string>domain</string>
 		<key>Key</key>
 		<string>alwaysBlock</string>
 		<key>Title</key>

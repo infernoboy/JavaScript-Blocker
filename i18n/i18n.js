@@ -2,7 +2,6 @@
  * @file i18n/i18n.js
  * @author Travis Roman (travis@toggleable.com)
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.7-1
  ***************************************/
 
 var Strings = {},

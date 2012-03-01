@@ -2,15 +2,18 @@
  * @file i18n/en-us.js
  * @author Travis Roman (travis@toggleable.com)
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.7-1
  ***************************************/
 
 Strings['en-us'] = {
 	'JavaScript Blocker': 'JavaScript Blocker',
 	'Thanks for using {1}': 'Thanks for using {1}!',
-	'Which mode would you like to run in?': 'Which mode would you like to run in? ' +
-			'This setting can be changed at any time from the extensions pane of Safari\'s preferences.',
 	'Setup:Simple Mode': 'Use a simplified display showing only hostnames instead of the individual scripts loaded from a host',
+	'Setup:Simple Desc': 'This option will disable the more advanced features of {1}, but will make it easier to use. Should you ' +
+			'want to start making more sophisticated rules later on, just enable expert features from the preferences or click on <b>{2}</b> ' +
+			'from the main display.',
+	'Setup:Auto': 'By default, when blocking manually, scripts originating from a hostname other than that of the webpage you are viewing will be blocked. ' +
+			'This is done with the help of automatic rules. You can change this setting at any time from the extension\'s preferences.',
+	'Setup:No': 'Choosing to instead allow scripts manually will, by default, block everything. You can set up automatic rules for this mode, too.',
 	'All Domains': 'All Domains',
 	'Page:': 'Page:',
 	'Allow on': 'Allow on…',
@@ -26,6 +29,7 @@ Strings['en-us'] = {
 		'Unfortunately this is a limitation of the Safari extension design, not mine.',
 	
 	/** BUTTONS & LABELS **/
+	'?': '?',
 	'Edit': 'Edit',
 	'Done Editing': 'Done Editing',
 	'Remove': 'Remove',
@@ -80,7 +84,8 @@ Strings['en-us'] = {
 	'Enable JavaScript Blocker': 'Enable JavaScript Blocker',
 	'Disable JavaScript Blocker': 'Disable JavaScript Blocker',
 	'Show {1} more': 'Show {1} more', // {1} = number of hidden items
-	'Submit Anonymous Usage Information': 'Submit Anonymous Usage Information',
+	'Help': 'Help',
+	'Project Page': 'Project Page',
 	
 	'Normal Block': 'Normal block',
 	'Normal Allow': 'Normal allow',

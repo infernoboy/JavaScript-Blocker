@@ -3,7 +3,6 @@
  * @file popover.html
  * @author Travis Roman (travis@toggleable.com)
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
- * @version 1.2.7-1
  ***************************************/
 -->
 
@@ -61,11 +60,21 @@
 			<label for="find-bar-search" id="find-bar-matches"></label>
 		</div>
 		<div id="setup" class="whoop">
-			<p><img src="images/toggleable.png" alt="Toggleable" /> <img src="Icon-48.png" alt="JS Blocker" /></p>
+			<p>
+				<a href="http://javascript-blocker.toggleable.com/">
+					<img src="images/toggleable.png" alt="Toggleable" style="margin-bottom: -5px;"/>
+					<img src="Icon-32.png" alt="JS Blocker" />
+				</a>
+			</p>
 			<p><script>document.write(_('Thanks for using {1}', [_('JavaScript Blocker')]));</script></p>
-			<p><script>document.write(_('Which mode would you like to run in?'));</script></p>
-			<p><input type="checkbox" id="setup-simple" checked="checked" /> <label for="setup-simple"><script>document.write(_('Setup:Simple Mode'));</script></label></p>
-			<p><input type="checkbox" id="block-manual" /> <label for="block-manual"><script>document.write(_('Block scripts manually'));</script></label></p>
+			<p>
+				<input type="checkbox" id="setup-simple" checked="checked" /> <label for="setup-simple"><script>document.write(_('Setup:Simple Mode'));</script></label>
+			 	<a href="javascript:void(0)" id="setup-help-simple" class="help-link"><script>document.write(_('?'));</script></a>
+			</p>
+			<p>
+				<input type="checkbox" id="block-manual" checked="checked" /> <label for="block-manual"><script>document.write(_('Block scripts manually'));</script></label>
+				<a href="javascript:void(0)" id="setup-help-manual" class="help-link"><script>document.write(_('?'));</script></a>
+			</p>
 			<p><input type="button" id="finish-setup" value="Finish Setup" /></p>
 		</div>
 		<div id="main" class="whoop">
@@ -122,6 +131,8 @@
 				<p>
 					<input type="button" value="Disable JavaScript Blocker" id="disable" />
 					<input type="button" value="Simple Interface" id="switch-interface" />
+					<a href="http://javascript-blocker.toggleable.com/help" class="link-button" id="js-help"><script>document.write(_('Help'));</script></a>
+					<a href="http://javascript-blocker.toggleable.com/" class="link-button" id="js-help"><script>document.write(_('Project Page'));</script></a>
 				</p>
 				<br style="clear:both;">
 			</div>
