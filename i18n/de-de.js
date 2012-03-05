@@ -9,14 +9,11 @@ Strings['de-de'] = {
 	'Thanks for using {1}': 'Vielen Dank für Hilfe von {1}!',
 	'Which mode would you like to run in?': 'Welcher Modus möchten Sie im laufen? ' +
 			'Diese Einstellung kann jederzeit aus dem Fenster von Safari Extensions-Einstellungen geändert werden.',
-	'Setup:Simple Mode': 'Verwenden Sie eine vereinfachte Anzeige nur mit Hostnamen anstelle der einzelnen Scripts von einem Host geladen',
-	'Setup:Simple Desc': "Diese Option wird deaktivieren Sie die erweiterten Funktionen der JavaScript-Blocker, aber macht es einfacher zu bedienen. Sollten Sie damit beginnen, komplexere Regeln später, müssen Sie nur Experte Merkmale aus den Vorlieben oder klicken <b>{2}</b> aus dem Hauptdisplay.", 
-	'Setup:Auto': "Standardmäßig wird beim Blockieren von Hand, werden Skripte, die von einem anderen Hostnamen als die der Webseite, die Sie sehen gerade blockiert werden. Dies wird mit Hilfe der automatischen Regeln. Sie können diese Einstellung jederzeit von der Erweiterung die Präferenzen zu ändern.",
-	'Setup:No': "Die Entscheidung, statt damit Scripts manuell Willen, die standardmäßig blockieren alles. Sie können automatische Regeln für diesen Modus auch.",
+	'Setup:Simple Mode': 'Zeige Hostnamen anstelle von einzelnen Skripten',
+	'Setup:Simple Desc': "Diese Option wird deaktivieren Sie die erweiterten Funktionen der JavaScript-Blocker, aber macht es einfacher zu bedienen. Sollten Sie damit beginnen, komplexere Regeln später, müssen Sie nur Experte Merkmale aus den Vorlieben.", 
 	'All Domains': 'Alle Domains',
 	'Page:': 'Seite:',
-	'Allow on': 'Lassen Sie auf …',
-	'Block on': 'Blockieren Sie auf…',
+	'Add rule for': 'In der Regel für…',
 	'Inline Frame Pages': 'Inline-Frame-Seiten',
 	'Allowed:': 'Erlaubt:',
 	'Blocked:': 'Verstopft:',
@@ -28,8 +25,14 @@ Strings['de-de'] = {
 	'Allow All': 'Alle Zulassen',
 	'Block All': 'Alle Blockieren',
 	'Block': 'Blockieren',
-	'Simple Interface': 'Verwenden Sie einfache Schnittstelle',
-	'Expert Interface': 'Verwenden Sie den Experten-Schnittstelle',
-	'Block scripts manually': 'Block-Skripte manuell',
+	'Block scripts manually': 'Erlauben Sie Skripte, die aus derselben Domäne stammen',
 	'Finish Setup': 'Fertig-Setup',
+	'Understood': 'Verstanden',
+	'Reset JS Blocker': 'Einstellungen Zurücksetzen',
+	'Leave Settings Alone': 'Verlassen Sie Einstellungen Allein',
+	
+	'Would you like to reset JavaScript Blocker to its default settings?': 'Möchten Sie JavaScript Blocker auf die Werkseinstellungen zurücksetzen?',
+	'Caution: This will remove all rules!': 'Achtung: Dadurch werden alle Regeln zu entfernen!',
+	
+	'Restart Safari': "Möglicherweise müssen Sie Safari für alle Änderungen neu starten, um richtig zu propagieren."
 };

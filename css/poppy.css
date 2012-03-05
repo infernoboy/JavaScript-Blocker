@@ -28,6 +28,10 @@
 		max-width: 420px;
 		overflow: auto;
 	}
+		body.simple #poppy #poppy-content {
+			max-height: 150px;
+			max-width: 320px;
+		}
 	#poppy p {
 		margin: 0 3px 3px 4px;
 	}
@@ -41,6 +45,9 @@
 		overflow-y: hidden;
 		resize: none;
 	}
+		body.simple #poppy #rule-input {
+			width: 260px;
+		}
 		body.windows #poppy #rule-input {
 			float: left !important;
 		}

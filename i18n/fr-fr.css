@@ -4,9 +4,22 @@
 #page-list {
 	max-width: 85%;
 }
+	body.simple #page-list {
+		max-width: 82%;
+	}
 ul li span {
 	max-width: 84%;
 }
+	body.simple ul li span {
+		max-width: 80%;
+	}
 ul li input[type="button"] {
 	width: 15%;
+}
+	body.simple ul li input[type="button"] {
+		width: 19%;
+	}
+
+body.simple #domain-script {
+	max-width: 180px;
 }

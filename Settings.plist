@@ -9,16 +9,6 @@
 		<string>setupDone</string>
 	</dict>
 	<dict>
-		<key>DefaultValue</key>
-		<true/>
-		<key>Key</key>
-		<string>allowMode</string>
-		<key>Title</key>
-		<string>Block scripts manually</string>
-		<key>Type</key>
-		<string>CheckBox</string>
-	</dict>
-	<dict>
 		<key>Title</key>
 		<string>User Interface</string>
 		<key>Type</key>
@@ -27,24 +17,30 @@
 	<dict>
 		<key>DefaultValue</key>
 		<true/>
-		<key>FalseValue</key>
-		<true/>
 		<key>Key</key>
-		<string>simpleMode</string>
+		<string>animations</string>
 		<key>Title</key>
-		<string>Enable expert features</string>
-		<key>TrueValue</key>
-		<false/>
+		<string>Use animations</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
-		<true/>
+		<false/>
 		<key>Key</key>
-		<string>animations</string>
+		<string>showUnblocked</string>
 		<key>Title</key>
-		<string>Use animations</string>
+		<string>Show unblockable scripts</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<false/>
+		<key>Key</key>
+		<string>showPerHost</string>
+		<key>Title</key>
+		<string>Show number of scripts for each host</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -104,7 +100,7 @@
 	</dict>
 	<dict>
 		<key>Title</key>
-		<string>Toolbar Badge</string>
+		<string>Toolbar Badge &amp; Labels</string>
 		<key>Type</key>
 		<string>Group</string>
 	</dict>
@@ -117,8 +113,8 @@
 		<string>Display number of</string>
 		<key>Titles</key>
 		<array>
-			<string>Blocked scripts</string>
-			<string>Allowed &amp; Unblocked scripts</string>
+			<string>Blocked scripts or hosts</string>
+			<string>Allowed &amp; unblockable scripts or hosts</string>
 			<string>Neither</string>
 		</array>
 		<key>Type</key>
@@ -157,23 +153,18 @@
 		<string>CheckBox</string>
 	</dict>
 	<dict>
-		<key>Title</key>
-		<string>Automatic Rules When Blocking Manually</string>
-		<key>Type</key>
-		<string>Group</string>
-	</dict>
-	<dict>
 		<key>DefaultValue</key>
 		<string>domain</string>
 		<key>Key</key>
 		<string>alwaysBlock</string>
 		<key>Title</key>
-		<string>Create a block rule for scripts from</string>
+		<string>Automatically block scripts from</string>
 		<key>Titles</key>
 		<array>
 			<string>Different sub domains</string>
 			<string>Different hostnames</string>
 			<string>Nowhere</string>
+			<string>Anywhere</string>
 		</array>
 		<key>Type</key>
 		<string>PopUpButton</string>
@@ -182,35 +173,38 @@
 			<string>topLevel</string>
 			<string>domain</string>
 			<string>nowhere</string>
+			<string>everywhere</string>
 		</array>
 	</dict>
 	<dict>
 		<key>Title</key>
-		<string>Automatic Rules When Allowing Manually</string>
+		<string>Expert Features</string>
 		<key>Type</key>
 		<string>Group</string>
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
-		<string>nowhere</string>
+		<true/>
+		<key>FalseValue</key>
+		<true/>
 		<key>Key</key>
-		<string>alwaysAllow</string>
+		<string>simpleMode</string>
 		<key>Title</key>
-		<string>Create an allow rule for scripts from</string>
-		<key>Titles</key>
-		<array>
-			<string>Any sub domain</string>
-			<string>Same hostname</string>
-			<string>Nowhere</string>
-		</array>
+		<string>Enable expert features; settings below apply only if enabled</string>
+		<key>TrueValue</key>
+		<false/>
 		<key>Type</key>
-		<string>PopUpButton</string>
-		<key>Values</key>
-		<array>
-			<string>topLevel</string>
-			<string>domain</string>
-			<string>nowhere</string>
-		</array>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>saveAutomatic</string>
+		<key>Title</key>
+		<string>Create rules for automatic actions (excluding "Nowhere")</string>
+		<key>Type</key>
+		<string>CheckBox</string>
 	</dict>
 </array>
 </plist>

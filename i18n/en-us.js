@@ -7,23 +7,19 @@
 Strings['en-us'] = {
 	'JavaScript Blocker': 'JavaScript Blocker',
 	'Thanks for using {1}': 'Thanks for using {1}!',
-	'Setup:Simple Mode': 'Use a simplified display showing only hostnames instead of the individual scripts loaded from a host',
+	'Setup:Simple Mode': 'Show hostnames instead of individual scripts, similar to ' +
+			'<a href="http://noscript.net/">NoScript</a> for Firefox',
 	'Setup:Simple Desc': 'This option will disable the more advanced features of {1}, but will make it easier to use. Should you ' +
-			'want to start making more sophisticated rules later on, just enable expert features from the preferences or click on <b>{2}</b> ' +
-			'from the main display.',
-	'Setup:Auto': 'By default, when blocking manually, scripts originating from a hostname other than that of the webpage you are viewing will be blocked. ' +
-			'This is done with the help of automatic rules. You can change this setting at any time from the extension\'s preferences.',
-	'Setup:No': 'Choosing to instead allow scripts manually will, by default, block everything. You can set up automatic rules for this mode, too.',
+			'want to start making more sophisticated rules later on, just enable expert features from the preferences.',
 	'All Domains': 'All Domains',
 	'Page:': 'Page:',
-	'Allow on': 'Allow on…',
-	'Block on': 'Block on…',
+	'Add rule for': 'Add rule for…',
 	'Main Page': 'Main Page',
 	'Inline Frame Pages': 'Inline Frame Pages',
 	'Custom Frame': '(Non-URL Based Frame)',
 	'Allowed:': 'Allowed:',
 	'Blocked:': 'Blocked:',
-	'Unblocked:': 'Unblocked:',
+	'Unblocked:': 'Unblockable:',
 	'Disclaimer.': 'This tool only blocks scripts when they are loaded from an external file or a data URI. ' +
 		'What this means is that any scripts that are within the page itself can still run. ' +
 		'Unfortunately this is a limitation of the Safari extension design, not mine.',
@@ -31,7 +27,7 @@ Strings['en-us'] = {
 	/** BUTTONS & LABELS **/
 	'?': '?',
 	'Edit': 'Edit',
-	'Done Editing': 'Done Editing',
+	'Done Editing': 'Done',
 	'Remove': 'Remove',
 	'Beautify Script': 'Beautify Script',
 	'Done': 'Done',
@@ -40,15 +36,13 @@ Strings['en-us'] = {
 	'Allow All': 'Allow All',
 	'Block All': 'Block All',
 	'Block': 'Block',
-	'Block scripts manually': 'Block scripts manually',
+	'Block scripts manually': 'Allow scripts that originate from the same domain',
 	'Finish Setup': 'Finish Setup',
 	'View': 'View',
 	'Disable': 'Disable',
 	'Delete': 'Delete',
 	'Restore': 'Restore',
 	'Save': 'Save',
-	'Simple Interface': 'Use Simple Interface',
-	'Expert Interface': 'Use Expert Interface',
 	'Show Rules': 'Show Rules',
 	'Edit Rule': 'Edit Rule',
 	'New Rule': 'New Rule',
@@ -61,9 +55,8 @@ Strings['en-us'] = {
 	'Do you want to completely remove all rules for this domain?': 'Do you want to completely remove all rules for this domain?',
 	'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.':
 			'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.',
-	'Close Rules List': 'Close Rules List',
+	'Close Rules List': 'Close Rules',
 	'Close': 'Close',
-	'Delete Expanded Rules': 'Delete Expanded Rules',
 	'Reinstall Whitelist & Blacklist': 'Reinstall Whitelist & Blacklist',
 	'Whitelist and blacklist rules have been reinstalled.': 'Whitelist and blacklist rules have been reinstalled.',
 	'Color Key': 'Color Key',
@@ -86,9 +79,11 @@ Strings['en-us'] = {
 	'Show {1} more': 'Show {1} more', // {1} = number of hidden items
 	'Help': 'Help',
 	'Project Page': 'Project Page',
+	'Understood': 'Understood',
+	'Reset JS Blocker': 'Reset JS Blocker',
+	'Leave Settings Alone': 'Leave Settings Alone',
 	
 	'Normal Block': 'Normal block',
-	'Normal Allow': 'Normal allow',
 	'High-priority Block': 'High-priority block',
 	'High-priority Allow': 'High-priority allow',
 	/** /BUTTONS & LABELS */
@@ -99,7 +94,7 @@ Strings['en-us'] = {
 	/** /ERRORS-ISH **/
 	
 	/** RULE TYPES **/
-	'User Defined Rule': 'User Defined Rule&mdash;Determined by color of domain header',
+	'User Defined Rule': 'User Defined Rule&mdash;Determined by color of header',
 	'Automatic Blocking Rule': 'Automatic Blocking Rule',
 	'Disabled Automatic Blocking Rule': 'Disabled Automatic Blocking Rule',
 	'Automatic Allowing Rule': 'Automatic Allowing Rule',
@@ -125,7 +120,7 @@ Strings['en-us'] = {
 	'{1} domain, {2} rules': '{1} domain, {2} rules', // *
 	'{1} domains, {2} rule': '{1} domains, {2} rule', // *
 	'{1} domains, {2} rules': '{1} domains, {2} rules', // *
-	'Unblocked Script': 'Unblocked Script',
+	'Unblockable Script': 'Unblockable Script',
 	/** /MISC HEADERS **/
 	
 	'The following rule is blocking this item:': 'The following rule is blocking this item:',
@@ -143,8 +138,8 @@ Strings['en-us'] = {
 	'The following rule(s) would be deleted or disabled:': 'The following rule(s) would be deleted or disabled:',
 	'This may inadvertently affect other scripts.': 'This may inadvertently affect other scripts.',
 	'You can also create a high-priority rule to affect just this one.': 'You can also create a high-priority rule to affect just this one.',
-	'Usage information can be submitted only once every 10 minutes.': 'Usage information can be submitted only once every 10 minutes.',
-	'Usage information successfully submited.': 'Usage information successfully submited.',
-	'Error occurred while submitting usage information. Please try again later.': 'Error occurred while submitting usage information. Please try again later.',
-	'Error Code: {1}': 'Error Code: {1}' // {1} = reason why submission failed
+	'Would you like to reset JavaScript Blocker to its default settings?': 'Would you like to reset JavaScript Blocker to its default settings?',
+	'Caution: This will remove all rules!': '<b>Caution:</b> This will remove <b>all</b> rules!',
+	
+	'Restart Safari': 'You might have to restart Safari for all changes to propagate correctly.'
 };

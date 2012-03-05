@@ -25,34 +25,50 @@ var bv = parseInt(window.navigator.appVersion.split('Safari/')[1].replace(/\./g,
 		jsblocker = {
 			javascript_blocker_1: 1,
 			allowed: {
+				hosts: [],
 				count: 0,
 				urls: []
 			},
 			blocked: {
+				hosts: [],
 				count: 0,
 				urls: []
 			},
 			unblocked: {
+				hosts: [],
 				count: 0,
 				urls: []
 			},
 			href: pageHost()
 		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
 
+function activeHost(url) {
+	var r = /^(https?|file):\/\/([^\/]+)\//;
+	if (url) {
+		if (/^data/.test(url)) return 'Data URI';
+		else if (url.match(r) && url.match(r).length > 2) return url.match(r)[2];
+		else return 'ERROR';
+	}
+}
 function allowedScript(event) {
 	if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length > 0 && event.type !== 'DOMNodeInserted') {
-		var isAllowed = safari.self.tab.canLoad(event, [jsblocker.href, event.target.src, !(window == window.top)]);
+		var isAllowed = safari.self.tab.canLoad(event, [jsblocker.href, event.target.src, !(window == window.top)]),
+				host = activeHost(event.target.src);
 
 		if (!isAllowed) {
 			if (typeof event.target.src === 'string' && event.target.src.length > 0) {
 				jsblocker.blocked.count++;
 				jsblocker.blocked.urls.push(event.target.src);
+							
+				if (jsblocker.blocked.hosts.indexOf(host) === -1) jsblocker.blocked.hosts.push(host);
 	
 				event.preventDefault();
 			}
 		} else {
 			jsblocker.allowed.count++;
 			jsblocker.allowed.urls.push(event.target.src);
+			
+			if (jsblocker.allowed.hosts.indexOf(host) === -1) jsblocker.allowed.hosts.push(host);
 		}
 	} else if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length === 0 && event.type === 'DOMNodeInserted') {
 		jsblocker.unblocked.count++;

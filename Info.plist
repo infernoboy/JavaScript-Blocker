@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>8535.18.5</string>
+	<string>7535.18.5</string>
 	<key>CFBundleDisplayName</key>
 	<string>JavaScript Blocker</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.5.1</string>
+	<string>2.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>44</string>
+	<string>45</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -28,11 +28,11 @@
 				<key>Filename</key>
 				<string>popover.html</string>
 				<key>Height</key>
-				<real>400</real>
+				<real>350</real>
 				<key>Identifier</key>
 				<string>configureBlockedScripts</string>
 				<key>Width</key>
-				<real>460</real>
+				<real>360</real>
 			</dict>
 		</array>
 		<key>Toolbar Items</key>
