@@ -18,7 +18,7 @@ var JavaScriptBlocker = {
 	speedMultiplier: 1,
 	disabled: false,
 	frames: {},
-	bundleid: 45, 
+	bundleid: 46, 
 	
 	load_language: function (css) {
 		function set_popover_css (self, load_language, f) {
@@ -578,7 +578,7 @@ var JavaScriptBlocker = {
 					$('.divider:last', newul).css('visibility', 'hidden');
 					
 					if (rules === 0) return $('<ul class="rules-wrapper"></ul>');
-					
+							
 					if (j && j.indexOf(domain_name) > -1)
 						newul.parent().prev().addClass('hidden');
 				}
@@ -1891,7 +1891,7 @@ var JavaScriptBlocker = {
 										safari.extension.settings.alwaysBlock = 'domain';
 										safari.extension.settings.simpleMode = true;
 									
-										self.collapsedDomains = {};
+										self.collapsedDomains = [];
 										
 										done(true);
 									});
