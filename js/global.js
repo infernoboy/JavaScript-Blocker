@@ -102,9 +102,10 @@ var JavaScriptBlocker = {
 	get collapsedDomains() {
 		if (this.caches.collapsed_domains) return this.caches.collapsed_domains;
 		
-		var t = window.localStorage.getItem('CollapsedDomains');
+		var t = window.localStorage.getItem('CollapsedDomains'),
+				x = t === null ? (this.caches.collapsed_domains = []) : (this.caches.collapsed_domains = JSON.parse(t));
 		
-		return t === null ? (this.caches.collapsed_domains = []) : (this.caches.collapsed_domains = JSON.parse(t));
+		return $.isEmptyObject(x) ? [] : x;
 	},
 	set collapsedDomains(value) {
 		this.caches.collapsed_domains = value;
