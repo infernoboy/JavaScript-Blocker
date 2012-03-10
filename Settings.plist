@@ -154,6 +154,16 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>allowExtensions</string>
+		<key>Title</key>
+		<string>Allow scripts that use the "safari-extension" protocol</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
 		<string>domain</string>
 		<key>Key</key>
 		<string>alwaysBlock</string>

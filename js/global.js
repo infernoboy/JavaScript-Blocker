@@ -18,7 +18,81 @@ var JavaScriptBlocker = {
 	speedMultiplier: 1,
 	disabled: false,
 	frames: {},
-	bundleid: 46, 
+	bundleid: 47,
+	
+	updater: function () {
+		var v = this.installedBundle, self = this;
+		
+		if (v === this.bundleid) return false;
+		else if (v < 45) {
+			var e =  $('#update-information', this.popover);
+			
+			e.find('#understood').click(function () {
+				var off = $(this).offset();
+				new Poppy(off.left + $(this).outerWidth() / 2, off.top + 8, [
+						'<p>', _('Would you like to reset JavaScript Blocker to its default settings?'), '</p>',
+						'<p>', _('Caution: This will remove all rules!'), '</p>',
+						'<div>',
+							'<input type="button" id="do-reset-jsblocker" value="', _('Reset JS Blocker'), '" /> ',
+							'<input type="button" id="no-reset-jsblocker" value="', _('Leave Settings Alone'), '" />',
+						'</div>'].join(''), function () {
+							$('#poppy input', self.popover).click(function () {
+								window.localStorage.removeItem('DeletedAutomaticRules');
+								window.localStorage.removeItem('ERROR');
+								
+								var done = function (hide) {
+									new Poppy();
+								
+									self.installedBundle = self.installedBundle >= 45 ? self.installedBundle : 45;
+									self.utils.zoom(e, $('#main', self.popover));
+									
+									setTimeout(function (self) {
+										self.updater();
+									}, 700, self);
+								
+									if (hide)
+										new Poppy(off.left + $(this).width() / 2, off.top + 8, '<p>' + _('Restart Safari') + '</p>');
+								};
+								
+								if (this.id === 'do-reset-jsblocker') {
+									var domain;
+									
+									new Poppy(off.left + $(this).width() / 2, off.top + 8, '<p>Please wait…</p>', function () {
+										for (domain in window.localStorage) {
+											self.utils.zero_timeout(function (domain) {
+												var rules = self.rules.for_domain(domain, true);
+										
+												if (domain in rules)
+													self.rules.remove_domain(domain);
+											}, [domain]);
+										}
+									
+										self.utils.zero_timeout(function (self) {
+											self.rules.reinstall_predefined();
+										}, [self]);
+									
+										safari.extension.settings.animations = true;
+										safari.extension.settings.showUnblocked = false;
+										safari.extension.settings.showPerHost = false;
+										safari.extension.settings.toolbarDisplay = 'blocked';
+										safari.extension.settings.alwaysBlock = 'domain';
+										safari.extension.settings.simpleMode = true;
+									
+										self.collapsedDomains = [];
+										
+										done(true);
+									});
+								} else
+									done();
+							});
+						});
+			});
+			
+			if (!e.is(':visible'))
+				this.utils.zoom(e, $('#main', this.popover));
+		} else if (v < this.bundleid)
+			this.installedBundle = this.bundleid;
+	},
 	
 	load_language: function (css) {
 		function set_popover_css (self, load_language, f) {
@@ -343,7 +417,7 @@ var JavaScriptBlocker = {
 	 */
 	active_host: function (url) {
 		if (url && (url in this.caches.active_host)) return this.caches.active_host[url];
-		var r = /^(https?|file):\/\/([^\/]+)\//;
+		var r = /^(https?|file|safari\-extension):\/\/([^\/]+)\//;
 		if (url) {
 			if (/^data/.test(url)) return (this.caches.active_host[url] = 'Data URI');
 			else if (url.match(r) && url.match(r).length > 2) return (this.caches.active_host[url] = url.match(r)[2]);
@@ -355,6 +429,10 @@ var JavaScriptBlocker = {
 		} catch(e) {
 			return 'ERROR';
 		}
+	},
+	
+	active_protocol: function (host) {
+		return host.substr(0, host.indexOf('://'));
 	},
 	
 	/**
@@ -775,24 +853,29 @@ var JavaScriptBlocker = {
 
 		if (some) {
 			var add_rule_host = function (me, url, left, top, allow) {
-				var hostname = me.parent().data('url'), rule, parts = self.utils.domain_parts(hostname), a = [];
+				var hostname = me.parent().data('url'), rule,
+						one_script = me.parent().data('script'),
+						proto = self.utils.active_protocol(one_script[0]),
+						use_proto = proto === 'http' || proto === 'https' ? 'https?' : proto,
+						parts = use_proto === 'https?' ? self.utils.domain_parts(hostname) : [hostname, '*'], a = [];
 				
 				if (hostname === 'Data URI')
 					a.push('<option value="^data:.*$">' + 'Data URI' + '</option>');
 				else
 					for (var x = 0; x < parts.length - 1; x++)
-						a.push('<option value="^' + self.utils.escape_regexp(url[0].substr(0, url[0].indexOf(hostname))) +
+						a.push('<option value="^' + use_proto + ':\\/\\/' +
 								(x === 0 ? self.utils.escape_regexp(parts[x]) : '([^\\/]+\\.)?' + self.utils.escape_regexp(parts[x])) +
 								'\\/.*$">' + parts[x] + '</option>');
 					
 				new Poppy(left, top + 8, [
 						'<label for="domain-script" class="no-disclosure ', allow ? 'allowed-' : 'blocked-', 'label">', allow ? _('Allow') : _('Block'), ':</label> ',
 						'<select id="domain-script">', a.join(''), '</select> ',
-						'<input id="domain-script-continue" type="button" value="', _('Continue'), '" >'].join(''), function () {
+						'<input id="domain-script-continue" type="button" value="', _('Continue'), '" />'].join(''), function () {
 							$('#domain-script-continue', self.popover).click(function () {
-								var page = url[0].substr(0, url[0].indexOf(hostname)) + hostname + '/';
-								self.rules.remove_matching_URL(host, [page], true, true);
-								self.rules.remove_matching_URL(host, [page], true, false);
+								var page = 'http://' + hostname + '/',
+										page2 = 'https://' + hostname + '/';
+								self.rules.remove_matching_URL(host, [page, page2], true, true);
+								self.rules.remove_matching_URL(host, [page, page2], true, false);
 								self.rules.add(host, $('#domain-script', self.popover).val(), allow ? 7 : 6);
 								safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 							})
@@ -1706,22 +1789,24 @@ var JavaScriptBlocker = {
 					event.message = rule_found;
 					break;
 				}
-								
+				
 				if (alwaysFrom !== 'nowhere' && rule_found !== true) {
-					var page_parts = this.domain_parts(host),
-							script_parts = this.domain_parts(this.active_host(event.message[1]));
+					if (!(safari.extension.settings.allowExtensions && this.utils.active_protocol(event.message[1]) === 'safari-extension')) {
+						var page_parts = this.domain_parts(host),
+								script_parts = this.domain_parts(this.active_host(event.message[1]));
 						
-					if ((alwaysFrom === 'topLevel' && page_parts[0] !== script_parts[0]) ||
-							(alwaysFrom === 'domain' && page_parts[page_parts.length - 2] !== script_parts[script_parts.length - 2]) ||
-							(alwaysFrom === 'everywhere')) {
-						if (this.saveAutomatic && !this.simpleMode) {
-							var rr = this.rules.create_auto_rule(host, event.message[1], page_parts, script_parts, alwaysFrom);
-							this.rules.add(host, rr, 2, true);
+						if ((alwaysFrom === 'topLevel' && page_parts[0] !== script_parts[0]) ||
+								(alwaysFrom === 'domain' && page_parts[page_parts.length - 2] !== script_parts[script_parts.length - 2]) ||
+								(alwaysFrom === 'everywhere')) {
+							if (this.saveAutomatic && !this.simpleMode) {
+								var rr = this.rules.create_auto_rule(host, event.message[1], page_parts, script_parts, alwaysFrom);
+								this.rules.add(host, rr, 2, true);
+							}
+						
+							event.message = 0;
+						
+							break theSwitch;
 						}
-						
-						event.message = 0;
-						
-						break theSwitch;
 					}
 				}
 		
@@ -1842,69 +1927,9 @@ var JavaScriptBlocker = {
 			this.utils.zoom(s, $('#main', this.popover));
 			
 			return false;
-		} else if (this.installedBundle < 45) {
-			var e =  $('#update-information', this.popover);
-			
-			e.find('#understood').click(function () {
-				var off = $(this).offset();
-				new Poppy(off.left + $(this).outerWidth() / 2, off.top + 8, [
-						'<p>', _('Would you like to reset JavaScript Blocker to its default settings?'), '</p>',
-						'<p>', _('Caution: This will remove all rules!'), '</p>',
-						'<div>',
-							'<input type="button" id="do-reset-jsblocker" value="', _('Reset JS Blocker'), '" /> ',
-							'<input type="button" id="no-reset-jsblocker" value="', _('Leave Settings Alone'), '" />',
-						'</div>'].join(''), function () {
-							$('#poppy input', self.popover).click(function () {
-								window.localStorage.removeItem('DeletedAutomaticRules');
-								window.localStorage.removeItem('ERROR');
-								
-								var done = function (hide) {
-									new Poppy();
-								
-									self.installedBundle = self.bundleid;
-									self.utils.zoom(e, $('#main', self.popover));
-								
-									if (hide)
-										new Poppy(off.left + $(this).width() / 2, off.top + 8, '<p>' + _('Restart Safari') + '</p>');
-								};
-								
-								if (this.id === 'do-reset-jsblocker') {
-									var domain;
-									
-									new Poppy(off.left + $(this).width() / 2, off.top + 8, '<p>Please wait…</p>', function () {
-										for (domain in window.localStorage) {
-											self.utils.zero_timeout(function (domain) {
-												var rules = self.rules.for_domain(domain, true);
-										
-												if (domain in rules)
-													self.rules.remove_domain(domain);
-											}, [domain]);
-										}
-									
-										self.utils.zero_timeout(function (self) {
-											self.rules.reinstall_predefined();
-										}, [self]);
-									
-										safari.extension.settings.animations = true;
-										safari.extension.settings.showUnblocked = false;
-										safari.extension.settings.showPerHost = false;
-										safari.extension.settings.toolbarDisplay = 'blocked';
-										safari.extension.settings.alwaysBlock = 'domain';
-										safari.extension.settings.simpleMode = true;
-									
-										self.collapsedDomains = [];
-										
-										done(true);
-									});
-								} else
-									done();
-							});
-						});
-			});
-			
-			if (!e.is(':visible'))
-				this.utils.zoom(e, $('#main', this.popover));
 		}
+		
+		this.updater();
 		
 		if (s.hasClass('zoom-window-open'))
 			this.utils.zoom(s, $('#main', this.popover));

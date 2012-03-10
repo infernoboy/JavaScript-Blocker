@@ -75,7 +75,7 @@ function allowedScript(event) {
 		jsblocker.unblocked.urls.push(event.target.innerHTML);
 	}
 	
-	if (window !== window.top) {
+	if (window !== window.top || event.type === 'DOMNodeInserted') {
 		clearTimeout(readyTimeout);
 		readyTimeout = setTimeout(ready, 200, event);
 	}	
