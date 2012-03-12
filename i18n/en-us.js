@@ -37,6 +37,7 @@ Strings['en-us'] = {
 	'Block All': 'Block All',
 	'Block': 'Block',
 	'Block scripts manually': 'Allow scripts that originate from the same domain',
+	'Scripts on secure sites must also be secure': 'Scripts on secure sites must also be secure',
 	'Finish Setup': 'Finish Setup',
 	'View': 'View',
 	'Disable': 'Disable',
@@ -82,6 +83,9 @@ Strings['en-us'] = {
 	'Understood': 'Understood',
 	'Reset JS Blocker': 'Reset JS Blocker',
 	'Leave Settings Alone': 'Leave Settings Alone',
+	'Make a Donation': 'Make a Donation',
+	'Maybe Later': 'Maybe Later',
+	'I\'ve Donated!': 'I\'ve Donated!',
 	
 	'Normal Block': 'Normal block',
 	'High-priority Block': 'High-priority block',
@@ -141,5 +145,9 @@ Strings['en-us'] = {
 	'Would you like to reset JavaScript Blocker to its default settings?': 'Would you like to reset JavaScript Blocker to its default settings?',
 	'Caution: This will remove all rules!': '<b>Caution:</b> This will remove <b>all</b> rules!',
 	
-	'Restart Safari': 'You might have to restart Safari for all changes to propagate correctly.'
+	'Restart Safari': 'You might have to restart Safari for all changes to propagate correctly.',
+	
+	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
+	'Please, if you can': 'Please, if you can, show your support by making a donation of any amount. ' +
+			'It would be greatly appreciated and will encourage me to create an even better product.',
 };

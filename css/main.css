@@ -128,7 +128,7 @@ header h1 {
 	body.simple #domain-script {
 		max-width: 205px;
 	}
-	
+
 input,
 select,
 button,
@@ -363,6 +363,14 @@ ul li span {
 }	
 	body.simple ul li span {
 		max-width: 82%;
+	}
+	ul li span.https,
+	#domain-script.https {
+		color: #956B05;
+	}
+	ul li span.safari-extension,
+	#domain-script.safari-extension {
+		color: #0851FE;
 	}
 	ul li small {
 		font-size: 8pt;
