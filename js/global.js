@@ -1301,8 +1301,8 @@ var JavaScriptBlocker = {
 			var c = self.utils.active_host(),
 				rule_type;
 				
-			self.rules.remove_domain(store);
-			self.rules.add(store, '.*(All Scripts)?', this.id === 'block-domain' ? 6 : 7);
+			self.rules.remove_domain(c);
+			self.rules.add(c, '.*(All Scripts)?', this.id === 'block-domain' ? 6 : 7);
 
 			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 		});
