@@ -43,7 +43,7 @@ var bv = parseInt(window.navigator.appVersion.split('Safari/')[1].replace(/\./g,
 		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
 
 function activeHost(url) {
-	var r = /^(https?|file):\/\/([^\/]+)\//;
+	var r = /^(https?|file|safari\-extension):\/\/([^\/]+)\//;
 	if (url) {
 		if (/^data/.test(url)) return 'Data URI';
 		else if (url.match(r) && url.match(r).length > 2) return url.match(r)[2];
@@ -82,6 +82,8 @@ function allowedScript(event) {
 }
 
 function ready(event) {
+	safari.self.tab.dispatchMessage('updateReady');
+	
 	if (event.type === 'DOMContentLoaded') {
 		var script_tags = document.getElementsByTagName('script'), i, b;
 		for (i = 0, b = script_tags.length; i < b; i++) {
@@ -108,10 +110,10 @@ function ready(event) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
 				console.error('JavaScript blocker broke! This is an issue with Safari itself. ' +
-						'Reloading the page should resolve the problem.')
+						'Reloading the page should fix things.')
 			}
 		}
-	}, (event.type === 'focus') ? 10 : 300);
+	}, (event.type === 'focus') ? 100 : 300);
 }
 
 function messageHandler(event) {

@@ -29,7 +29,7 @@ JavaScriptBlocker.poppies = {
 					'</div>',
 				'</div>'].join(''),
 			save: function (no_refresh) {
-				main.rules.add(zoo.me.domain, this.val(), this.parent().prev().find('input:checked').val());
+				main.rules.add($('#domain-picker', main.popover).val(), this.val(), this.parent().prev().find('input:checked').val());
 
 				if (!no_refresh) {
 					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');

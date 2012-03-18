@@ -40,8 +40,8 @@
 			for (b = 0; b < ogroups.length; b++)
 				ogroups[b].label = _(ogroups[b].label);
 				
-			if (window.navigator.platform.indexOf('Win') > -1) document.body.className += ' windows';
-			else if (window.navigator.platform.indexOf('Mac') > -1) document.body.className += ' macos';
+			if (window.navigator.platform.match(/Win/)) document.body.className += ' windows';
+			else if (window.navigator.platform.match(/Mac/)) document.body.className += ' macos';
 		});
 		
 		window.addEventListener('message', function (event) {
@@ -169,6 +169,7 @@
 					<a href="http://javascript-blocker.toggleable.com/help" class="link-button outside" id="js-help"><script>document.write(_('Help'));</script></a>
 					<a href="http://javascript-blocker.toggleable.com/" class="link-button outside" id="js-help"><script>document.write(_('Project Page'));</script></a>
 					<input type="button" value="Disable JavaScript Blocker" id="disable" />
+					<br style="clear:both;">
 				</p>
 				<br style="clear:both;">
 			</div>

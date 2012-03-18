@@ -114,7 +114,7 @@
 		<key>Titles</key>
 		<array>
 			<string>Blocked scripts or hosts</string>
-			<string>Allowed &amp; unblockable scripts or hosts</string>
+			<string>Allowed scripts or hosts</string>
 			<string>Neither</string>
 		</array>
 		<key>Type</key>
@@ -210,7 +210,7 @@
 		<key>Key</key>
 		<string>simpleMode</string>
 		<key>Title</key>
-		<string>Enable expert features; settings below apply only if enabled</string>
+		<string>Enable expert features—settings below apply only if enabled</string>
 		<key>TrueValue</key>
 		<false/>
 		<key>Type</key>

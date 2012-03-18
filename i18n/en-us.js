@@ -86,6 +86,7 @@ Strings['en-us'] = {
 	'Make a Donation': 'Make a Donation',
 	'Maybe Later': 'Maybe Later',
 	'I\'ve Donated!': 'I\'ve Donated!',
+	'Unblocked Script': 'Unblockable Script',
 	
 	'Normal Block': 'Normal block',
 	'High-priority Block': 'High-priority block',
@@ -108,6 +109,7 @@ Strings['en-us'] = {
 	'The last 2 rule types will override any other rule.': 'The last 2 rule types will override any other rule.',
 	/** /RULE TYPES **/
 	
+	'On:': 'On:',
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
 	'Adding a Rule For {1}': 'Adding a Rule For <b>{1}</b>', // {1} = domain name
 	'Editing a Rule For {1}': 'Editing a Rule For <b>{1}</b>', // *
@@ -146,6 +148,8 @@ Strings['en-us'] = {
 	'Caution: This will remove all rules!': '<b>Caution:</b> This will remove <b>all</b> rules!',
 	
 	'Restart Safari': 'You might have to restart Safari for all changes to propagate correctly.',
+	
+	'Update Failure': 'Information about the current webpage is unavailable due to a bug with Safari. Reloading the page should resolve the issue.',
 	
 	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
 	'Please, if you can': 'Please, if you can, show your support by making a donation of any amount. ' +

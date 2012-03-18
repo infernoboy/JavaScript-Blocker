@@ -122,11 +122,13 @@ header h1 {
 		color: #545554 !important;
 	}
 
-#domain-script {
-	max-width: 255px;
+#domain-script,
+#domain-picker {
+	max-width: 250px;
 }
-	body.simple #domain-script {
-		max-width: 205px;
+	body.simple #domain-script,
+	body.simple #domain-picker {
+		max-width: 200px;
 	}
 
 input,
@@ -257,22 +259,10 @@ label {
 .rule.type--2 {
 	color: #BF01A2;
 }
-
-.rule.type-3,
-.rule.type--3 {
-	color: #006889;
-}
-	.rule.type--2,
-	.rule.type--3 {
+	.rule.type--2 {
 		padding: 0 4px;
 		margin-left: -4px;
 		-webkit-border-radius: 4px;
-	}
-	.rule.type--3 {
-		background:	-webkit-linear-gradient(top, rgba(255,0,0,0.04), rgba(255,0,0,0.12));
-		-webkit-box-shadow: 0 1px 0 rgba(255,0,0,0.3), inset 0 1px 0 rgba(255,0,0,0.06);
-	}
-	.rule.type--2 {
 		background:	-webkit-linear-gradient(top, rgba(0,255,0,0.13), rgba(0,255,0,0.2));
 		-webkit-box-shadow: 0 1px 0 rgba(0,255,0,0.6), inset 0 1px 0 rgba(0,255,0,0.25);
 	}
@@ -435,12 +425,15 @@ a {
 		border-color: #bbb;
 		margin-bottom: 0;
 	}
+
 #disclaimer {
 	margin-top: 20px;
 	font-size: 8pt;
-	padding-bottom: 10px;
 	color: #999;
 }
+	#disclaimer p {
+		margin-bottom: 0;
+	}
 
 #rules-list,
 #misc,
@@ -457,6 +450,11 @@ p.misc-info {
 	font-size: 10pt;
 	color: #626262;
 }
+	p.misc-info select {
+		font-size: 10pt;
+		color: #626262;
+		background-position: 100% 1px;
+	}
 p.misc-header {
 	text-align: center;
 	font-size: 9pt;
@@ -471,10 +469,12 @@ p.misc-header {
 		width: 200px;
 	}
 #rules-list #rules-list-back,
+#rules-list #new-domain,
 #misc #misc-close {
 	position: absolute;
 	top: -2px;
 }
+
 .divider {
 	width: 100%;
 	height: 1px;
@@ -562,14 +562,14 @@ p.misc-header {
 	-webkit-box-shadow: 0 -1px 0 #bfbfbf;
 	border-top: 1px solid #f8f8f8;
 	border-bottom: 1px solid #b5b5b5;
-	width: 444px;
+	width: 443px;
 	padding: 2px 3px 3px;
 	background: -webkit-linear-gradient(top, #ececec, #d9d9d9);
 	-webkit-user-select: none;
 }
 	body.simple .filter-bar,
 	body.simple #find-bar {
-		width: 344px;
+		width: 343px;
 	}
 	#rules-filter-bar-two {
 		margin-top: 0;

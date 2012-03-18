@@ -85,11 +85,11 @@ Poppy.prototype = {
 	},
 	create: function () {
 		if ($(this.e, this.p).length) $(this.e, this.p).remove();
-		var self = this;
 		
-		var eC = '<div id="' + this.e.substr(1) + '"></div>',
-			cC = '<div id="' + this.c.substr(1) + '"></div>',
-			aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask.png" alt=""/>';
+		var self = this,
+				eC = '<div id="' + this.e.substr(1) + '"></div>',
+				cC = '<div id="' + this.c.substr(1) + '"></div>',
+				aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask.png" alt=""/>';
 		
 		$(this.s, this.p).unbind('scroll').scroll(function () {
 			new Poppy(null, null, null, null, null, 0.5);
@@ -97,10 +97,10 @@ Poppy.prototype = {
 		});
 		
 		var m = this.p.append(eC)
-			.find(this.e).append(cC)
-			.find(this.c).append(this.content)
-			.end()
-			.append(aC);
+				.find(this.e).append(cC)
+				.find(this.c).append(this.content)
+				.end()
+				.append(aC);
 		
 		this.callback.call($(this.e, this.p));
 			
@@ -154,30 +154,29 @@ Poppy.prototype = {
 	},
 	calcPoints: function () {
 		var o = {
-			underflow: false,
-			overflow: false,
-			arrow: {
-				left: 0,
-				bottom: -$(this.a, this.p).height(),
-				top: 'auto'
-			},
-			main: {
-				left: 0,
-				bottom: (this.p.height() - this.center.y) + $(this.a, this.p).height(),
-				top: 'auto'
-			}
-		};
-		
-		var max_width = this.p.width() + this.p.scrollLeft();
-		var base_width = max_width - this.p.width();
-		
-		var max_height = this.p.height() + this.p.scrollTop();
-		var base_height = max_height - this.p.height();
-		
-		var my_width = $(this.e, this.p).outerWidth();
-		var my_height = $(this.e, this.p).outerHeight() + 15;
-		
-		var half_arrow = $(this.a, this.p).outerWidth() / 2;
+					underflow: false,
+					overflow: false,
+					arrow: {
+						left: 0,
+						bottom: -$(this.a, this.p).height(),
+						top: 'auto'
+					},
+					main: {
+						left: 0,
+						bottom: (this.p.height() - this.center.y) + $(this.a, this.p).height(),
+						top: 'auto'
+					}
+				},
+				max_width = this.p.width() + this.p.scrollLeft(),
+				base_width = max_width - this.p.width(),
+
+				max_height = this.p.height() + this.p.scrollTop(),
+				base_height = max_height - this.p.height(),
+
+				my_width = $(this.e, this.p).outerWidth(),
+				my_height = $(this.e, this.p).outerHeight() + 15,
+
+				half_arrow = $(this.a, this.p).outerWidth() / 2;
 				
 		if (this.center.x - my_width / 2 <= base_width) { // If overflow on left side
 			o.main.left = base_width;
