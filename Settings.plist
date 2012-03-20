@@ -99,18 +99,12 @@
 		</array>
 	</dict>
 	<dict>
-		<key>Title</key>
-		<string>Toolbar Badge &amp; Labels</string>
-		<key>Type</key>
-		<string>Group</string>
-	</dict>
-	<dict>
 		<key>DefaultValue</key>
 		<string>blocked</string>
 		<key>Key</key>
 		<string>toolbarDisplay</string>
 		<key>Title</key>
-		<string>Display number of</string>
+		<string>Toolbar badge shows number of</string>
 		<key>Titles</key>
 		<array>
 			<string>Blocked scripts or hosts</string>
@@ -198,9 +192,29 @@
 	</dict>
 	<dict>
 		<key>Title</key>
-		<string>Expert Features</string>
+		<string>Expert &amp; Donator-Only Features</string>
 		<key>Type</key>
 		<string>Group</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<string>default</string>
+		<key>Key</key>
+		<string>theme</string>
+		<key>Title</key>
+		<string>Theme</string>
+		<key>Titles</key>
+		<array>
+			<string>Default</string>
+			<string>Textured Metal</string>
+		</array>
+		<key>Type</key>
+		<string>PopUpButton</string>
+		<key>Values</key>
+		<array>
+			<string>default</string>
+			<string>metal</string>
+		</array>
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
@@ -231,6 +245,14 @@
 		<false/>
 		<key>Key</key>
 		<string>donated</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<false/>
+		<key>Key</key>
+		<string>donationVerified</string>
+		<key>Secure</key>
+		<true/>
 	</dict>
 </array>
 </plist>

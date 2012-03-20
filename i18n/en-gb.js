@@ -7,5 +7,5 @@
 Strings['en-gb'] = {
 	'Color Key': 'Colour Key',
 
-	'User Defined Rule': 'User Defined Rule&mdash;Determined by colour of header',
+	'Normal Blocking Rule': 'User Defined Rule&mdash;Determined by colour of header',
 };

@@ -15,7 +15,9 @@
 	<title></title>
 		
 	<link rel="stylesheet" href="css/poppy.css" type="text/css" id="poppy-style" />
+	<link rel="stylesheet" href="" type="text/css" id="poppy-theme-style" />
 	<link rel="stylesheet" href="css/main.css" type="text/css" id="main-style"/>
+	<link rel="stylesheet" href="" type="text/css" id="main-theme-style"/>
 	<link rel="stylesheet" href="css/highlight.css" />
 	
 	<script src="js/highlight.js"></script>
@@ -42,6 +44,8 @@
 				
 			if (window.navigator.platform.match(/Win/)) document.body.className += ' windows';
 			else if (window.navigator.platform.match(/Mac/)) document.body.className += ' macos';
+			
+			document.body.className += ' theme-' + safari.extension.globalPage.contentWindow.JavaScriptBlocker.theme;
 		});
 		
 		window.addEventListener('message', function (event) {
@@ -171,6 +175,10 @@
 					<input type="button" value="Disable JavaScript Blocker" id="disable" />
 					<br style="clear:both;">
 				</p>
+				<p>
+					<input type="button" value="Unlock" id="unlock" />
+					<br style="clear:both;">
+				</p>	
 				<br style="clear:both;">
 			</div>
 		</div>

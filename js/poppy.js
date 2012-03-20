@@ -71,7 +71,7 @@ Poppy.prototype = {
 		clearTimeout(this._dT);
 		this.p.find(this.e).css({
 			opacity: 0.3,
-			WebkitTransitionDuration: (this._time * .8) + 's',
+			WebkitTransitionDuration: (this._time * .7) + 's',
 			WebkitTransform: 'scale(0)'
 		});
 		return (this._dT = setTimeout(function () {
@@ -89,7 +89,7 @@ Poppy.prototype = {
 		var self = this,
 				eC = '<div id="' + this.e.substr(1) + '"></div>',
 				cC = '<div id="' + this.c.substr(1) + '"></div>',
-				aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask.png" alt=""/>';
+				aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask' + (JavaScriptBlocker.theme.indexOf('default') !== 0 ? '-' + JavaScriptBlocker.theme : '') + '.png" alt=""/>';
 		
 		$(this.s, this.p).unbind('scroll').scroll(function () {
 			new Poppy(null, null, null, null, null, 0.5);
@@ -106,7 +106,7 @@ Poppy.prototype = {
 			
 		var points = this.calcPoints(), left;
 		
-		if (points.arrow.bottom == 'auto') $(this.a, m).attr('src', 'images/arrow-mask-reverse.png');
+		if (points.arrow.bottom == 'auto') $(this.a, m).attr('src', 'images/arrow-mask-reverse' + (JavaScriptBlocker.theme !== 'default' ? '-' + JavaScriptBlocker.theme : '') + '.png');
 		
 		m.css({
 			WebkitTransitionProperty: '-webkit-transform, opacity',

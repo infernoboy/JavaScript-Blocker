@@ -15,10 +15,13 @@ JavaScriptBlocker.rules.whitelist = {
 		'^https?:\\/\\/.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js(\\?.*)?$',
 
 		// Prototype - A JavaScript library used by some sites.
-		'^https?:\\/\\/.*\\/prototype\\.js(\\?.*)?$'
+		'^https?:\\/\\/.*\\/prototype\\.js(\\?.*)?$',
+		
+		// Readability
+		'^https?:\\/\\/www\\.readability\\.com\\/.*$'
 	],
 	'.amazon.com': [
-		'^http:\\/\\/([^\\/]+\\.)?images-amazon\\.com\\/.*$'
+		'^http:\\/\\/([^\\/]+\\.)?images\\-amazon\\.com\\/.*$'
 	],
 	'.reddit.com': [
 		'^http:\\/\\/www\\.redditstatic\\.com\\/.*$'
@@ -32,6 +35,9 @@ JavaScriptBlocker.rules.whitelist = {
 	'.youtube.com': [
 		'^https?:\\/\\/([^\\/]+\.)?ytimg\\.com\\/.*$',
 		'^https?:\\/\\/clients[0-9]+\\.google\\.com\\/.*$',
+	],
+	'.readability.com': [
+		'^https?:\\/\\/([^\\/]+\\.)?cloudfront\\.net\\/.*$'
 	]
 };
 

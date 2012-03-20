@@ -94,7 +94,7 @@ Strings['de-de'] = {
 	/** /ERRORS-ISH **/
 	
 	/** RULE TYPES **/
-	'User Defined Rule': 'Benutzerdefinierte Regel&mdash;Bemessen nach Farbe der Kopfzeile',
+	'Normal Blocking Rule': 'Benutzerdefinierte Regel&mdash;Bemessen nach Farbe der Kopfzeile',
 	'Automatic Blocking Rule': 'Automatisches blockieren von Regeln',
 	'Disabled Automatic Blocking Rule': 'Deaktiviere automatisches blockieren von Regeln',
 	'Automatic Allowing Rule': 'Automatisches erlauben von Regeln',
@@ -141,5 +141,13 @@ Strings['de-de'] = {
 	'Would you like to reset JavaScript Blocker to its default settings?': 'Möchtest du den JavaScript Blocker zum Originalzustand zurück setzen?',
 	'Caution: This will remove all rules!': '<b>Achtung:</b> Dies wird <b>alle</b> Regeln löschen!',
 	
-	'Restart Safari': 'Es wird empfohlen Safari neu zustarten, damit alle Änderungen korrekt funktionieren.'
+	'Restart Safari': 'Es wird empfohlen Safari neu zustarten, damit alle Änderungen korrekt funktionieren.',
+	
+	/** DONATION STUFF **/
+	'Donation Verification': 'Nachweis der Spende',
+	'Your donation has been verified': 'Ihre Spende wurde überprüft und alle Funktionen wurden entsperrt.',
+	'Thanks for your support!': 'Ihre Spende wurde überprüft und alle Funktionen wurden entsperrt.',
+	'Unlock': 'Alle Funktionen freizuschalten',
+	'To complete the unlocking': 'Um die Freischaltung abzuschließen, müssen Sie eine Spende gemacht haben. Bitte beachten Sie, dass es dauern kann bis zu 24 Stunden für Ihre Spende auf dem Server angezeigt werden.',
+	"I can't donate": 'Ich kann nicht spenden',
 };

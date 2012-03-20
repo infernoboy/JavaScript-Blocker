@@ -131,6 +131,9 @@ header h1 {
 		max-width: 200px;
 	}
 
+#donation-id {
+	width: 130px;
+}
 input,
 select,
 button,
@@ -164,6 +167,10 @@ textarea,
 		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.5);
 	}
 	input[type="text"],
+	input[type="search"] {
+		padding: 2px;
+	}
+	input[type="text"],
 	input[type="search"],
 	textarea {
 		-webkit-border-radius: 3px;
@@ -171,7 +178,6 @@ textarea,
 		-webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.15), 0 1px 0 #eee;
 	}
 	input[type="search"] {
-		padding: 2px;
 		-webkit-appearance: none;
 		-webkit-border-radius: 10px;
 	}
@@ -409,6 +415,7 @@ a {
 
 #disable,
 #view-rules,
+#unlock,
 #switch-interface,
 #reset-automatic,
 #js-help {
@@ -419,11 +426,15 @@ a {
 }
 	#disable,
 	#view-rules,
+	#unlock,
 	#switch-interface,
 	#js-help {
 		font-size: 7pt;
 		border-color: #bbb;
 		margin-bottom: 0;
+	}
+	p.hidden {
+		display: none;
 	}
 
 #disclaimer {
@@ -455,6 +466,9 @@ p.misc-info {
 		color: #626262;
 		background-position: 100% 1px;
 	}
+p.error {
+	color: red;
+}
 p.misc-header {
 	text-align: center;
 	font-size: 9pt;

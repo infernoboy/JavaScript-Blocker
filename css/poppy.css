@@ -29,7 +29,7 @@
 		overflow: auto;
 	}
 		body.simple #poppy #poppy-content {
-			max-height: 150px;
+			max-height: 160px;
 			max-width: 320px;
 		}
 	#poppy p {

@@ -91,6 +91,8 @@ Strings['en-us'] = {
 	'Normal Block': 'Normal block',
 	'High-priority Block': 'High-priority block',
 	'High-priority Allow': 'High-priority allow',
+	
+	'Unlock': 'Unlock All Features',
 	/** /BUTTONS & LABELS */
 	
 	/** ERRORS-ISH **/
@@ -99,7 +101,7 @@ Strings['en-us'] = {
 	/** /ERRORS-ISH **/
 	
 	/** RULE TYPES **/
-	'User Defined Rule': 'User Defined Rule&mdash;Determined by color of header',
+	'Normal Blocking Rule': 'Normal Blocking Rule',
 	'Automatic Blocking Rule': 'Automatic Blocking Rule',
 	'Disabled Automatic Blocking Rule': 'Disabled Automatic Blocking Rule',
 	'Automatic Allowing Rule': 'Automatic Allowing Rule',
@@ -151,7 +153,24 @@ Strings['en-us'] = {
 	
 	'Update Failure': 'Information about the current webpage is unavailable due to a bug with Safari. Reloading the page should resolve the issue.',
 	
+	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
 	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
 	'Please, if you can': 'Please, if you can, show your support by making a donation of any amount. ' +
 			'It would be greatly appreciated and will encourage me to create an even better product.',
+			
+	/** DONATION STUFF **/
+	'Donation Verification': 'Donation Verification',
+	'To complete the unlocking': 'To complete the unlocking process, you must have made a donation. Please note that ' +
+			'it may take up to 24 hours for your donation\'s transaction ID to become active on the server.',
+	'PayPal Transaction ID': 'PayPal Transaction ID',
+	'A transaction ID was not specified.': 'A transaction ID was not specified.',
+	'A donation with that transaction ID was not found. ({1})': 'A donation with that transaction ID was not found. ({1})',
+	'The maximum number ({1})': 'The maximum number of activations has been used for that transaction ID. ({1})',
+	'Your donation has been verified': 'Your donation has been verified and all features have been unlocked.',
+	'You may unlock {1}': 'You may unlock JavaScript Blocker on {1} more copies of Safari.',
+	'Thanks for your support!': 'Thanks for your support!',
+	'All features are already unlocked.': 'All features are already unlocked.',
+	'Donation Required': 'A verified donation is required to use that feature. Click <b>Unlock All Features</b> from the main window to do so.',
+	"I can't donate": "I can't donate",
+	'What donation?': 'What donator-only features are there?',
 };
