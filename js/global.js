@@ -55,7 +55,7 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.2.1',
+	displayv: '2.2.0a',
 	bundleid: 52,
 	
 	set_theme: function (theme) {
