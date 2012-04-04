@@ -15,16 +15,14 @@ JavaScriptBlocker.poppies = {
 				(this.length === 3) ? '<p class="error">' + this[2] + '</p>' : '',
 				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
 				'<p>', _('To complete the unlocking'), '</p>',
-				'<input type="text" placeholder="', _('PayPal Transaction ID'), '" id="donation-id" /> ',
+				'<input type="text" placeholder="', _('PayPal Email Address'), '" id="donation-id" /> ',
 				'<input type="button" value="', _('Continue'), '" id="donation-confirm" /> ',
 				'<a class="outside" href="mailto:travis@toggleable.com?subject=I cannot donate to JavaScript Blocker, but want all the features!&body=Reason: ">', _('I can\'t donate'), '</a>'].join(''),
 			callback: function () {
-				main.bind_events();
+				_$('#donation-id').focus();
 				
-				$('#donation-id', main.popover).focus();
-				
-				$('#donation-confirm', main.popover).click(function (event) {
-					var id = $('#donation-id', main.popover).val().substr(0, 100);
+				_$('#donation-confirm').click(function (event) {
+					var id = _$('#donation-id').val().substr(0, 100);
 				
 					$.get(zoo.url + escape(id)).success(function (data) {
 						data = parseInt(data, 10);
@@ -32,8 +30,8 @@ JavaScriptBlocker.poppies = {
 						var error = null;
 						
 						switch (data) {
-							case -3: error = _('A transaction ID was not specified.'); break;
-							case -2: error = _('A donation with that transaction ID was not found. ({1})', [id.replace(/</g, '&lt;')]); break;
+							case -3: error = _('An email address was not specified.'); break;
+							case -2: error = _('A donation with that email address was not found. ({1})', [id.replace(/</g, '&lt;')]); break;
 							case -1: error = _('The maximum number ({1})', [id.replace(/</g, '&lt;')]); break;
 							case 0:
 							case 1:
@@ -55,7 +53,7 @@ JavaScriptBlocker.poppies = {
 						new Poppy(zoo.me[0], zoo.me[1], JavaScriptBlocker.poppies.verify_donation.call([zoo.me[0], zoo.me[1], 'Error ' + req.status + ': ' + req.statusText], main));
 					});
 				}).siblings('#donation-id').keypress(function (e) {
-					if (e.keyCode == 13 || e.keyCode == 3) $('#donation-confirm', main.popover).click();
+					if (e.keyCode == 13 || e.keyCode == 3) _$('#donation-confirm').click();
 				});
 			}
 		}
@@ -63,40 +61,50 @@ JavaScriptBlocker.poppies = {
 		return zoo;
 	},
 	add_rule: function (main) {
+		if (!JavaScriptBlocker.donationVerified)
+			return {
+				content: _('Donation Required'),
+				save: $.noop,
+				callback: $.noop,
+				callback2: $.noop,
+				me: this,
+				main: main
+			};
+		
 		var zoo = {
 			me: this,
 			main: main,
 			content: [
 				'<div>',
 					'<p class="misc-info">', this.header, '</p>',
-					'<p>',
-						_('Enter the pattern for the URL(s) you want to affect.'),
-					'</p>',
 					'<p id="rules-radios">',
-						'<input id="select-type-normal" checked="checked" type="radio" name="select-type" value="0" /> ',
-						'<label for="select-type-normal">', _('Normal Block'), ' &nbsp;</label>',
-						'<input id="select-type-high" type="radio" name="select-type" value="6" />  ',
-						'<label for="select-type-high">', _('High-priority Block'),' &nbsp;</label>',
-						'<input id="select-type-high-opposite" type="radio" name="select-type" value="7" />  ',
-						'<label for="select-type-high-opposite">', _('High-priority Allow'), '</label>',
+						'<input id="select-type-block" type="radio" name="select-type" value="0" checked />',
+						'<label for="select-type-block"> ', _('Block'),' &nbsp;</label>',
+						'<input id="select-type-allow" type="radio" name="select-type" value="1" />',
+						'<label for="select-type-allow"> ', _('Allow'), '</label>',
 					'</p>',
+					main.donationVerified ? [
+						'<p id="rules-temp">',
+							'<input id="rule-temporary" type="checkbox"', parseInt(window.localStorage.LastRuleWasTemporary) ? ' checked' : '', ' />',
+							'<label for="rule-temporary">&thinsp;', _('Temporary rule'), '</label> ',
+						'</p>'].join('') : '',
 					'<div class="inputs">',
-						'<textarea id="rule-input" wrap="off"></textarea> ',
+						'<textarea id="rule-input" wrap="off" placeholder="RegExp"></textarea> ',
 						'<input type="button" value="', _('Save'), '" id="rule-save" />',
 					'</div>',
 				'</div>'].join(''),
 			save: function (no_refresh) {
-				main.rules.add($('#domain-picker', main.popover).val(), this.val(), this.parent().prev().find('input:checked').val());
+				main.rules.add(_$('#domain-picker').val(), this.val(), this.parent().prev().prev().find('input:checked').val(), true, _$('#rule-temporary').is(':checked'));
 
 				if (!no_refresh) {
 					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 					new Poppy();
 				}
 				
-				return this.parent().prev().find('input:checked').val();
+				return this.parent().prev().prev().find('input:checked').val();
 			},
 			callback: function () {
-				var i = $('#poppy #rule-input', main.popover).val(zoo.me.url).focus();
+				var i = _$('#poppy #rule-input').val(zoo.me.url).focus();
 		
 				i.keypress(function (e) {
 					if (e.keyCode == 13 || e.keyCode == 3) {

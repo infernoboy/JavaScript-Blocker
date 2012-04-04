@@ -21,7 +21,7 @@ JavaScriptBlocker.rules.whitelist = {
 		'^https?:\\/\\/www\\.readability\\.com\\/.*$'
 	],
 	'.amazon.com': [
-		'^http:\\/\\/([^\\/]+\\.)?images\\-amazon\\.com\\/.*$'
+		'^http:\\/\\/([^\\/]+\\.)?(ssl\\-)?images\\-amazon\\.com\\/.*$'
 	],
 	'.reddit.com': [
 		'^http:\\/\\/www\\.redditstatic\\.com\\/.*$'
@@ -38,8 +38,22 @@ JavaScriptBlocker.rules.whitelist = {
 	],
 	'.readability.com': [
 		'^https?:\\/\\/([^\\/]+\\.)?cloudfront\\.net\\/.*$'
+	],
+	'.icloud.com': [
+		'^https?:\\/\\/([^\\/]+\\.)?gstatic\\.com\\/.*$',
+		'^https?:\\/\\/([^\\/]+\\.)?google\\.com\\/.*$'
 	]
 };
+
+var wl = JavaScriptBlocker.rules.whitelist;
+
+wl['.google.co.uk'] = wl['.google.com'];
+wl['.google.de'] = wl['.google.com'];
+wl['.amazon.de'] = wl['.amazon.com'];
+wl['.amazon.co.uk'] = wl['.amazon.com'];
+
+delete wl;
+wl = undefined;
 
 JavaScriptBlocker.rules.blacklist = {
 	'.*': [

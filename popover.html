@@ -26,9 +26,10 @@
 		
 		document.addEventListener('DOMContentLoaded', function () {
 			safari.extension.globalPage.contentWindow.JavaScriptBlocker.hljs = hljs;
+			
 			setTimeout(function () {
 				safari.extension.globalPage.contentWindow.JavaScriptBlocker.bind_events();
-			}, 200);
+			}, 300);
 			
 			var inputs = document.getElementsByTagName('input'),
 					ogroups = document.getElementsByTagName('optgroup'),
@@ -55,6 +56,10 @@
 </head>
 
 <body class="blocking-mode">
+	<div id="modal">
+		<header><h1><script>document.write(_('JavaScript Blocker'));</script></h1></header>
+	</div>
+	
 	<header><h1><script>document.write(_('JavaScript Blocker'));</script></h1></header>
 	
 	<div id="container">
@@ -62,52 +67,6 @@
 			<input type="button" id="find-bar-done" value="Done" />
 			<input type="search" id="find-bar-search" incremental="incremental" results="10" autosave="find_on" />
 			<label for="find-bar-search" id="find-bar-matches"></label>
-		</div>
-		<div id="update-information" class="whoop">
-			<h2>Important Update Information</h2>
-			<p>
-				JavaScript Blocker has been updated to version 2 and with it brings many changes which may affect you.
-				For full details on all the changes included in this update, please review the <a class="outside" href="http://javascript-blocker.toggleable.com/change-log/200">change log</a>.
-			</p>
-			<h3>Major Changes</h3>
-			<ol>
-				<li>
-					<p>
-						The ability to disable <b>Block scripts manually</b> has been removed. Blocking scripts is now completely done
-						with the help of automatic actions. Check out the new setting <b>Automatically block scripts from</b> and configure
-						it to your liking.
-					</p>
-					<div class="divider"></div>
-				</li>
-				<li>
-					<p>
-						You can no longer choose which domain to add a rule for. All rules are now added to the exact hostname displayed in the
-						URL. If you want to add a rule for <b>All Domains</b>, you can still do so from the rule listing.
-					</p>
-					<div class="divider"></div>
-				</li>
-				<li>
-					<p>
-						The button to switch between the simple and expert interfaces has been removed. The only way to toggle views is to enable
-						or disable expert features. This change was brought about because rules are no longer interchangeable between the two modes.
-					</p>
-					<div class="divider"></div>
-				</li>
-				<li>
-					<p>
-						Unblockable scripts are no longer displayed by default. You can turn this on from the preferences if you desire.
-					</p>
-					<div class="divider"></div>
-				</li>
-				<li>
-					<p>
-						When expert features are disabled, JavaScript Blocker will run in a simplified mode which is for rule creation only.
-						All rules created in this mode are considered high-priority. You will be able to easily allow or block scripts
-						from hostnames and their sub domains.
-					</p>
-				</li>
-			</ol>
-			<p><input type="button" value="Understood" id="understood" /></p>
 		</div>
 		<div id="setup" class="whoop">
 			<p>
@@ -118,14 +77,10 @@
 			</p>
 			<p><script>document.write(_('Thanks for using {1}', [_('JavaScript Blocker')]));</script></p>
 			<p>
-				<input type="checkbox" id="setup-simple" checked="checked" /> <label for="setup-simple"><script>document.write(_('Setup:Simple Mode'));</script></label>
-			 	<a href="javascript:void(0)" id="setup-help-simple" class="help-link"><script>document.write(_('?'));</script></a>
+				<input type="checkbox" id="block-manual" checked="checked" />&thinsp;<label for="block-manual"><script>document.write(_('Block scripts manually'));</script></label>
 			</p>
 			<p>
-				<input type="checkbox" id="block-manual" checked="checked" /> <label for="block-manual"><script>document.write(_('Block scripts manually'));</script></label>
-			</p>
-			<p>
-				<input type="checkbox" id="secure-only" /> <label for="secure-only"><script>document.write(_('Scripts on secure sites must also be secure'));</script></label>
+				<input type="checkbox" id="secure-only" />&thinsp;<label for="secure-only"><script>document.write(_('Scripts on secure sites must also be secure'));</script></label>
 			</p>
 			<p><input type="button" id="finish-setup" value="Finish Setup" /></p>
 		</div>
@@ -169,9 +124,9 @@
 
 			<div id="disclaimer">
 				<p>
-					<input type="button" value="Show Rules" id="view-rules" />
+					<input type="button" value="Rules" id="view-rules" />
 					<a href="http://javascript-blocker.toggleable.com/help" class="link-button outside" id="js-help"><script>document.write(_('Help'));</script></a>
-					<a href="http://javascript-blocker.toggleable.com/" class="link-button outside" id="js-help"><script>document.write(_('Project Page'));</script></a>
+					<a href="http://javascript-blocker.toggleable.com/" class="link-button outside" id="js-project"><script>document.write(_('Project Page'));</script></a>
 					<input type="button" value="Disable JavaScript Blocker" id="disable" />
 					<br style="clear:both;">
 				</p>
@@ -188,26 +143,34 @@
 				<input type="button" value="Close Rules List" id="rules-list-back" />
 			</div>
 			<div id="data">
-				<a href="javascript:void(0)" id="collapse-all"><script>document.write(_('Collapse All'));</script></a> <span class="label">—</span>
-				<a href="javascript:void(0)" id="expand-all"><script>document.write(_('Expand All'));</script></a> <span class="label">￨</span>
-				<a href="javascript:void(0)" id="edit-domains"><script>document.write(_('Edit'));</script></a> <span class="label">￨</span>
-				<a href="javascript:void(0)" id="reinstall-pre"><script>document.write(_('Reinstall Whitelist & Blacklist'));</script></a>
+				<p class="above-filter">
+					<a href="javascript:void(0)" id="collapse-all"><script>document.write(_('Collapse All'));</script></a> <span class="label">￨</span>
+					<a href="javascript:void(0)" id="expand-all"><script>document.write(_('Expand All'));</script></a> <span class="label">￨</span>
+					<a href="javascript:void(0)" id="edit-domains"><script>document.write(_('Edit'));</script></a> <span class="label">￨</span>
+					<a href="javascript:void(0)" id="reinstall-pre"><script>document.write(_('Reinstall Whitelist & Blacklist'));</script></a>
+				</p>
+				<p id="above-temporary" class="above-filter">
+					<a href="javascript:void(0)" id="make-temp-perm"><script>document.write(_('Make Temporary Rules Permanent'));</script></a> <span class="label">￨</span>
+					<a href="javascript:void(0)" id="remove-all-temp"><script>document.write(_('Remove Temporary Rules'));</script></a>
+				</p>
 				<div id="rules-filter-bar" class="filter-bar">
 					<ul id="filter-type-collapse">
-						<li id="filter-all"class="selected"><script>document.write(_('All'));</script></li>
+						<li class="label"><script>document.write(_('Visibility:'));</script></li>
+						<li id="filter-all"class="selected"><script>document.write(_('Any'));</script></li>
 						<li id="filter-collapsed"><script>document.write(_('Collapsed'));</script></li>
 						<li id="filter-expanded"><script>document.write(_('Expanded'));</script></li>
 					</ul>
+					<div class="divider"></div>
 					<ul id="filter-type-state">
-						<li class="filter-divider">|</li>
+						<li class="label"><script>document.write(_('State:'));</script></li>
 						<li id="filter-state-all" class="selected"><script>document.write(_('Any'));</script></li>
 						<li id="filter-enabled"><script>document.write(_('Enabled'));</script></li>
 						<li id="filter-disabled"><script>document.write(_('Disabled'));</script></li>
+						<li id="filter-temporary"><script>document.write(_('Temporary'));</script></li>
 					</ul>
-					<br style="clear:both;" />
-				</div>
-				<div id="rules-filter-bar-two" class="filter-bar">
-					<ul>
+					<div class="divider"></div>
+					<ul id="filter-type-domain">
+						<li class="label"><script>document.write(_('Domains'));</script>:</li>
 						<li id="li-domain-filter"><input type="search" placeholder="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" /><br style="clear:both;" /></li>
 					</ul>
 					<br style="clear:both;" />

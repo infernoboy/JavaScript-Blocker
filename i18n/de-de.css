@@ -2,29 +2,43 @@
 	max-width: 10%;
 }
 #page-list {
-	max-width: 90%;
+	max-width: 89%;
 }
 	body.simple #page-list {
-		max-width: 87%;
+		max-width: 86%;
 	}
 ul li span {
-	max-width: 83%;
+	max-width: 81%;
 }
 	body.simple ul li span {
-		max-width: 80%;
+		max-width: 78%;
 	}
 ul li input[type="button"] {
-	width: 16%;
+	width: 17%;
 }
 	body.simple ul li input[type="button"] {
-		width: 20%;
+		width: 21%;
 	}
 
 body.simple #domain-script {
 	max-width: 180px;
 }
 
-body.simple .filter-bar ul li {
-	margin-right: 0;
-	padding: 0 3px;
+#poppy #rule-input {
+	width: 340px;
 }
+	body.simple #poppy #rule-input {
+		width: 240px;
+	}
+	
+#donation-id {
+	width: 115px;
+}
+
+p.misc-header {
+	width: 258px;
+	margin-left: 70px;
+}
+	body.simple p.misc-header {
+		width: 158px;
+	}

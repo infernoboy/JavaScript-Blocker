@@ -55,9 +55,8 @@
 		<array>
 			<string>Automatic</string>
 			<string>US English</string>
-			<string>British English (Incomplete)</string>
 			<string>Française (Partiel)</string>
-			<string>Deutsch (Unfertig)</string>
+			<string>Deutsch</string>
 		</array>
 		<key>Type</key>
 		<string>PopUpButton</string>
@@ -65,7 +64,6 @@
 		<array>
 			<string>Automatic</string>
 			<string>en-us</string>
-			<string>en-gb</string>
 			<string>fr-fr</string>
 			<string>de-de</string>
 		</array>
@@ -155,7 +153,7 @@
 		<string>Automatically block scripts from</string>
 		<key>Titles</key>
 		<array>
-			<string>Different sub domains</string>
+			<string>Different hosts &amp; subdomains</string>
 			<string>Different hostnames</string>
 			<string>Nowhere</string>
 			<string>Anywhere</string>
@@ -192,7 +190,7 @@
 	</dict>
 	<dict>
 		<key>Title</key>
-		<string>Expert &amp; Donator-Only Features</string>
+		<string>Donator-Only Features</string>
 		<key>Type</key>
 		<string>Group</string>
 	</dict>
@@ -251,6 +249,12 @@
 		<false/>
 		<key>Key</key>
 		<string>donationVerified</string>
+		<key>Secure</key>
+		<true/>
+	</dict>
+	<dict>
+		<key>Key</key>
+		<string>installID</string>
 		<key>Secure</key>
 		<true/>
 	</dict>

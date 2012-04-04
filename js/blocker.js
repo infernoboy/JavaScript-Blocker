@@ -9,7 +9,7 @@ function pageHost() {
 		case 'http:':
 		case 'https:':
 		case 'file:':
-			var base = window.location.origin + (bv >= 535185 ?
+			var base = window.location.origin + (bv[0] >= 535 ?
 					window.location.pathname : escape(window.location.pathname)) + window.location.search;
 			if (window.location.hash.length > 0) return base + window.location.hash;
 			else if (window.location.href.substr(-1) === '#') return base + '#';
@@ -21,7 +21,7 @@ function pageHost() {
 	}
 }
 
-var bv = parseInt(window.navigator.appVersion.split('Safari/')[1].replace(/\./g, '')),
+var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 		jsblocker = {
 			javascript_blocker_1: 1,
 			allowed: {

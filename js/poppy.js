@@ -16,13 +16,14 @@
  * @param {function|null|undefined} cb2 A callback called when the popover finishes displaying
  * @param {number|null|undefined} time Animation speed of popover in seconds
  */
-var Poppy = function (x, y, content, cb, cb2, time) {
+var Poppy = function (x, y, content, cb, cb2, time, modal) {
 	if (content !== null && typeof content === 'object' && ('content' in content)) {
 		try {
 			var temporary = content.content;
 			cb = content.callback || $.noop;
 			cb2 = content.callback2 || $.noop;
 			time = typeof content.time === 'number' ? content.time : null;
+			modal = content.modal || null;
 		} catch (e) { }
 		
 		content = temporary;
@@ -49,6 +50,9 @@ var Poppy = function (x, y, content, cb, cb2, time) {
 
 	this.init();
 	
+	if (modal) _$('#modal').fadeIn(this._time * 1000);
+	else _$('#modal').fadeOut(this._time * 1000);
+	
 	return this;
 };
 
@@ -60,28 +64,31 @@ Poppy.prototype = {
 	a: '#poppy-arrow',
 	init: function () {
 		this._time *= JavaScriptBlocker.speedMultiplier;
-		var self = this;
-		clearTimeout(this.cT);
+
 		if ($(this.e, this.p).length)
 			return this.remove((this.removeOnly !== false) ? $.noop : this.create);
-		return (this.removeOnly !== false) ? false : JavaScriptBlocker.utils.zero_timeout($.proxy(self.create, this));
+
+		return (this.removeOnly !== false) ? false : JavaScriptBlocker.utils.zero_timeout($.proxy(this.create, this));
 	},
 	remove: function (cb) {
 		var self = this;
-		clearTimeout(this._dT);
+
 		this.p.find(this.e).css({
-			opacity: 0.3,
-			WebkitTransitionDuration: (this._time * .7) + 's',
+			opacity: 0.7,
+			WebkitTransitionDuration: (this._time * .5) + 's',
 			WebkitTransform: 'scale(0)'
-		});
-		return (this._dT = setTimeout(function () {
-			$(self.e, self.p).remove();
-			JavaScriptBlocker.utils.zero_timeout($.proxy(cb, self));
-			if (self.removeOnly) {
-				JavaScriptBlocker.utils.zero_timeout(self.callback);
-				JavaScriptBlocker.utils.zero_timeout(self.callback2);
+		}).one('webkitTransitionEnd', { s: this, c: cb }, function (event) {
+			var d = event.data;
+			
+			$(d.s.e, d.s.p).remove();
+			
+			JavaScriptBlocker.utils.zero_timeout($.proxy(d.c, d.s));
+			
+			if (d.s.removeOnly) {
+				JavaScriptBlocker.utils.zero_timeout(d.s.callback);
+				JavaScriptBlocker.utils.zero_timeout(d.s.callback2);
 			}
-		}, (this._time / 2) * 1000));
+		});
 	},
 	create: function () {
 		if ($(this.e, this.p).length) $(this.e, this.p).remove();
@@ -91,9 +98,8 @@ Poppy.prototype = {
 				cC = '<div id="' + this.c.substr(1) + '"></div>',
 				aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask' + (JavaScriptBlocker.theme.indexOf('default') !== 0 ? '-' + JavaScriptBlocker.theme : '') + '.png" alt=""/>';
 		
-		$(this.s, this.p).unbind('scroll').scroll(function () {
+		$(this.s, this.p).one('scroll', function () {
 			new Poppy(null, null, null, null, null, 0.5);
-			$(self.s, self.p).unbind('scroll');
 		});
 		
 		var m = this.p.append(eC)
@@ -126,31 +132,29 @@ Poppy.prototype = {
 			m.css({
 				WebkitTransitionDuration: [self._time, self._time * 1.4, self._time, self._time].join('s,') + 's',
 				opacity: 1,
-				WebkitTransform: 'scale(1.15)'
+				WebkitTransform: JavaScriptBlocker.speedMultiplier < 1 ? 'scale(1)' : 'scale(1.15)'
 			}).find(self.a).css({
 				left: points.arrow.left,
 				bottom: points.arrow.bottom,
 				top: points.arrow.top
 			});
 			
-			$('> *:not(#poppy)', self.p).unbind('click').click(function () {
+			$('> *:not(#poppy):not(#modal)', self.p).one('click', function () {
 				new Poppy();
 			});
 		}, [this, m, points]);
-		
-		var listener = function (event) {
-			m[0].removeEventListener('webkitTransitionEnd', listener, false);
+
+		m.one('webkitTransitionEnd', { s: self, m: m }, function (event) {
+			var d = event.data;
 			
-			self.callback2.call($(self.e, self.p));
+			d.s.callback2.call($(d.s.e, d.s.p));
 		
-			m.css({
+			d.m.css({
 				WebkitTransform: 'scale(1)',
-				WebkitTransitionDuration: self._time + 's',
+				WebkitTransitionDuration: d.s._time + 's',
 				WebkitTransitionTimingFunction: 'ease'
 			});
-		};
-		
-		m[0].addEventListener('webkitTransitionEnd', listener, false);
+		});
 	},
 	calcPoints: function () {
 		var o = {

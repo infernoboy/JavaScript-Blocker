@@ -47,4 +47,17 @@
 			safari.extension.settings.addEventListener('change', $.proxy(JavaScriptBlocker.setting_changed, JavaScriptBlocker), true);
 		</script>
 	</head>
+	<body>
+		<textarea id="tmpl_domain_picker">
+			<% if (!self.no_label) { %><label for="domain-picker"><%=_('On:')%> </label><% } %>
+			<select id="domain-picker">
+			<%
+				var n;
+				for (n = 0; n < self.page_parts.length; n++) {
+					if (self.page_parts[n] === null || (self.no_all && n === self.page_parts.length - 1)) continue; %>
+					<option value="<%=((n === 0 ? '' : '.') + self.page_parts[n])%>"><%=(self.page_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + self.page_parts[n]))%></option>
+			<% } %>
+			</select>
+		</textarea>
+	</body>
 </html>

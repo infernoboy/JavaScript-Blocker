@@ -70,6 +70,10 @@
 	#poppy p.misc-info {
 		margin-bottom: 7px;
 	}
-	#poppy #rules-radios {
+	#poppy #rules-radios,
+	#poppy #rules-temp {
 		margin: 4px 0 2px;
 	}
+		#poppy #rules-temp {
+			margin-left: 2px;
+		}
