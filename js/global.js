@@ -55,8 +55,8 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.2.0',
-	bundleid: 51,
+	displayv: '2.2.1',
+	bundleid: 52,
 	
 	set_theme: function (theme) {
 		if (!this.donationVerified) {
@@ -140,7 +140,7 @@ var Template = {
 		
 			self.utils.zero_timeout(function (self) {
 				new Poppy($(this.popover.body).width() / 2, 13, [
-					'<p>Donator-only features have now be locked and are only available to donators.</p>',
+					'<p>Donator-only features have now be locked and are only available to donators, including the new temporary rules feature.</p>',
 					'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
 					'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'].join(''), function () {
 						_$('#rawr-continue').click($.proxy(self.donate, self));
