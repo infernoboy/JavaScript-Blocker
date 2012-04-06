@@ -21,10 +21,10 @@ JavaScriptBlocker.rules.whitelist = {
 		'^https?:\\/\\/www\\.readability\\.com\\/.*$'
 	],
 	'.amazon.com': [
-		'^http:\\/\\/([^\\/]+\\.)?(ssl\\-)?images\\-amazon\\.com\\/.*$'
+		'^https?:\\/\\/([^\\/]+\\.)?(ssl\\-)?images\\-amazon\\.com\\/.*$'
 	],
 	'.reddit.com': [
-		'^http:\\/\\/www\\.redditstatic\\.com\\/.*$'
+		'^https?:\\/\\/www\\.redditstatic\\.com\\/.*$'
 	],
 	'.paypal.com': [
 		'^https:\\/\\/www\\.paypalobjects\\.com\\/.*$'

@@ -742,3 +742,11 @@ p.above-filter {
 				inset 1px 0 0 rgba(0,0,0,0.3), inset -1px 0 0 rgba(0,0,0,0.3);
 		white-space: pre;
 	}
+#backup-export,
+#backup-import {
+	width: 300px;
+	height: 120px;
+}
+	#backup-import {
+		height: 80px;
+	}

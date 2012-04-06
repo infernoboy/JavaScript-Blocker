@@ -95,6 +95,9 @@ Strings['en-us'] = {
 	'Active Temporary Rules': 'Active Temporary Rules', // NEW
 	'Make Permanent': 'Make Permanent', // NEW
 	'Project Page': 'Project Page',
+	'Export': 'Export',
+	'Import': 'Import',
+	'Backup': 'Backup',
 	/** /BUTTONS **/
 	
 	/** POPPIES **/
@@ -106,6 +109,9 @@ Strings['en-us'] = {
 	'Changes will appear when you reload the rules list.': 'Changes will appear when you reload the rules list.',
 	'Loading script': 'Loading script&hellip;',
 	'Loading rules': 'Loading rules&hellip;',
+	'Copy above': 'Copy the above and save it to a file to create a backup.',
+	'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
+	'Error importing': 'Error importing rules.',
 	/** /POPPIES **/
 	
 	/** ERRORS-ISH **/

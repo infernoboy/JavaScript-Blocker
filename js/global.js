@@ -55,8 +55,8 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.2.0a',
-	bundleid: 52,
+	displayv: '2.2.1',
+	bundleid: 53,
 	
 	set_theme: function (theme) {
 		if (!this.donationVerified) {
@@ -634,6 +634,28 @@ var Template = {
 		return this.caches.domain_parts[domain];
 	},
 	rules: {
+		export: function () {
+			if (!this.donationVerified) return '';
+			
+			return JSON.stringify(window.localStorage);
+		},
+		import: function (string) {
+			if (!this.donationVerified) return false;
+			
+			try {
+				var r = JSON.parse(string);
+			
+				window.localStorage.clear();
+			
+				for (var key in r)
+					window.localStorage.setItem(key, r[key]);
+					
+				return true;
+			} catch (e) {
+				return false;
+			}
+			this.cache = {};
+		},
 		cache: {},
 		temporary_cleared: false,
 		clear_temporary: function () {
@@ -1544,7 +1566,9 @@ var Template = {
 					'<input type="button" value="', _('Show'), '" id="rules-show-temp" />',
 					'<div class="divider" style="margin:7px 0 6px;"></div>'].join('') : '',
 				'<input type="button" value="', _('Show All'), '" id="view-all" /> ',
-				'<input type="button" value="', _('Show Active'), '" id="view-domain" />'].join(''), function () {
+				'<input type="button" value="', _('Show Active'), '" id="view-domain" /> ',
+				self.donationVerified ?
+					['<input type="button" value="', _('Backup'), '" id="rules-backup" />'].join('') : ''].join(''), function () {
 				_$('#view-domain').click(function () {
 					self.busy = 1;
 					
@@ -1616,6 +1640,38 @@ var Template = {
 							}, [self]);
 						}, [self]);
 					}, 0.1);
+				}).siblings('#rules-backup').click(function () {
+					new Poppy(left, top, [
+						'<p class="misc-info">', _('Backup'), '</p>',
+						'<input type="button" value="', _('Export'), '" id="backup-e"> ',
+						'<input type="button" value="', _('Import'), '" id="backup-i">'].join(''), function () {
+							_$('#backup-e').click(function () {
+								new Poppy(left, top, [
+									'<textarea id="backup-export" readonly="readonly">' + self.rules.export() + '</textarea>',
+									'<p>', _('Copy above'), '</p>'].join(''), function () {
+									var t = _$('#poppy textarea');
+									t[0].selectionStart = 0;
+									t[0].selectionEnd = t.val().length;
+								});
+							}).siblings('#backup-i').click(function () {
+								new Poppy(left, top, [
+									'<textarea id="backup-import"></textarea>',
+									'<p>', _('Paste your backup'), '</p>',
+									'<dlv class="inputs">',
+										'<input type="button" value="', _('Restore'), '" id="backup-restore" />',
+									'</dlv>'].join(''), function () {
+									_$('#backup-import').focus();
+									_$('#backup-restore').click(function () {
+										if (!self.rules.import(_$('#backup-import').val()))
+											new Poppy(left, top, _('Error importing'));
+										else {
+											new Poppy();
+											safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+										}
+									});
+								});
+							});
+					});
 				}).siblings('#rules-make-perm, #rules-remove-temp').click(function () {
 					var rules = self.rules.for_domain(self.utils.active_host(_$('#page-list').val())), domain, rule;
 
@@ -1927,7 +1983,12 @@ var Template = {
 					shost_list[protocol][use_url] = [1, li.attr('id')];
 				} else {
 					shost_list[protocol][use_url][0]++;
-					$('li#' + shost_list[protocol][use_url][1], ul).data('script').push(jsblocker[text].urls[i]);
+					
+					try {
+						$('li#' + shost_list[protocol][use_url][1], ul).data('script').push(jsblocker[text].urls[i]);
+					} catch (e) {
+						return this.make_list(text, button, jsblocker);
+					}
 				}
 			} else
 				append_url(ul, jsblocker[text].urls[i], jsblocker[text].urls[i], button);
