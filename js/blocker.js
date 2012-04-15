@@ -40,7 +40,8 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 				urls: []
 			},
 			href: pageHost()
-		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false;
+		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false,
+		simpleRef = safari.self.tab.canLoad(new BeforeLoadEvent, 'simpleReferrer');
 
 function activeHost(url) {
 	var r = /^(https?|file|safari\-extension):\/\/([^\/]+)\//;
@@ -73,6 +74,8 @@ function allowedScript(event) {
 	} else if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length === 0 && event.type === 'DOMNodeInserted') {
 		jsblocker.unblocked.count++;
 		jsblocker.unblocked.urls.push(event.target.innerHTML);
+	} else if (event.target.nodeName.toUpperCase() === 'A' && event.target.href.length) {
+
 	}
 	
 	if (window !== window.top || event.type === 'DOMNodeInserted') {
@@ -156,6 +159,35 @@ function hashUpdate(event) {
 	ready(event);
 }
 
+function prepareAnchors(event) {
+	var a = document.getElementsByTagName('a'),
+			f = document.getElementsByTagName('form');
+	
+	for (var x = 0; x < a.length; x++)
+		setTimeout(function (an) {
+			prepareAnchor(an);
+		}, 1 * x, a[x]);
+	for (var y = 0; y < f.length; y++)
+		if (f[y].method && f[y].method.toLowerCase() === 'post')
+			safari.self.tab.dispatchMessage('cannotAnonymize', f[y].getAttribute('action'));
+}
+
+function prepareAnchor(anchor) {
+	if (anchor.nodeName && anchor.nodeName.toUpperCase() === 'A') {
+		if (simpleRef && (!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length)) anchor.setAttribute('rel', 'noreferrer');
+		
+		anchor.addEventListener('mousedown', function (e) {
+			var k = (window.navigator.platform.match(/Win/)) ? e.ctrlKey : e.metaKey;
+			
+			safari.self.tab.dispatchMessage('anonymousNewTab', k ? 1 : 0);
+			
+			setTimeout(function () {
+				safari.self.tab.dispatchMessage('anonymousNewTab', 0);
+			}, 1000);
+		}, true);
+	}
+}
+
 safari.self.addEventListener('message', messageHandler, true);
 window.addEventListener('hashchange', hashUpdate, true);
 
@@ -163,5 +195,7 @@ if (window === window.top)
 	window.addEventListener('focus', ready, true);
 
 document.addEventListener('DOMContentLoaded', ready, false);
+document.addEventListener('DOMContentLoaded', prepareAnchors, false);
 document.addEventListener('beforeload', allowedScript, true);
 document.addEventListener('DOMNodeInserted', allowedScript, true);
+document.addEventListener('DOMNodeInserted', prepareAnchor, true);

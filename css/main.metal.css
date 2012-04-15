@@ -6,15 +6,16 @@ body.windows {
 input,
 select,
 button,
-textarea,
-.link-button {
+textarea {
 	background: url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #F2F2F2, #ACACAC) left top;
 	border: 1px solid #777;
 	color: #2C2C2C;
+	text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+	-webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
 	input[type="button"]:active,
-	button:active,
-	.link-button:active {
+	button:active {
+		border-color: #777 !important;
 		background: url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #ACACAC, #E7E7E7) left top;
 		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1), 0 1px 0 rgba(255,255,255,0.5);
 	}
@@ -38,10 +39,7 @@ textarea,
 #js-help {
 	border-color: #979797;
 }
-.link-button:hover {
-	color: #2C2C2C !important;
-	text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
-}
+
 .filter-bar,
 #find-bar {
 	background: url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #EEE, #CCC);

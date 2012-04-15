@@ -16,6 +16,16 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
+		<false/>
+		<key>Key</key>
+		<string>largeFont</string>
+		<key>Title</key>
+		<string>Use large font</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
 		<true/>
 		<key>Key</key>
 		<string>animations</string>
@@ -189,6 +199,16 @@
 		<string>CheckBox</string>
 	</dict>
 	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>simpleReferrer</string>
+		<key>Title</key>
+		<string>Enable simple referrer blocking—adds rel="noreferrer" to anchors</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
 		<key>Title</key>
 		<string>Donator-Only Features</string>
 		<key>Type</key>
@@ -205,6 +225,7 @@
 		<array>
 			<string>Default</string>
 			<string>Textured Metal</string>
+			<string>OS X Lion</string>
 		</array>
 		<key>Type</key>
 		<string>PopUpButton</string>
@@ -212,7 +233,12 @@
 		<array>
 			<string>default</string>
 			<string>metal</string>
+			<string>lion</string>
 		</array>
+	</dict>
+	<dict>
+		<key>Type</key>
+		<string>Separator</string>
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
@@ -222,7 +248,7 @@
 		<key>Key</key>
 		<string>simpleMode</string>
 		<key>Title</key>
-		<string>Enable expert features—settings below apply only if enabled</string>
+		<string>Enable expert features—allows for blocking individual scripts</string>
 		<key>TrueValue</key>
 		<false/>
 		<key>Type</key>
@@ -237,6 +263,46 @@
 		<string>Create rules for automatic actions (excluding "Nowhere")</string>
 		<key>Type</key>
 		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>Type</key>
+		<string>Separator</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<false/>
+		<key>Key</key>
+		<string>blockReferrer</string>
+		<key>Title</key>
+		<string>Enable full referrer blocking. Please not that this will only work on GET request in the main window. Inline frames will not have the referrer headers blocked due to a limitation of Safari; you can enable simple referrer blocking to help block at least some. This setting may cause a loop when trying to navigate back/forward.</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>Type</key>
+		<string>Separator</string>
+	</dict>
+	<dict>
+		<key>Key</key>
+		<string>otherFeatures</string>
+		<key>Title</key>
+		<string>Other donator-only features</string>
+		<key>Titles</key>
+		<array>
+			<string>Create temporary rules</string>
+			<string>Create a backup of rules</string>
+			<string>Edit rules from the rule list</string>
+			<string>Double click host for more info</string>
+		</array>
+		<key>Type</key>
+		<string>ListBox</string>
+		<key>Values</key>
+		<array>
+			<string>temp</string>
+			<string>backup</string>
+			<string>edit</string>
+			<string>double</string>
+		</array>
 	</dict>
 	<dict>
 		<key>DefaultValue</key>

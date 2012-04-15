@@ -1,7 +1,7 @@
 /***************************************
  * @file js/poppy.js
  * @author Travis Roman (travis@toggleable.com)
- * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+ * @package FFXI Shout Notifier (http://ffxi-shouts.toggleable.com)
  ***************************************/
 
 "use strict";
@@ -29,6 +29,7 @@ var Poppy = function (x, y, content, cb, cb2, time, modal) {
 		content = temporary;
 	}
 	
+	this.modal = modal;
 	this.removeOnly = $.makeArray(arguments).length === 0 || x === null;
 	this.callback = (cb && typeof cb == 'function') ? cb : $.noop;
 	this.callback2 = (cb2 && typeof cb2 == 'function') ? cb2 : $.noop;
@@ -50,9 +51,6 @@ var Poppy = function (x, y, content, cb, cb2, time, modal) {
 
 	this.init();
 	
-	if (modal) _$('#modal').fadeIn(this._time * 1000);
-	else _$('#modal').fadeOut(this._time * 1000);
-	
 	return this;
 };
 
@@ -72,6 +70,8 @@ Poppy.prototype = {
 	},
 	remove: function (cb) {
 		var self = this;
+		
+		_$('#modal').fadeOut(this._time * 1000);
 
 		this.p.find(this.e).css({
 			opacity: 0.7,
@@ -92,11 +92,14 @@ Poppy.prototype = {
 	},
 	create: function () {
 		if ($(this.e, this.p).length) $(this.e, this.p).remove();
-		
-		var self = this,
+
+		var mo = _$('#modal'),
+				self = this,
 				eC = '<div id="' + this.e.substr(1) + '"></div>',
 				cC = '<div id="' + this.c.substr(1) + '"></div>',
 				aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask' + (JavaScriptBlocker.theme.indexOf('default') !== 0 ? '-' + JavaScriptBlocker.theme : '') + '.png" alt=""/>';
+				
+		if (this.modal) mo.fadeIn(this._time * 1000);
 		
 		$(this.s, this.p).one('scroll', function () {
 			new Poppy(null, null, null, null, null, 0.5);

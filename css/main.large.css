@@ -1,0 +1,67 @@
+body,
+header h1,
+p.misc-info,
+p.misc-info select {
+	font-size: 11pt;
+}
+
+#page-list {
+	max-width: 88%;
+}
+	body.simple #page-list {
+		max-width: 85%;
+	}
+	
+#domain-script,
+#domain-picker {
+	max-width: 240px;
+}
+	body.simple #domain-script,
+	body.simple #domain-picker {
+		max-width: 190px;
+	}
+
+select {
+	background-position: right 1px, left top, left top;
+}
+
+input,
+button,
+textarea,
+select,
+ul,
+ul li small,
+#disclaimer,
+#rules-list,
+#misc,
+#update-information,
+#poppy {
+	font-size: 9pt;
+}
+
+body.windows input,
+body.windows select,
+body.windows button,
+body.windows textarea,
+p.misc-header,
+.domain-name,
+#setup,
+#find-bar #find-bar-matches {
+	font-size: 10pt;
+}
+
+#disable,
+#view-rules,
+#unlock,
+#switch-interface,
+#js-project,
+#js-help {
+	font-size: 8pt;
+}
+
+#poppy #rule-input {
+	width: 355px;
+}
+	body.simple #poppy #rule-input {
+		width: 255px;
+	}

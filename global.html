@@ -41,6 +41,7 @@
 			
 			safari.application.addEventListener('close', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
 			safari.application.addEventListener('beforeNavigate', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
+			safari.application.addEventListener('beforeNavigate', $.proxy(JavaScriptBlocker.anonymize, JavaScriptBlocker), true);
 			safari.application.addEventListener('popover', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
 			safari.application.addEventListener('validate', $.proxy(JavaScriptBlocker.validate, JavaScriptBlocker), false);
 			safari.application.addEventListener('message', $.proxy(JavaScriptBlocker.handle_message, JavaScriptBlocker), true);

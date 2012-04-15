@@ -98,6 +98,7 @@ Strings['en-us'] = {
 	'Export': 'Export',
 	'Import': 'Import',
 	'Backup': 'Backup',
+	'Use large font': 'Use large font',
 	/** /BUTTONS **/
 	
 	/** POPPIES **/
@@ -112,6 +113,11 @@ Strings['en-us'] = {
 	'Copy above': 'Copy the above and save it to a file to create a backup.',
 	'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
 	'Error importing': 'Error importing rules.',
+	
+	'The rule allowing this item will be removed.': 'The rule allowing this item will be removed.',
+	'The rule blocking this item will be removed.': 'The rule blocking this item will be removed.',
+	'The temporary rule allowing this item will be removed.': 'The temporary rule allowing this item will be removed.',
+	'The temporary rule blocking this item will be removed.': 'The temporary rule blocking this item will be removed.',
 	/** /POPPIES **/
 	
 	/** ERRORS-ISH **/
@@ -163,7 +169,7 @@ Strings['en-us'] = {
 	'You may unlock {1}': 'You may unlock JavaScript Blocker on {1} more copies of Safari.',
 	'Thanks for your support!': 'Thanks for your support!',
 	'All features are already unlocked.': 'All features are already unlocked.',
-	'Donation Required': 'A verified donation is required to use that feature. Click <b>Unlock All Features</b> from the main window to do so.',
+	'Donation Required': 'A verified donation is required to use that feature. Click "Unlock All Features" from the main window to do so.',
 	"I can't donate": "I can't donate",
 	'What donation?': 'What donator-only features are there?',
 	'You cannot use JavaScript Blocker': 'You cannot use JavaScript Blocker with expert features enabled until you have made a donation and had it verified.',

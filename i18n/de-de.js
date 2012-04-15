@@ -172,7 +172,7 @@ Strings['de-de'] = {
 	'You may unlock {1}': 'Du kannst JavaScript Blocker noch auf {1} weiteren Kopien von Safari aktivieren.',
 	'Thanks for your support!': 'Vielen Dank für deine Unterstüzung!',
 	'All features are already unlocked.': 'Alle Funktionen sind bereits freigeschaltet.',
-	'Donation Required': 'Es wird eine Spende benötigt, um diese Funktion zu benutzen. Klicke auf den Button "<b>Alle Funktionen freischalten</b>" des Hauptfensters um zu spenden.',
+	'Donation Required': 'Es wird eine Spende benötigt, um diese Funktion zu benutzen. Klicke auf den Button "Alle Funktionen freischalten" des Hauptfensters um zu spenden.',
 	"I can't donate": "Ich kann nicht spenden",
 	'What donation?': 'Was sind die Möglichkeiten nach einer Spende? (Link führt zu englischer FAQ)',
 	'You cannot use JavaScript Blocker': 'Du kannst diese Expertenfunktion von JavaScript Blocker leider nicht benutzen, bis du eine kleine Spende geätitg hast und diese verifiziert wurde.',

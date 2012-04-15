@@ -127,19 +127,7 @@ header h1 {
 		width: 357px;
 		height: 344px;
 	}
-
-.link-button {
-	padding: 1px 6px 2px;
-	cursor: default !important;
-	-webkit-user-select: none;
-}
-	body.windows .link-button {
-		padding-bottom: 3px !important;
-	}
-	.link-button:hover {
-		color: #545554 !important;
-	}
-
+	
 #domain-script,
 #domain-picker {
 	max-width: 250px;
@@ -155,8 +143,7 @@ header h1 {
 input,
 select,
 button,
-textarea,
-.link-button {
+textarea {
 	background: -webkit-linear-gradient(top, #F3F3F5, #DFDFDF);
 	border: 1px solid #A4A4A4;
 	-webkit-border-radius: 4px;
@@ -167,20 +154,18 @@ textarea,
 	body.windows input,
 	body.windows select,
 	body.windows button,
-	body.windows textarea,
-	body.windows .link-button {
+	body.windows textarea {
 		font-size: 9pt;
 		padding-top: 0;
 		padding-bottom: 2px;
 		font-family: 'Lucida Sans Unicode' !important;
 	}
-	input:focus, select:focus, button:focus, textarea:focus, .link-button:focus {
+	input:focus, select:focus, button:focus, textarea:focus {
 		outline: none !important;
 		-webkit-box-shadow: 0 0 4px rgb(20, 158, 255), inset 0 0 3px rgb(20, 158, 255) !important;
 	}
 	input[type="button"]:active,
-	button:active,
-	.link-button:active {
+	button:active {
 		background: -webkit-linear-gradient(top, #CCC, #DDD 20%, #DDD);
 		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.5);
 	}
@@ -555,14 +540,10 @@ p.above-filter {
 	.domain-name.hidden {
 		background-image: url(../images/disclosure-closed.png);
 	}
-		.domain-name.hidden + li {
-			display: none;
-		}
+	.domain-name.hidden + li,
 	.domain-name.not-included,
 	.domain-name.filter-hidden,
-	.domain-name.state-hidden {
-		display: none;
-	}
+	.domain-name.state-hidden,
 	.domain-name.not-included + li,
 	.domain-name.filter-hidden + li,
 	.domain-name.state-hidden + li {
@@ -744,9 +725,14 @@ p.above-filter {
 	}
 #backup-export,
 #backup-import {
+	margin-top: 1px;
 	width: 300px;
 	height: 120px;
 }
 	#backup-import {
 		height: 80px;
 	}
+	
+#large-label {
+	font-size: 9pt !important; 
+}

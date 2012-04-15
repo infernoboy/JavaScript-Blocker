@@ -55,10 +55,12 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.2.1',
-	bundleid: 53,
+	displayv: '2.3.0',
+	bundleid: 54,
 	
 	set_theme: function (theme) {
+		_$('#main-large-style').attr('href', safari.extension.settings.largeFont ? 'css/main.large.css' : '');
+		
 		if (!this.donationVerified) {
 			if (theme !== 'default') {
 				this.theme = 'default';
@@ -83,7 +85,7 @@ var Template = {
 		
 		if (!self.donationVerified)
 			new Poppy($(this.popover.body).width() / 2, 13, [
-				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/211">' + this.displayv + '</a>']), '</p>',
+				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/230">' + this.displayv + '</a>']), '</p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
 				'<p>', _('Please, if you can'), '</p>',
 				'<p>',
@@ -119,7 +121,7 @@ var Template = {
 			if (!self.RulesWereUpgraded) {
 				self.RulesWereUpgraded = true;
 				
-				for (var d in window.localStorage)
+				for (var d in this.rules.rules)
 					self.utils.zero_timeout(function (self, domain) {
 						var rules = self.rules.for_domain(domain, true), rule;
 					
@@ -143,9 +145,48 @@ var Template = {
 					'<p>Donator-only features have now be locked and are only available to donators, including the new temporary rules feature.</p>',
 					'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
 					'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'].join(''), function () {
-						_$('#rawr-continue').click($.proxy(self.donate, self));
+						_$('#rawr-continue').click(function () {
+							self.installedBundle = 51;
+							self.updater();
+						});
 				}, null, null, true);
 			}, [self]);
+		} else if (v < 54) {
+			if (!self.RulesWereUpgraded2) {
+				self.RulesWereUpgraded2 = true;
+				
+				window.localStorage.removeItem('CollapsedDomains');
+				window.localStorage.removeItem('InstallID');
+				
+				var ex = ['CollapsedDomains', 'ExamineUpdateTime', 'InstalledBundleID', 'LastRuleWasTemporary', 'ERROR', 'Rules',
+						'allowedIsCollapsed', 'blockedIsCollapsed', 'unblockedIsCollapsed'], key, n = {};
+				
+				for (key in window.localStorage) {
+					if (ex.indexOf(key) > -1) continue;
+					
+					try {
+						n[key] = JSON.parse(window.localStorage[key]);
+					} catch (e) {
+						continue;
+					} finally {
+						window.localStorage.removeItem(key);
+					}
+				}
+				
+				window.localStorage.setItem('Rules', JSON.stringify(n));
+			}
+			
+			new Poppy($(this.popover.body).width() / 2, 13, [
+				'<p class="misc-info">Update 2.3.0</p>',
+				'<p>You can now enable the use of a larger display font.</p>',
+				'<p>A new option will let you block some referer headers. This utilizes the \'rel="noreferrer"\' attribute of anchors.</p>',
+				'<p><b>Donators only:</b> A more full-featured referrer blocker, including the ability to block even server-side redirect ones.</p>',
+				'<p><b>Donators only:</b> You can now create a backup of your rules.</p>',
+				'<p>Donations can now be made via Bitcoin! Send to: 1C9in5xaFcwi7aYLuK1soZ8mvJBiEN9MNA</p>',
+				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
+				'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'].join(''), function () {
+					_$('#rawr-continue').click($.proxy(self.donate, self));
+			}, null, null, true);
 		} else if (v < this.bundleid)
 			this.donate();
 	},
@@ -232,29 +273,36 @@ var Template = {
 			for (j = 0, c = safari.application.browserWindows[i].tabs.length; j < c; j++)
 				if (this.frames[safari.application.browserWindows[i].tabs[j].url])
 					new_frames[safari.application.browserWindows[i].tabs[j].url] = this.frames[safari.application.browserWindows[i].tabs[j].url];
-		
+					
 		this.frames = new_frames;
-				
+		this.anonymous.newTab = {};
+		this.anonymous.previous = {};
+		
 		this.caches.active_host = {};
 		this.caches.domain_parts = {};
 		
-		function clean_empty_ruleset (key) {
-			if (window.localStorage[key] === '{}' || window.localStorage[key] === '[object Object]')
-				window.localStorage.removeItem(key);
+		function clean_emptyruleset (key, r) {
+			if ($.isEmptyObject(r.rules[key]))
+				delete r.rules[key];
 		}
 		
 		window.localStorage.removeItem('ERROR');
 	
-		for (key in window.localStorage)
-			if (window.localStorage.hasOwnProperty(key))
-				this.utils.zero_timeout(clean_empty_ruleset, [key]);
+		for (key in this.rules.rules)
+			this.utils.zero_timeout(clean_emptyruleset, [key, this.rules]);
 		
-		if (typeof this.collapsedDomains === 'object')
-			for (var x = 0; x < this.collapsedDomains.length; x++)
-				if (this.collapsedDomains[x] === _('All Domains') || (this.collapsedDomains[x] in window.localStorage))
-					new_collapsed.push(this.collapsedDomains[x]);
+		this.utils.zero_timeout(function (rules) {
+			rules.save()
+		}, [this.rules]);
 		
-		this.collapsedDomains = new_collapsed;
+		var xx = this.collapsedDomains();
+		
+		if (typeof xx === 'object')
+			for (var x = 0; x < xx.length; x++)
+				if (xx[x] === _('All Domains') || (xx[x] in this.rules.rules))
+					new_collapsed.push(xx[x]);
+			
+		this.collapsedDomains(new_collapsed);
 	},
 	get simpleMode() {
 		return safari.extension.settings.simpleMode;
@@ -279,18 +327,6 @@ var Template = {
 	},
 	get theme() {
 		return safari.extension.settings.theme;
-	},
-	get collapsedDomains() {
-		if (this.caches.collapsed_domains) return this.caches.collapsed_domains;
-		
-		var t = window.localStorage.getItem('CollapsedDomains'),
-				x = t === null ? (this.caches.collapsed_domains = []) : (this.caches.collapsed_domains = JSON.parse(t));
-		
-		return $.isEmptyObject(x) ? [] : x;
-	},
-	set collapsedDomains(value) {
-		this.caches.collapsed_domains = value;
-		window.localStorage.setItem('CollapsedDomains', JSON.stringify(value));
 	},
 	get busy() {
 		return $(this.popover.body).hasClass('busy');
@@ -319,6 +355,14 @@ var Template = {
 	},
 	get host() {
 		return this.active_host(_$('#page-list').val());
+	},
+	collapsedDomains: function (v) {
+		if (!v) {
+			var t = window.localStorage.getItem('CollapsedDomains');
+			return $.isEmptyObject(t) ? [] : JSON.parse(t).d;
+		}
+		
+		window.localStorage.setItem('CollapsedDomains', JSON.stringify({ d: v }));
 	},
 	utils: {
 		_zero_timeouts: [],
@@ -538,13 +582,6 @@ var Template = {
 		send_installid: function () {
 			$.get('http://lion.toggleable.com:160/jsblocker/installed.php?id=' + safari.extension.secureSettings.getItem('installID'));
 		},
-		notify: function (title, message, onclick) {
-			var n = window.webkitNotifications.createNotification(safari.extension.baseURI + 'Icon-32.png', title, message);
-			
-			n.onclick = onclick;
-			
-			n.show();
-		},
 		_attention: !1,
 		_has_attention: 0,
 		attention: function (mode) {
@@ -622,10 +659,15 @@ var Template = {
 		if (domain in this.caches.domain_parts) return this.caches.domain_parts[domain];
 		if (domain === 'blank') return ['blank', '*'];
 		
-		var s = domain.split(/\./g).reverse(), t = s[0], p = ['*'], i, b;
+		var s = domain.split(/\./g).reverse(), t = s[0], p = ['*'], i, b,
+				ex = ['co.uk', 'me.uk', 'org.uk', 'com.cn', 'org.cn', 'com.tw', 'org.tw', 'com.mx', 'co.nz', 'net.nz', 'org.nz',
+						'us.com', 'uk.com', 'eu.com', 'de.com'];
 		
-		for (i = 1, b = s.length; i < b; i++)
-			p.push(t = (s[i] + '.' + t));
+		for (i = 1, b = s.length; i < b; i++) {
+			t = s[i] + '.' + t;
+			if (ex.indexOf(t) === -1)
+				p.push(t);
+		}
 			
 		if (p.length === 1) p.push(domain);
 		
@@ -634,27 +676,55 @@ var Template = {
 		return this.caches.domain_parts[domain];
 	},
 	rules: {
+		_loaded: false,
+		get rules() {
+			if (this._loaded) return this._rules;
+			
+			this._loaded = true;
+			this._rules = JSON.parse(window.localStorage.getItem('Rules') || '{}');
+			
+			return this._rules;
+		},
+		save: function () {
+			this.utils.timer.timeout('save_rules', function (rules) {
+				try {
+					window.localStorage.setItem('Rules', JSON.stringify(rules));
+				} catch (e) { }
+			}, 1000, [this.rules]);
+		},
 		export: function () {
 			if (!this.donationVerified) return '';
 			
-			return JSON.stringify(window.localStorage);
+			return JSON.stringify(this.rules);
 		},
 		import: function (string) {
 			if (!this.donationVerified) return false;
 			
+			this._loaded = false;
+			this.cache = {};
+			
 			try {
 				var r = JSON.parse(string);
-			
-				window.localStorage.clear();
-			
-				for (var key in r)
-					window.localStorage.setItem(key, r[key]);
-					
+				
+				if (typeof r === 'object')
+					for (var key in r) {
+						if (typeof r[key] === 'object') break;
+						
+						try {
+							r[key] = JSON.parse(r[key]);
+						} catch(e) {
+							continue;
+						}
+					}
+				
+				var s = JSON.stringify(r);
+
+				window.localStorage.setItem('Rules', s);
+				
 				return true;
 			} catch (e) {
 				return false;
 			}
-			this.cache = {};
 		},
 		cache: {},
 		temporary_cleared: false,
@@ -662,8 +732,8 @@ var Template = {
 			if (this.temporary_cleared || !this.donationVerified) return false;
 			
 			this.temporary_cleared = true;
-			
-			for (var domain in window.localStorage) {
+
+			for (var domain in this.rules) {
 				var rules = this.for_domain(domain, true), rule;
 			
 				if (domain in rules)
@@ -721,15 +791,15 @@ var Template = {
 		
 			for (i = 0, b = parts.length; i < b; i++) {
 				c = (i > 0 ? '.' : '') + parts[i];
-				r = window.localStorage.getItem(c);
-				if (r === null) continue;
+				r = this.rules[c];
+				if (r === null || r === undefined) continue;
 				if (c === '.*') {
-					if (!(c in this.cache)) this.cache[c] = { '.*': this.utils.parse_JSON(r) };
+					if (!(c in this.cache)) this.cache[c] = { '.*': r };
 					o[c] = this.cache[c][c];
 					continue;
 				} 
 				
-				o[c] = this.utils.parse_JSON(r);
+				o[c] = r;
 			}
 	
 			this.cache[domain] = o;
@@ -743,49 +813,55 @@ var Template = {
 			
 			window.localStorage.setItem('LastRuleWasTemporary', temporary ? 1 : 0);
 			
-			var current_rules = this.for_domain(domain, true);
+			var crules = this.for_domain(domain, true);
 			
 			action = parseInt(action, 10);
 					
 			if (!add_to_beginning) {
-				if (!(domain in current_rules)) current_rules[domain] = {};
-				else if (pattern in current_rules[domain] && current_rules[domain][pattern] === action) return false;
+				if (!(domain in crules)) crules[domain] = {};
+				else if (pattern in crules[domain] && crules[domain][pattern] === action) return false;
 			}
 			
 			if (add_to_beginning) {
-				var new_rules = {}, e;
-				new_rules[domain] = {};
-				new_rules[domain][pattern] = [action, !!temporary];
+				var newrules = {}, e;
+				newrules[domain] = {};
+				newrules[domain][pattern] = [action, !!temporary];
 				
-				if (domain in current_rules)
-					for (e in current_rules[domain])
+				if (domain in crules)
+					for (e in crules[domain])
 						if (e !== pattern)
-							new_rules[domain][e] = current_rules[domain][e];
+							newrules[domain][e] = crules[domain][e];
 				
-				current_rules = new_rules;
+				crules = newrules;
 			} else
-				current_rules[domain][pattern] = [action, !!temporary];
+				crules[domain][pattern] = [action, !!temporary];
 			
 			this.recache(domain);
 
-			return window.localStorage.setItem(domain, JSON.stringify(current_rules[domain]));
+			this.rules[domain] = crules[domain];
+			
+			this.save();
 		},
 		remove: function (domain, rule, delete_automatic) {
-			var current_rules = this.for_domain(domain), key;
-			if (!(domain in current_rules)) return false;
+			var crules = this.for_domain(domain), key;
+			if (!(domain in crules)) return false;
 			
 			this.recache(domain);
 
 			try {
-				if (!delete_automatic && current_rules[domain][rule][0] > 1 && current_rules[domain][rule][0] < 4) {
-					current_rules[domain][rule][0] *= -1;
-					current_rules[domain][rule][1] = false;
+				if (!delete_automatic && crules[domain][rule][0] > 1 && crules[domain][rule][0] < 4) {
+					crules[domain][rule][0] *= -1;
+					crules[domain][rule][1] = false;
 				} else
-					delete current_rules[domain][rule];
+					delete crules[domain][rule];
 			} catch(e) { }
 
-			return $.isEmptyObject(current_rules[domain]) ?
-					window.localStorage.removeItem(domain) : window.localStorage.setItem(domain, JSON.stringify(current_rules[domain]));
+			if ($.isEmptyObject(crules[domain]))
+				delete this.rules[domain];
+			else
+				this.rules[domain] = crules[domain];
+				
+			this.save();
 		},
 		
 		/**
@@ -798,18 +874,17 @@ var Template = {
 		 * @param {Boolean} allow_disabled Wether or not to return/delete disabled rules
 		 */
 		remove_matching_URL: function (domain, urls, confirmed, block_allow, allow_disabled) {
-			var current_rules = this.for_domain(domain), to_delete = {}, being_deleted = {}, sub, rule, url, rtype, temp;
+			var crules = this.for_domain(domain), to_delete = {}, being_deleted = {}, sub, rule, url, rtype, temp;
 			
-			for (sub in current_rules) {
+			for (sub in crules) {
 				to_delete[sub] = [];
 				being_deleted[sub] = [];
 
-				for (rule in current_rules[sub]) {
-					rtype = current_rules[sub][rule][0];
-					temp = current_rules[sub][rule][1];
+				for (rule in crules[sub]) {
+					rtype = crules[sub][rule][0];
+					temp = crules[sub][rule][1];
 					
-					if (((!!(rtype % 2) !== block_allow) || (!allow_disabled && rtype < 0)) &&
-							!((rtype === 0 || rtype === 1) && (!(rtype % 2) === block_allow))) continue;
+					if (((!!(rtype % 2) !== block_allow) || (!allow_disabled && rtype < 0))) continue;
 					
 					for (var i = 0; i < urls.length; i++) {
 						url = urls[i];
@@ -818,20 +893,20 @@ var Template = {
 							if (confirmed) {
 								delete this.cache[sub];
 												
-								if (!(rule in current_rules[sub])) continue;
+								if (!(rule in crules[sub])) continue;
 							
 								if (rtype > 1 && rtype < 4) {
-									current_rules[sub][rule][0] *= -1;
-									current_rules[sub][rule][1] = false;
+									crules[sub][rule][0] *= -1;
+									crules[sub][rule][1] = false;
 								} else if (rtype > -1)
-									delete current_rules[sub][rule];
+									delete crules[sub][rule];
 							} else {
 								if (being_deleted[sub].indexOf(rule) > -1)
 									continue;
 								else
 									being_deleted[sub].push(rule);
 								
-								to_delete[sub].push([rule, current_rules[sub][rule]]);
+								to_delete[sub].push([rule, crules[sub][rule]]);
 							}
 						}
 					}
@@ -839,15 +914,17 @@ var Template = {
 
 				if (!confirmed) {
 					if (!to_delete[sub].length) delete to_delete[sub];
-				} else
-			 		window.localStorage.setItem(sub, JSON.stringify(current_rules[sub]));
+				} else {
+			 		this.rules[sub] = crules[sub];
+				}
 			}
 					
 			return confirmed ? 1 : to_delete;
 		},
 		remove_domain: function (domain) {
 			delete this.cache[domain];
-			return window.localStorage.removeItem(domain);
+			delete this.rules[domain];
+			this.save();
 		},
 		
 		/**
@@ -864,11 +941,11 @@ var Template = {
 				allowed = allowed[domain];
 
 				if (!$.isEmptyObject(allowed)) {
-					var j = this.collapsedDomains,
+					var j = this.collapsedDomains(),
 							domain_name = (domain.charAt(0) === '.' && domain !== '.*' ? domain : (domain === '.*' ? _('All Domains') : domain));
 					
 					newul = ul.append('<li class="domain-name"><span>' + domain_name + '</span></li><li><ul></ul></li>')
-							.find('.domain-name:last').data('domain', domain).end().find('li:last ul');
+							.find('.domain-name:last').data('domain', domain).attr('id', this.utils.id()).end().find('li:last ul');
 					rules = 0;
 					
 					for (rule in allowed) {
@@ -911,16 +988,19 @@ var Template = {
 				
 					if (t.is(':animated')) return false;
 				
-					var dex = self.collapsedDomains.indexOf(d),
+					var c = self.collapsedDomains(),
+							dex = c.indexOf(d),
 							rulesList = _$('#rules-list'),
 							sTop = rulesList.scrollTop(),
 							height;
 						
 					if (!$(this).toggleClass('hidden').hasClass('hidden')) {
-						if (dex > -1) self.collapsedDomains.splice(dex, 1);
+						if (dex > -1) c.splice(dex, 1);
 					} else {
-						if (dex === -1) self.collapsedDomains.push(d);
+						if (dex === -1) c.push(d);
 					}
+										
+					self.collapsedDomains(c);
 					
 					t.toggle();
 					
@@ -995,7 +1075,7 @@ var Template = {
 												no_label: true,
 												no_all: domain !== '.*'
 											})])
-									}, self);
+									}, JavaScriptBlocker);
 
 								var crulelevel = parseInt(t[0].className.split(' ')[1].substr(5));
 								
@@ -1236,7 +1316,7 @@ var Template = {
 							}).siblings('#auto-restore').click(function () {
 								for (var b = 0; b < ds.length; b++) {
 									if (ds[b][1][0] < 0)
-										self.rules.add(self.host, ds[b][0], ds[b][1][0] * -1);
+										self.rules.add(self.host, ds[b][0], ds[b][1][0] * -1, false, true);
 									else
 										self.rules.remove(self.host, ds[b][0], true);
 								}
@@ -1386,7 +1466,7 @@ var Template = {
 				if (toggle_find_bar(true)) return false;
 			} else if (e.which === 27 && _$('#find-bar #find-bar-search').is(':focus')) {
 				e.preventDefault();
-				toggle_find_bar();
+				_$('#find-bar #find-bar-done').click();
 			}
 		}).keyup(function (e) {
 			if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 1;
@@ -1593,13 +1673,13 @@ var Template = {
 					
 					new Poppy(left, top, '<p>' + _('Loading rules') + '</p>', $.noop, function () {
 						var ul = _$('#rules-list #data > ul#rules-list-rules').html(''),
-								s = self.utils.sort_object(window.localStorage), domain,
+								s = self.utils.sort_object(self.rules.rules), domain,
 			 					i = 0, filter = _$('#domain-filter'), rs = [];
 						
 						if ('srcElement' in event)
 							filter.val('');
 						
-						function append_rules (ul, domain, self) {
+						function appendrules (ul, domain, self) {
 							ul.append($('> li', self.rules.view(domain)));
 							self.utils.zero_timeout(function (self) {
 								self.utils.timer.timeout('filter_bar_click', function (self) {
@@ -1609,7 +1689,7 @@ var Template = {
 						}
 						
 						for (domain in s)
-							self.utils.zero_timeout(append_rules, [ul, domain, self]);
+							self.utils.zero_timeout(appendrules, [ul, domain, self]);
 							
 						function remove_domain (event) {
 							event.stopPropagation();
@@ -1635,8 +1715,9 @@ var Template = {
 								self.busy = 0;
 								new Poppy();
 								var l = _$('#rules-list');
-								if (!l.is(':visible'))
+								if (!l.is(':visible')) {
 									self.utils.zoom(l, _$('#main'));
+								}
 							}, [self]);
 						}, [self]);
 					}, 0.1);
@@ -1747,9 +1828,9 @@ var Template = {
 			
 			d.toggleClass('hidden');
 			
-			self.collapsedDomains = $.map(_$('#rules-list .domain-name'), function (e) {
+			self.collapsedDomains($.map(_$('#rules-list .domain-name'), function (e) {
 				return e.className.match(/hidden/) ? $('span', e).html() : null;
-			});
+			}));
 			
 			if (is_collapse) _$('#rules-filter-bar li#filter-collapsed').click();
 			else _$('#rules-filter-bar li#filter-expanded').click();
@@ -1777,7 +1858,7 @@ var Template = {
 			
 			if (!self.donationVerified) return new Poppy(off.left + $(this).width() / 2, off.top, _('Donation Required'));
 			
-			for (var domain in window.localStorage) {
+			for (var domain in self.rules.rules) {
 				var rules = self.rules.for_domain(domain, true), rule;
 			
 				if (domain in rules)
@@ -1801,7 +1882,7 @@ var Template = {
 			
 			if (!self.donationVerified) return new Poppy(off.left + $(this).width() / 2, off.top, _('Donation Required'));
 			
-			for (var domain in window.localStorage) {
+			for (var domain in self.rules.rules) {
 				var rules = self.rules.for_domain(domain, true), rule;
 			
 				if (domain in rules)
@@ -1943,6 +2024,12 @@ var Template = {
 			if (self.donationVerified) return new Poppy(l, t, _('All features are already unlocked.'));
 			
 			new Poppy(l, t, self.poppies.verify_donation.call([l, t], self));
+		});
+		
+		_$('#js-help').click(function () {
+			self.utils.open_url('http://javascript-blocker.toggleable.com/help');
+		}).siblings('#js-project').click(function () {
+			self.utils.open_url('http://javascript-blocker.toggleable.com/');
 		});
 	},
 	
@@ -2143,7 +2230,7 @@ var Template = {
 		} else if (event.key === 'alwaysBlock') {
 			var wd, i, b, bd, e, c, key, domain;
 				
-			var delete_automatic_rules = function (self, key) {
+			var delete_automaticrules = function (self, key) {
 				var rs, r;
 			
 				rs = self.rules.for_domain(key, true);
@@ -2156,32 +2243,73 @@ var Template = {
 				}
 			}
 			
-			for (key in window.localStorage) {
-				if (window.localStorage.hasOwnProperty(key)) {
-					this.utils.zero_timeout(delete_automatic_rules, [this, key, 2]);
-				}
-			}
-			
+			for (key in this.rules.rules)
+				this.utils.zero_timeout(delete_automaticrules, [this, key, 2]);
+
 			this.rules.reinstall_predefined();
 		} else if (event.key === 'simpleMode' && event.newValue === false && !this.donationVerified) {
 			safari.extension.settings.simpleMode = true;
 				
 			alert(_('You cannot use JavaScript Blocker'));
+		} else if (event.key === 'blockReferrer' && event.newValue === true && !this.donationVerified) {
+			safari.extension.settings.blockReferrer = false;
+			
+			alert(_('Donation Required'));
+		}
+	},
+	anonymous: {
+		pages: {},
+		previous: {},
+		cannot: {},
+		newTab: {}
+	},
+	anonymize: function (event) {
+		if (!this.donationVerified ||
+				!safari.extension.settings.blockReferrer ||
+				((event.target.url in this.anonymous.previous) && this.anonymous.previous[event.target.url] === event.url) ||
+				((event.target.url in this.anonymous.pages) && this.anonymous.pages[event.target.url] === event.url) ||
+				((event.target.url in this.anonymous.cannot) && this.anonymous.cannot[event.target.url].indexOf(event.url) > -1)) {
+			delete this.anonymous.cannot[event.target.url];
+			delete this.anonymous.pages[event.target.url];
+			return true;
+		}
+		
+		if (event.url && event.target.url && event.target.url.length && event.url.length) {
+			event.preventDefault();
+									
+			if (event.target.url in this.anonymous.newTab) {
+				delete this.anonymous.newTab[event.target.url];
+				this.utils.open_url(event.url);
+			} else {
+				this.anonymous.pages[event.target.url] = event.url;
+				this.anonymous.previous[event.url] = event.target.url;
+				this.utils.zero_timeout(function (target, url) {
+					target.url = url;
+				}, [event.target, event.url]);
+			}
 		}
 	},
 	handle_message: function (event) {
 		theSwitch:
 		switch (event.name) {
 			case 'canLoad':
+				if (event.message === 'anonymize') {
+					event.message = safari.extension.settings.blockReferrer;
+					break;
+				} else if (event.message === 'simpleReferrer') {
+					event.message = safari.extension.settings.simpleReferrer;
+					break;
+				}
+				
 				if (this.disabled || !this.methodAllowed || this.installedBundle < this.bundleid) {
-					event.message = true;
+					event.message = 1;
 					break theSwitch;
 				}
 				
 				var rule_found = false,
-					host = this.active_host(event.message[0]),
-					domains = this.rules.for_domain(host), domain, rule,
-					alwaysFrom = safari.extension.settings.alwaysBlock;
+						host = this.active_host(event.message[0]),
+						domains = this.rules.for_domain(host), domain, rule,
+						alwaysFrom = safari.extension.settings.alwaysBlock;
 				
 				domainFor:
 				for (domain in domains) {
@@ -2227,7 +2355,7 @@ var Template = {
 								this.rules.add(host, rr, 2, true, true);
 							}
 						
-							event.message = 0;
+							event.message = 0
 						
 							break theSwitch;
 						}
@@ -2238,8 +2366,6 @@ var Template = {
 			break;
 
 			case 'updatePopover':
-				this.utils.timer.remove('timeout', 'update_failure');
-			
 				if (event.target != safari.application.activeBrowserWindow.activeTab) break;
 					
 				this.utils.timer.timeout('update_popover', function (self) {
@@ -2248,6 +2374,8 @@ var Template = {
 			break;
 			
 			case 'updateReady':
+				if (event.target != safari.application.activeBrowserWindow.activeTab) break;
+				
 				this.utils.timer.remove('timeout', 'update_failure');
 			break;
 			
@@ -2279,8 +2407,29 @@ var Template = {
 			case 'unloadPage':
 				try {
 					delete this.frames[event.message];
+					delete this.anonymous.newTab[event.message];
 				} catch (e) { }
 			break;
+
+			case 'anonymousNewTab':
+				if (!this.donationVerified) break;
+			
+				if (event.message)
+					this.anonymous.newTab[event.target.url] = 1;
+				else
+					delete this.anonymous.newTab[event.target.url];
+			break;
+			
+			case 'cannotAnonymize':
+				if (!this.donationVerified) break;
+				
+				if (!(event.target.url in this.anonymous.cannot)) this.anonymous.cannot[event.target.url] = [];
+				
+				if (this.anonymous.cannot[event.target.url].indexOf(event.message) === -1)
+					this.anonymous.cannot[event.target.url].push(event.message);
+			break;
+			
+			case 'doNothing': break;
 		}
 	},
 	open_popover: function (event) {
@@ -2305,19 +2454,27 @@ var Template = {
 						
 				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
 							
-				setTimeout(function (e) {
+				setTimeout(function (e, event) {
 					e.load_language(true);
-				}, 500, this);
+					self.open_popover(event);
+				}, 500, this, event);
 				
-				if (!this.setupDone)
-					return false;
+				return false;
 			}
 
-			_$('#rules-list-back:visible, #misc-close:visible, #find-bar-done:visible').click();
+			_$('#find-bar-done:visible').click();
 			
 			new Poppy();
-		} else if (!event || (event && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1))
+		} else if (!event || (event && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1)) {
 			new Poppy();
+			
+			try {
+				if (event.target === safari.application.activeBrowserWindow.activeTab && event.type === 'beforeNavigate') {
+					for (var y = 0; y < safari.extension.toolbarItems.length; y++)
+						safari.extension.toolbarItems[y].badge = 0;
+				}
+			} catch (e) {}
+		}
 		
 		if (!this.setupDone) {
 			if (s.css('display') === 'block') return false;
@@ -2329,6 +2486,8 @@ var Template = {
 				
 				self.rules.reinstall_predefined();
 				
+				self.utils.zoom(s, _$('#main'));
+				
 				self.utils.send_installid();
 									
 				self.open_popover();
@@ -2338,9 +2497,14 @@ var Template = {
 				safari.extension.settings.alwaysBlock = this.checked ? 'domain' : 'everywhere';
 			}).end().find('#secure-only').click(function() {
 				safari.extension.settings.secureOnly = this.checked;
+			}).end().find('#use-large').click(function () {
+				safari.extension.settings.largeFont = this.checked;
+				self.set_theme(safari.extension.settings.theme);
 			});
 			
-			this.utils.zoom(s, _$('#main'));
+			setTimeout(function (self, s) {
+				self.utils.zoom(s, _$('#main'));
+			}, 100, self, s);
 			
 			return false;
 		}
@@ -2372,7 +2536,7 @@ var Template = {
 					
 						setTimeout(function (self) {
 							new Poppy($(self.popover.body).width() / 2, 13, [
-								'<p>', _('Update Failure'), '</p>'].join(''));
+								'<p>', _('Update Failure'), '</p>'].join(''), null, null, null, true);
 						}, 200, self);
 					}, 1100);
 					
