@@ -55,8 +55,8 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.3.0',
-	bundleid: 54,
+	displayv: '2.3.1',
+	bundleid: 55,
 	
 	set_theme: function (theme) {
 		_$('#main-large-style').attr('href', safari.extension.settings.largeFont ? 'css/main.large.css' : '');
@@ -2526,19 +2526,20 @@ var Template = {
 							'<p>', _('You cannot use JavaScript Blocker'), '</p>'].join(''), null, null, null, true);
 					}, 300, self);
 				} else {
-					this.utils.timer.timeout('update_failure', function () {
-						for (var y = 0; y < safari.extension.toolbarItems.length; y++)
-							safari.extension.toolbarItems[y].badge = 0;
+					if (this.installedBundle === this.bundleid)
+						this.utils.timer.timeout('update_failure', function () {
+							for (var y = 0; y < safari.extension.toolbarItems.length; y++)
+								safari.extension.toolbarItems[y].badge = 0;
 					
-						safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
+							safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
 					
-						self.reloaded = false;
+							self.reloaded = false;
 					
-						setTimeout(function (self) {
-							new Poppy($(self.popover.body).width() / 2, 13, [
-								'<p>', _('Update Failure'), '</p>'].join(''), null, null, null, true);
-						}, 200, self);
-					}, 1100);
+							setTimeout(function (self) {
+								new Poppy($(self.popover.body).width() / 2, 13, [
+									'<p>', _('Update Failure'), '</p>'].join(''), null, null, null, true);
+							}, 200, self);
+						}, 1100);
 					
 					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
 				}

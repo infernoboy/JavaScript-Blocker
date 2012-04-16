@@ -274,7 +274,7 @@
 		<key>Key</key>
 		<string>blockReferrer</string>
 		<key>Title</key>
-		<string>Enable full referrer blocking. Please not that this will only work on GET request in the main window. Inline frames will not have the referrer headers blocked due to a limitation of Safari; you can enable simple referrer blocking to help block at least some. This setting may cause a loop when trying to navigate back/forward.</string>
+		<string>Enable full referrer blocking. Please note that this will only work on GET request in the main window. Inline frames will not have the referrer headers blocked due to a limitation of Safari; you can enable simple referrer blocking to help block at least some. This setting may cause a loop when trying to navigate back/forward.</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
