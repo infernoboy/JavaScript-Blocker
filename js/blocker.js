@@ -39,7 +39,7 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 				count: 0,
 				urls: []
 			},
-			href: null
+			href: pageHost()
 		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false, settings = {}
 		
 function if_setting(setting, value, cb, args) {

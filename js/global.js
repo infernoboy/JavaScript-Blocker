@@ -55,8 +55,8 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.3.2',
-	bundleid: 56,
+	displayv: '2.3.3',
+	bundleid: 58,
 	
 	set_theme: function (theme) {
 		_$('#main-large-style').attr('href', safari.extension.settings.largeFont ? 'css/main.large.css' : '');
@@ -85,7 +85,7 @@ var Template = {
 		
 		if (!self.donationVerified)
 			new Poppy($(this.popover.body).width() / 2, 13, [
-				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/230">' + this.displayv + '</a>']), '</p>',
+				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/233">' + this.displayv + '</a>']), '</p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
 				'<p>', _('Please, if you can'), '</p>',
 				'<p>',
