@@ -55,8 +55,8 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.3.1',
-	bundleid: 55,
+	displayv: '2.3.2',
+	bundleid: 56,
 	
 	set_theme: function (theme) {
 		_$('#main-large-style').attr('href', safari.extension.settings.largeFont ? 'css/main.large.css' : '');
@@ -2299,6 +2299,9 @@ var Template = {
 				} else if (event.message === 'simpleReferrer') {
 					event.message = safari.extension.settings.simpleReferrer;
 					break;
+				} else if (event.message === 'blankHost') {
+					event.message = event.target.url;
+					break;
 				}
 				
 				if (this.disabled || !this.methodAllowed || this.installedBundle < this.bundleid) {
@@ -2403,13 +2406,6 @@ var Template = {
 					delete this.frames[event.message[2]];
 				} catch(e) {}
 			break;
-			
-			case 'unloadPage':
-				try {
-					delete this.frames[event.message];
-					delete this.anonymous.newTab[event.message];
-				} catch (e) { }
-			break;
 
 			case 'anonymousNewTab':
 				if (!this.donationVerified) break;
@@ -2429,17 +2425,17 @@ var Template = {
 					this.anonymous.cannot[event.target.url].push(event.message);
 			break;
 			
+			case 'setting':
+				event.target.page.dispatchMessage('setting', [event.message, safari.extension.settings.getItem(event.message)]);
+			break;
+			
 			case 'doNothing': break;
 		}
 	},
 	open_popover: function (event) {
 		if (typeof event !== 'undefined' && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1) {
-			try {
-				if (event.type === 'beforeNavigate')
-					event.target.page.dispatchMessage('unloadPage');
-				else
-					delete this.frames[event.target.url];
-			} catch (e) {}
+			delete this.frames[event.target.url];
+			delete this.anonymous.newTab[event.target.url];
 		}
 		
 		var self = this, s = _$('#setup');

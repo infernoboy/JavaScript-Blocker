@@ -5,8 +5,6 @@
  ***************************************/
 
 function pageHost(not_real) {
-	if (realHost && !not_real) return realHost;
-	
 	switch(window.location.protocol) {
 		case 'http:':
 		case 'https:':
@@ -19,13 +17,13 @@ function pageHost(not_real) {
 		break;
 		
 		default:
-			return window.location.href; break;
+			return window.location.href;
+		break;
 	}
 }
 
 var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 		jsblocker = {
-			javascript_blocker_1: 1,
 			allowed: {
 				hosts: [],
 				count: 0,
@@ -41,16 +39,20 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 				count: 0,
 				urls: []
 			},
-			href: pageHost()
-		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false, realHost = null,
-		simpleRef = safari.self.tab.canLoad(new BeforeLoadEvent, 'simpleReferrer');
-
-function soon(cb) {
-	if (realHost === null) return setTimeout(function (soon, cb) {
-		soon(cb);
-	}, 6, soon, cb);
+			href: null
+		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false, settings = {}
 		
-	cb.call(window);
+function if_setting(setting, value, cb, args) {
+	if (!(setting in settings)) {
+		safari.self.tab.dispatchMessage('setting', setting);
+		
+		return setTimeout(function (setting, value, cb, args) {
+			if_setting(setting, value, cb, args);
+		}, 6, setting, value, cb, args);
+	}
+	
+	if (settings[setting] === value)
+		cb.apply(window, args);
 }
 
 function activeHost(url) {
@@ -62,38 +64,36 @@ function activeHost(url) {
 	}
 }
 function allowedScript(event) {
-	soon(function () {
-		if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length > 0 && event.type !== 'DOMNodeInserted') {
-			var isAllowed = safari.self.tab.canLoad(event, [jsblocker.href, event.target.src, !(window == window.top)]),
-					host = activeHost(event.target.src);
+	if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length > 0 && event.type !== 'DOMNodeInserted') {
+		var isAllowed = safari.self.tab.canLoad(event, [jsblocker.href, event.target.src, !(window == window.top)]),
+				host = activeHost(event.target.src);
 
-			if (!isAllowed) {
-				if (typeof event.target.src === 'string' && event.target.src.length > 0) {
-					jsblocker.blocked.count++;
-					jsblocker.blocked.urls.push(event.target.src);
-							
-					if (jsblocker.blocked.hosts.indexOf(host) === -1) jsblocker.blocked.hosts.push(host);
-	
-					event.preventDefault();
-				}
-			} else {
-				jsblocker.allowed.count++;
-				jsblocker.allowed.urls.push(event.target.src);
-			
-				if (jsblocker.allowed.hosts.indexOf(host) === -1) jsblocker.allowed.hosts.push(host);
+		if (!isAllowed) {
+			if (typeof event.target.src === 'string' && event.target.src.length > 0) {
+				jsblocker.blocked.count++;
+				jsblocker.blocked.urls.push(event.target.src);
+						
+				if (jsblocker.blocked.hosts.indexOf(host) === -1) jsblocker.blocked.hosts.push(host);
+
+				event.preventDefault();
 			}
-		} else if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length === 0 && event.type === 'DOMNodeInserted') {
-			jsblocker.unblocked.count++;
-			jsblocker.unblocked.urls.push(event.target.innerHTML);
-		} else if (event.target.nodeName.toUpperCase() === 'A' && event.target.href.length) {
+		} else {
+			jsblocker.allowed.count++;
+			jsblocker.allowed.urls.push(event.target.src);
+		
+			if (jsblocker.allowed.hosts.indexOf(host) === -1) jsblocker.allowed.hosts.push(host);
+		}
+	} else if (event.target.nodeName.toUpperCase() === 'SCRIPT' && event.target.src.length === 0 && event.type === 'DOMNodeInserted') {
+		jsblocker.unblocked.count++;
+		jsblocker.unblocked.urls.push(event.target.innerHTML);
+	} else if (event.target.nodeName.toUpperCase() === 'A' && event.target.href.length) {
 
-		}
-	
-		if (window !== window.top || event.type === 'DOMNodeInserted') {
-			clearTimeout(readyTimeout);
-			readyTimeout = setTimeout(ready, 200, event);
-		}
-	});
+	}
+
+	if (window !== window.top || event.type === 'DOMNodeInserted') {
+		clearTimeout(readyTimeout);
+		readyTimeout = setTimeout(ready, 200, event);
+	}
 }
 
 function ready(event) {
@@ -135,7 +135,6 @@ function messageHandler(event) {
 	switch (event.name) {
 		case 'reload': window.location.reload(); break;
 		case 'updatePopover': ready(event); break;
-		case 'unloadPage': unloadHandler(event); break;
 		case 'validateFrame':
 			var f = document.getElementsByTagName('iframe'), a = [pageHost(), jsblocker];
 			
@@ -147,36 +146,14 @@ function messageHandler(event) {
 				}
 			}
 			
-			if (a.length < 3) a.push(realHost ? (pageHost(true) + ' (' + realHost + ')') : -1);
-			
+			if (a.length < 3) a.push(-1);
+									
 			safari.self.tab.dispatchMessage('addFrameData', a);
 		break;
-	}
-}
-
-function windowMessenger(event) {
-	var d = JSON.parse(event.data);
-	
-	switch (d.action) {
-		case 'myHost':
-			event.source.postMessage(JSON.stringify({ action: 'parentsHost', message: pageHost() }), '*');
-		break;
-		case 'parentsHost':
-			var b = pageHost();
-			
-			realHost = d.message;
-			jsblocker.href = realHost;
-			
-			safari.self.tab.dispatchMessage('updateFrameData', [b, jsblocker, realHost])
+		case 'setting':
+			settings[event.message[0]] = event.message[1];
 		break;
 	}
-}
-
-function unloadHandler(event) {
-	try {
-		if (window == window.top)
-			safari.self.tab.dispatchMessage('unloadPage', pageHost());
-	} catch(e) { /* Exception occurs when closing a page sometimes. */ }
 }
 
 function hashUpdate(event) {
@@ -204,7 +181,9 @@ function prepareAnchors(event) {
 
 function prepareAnchor(anchor) {
 	if (anchor.nodeName && anchor.nodeName.toUpperCase() === 'A') {
-		if (simpleRef && (!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length)) anchor.setAttribute('rel', 'noreferrer');
+		if_setting('simpleReferrer', true, function (anchor) {
+			if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length)) anchor.setAttribute('rel', 'noreferrer');
+		}, [anchor]);
 		
 		anchor.addEventListener('mousedown', function (e) {
 			var k = (window.navigator.platform.match(/Win/)) ? e.ctrlKey : e.metaKey;
@@ -220,15 +199,13 @@ function prepareAnchor(anchor) {
 
 safari.self.addEventListener('message', messageHandler, true);
 window.addEventListener('hashchange', hashUpdate, true);
-window.addEventListener('message', windowMessenger, true);
 
-if (window === window.top) {
+if (window === window.top)
 	window.addEventListener('focus', ready, true);
-	realHost = false;
-} else {
-	if (pageHost() === 'about:blank')
-		window.top.postMessage(JSON.stringify({ action: 'myHost' }), '*');
-}
+
+document.addEventListener('DOMContentLoaded', function () {
+	jsblocker.href = pageHost();
+}, false);
 	
 document.addEventListener('DOMContentLoaded', ready, false);
 document.addEventListener('DOMContentLoaded', prepareAnchors, false);
