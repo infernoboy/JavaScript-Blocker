@@ -85,7 +85,7 @@ var Template = {
 		
 		if (!self.donationVerified)
 			new Poppy($(this.popover.body).width() / 2, 13, [
-				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/233">' + this.displayv + '</a>']), '</p>',
+				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/233real">' + this.displayv + '</a>']), '</p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
 				'<p>', _('Please, if you can'), '</p>',
 				'<p>',
@@ -2273,10 +2273,10 @@ var Template = {
 			delete this.anonymous.pages[event.target.url];
 			return true;
 		}
-		
+			
 		if (event.url && event.target.url && event.target.url.length && event.url.length) {
 			event.preventDefault();
-									
+					
 			if (event.target.url in this.anonymous.newTab) {
 				delete this.anonymous.newTab[event.target.url];
 				this.utils.open_url(event.url);
@@ -2296,11 +2296,11 @@ var Template = {
 				if (event.message === 'anonymize') {
 					event.message = safari.extension.settings.blockReferrer;
 					break;
-				} else if (event.message === 'simpleReferrer') {
-					event.message = safari.extension.settings.simpleReferrer;
-					break;
-				} else if (event.message === 'blankHost') {
+				} else if (event.message === 'parentURL') {
 					event.message = event.target.url;
+					break;
+				} else if (event.message[0] && event.message[0] === 'setting') {
+					event.message = safari.extension.settings.getItem(event.message[1]);
 					break;
 				}
 				
@@ -2435,7 +2435,9 @@ var Template = {
 	open_popover: function (event) {
 		if (typeof event !== 'undefined' && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1) {
 			delete this.frames[event.target.url];
-			delete this.anonymous.newTab[event.target.url];
+			setTimeout(function (self, event) {
+				delete self.anonymous.newTab[event.target.url];
+			}, 100, this, event);
 		}
 		
 		var self = this, s = _$('#setup');

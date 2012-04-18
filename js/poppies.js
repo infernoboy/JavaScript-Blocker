@@ -25,11 +25,10 @@ JavaScriptBlocker.poppies = {
 					var id = _$('#donation-id').val().substr(0, 100);
 				
 					$.get(zoo.url + escape(id)).success(function (data) {
-						data = parseInt(data, 10);
-									
-						var error = null;
+						var datai = parseInt(data, 10),
+								error = null;
 						
-						switch (data) {
+						switch (datai) {
 							case -3: error = _('An email address was not specified.'); break;
 							case -2: error = _('A donation with that email address was not found. ({1})', [id.replace(/</g, '&lt;')]); break;
 							case -1: error = _('The maximum number ({1})', [id.replace(/</g, '&lt;')]); break;
@@ -40,7 +39,7 @@ JavaScriptBlocker.poppies = {
 								
 								new Poppy(zoo.me[0], zoo.me[1], [
 									'<p>', _('Your donation has been verified'), '</p>',
-									'<p>', _('You may unlock {1}', [data]), '</p>',
+									'<p>', _('You may unlock {1}', [datai]), '</p>',
 									'<p>', _('Thanks for your support!'), '</p>'].join(''));
 							break;
 							

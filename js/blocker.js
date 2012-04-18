@@ -4,7 +4,14 @@
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
  ***************************************/
 
+var beforeLoad = JSON.parse('{"url":"","returnValue":true,"timeStamp":1334608269228,"eventPhase":0,"target":null,"defaultPrevented":false,"srcElement":null,"type":"beforeload","cancelable":false,"currentTarget":null,"bubbles":false,"cancelBubble":false}'),
+		random = +new Date,
+		blank = window.location.href === 'about:blank',
+		parentURL = (window !== window.top && blank) ? (safari.self.tab.canLoad(beforeLoad, 'parentURL') + '&about:blank:' + random) : false;
+
 function pageHost(not_real) {
+	if (parentURL) return parentURL;
+
 	switch(window.location.protocol) {
 		case 'http:':
 		case 'https:':
@@ -40,16 +47,15 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 				urls: []
 			},
 			href: pageHost()
-		}, readyTimeout = false, lastAddedFrameData = false, jsonBlocker = false, settings = {}
-		
+		}, readyTimeout = [null, null], lastAddedFrameData = false, jsonBlocker = false,
+		settings = {}, settings_called = {};
+
+if (window !== window.top && blank)
+	jsblocker.display = 'about:blank (' + random + ')';
+	
 function if_setting(setting, value, cb, args) {
-	if (!(setting in settings)) {
-		safari.self.tab.dispatchMessage('setting', setting);
-		
-		return setTimeout(function (setting, value, cb, args) {
-			if_setting(setting, value, cb, args);
-		}, 6, setting, value, cb, args);
-	}
+	if (!(setting in settings))
+		settings[setting] = safari.self.tab.canLoad(beforeLoad, ['setting', setting]);
 	
 	if (settings[setting] === value)
 		cb.apply(window, args);
@@ -90,34 +96,34 @@ function allowedScript(event) {
 
 	}
 
-	if (window !== window.top || event.type === 'DOMNodeInserted') {
-		clearTimeout(readyTimeout);
-		readyTimeout = setTimeout(ready, 200, event);
-	}
+	if (window !== window.top || event.type === 'DOMNodeInserted')
+		ready(event);
 }
 
 function ready(event) {
 	safari.self.tab.dispatchMessage('updateReady');
 	
-	if (event.type === 'DOMContentLoaded') {
-		var script_tags = document.getElementsByTagName('script'), i, b;
-		for (i = 0, b = script_tags.length; i < b; i++) {
-			if (!script_tags[i].src || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
-				jsblocker.unblocked.count++;
-				jsblocker.unblocked.urls.push(script_tags[i].innerHTML);
+	var t = event.type === 'DOMContentLoaded' ? 1 : 0;
+	
+	clearTimeout(readyTimeout[t]);
+		
+	readyTimeout[t] = setTimeout(function (event) {
+		if (event.type === 'DOMContentLoaded') {
+			var script_tags = document.getElementsByTagName('script'), i, b;
+			for (i = 0, b = script_tags.length; i < b; i++) {
+				if (!script_tags[i].src || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
+					jsblocker.unblocked.count++;
+					jsblocker.unblocked.urls.push(script_tags[i].innerHTML);
+				}
 			}
 		}
-	}
-	if (window == window.top && event.type === 'DOMContentLoaded')
-		safari.self.tab.dispatchMessage('setPopoverClass');
-	else if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
-		lastAddedFrameData = jsonBlocker;
-		safari.self.tab.dispatchMessage('addFrameData', [pageHost(), jsblocker]);
-	}
+		if (window == window.top && event.type === 'DOMContentLoaded')
+			safari.self.tab.dispatchMessage('setPopoverClass');
+		else if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
+			lastAddedFrameData = jsonBlocker;
+			safari.self.tab.dispatchMessage('addFrameData', [jsblocker.href, jsblocker]);
+		}
 		
-	clearTimeout(readyTimeout);
-		
-	readyTimeout = setTimeout(function () {
 		try {
 			if (window === window.top)
 				safari.self.tab.dispatchMessage('updatePopover', jsblocker);
@@ -128,7 +134,7 @@ function ready(event) {
 						'Reloading the page should fix things.')
 			}
 		}
-	}, (event.type === 'focus') ? 100 : 300);
+	}, (event.type === 'focus') ? 100 : 300, event);
 }
 
 function messageHandler(event) {
@@ -147,7 +153,7 @@ function messageHandler(event) {
 			}
 			
 			if (a.length < 3) a.push(-1);
-									
+					
 			safari.self.tab.dispatchMessage('addFrameData', a);
 		break;
 		case 'setting':
@@ -161,25 +167,41 @@ function hashUpdate(event) {
 	
 	jsblocker.href = pageHost();
 	
-	safari.self.tab.dispatchMessage('updateFrameData', [pageHost(), jsblocker, ohref])
+	safari.self.tab.dispatchMessage('updateFrameData', [jsblocker.href, jsblocker, ohref])
 	
 	ready(event);
 }
 
-function prepareAnchors(event) {
-	var a = document.getElementsByTagName('a'),
-			f = document.getElementsByTagName('form');
+function prepareAnchors(event, anchors, forms) {
+	var a = anchors || document.getElementsByTagName('a'),
+			f = forms || document.getElementsByTagName('form');
 	
 	for (var x = 0; x < a.length; x++)
 		setTimeout(function (an) {
 			prepareAnchor(an);
 		}, 1 * x, a[x]);
 	for (var y = 0; y < f.length; y++)
-		if (f[y].method && f[y].method.toLowerCase() === 'post')
-			safari.self.tab.dispatchMessage('cannotAnonymize', f[y].getAttribute('action'));
+		if (f[y].method && f[y].method.toLowerCase() === 'post') {
+			var a = f[y].getAttribute('action');
+			
+			if (!(/^https?:/i.test(a)))
+				a = window.location.origin + (a.charAt(0) !== '/' ? '/' : '') + a;
+			
+			safari.self.tab.dispatchMessage('cannotAnonymize', a);
+		}
 }
 
 function prepareAnchor(anchor) {
+	var type = !anchor.target;
+	anchor = !type ? anchor.target : anchor;
+	
+	if (!type && anchor.nodeName && anchor.nodeName.toUpperCase() !== 'A') {
+		if (anchor.querySelectorAll)
+			prepareAnchors(null, anchor.querySelectorAll('a', anchor), anchor.querySelectorAll('form', anchor));
+		
+		return false;
+	}
+
 	if (anchor.nodeName && anchor.nodeName.toUpperCase() === 'A') {
 		if_setting('simpleReferrer', true, function (anchor) {
 			if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length)) anchor.setAttribute('rel', 'noreferrer');
@@ -202,13 +224,11 @@ window.addEventListener('hashchange', hashUpdate, true);
 
 if (window === window.top)
 	window.addEventListener('focus', ready, true);
-
-document.addEventListener('DOMContentLoaded', function () {
-	jsblocker.href = pageHost();
-}, false);
 	
 document.addEventListener('DOMContentLoaded', ready, false);
 document.addEventListener('DOMContentLoaded', prepareAnchors, false);
 document.addEventListener('beforeload', allowedScript, true);
 document.addEventListener('DOMNodeInserted', allowedScript, true);
-document.addEventListener('DOMNodeInserted', prepareAnchor, true);
+document.addEventListener('DOMNodeInserted', prepareAnchor, false);
+document.addEventListener('DOMNodeInsertedIntoDocument', prepareAnchor, false);
+document.addEventListener('DOMNodeElementChanged', prepareAnchor, false);
