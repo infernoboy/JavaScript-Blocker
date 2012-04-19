@@ -415,6 +415,7 @@ ul li input {
 a {
 	text-decoration: none;
 	color: #0064E3;
+	cursor: pointer;
 }
 	a:hover {
 		color: #0B37B4;

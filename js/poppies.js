@@ -7,35 +7,40 @@
 JavaScriptBlocker.poppies = {
 	verify_donation: function (main) {
 		var zoo = {
-			url: 'http://lion.toggleable.com:160/jsblocker/submit.php?id=',
+			url: JavaScriptBlocker.donation_url,
 			me: this,
 			main: main,
 			content: [
 				'<p class="misc-info">', _('Donation Verification'), '</p>',
-				(this.length === 3) ? '<p class="error">' + this[2] + '</p>' : '',
+				(this.length === 4) ? '<p class="error">' + this[2] + '</p>' : '',
 				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
 				'<p>', _('To complete the unlocking'), '</p>',
 				'<input type="text" placeholder="', _('PayPal Email Address'), '" id="donation-id" /> ',
-				'<input type="button" value="', _('Continue'), '" id="donation-confirm" /> ',
-				'<a class="outside" href="mailto:travis@toggleable.com?subject=I cannot donate to JavaScript Blocker, but want all the features!&body=Reason: ">', _('I can\'t donate'), '</a>'].join(''),
+				'<input type="button" value="', _('Continue'), '" id="donation-confirm" /><br />',
+				'<a class="outside" href="mailto:travis@toggleable.com?subject=I cannot donate to JavaScript Blocker, but want all the features!&body=Reason: ">', _('I can\'t donate'), '</a> | ',
+				'<a class="outside" href="mailto:travis@toggleable.com?subject=I forgot my JavaScript Blocker activation information!&body=Help me out!">iForgot</a>'].join(''),
 			callback: function () {
-				_$('#donation-id').focus();
+				var did = _$('#donation-id');
+				did.focus().val(zoo.me.length === 4 ? zoo.me[3] : '');
+				did[0].selectionStart = 0;
+				did[0].selectionEnd = did.val().length;
 				
 				_$('#donation-confirm').click(function (event) {
 					var id = _$('#donation-id').val().substr(0, 100);
 				
-					$.get(zoo.url + escape(id)).success(function (data) {
+					$.get(zoo.url + escape(id) + '&install=' + safari.extension.settings.installID).success(function (data) {
 						var datai = parseInt(data, 10),
 								error = null;
 						
 						switch (datai) {
 							case -3: error = _('An email address was not specified.'); break;
-							case -2: error = _('A donation with that email address was not found. ({1})', [id.replace(/</g, '&lt;')]); break;
-							case -1: error = _('The maximum number ({1})', [id.replace(/</g, '&lt;')]); break;
+							case -2: error = _('A donation with that email address was not found.'); break;
+							case -1: error = _('The maximum number'); break;
 							case 0:
 							case 1:
 							case 2:
-								JavaScriptBlocker.donationVerified = true;
+							case 3:
+								JavaScriptBlocker.donationVerified = id;
 								
 								new Poppy(zoo.me[0], zoo.me[1], [
 									'<p>', _('Your donation has been verified'), '</p>',
@@ -47,9 +52,9 @@ JavaScriptBlocker.poppies = {
 						}
 						
 						if (error)
-							new Poppy(zoo.me[0], zoo.me[1], JavaScriptBlocker.poppies.verify_donation.call([zoo.me[0], zoo.me[1], error], main));
+							new Poppy(zoo.me[0], zoo.me[1], JavaScriptBlocker.poppies.verify_donation.call([zoo.me[0], zoo.me[1], error, id], main));
 					}).error(function (req) {
-						new Poppy(zoo.me[0], zoo.me[1], JavaScriptBlocker.poppies.verify_donation.call([zoo.me[0], zoo.me[1], 'Error ' + req.status + ': ' + req.statusText], main));
+						new Poppy(zoo.me[0], zoo.me[1], JavaScriptBlocker.poppies.verify_donation.call([zoo.me[0], zoo.me[1], 'Error ' + req.status + ': ' + req.statusText, id], main));
 					});
 				}).siblings('#donation-id').keypress(function (e) {
 					if (e.keyCode == 13 || e.keyCode == 3) _$('#donation-confirm').click();

@@ -166,8 +166,8 @@ Strings['de-de'] = {
 			'kann es bis zu 24 Stunden dauern, bis die Mailadresse vom Server abgewickelt wurde.',
 	'PayPal Email Address': 'PayPal Mailadresse',
 	'An email address was not specified.': 'Es wurde keine Mailadresse eingegeben.',
-    'A donation with that email address was not found. ({1})': 'Es wurde keine Spende unter dieser Mailadresse gefunden. ({1})',
-	'The maximum number ({1})': 'Die maximale Anzahl an Freischaltungen für diese Vorgangs-ID wurde erreicht. ({1})',
+    'A donation with that email address was not found.': 'Es wurde keine Spende unter dieser Mailadresse gefunden.',
+	'The maximum number': 'Die maximale Anzahl an Freischaltungen für diese Vorgangs-ID wurde erreicht.',
 	'Your donation has been verified': 'Deine Spende wurde verifziert und alle Funktionen wurden erfolgreich freigeschaltet.',
 	'You may unlock {1}': 'Du kannst JavaScript Blocker noch auf {1} weiteren Kopien von Safari aktivieren.',
 	'Thanks for your support!': 'Vielen Dank für deine Unterstüzung!',
@@ -177,6 +177,7 @@ Strings['de-de'] = {
 	'What donation?': 'Was sind die Möglichkeiten nach einer Spende? (Link führt zu englischer FAQ)',
 	'You cannot use JavaScript Blocker': 'Du kannst diese Expertenfunktion von JavaScript Blocker leider nicht benutzen, bis du eine kleine Spende geätitg hast und diese verifiziert wurde.',
 	'Either disable expert': 'Du musst die Expertenfunktionen ausschalten oder klicke nachfolgend <b>{1}</b> um deine Spende zu verifizieren.',
+	'New donation method {1}': "Aufgrund der vielen Beschwerden über die Funktionen, die nicht noch entriegelt wurde eine neue Spende Verifizierungssystem geschaffen worden. Bitte klicken Sie <b>{1}</b> Ihre Spende ein letztes Mal überprüfen.",
     /** /DONATION **/
 
 	/** SCRIPT INFO STUFF **/

@@ -163,8 +163,8 @@ Strings['en-us'] = {
 			'it may take up to 24 hours for your PayPal email address to become active on the server.',
 	'PayPal Email Address': 'PayPal Email Address',
 	'An email address was not specified.': 'An email address was not specified.',
-	'A donation with that email address was not found. ({1})': 'A donation with that email address was not found. ({1})',
-	'The maximum number ({1})': 'The maximum number of activations has been used for that email address. ({1})',
+	'A donation with that email address was not found.': 'A donation with that email address was not found.',
+	'The maximum number': 'The maximum number of activations has been used for that email address.',
 	'Your donation has been verified': 'Your donation has been verified and all features have been unlocked.',
 	'You may unlock {1}': 'You may unlock JavaScript Blocker on {1} more copies of Safari.',
 	'Thanks for your support!': 'Thanks for your support!',
@@ -174,6 +174,7 @@ Strings['en-us'] = {
 	'What donation?': 'What donator-only features are there?',
 	'You cannot use JavaScript Blocker': 'You cannot use JavaScript Blocker with expert features enabled until you have made a donation and had it verified.',
 	'Either disable expert': 'Either disable expert features or click <b>{1}</b> below to verify your donation.',
+	'New donation method {1}': 'Due to many complaints about features not remaining unlocked, a new donation verification system has been created. Please click <b>{1}</b> to verify your donation one final time.',
 	/** /DONATION **/
 	
 	/** SCRIPT INFO STUFF - ALL NEW **/

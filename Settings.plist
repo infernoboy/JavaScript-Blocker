@@ -204,7 +204,7 @@
 		<key>Key</key>
 		<string>simpleReferrer</string>
 		<key>Title</key>
-		<string>Enable simple referrer blocking—adds rel="noreferrer" to anchors</string>
+		<string>Enable simple referrer blocking—adds rel="noreferrer" to links</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>

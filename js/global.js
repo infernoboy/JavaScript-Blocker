@@ -55,8 +55,9 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.3.3',
-	bundleid: 58,
+	displayv: '2.3.4',
+	bundleid: 59,
+	donation_url: 'http://lion.toggleable.com:160/jsblocker/verify.php?id=',
 	
 	set_theme: function (theme) {
 		_$('#main-large-style').attr('href', safari.extension.settings.largeFont ? 'css/main.large.css' : '');
@@ -77,6 +78,29 @@ var Template = {
 			_$('#main-theme-style').attr('href', 'css/main.' + theme + '.css');
 		}
 	},
+	
+	verify_donation: function (id, cb) {
+		$.get(this.donation_url + escape(id) +
+				'&install=' + escape(safari.extension.settings.installID)).success(function (data) {
+				var datai = parseInt(data, 10),
+						error = null;
+				
+				switch (datai) {
+					case -3: error = _('An email address was not specified.'); break;
+					case -2: error = _('A donation with that email address was not found.'); break;
+					case -1: error = _('The maximum number'); break;
+					case 0:
+					case 1:
+					case 2:
+						JavaScriptBlocker.donationVerified = id;
+					break;
+					
+					default: error = data;
+				}
+				
+				cb.call(JavaScriptBlocker, error);
+		});
+	},
 
 	donate: function () {
 		var self = this;
@@ -85,7 +109,7 @@ var Template = {
 		
 		if (!self.donationVerified)
 			new Poppy($(this.popover.body).width() / 2, 13, [
-				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/233real">' + this.displayv + '</a>']), '</p>',
+				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/234">' + this.displayv + '</a>']), '</p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
 				'<p>', _('Please, if you can'), '</p>',
 				'<p>',
@@ -162,7 +186,7 @@ var Template = {
 						'allowedIsCollapsed', 'blockedIsCollapsed', 'unblockedIsCollapsed'], key, n = {};
 				
 				for (key in window.localStorage) {
-					if (ex.indexOf(key) > -1) continue;
+					if (~ex.indexOf(key)) continue;
 					
 					try {
 						n[key] = JSON.parse(window.localStorage[key]);
@@ -185,8 +209,25 @@ var Template = {
 				'<p>Donations can now be made via Bitcoin! Send to: 1C9in5xaFcwi7aYLuK1soZ8mvJBiEN9MNA</p>',
 				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
 				'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'].join(''), function () {
-					_$('#rawr-continue').click($.proxy(self.donate, self));
+					_$('#rawr-continue').click(function () {
+						self.installedBundle = 54;
+						self.updater();
+					});
 			}, null, null, true);
+		} else if (v < 59) {
+			var x;
+			
+			if (x = safari.extension.secureSettings.installID) safari.extension.settings.setItem('installID', x);
+			else safari.extension.settings.setItem('installID', this.utils.id() + '~' + this.displayv);
+			
+			if (safari.extension.settings.donationVerified) return this.donate();
+			
+			new Poppy($(this.popover.body).width() / 2, 13, [
+				'<p class="misc-info">Important Donator Information</p>',
+				'<p>', _('New donation method {1}', [_('Unlock')]), '</p>',
+				'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'].join(''), function () {
+					_$('#rawr-continue').click($.proxy(self.donate, self));
+				}, $.noop, null, true);
 		} else if (v < this.bundleid)
 			this.donate();
 	},
@@ -344,10 +385,10 @@ var Template = {
 		window.localStorage.setItem('InstalledBundleID', value);
 	},
 	get donationVerified() {
-		return safari.extension.secureSettings.getItem('donationVerified');
+		return safari.extension.settings.getItem('donationVerified');
 	},
 	set donationVerified(value) {
-		safari.extension.secureSettings.setItem('donationVerified', value);
+		safari.extension.settings.setItem('donationVerified', value);
 	},
 	get methodAllowed() {
 		if (this.simpleMode) return true;
@@ -580,7 +621,7 @@ var Template = {
 			safari.extension.toolbarItems[0].popover.hide();
 		},
 		send_installid: function () {
-			$.get('http://lion.toggleable.com:160/jsblocker/installed.php?id=' + safari.extension.secureSettings.getItem('installID'));
+			$.get('http://lion.toggleable.com:160/jsblocker/installed.php?id=' + safari.extension.settings.getItem('installID'));
 		},
 		_attention: !1,
 		_has_attention: 0,
@@ -665,7 +706,7 @@ var Template = {
 		
 		for (i = 1, b = s.length; i < b; i++) {
 			t = s[i] + '.' + t;
-			if (ex.indexOf(t) === -1)
+			if (!~ex.indexOf(t))
 				p.push(t);
 		}
 			
@@ -901,7 +942,7 @@ var Template = {
 								} else if (rtype > -1)
 									delete crules[sub][rule];
 							} else {
-								if (being_deleted[sub].indexOf(rule) > -1)
+								if (~being_deleted[sub].indexOf(rule))
 									continue;
 								else
 									being_deleted[sub].push(rule);
@@ -977,7 +1018,7 @@ var Template = {
 
 					if (rules === 0) return $('<ul class="rules-wrapper"></ul>');
 							
-					if (j && j.indexOf(domain_name) > -1)
+					if (j && ~j.indexOf(domain_name))
 						newul.parent().prev().addClass('hidden');
 				}
 				
@@ -1453,7 +1494,12 @@ var Template = {
 		$(this.popover.body).keydown(function (e) {
 			if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 10;
 			else if ((e.which === 93 || e.which === 91) ||
-					(window.navigator.platform.match(/Win/) && e.which === 17)) self.commandKey = true;
+					(window.navigator.platform.match(/Win/) && e.which === 17)) {
+						self.commandKey = true;
+						self.utils.timer.timeout('no_commandkey', function (self) {
+							self.commandKey = false;
+						}, 1000, [self]);
+					}
 			else if (e.which === 70 && self.commandKey) {
 				e.preventDefault();
 				
@@ -2209,8 +2255,7 @@ var Template = {
 				} else
 					_$('#unblocked-script-urls').hide().prev().hide();
 				
-				
-				_$('#unlock').parent().toggleClass('hidden', self.donationVerified);
+				_$('#unlock-p').toggleClass('hidden', !(self.donationVerified === false || self.donationVerified === null || self.donationVerified === undefined));
 				_$('#above-temporary').toggleClass('hidden', !self.donationVerified);
 				_$('#filter-temporary').toggleClass('hidden', !self.donationVerified);
 			}
@@ -2268,13 +2313,20 @@ var Template = {
 				!safari.extension.settings.blockReferrer ||
 				((event.target.url in this.anonymous.previous) && this.anonymous.previous[event.target.url] === event.url) ||
 				((event.target.url in this.anonymous.pages) && this.anonymous.pages[event.target.url] === event.url) ||
-				((event.target.url in this.anonymous.cannot) && this.anonymous.cannot[event.target.url].indexOf(event.url) > -1)) {
+				((event.target.url in this.anonymous.cannot) && ~this.anonymous.cannot[event.target.url].indexOf(event.url))) {
 			delete this.anonymous.cannot[event.target.url];
 			delete this.anonymous.pages[event.target.url];
 			return true;
 		}
-			
+						
 		if (event.url && event.target.url && event.target.url.length && event.url.length) {
+			if (~event.url.indexOf('#')) {
+				var target_test = event.target.url.substr(0, event.target.url.indexOf('/', 9)),
+						dest_test = event.url.substr(0, event.url.indexOf('/', 9));
+
+				if (target_test === dest_test) return true;
+			}
+			
 			event.preventDefault();
 					
 			if (event.target.url in this.anonymous.newTab) {
@@ -2421,7 +2473,7 @@ var Template = {
 				
 				if (!(event.target.url in this.anonymous.cannot)) this.anonymous.cannot[event.target.url] = [];
 				
-				if (this.anonymous.cannot[event.target.url].indexOf(event.message) === -1)
+				if (!~this.anonymous.cannot[event.target.url].indexOf(event.message))
 					this.anonymous.cannot[event.target.url].push(event.message);
 			break;
 			
@@ -2433,7 +2485,7 @@ var Template = {
 		}
 	},
 	open_popover: function (event) {
-		if (typeof event !== 'undefined' && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1) {
+		if (typeof event !== 'undefined' && ('type' in event) && ~['beforeNavigate', 'close'].indexOf(event.type)) {
 			delete this.frames[event.target.url];
 			setTimeout(function (self, event) {
 				delete self.anonymous.newTab[event.target.url];
@@ -2463,7 +2515,7 @@ var Template = {
 			_$('#find-bar-done:visible').click();
 			
 			new Poppy();
-		} else if (!event || (event && ('type' in event) && ['beforeNavigate', 'close'].indexOf(event.type) > -1)) {
+		} else if (!event || (event && ('type' in event) && ~['beforeNavigate', 'close'].indexOf(event.type))) {
 			new Poppy();
 			
 			try {
@@ -2550,8 +2602,10 @@ var Template = {
 		return false;
 	},
 	validate: function (event) {
-		if (safari.extension.secureSettings.getItem('installID') === null)
-			safari.extension.secureSettings.setItem('installID', this.utils.id() + '~' + this.displayv);
+		var self = this;
+		
+		if (safari.extension.settings.getItem('installID') === null)
+			safari.extension.settings.setItem('installID', this.utils.id() + '~' + this.displayv);
 			
 		this.speedMultiplier = this.useAnimations ? 1 : 0.001;
 		
@@ -2562,6 +2616,21 @@ var Template = {
 			this.popover = safari.extension.toolbarItems[0].popover.contentWindow.document;
 			
 			if (this.installedBundle < this.bundleid) this.utils.attention(1);
+			
+			if (this.donationVerified && !this.donationReverified) {
+				this.donationReverified = true;
+				
+				this.verify_donation(this.donationVerified, function (error) {
+					if (error && isNaN(error) && !(/^Error/.test(error))) {
+						self.donationVerified = false;
+						
+						setTimeout(function (self) {
+							new Poppy($(self.popover.body).width() / 2, 13, _('JavaScript Blocker') +
+									' has been deactivated. Please don\'t steal.');
+						}, 1000, self);
+					}
+				});
+			}
 			
 			this.set_theme(this.theme);
 			this.examine._populate_cache();
