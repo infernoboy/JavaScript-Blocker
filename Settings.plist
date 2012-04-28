@@ -50,7 +50,7 @@
 		<key>Key</key>
 		<string>showPerHost</string>
 		<key>Title</key>
-		<string>Show number of scripts for each host</string>
+		<string>Show number of items for each host</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -115,8 +115,8 @@
 		<string>Toolbar badge shows number of</string>
 		<key>Titles</key>
 		<array>
-			<string>Blocked scripts or hosts</string>
-			<string>Allowed scripts or hosts</string>
+			<string>Blocked items</string>
+			<string>Allowed items</string>
 			<string>Neither</string>
 		</array>
 		<key>Type</key>
@@ -184,7 +184,7 @@
 		<key>Key</key>
 		<string>allowExtensions</string>
 		<key>Title</key>
-		<string>Allow scripts that use the "safari-extension" protocol</string>
+		<string>Allow items that use the "safari-extension" protocol</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -194,7 +194,7 @@
 		<key>Key</key>
 		<string>secureOnly</string>
 		<key>Title</key>
-		<string>Scripts on secure sites must also be secure</string>
+		<string>Items on secure sites must also be secure</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -248,7 +248,7 @@
 		<key>Key</key>
 		<string>simpleMode</string>
 		<key>Title</key>
-		<string>Enable expert features—allows for blocking individual scripts</string>
+		<string>Enable expert features—allows for blocking individual items</string>
 		<key>TrueValue</key>
 		<false/>
 		<key>Type</key>
@@ -263,6 +263,102 @@
 		<string>Create rules for automatic actions (excluding "Nowhere")</string>
 		<key>Type</key>
 		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>Type</key>
+		<string>Separator</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>enableframe</string>
+		<key>Title</key>
+		<string>Enable frame blocker</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>showPlaceholderframe</string>
+		<key>Title</key>
+		<string>Show a clickable placeholder for blocked frames</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<string>domain</string>
+		<key>Key</key>
+		<string>alwaysBlockframe</string>
+		<key>Title</key>
+		<string>Automatically block frames from</string>
+		<key>Titles</key>
+		<array>
+			<string>Different hosts &amp; subdomains</string>
+			<string>Different hostnames</string>
+			<string>Nowhere</string>
+			<string>Anywhere</string>
+		</array>
+		<key>Type</key>
+		<string>PopUpButton</string>
+		<key>Values</key>
+		<array>
+			<string>topLevel</string>
+			<string>domain</string>
+			<string>nowhere</string>
+			<string>everywhere</string>
+		</array>
+	</dict>
+	<dict>
+		<key>Type</key>
+		<string>Separator</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<false/>
+		<key>Key</key>
+		<string>enableembed</string>
+		<key>Title</key>
+		<string>Enable embed, object, and video blocker</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>showPlaceholderembed</string>
+		<key>Title</key>
+		<string>Show a clickable placeholder for these if blocked</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<string>domain</string>
+		<key>Key</key>
+		<string>alwaysBlockembed</string>
+		<key>Title</key>
+		<string>Automatically block these from</string>
+		<key>Titles</key>
+		<array>
+			<string>Different hosts &amp; subdomains</string>
+			<string>Different hostnames</string>
+			<string>Nowhere</string>
+			<string>Anywhere</string>
+		</array>
+		<key>Type</key>
+		<string>PopUpButton</string>
+		<key>Values</key>
+		<array>
+			<string>topLevel</string>
+			<string>domain</string>
+			<string>nowhere</string>
+			<string>everywhere</string>
+		</array>
 	</dict>
 	<dict>
 		<key>Type</key>
@@ -323,6 +419,12 @@
 		<string>installID</string>
 		<key>Secure</key>
 		<true/>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<real>1</real>
+		<key>Key</key>
+		<string>enablescript</string>
 	</dict>
 </array>
 </plist>

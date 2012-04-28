@@ -61,12 +61,12 @@ Poppy.prototype = {
 	c: '#poppy-content',
 	a: '#poppy-arrow',
 	init: function () {
-		this._time *= JavaScriptBlocker.speedMultiplier;
+		this._time *= JB.speedMultiplier;
 
 		if ($(this.e, this.p).length)
 			return this.remove((this.removeOnly !== false) ? $.noop : this.create);
 
-		return (this.removeOnly !== false) ? false : JavaScriptBlocker.utils.zero_timeout($.proxy(this.create, this));
+		return (this.removeOnly !== false) ? false : JB.utils.zero_timeout($.proxy(this.create, this));
 	},
 	remove: function (cb) {
 		var self = this;
@@ -82,11 +82,11 @@ Poppy.prototype = {
 			
 			$(d.s.e, d.s.p).remove();
 			
-			JavaScriptBlocker.utils.zero_timeout($.proxy(d.c, d.s));
+			JB.utils.zero_timeout($.proxy(d.c, d.s));
 			
 			if (d.s.removeOnly) {
-				JavaScriptBlocker.utils.zero_timeout(d.s.callback);
-				JavaScriptBlocker.utils.zero_timeout(d.s.callback2);
+				JB.utils.zero_timeout(d.s.callback);
+				JB.utils.zero_timeout(d.s.callback2);
 			}
 		});
 	},
@@ -97,7 +97,7 @@ Poppy.prototype = {
 				self = this,
 				eC = '<div id="' + this.e.substr(1) + '"></div>',
 				cC = '<div id="' + this.c.substr(1) + '"></div>',
-				aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask' + (JavaScriptBlocker.theme.indexOf('default') !== 0 ? '-' + JavaScriptBlocker.theme : '') + '.png" alt=""/>';
+				aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask' + (JB.theme.indexOf('default') !== 0 ? '-' + JB.theme : '') + '.png" alt=""/>';
 				
 		if (this.modal) mo.fadeIn(this._time * 1000);
 		
@@ -115,7 +115,7 @@ Poppy.prototype = {
 			
 		var points = this.calcPoints(), left;
 		
-		if (points.arrow.bottom == 'auto') $(this.a, m).attr('src', 'images/arrow-mask-reverse' + (JavaScriptBlocker.theme !== 'default' ? '-' + JavaScriptBlocker.theme : '') + '.png');
+		if (points.arrow.bottom == 'auto') $(this.a, m).attr('src', 'images/arrow-mask-reverse' + (JB.theme !== 'default' ? '-' + JB.theme : '') + '.png');
 		
 		m.css({
 			WebkitTransitionProperty: '-webkit-transform, opacity',
@@ -131,11 +131,11 @@ Poppy.prototype = {
 			height: m.height()
 		});
 		
-		JavaScriptBlocker.utils.zero_timeout(function (self, m, points) {
+		JB.utils.zero_timeout(function (self, m, points) {
 			m.css({
 				WebkitTransitionDuration: [self._time, self._time * 1.4, self._time, self._time].join('s,') + 's',
 				opacity: 1,
-				WebkitTransform: JavaScriptBlocker.speedMultiplier < 1 ? 'scale(1)' : 'scale(1.15)'
+				WebkitTransform: JB.speedMultiplier < 1 ? 'scale(1)' : 'scale(1.15)'
 			}).find(self.a).css({
 				left: points.arrow.left,
 				bottom: points.arrow.bottom,
@@ -150,7 +150,11 @@ Poppy.prototype = {
 		m.one('webkitTransitionEnd', { s: self, m: m }, function (event) {
 			var d = event.data;
 			
-			d.s.callback2.call($(d.s.e, d.s.p));
+			try {
+				d.s.callback2.call($(d.s.e, d.s.p));
+			} catch (e) {
+				alert('Error with callback2 for poppy: ' + e);
+			}
 		
 			d.m.css({
 				WebkitTransform: 'scale(1)',

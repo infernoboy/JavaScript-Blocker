@@ -57,3 +57,6 @@ ul li span.https,
 #domain-script.https {
 	color: #815808;
 }
+ul li small {
+	color: #555;
+}

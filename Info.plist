@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.3.4</string>
+	<string>2.4.0</string>
 	<key>CFBundleVersion</key>
-	<string>59</string>
+	<string>60</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -62,6 +62,10 @@
 				<string>js/blocker.js</string>
 			</array>
 		</dict>
+		<key>Stylesheets</key>
+		<array>
+			<string>css/injected.css</string>
+		</array>
 	</dict>
 	<key>Description</key>
 	<string>Controls the loading of external scripts in &lt;script&gt; tags.</string>

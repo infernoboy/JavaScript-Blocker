@@ -48,7 +48,7 @@ body {
 	body.windows {
 		background: rgba(239,239,239,0.93);
 	}
-header {
+header.main-header {
 	position: fixed;
 	top: 5px;
 	width: 460px;
@@ -56,7 +56,7 @@ header {
 	padding: 0;
 	margin: 0;
 }
-	body.simple header {
+	body.simple header.main-header {
 		width: 360px;
 	}
 header h1 {
@@ -147,7 +147,7 @@ textarea {
 	background: -webkit-linear-gradient(top, #F3F3F5, #DFDFDF);
 	border: 1px solid #A4A4A4;
 	-webkit-border-radius: 4px;
-	color: #545554;
+	color: #444;
 	-webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.5);
 	text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
@@ -356,7 +356,7 @@ ul li {
 	ul li.none {
 		display: none;
 	}
-	#rules-list-rules ul li {
+	#rules-list-scripts ul li {
 		overflow: hidden;
 	}
 ul li span {
@@ -366,7 +366,7 @@ ul li span {
 	white-space: nowrap;
 }	
 	body.simple ul li span {
-		max-width: 82%;
+		max-width: 77%;
 	}
 	ul li span.https,
 	#domain-script.https {
@@ -378,14 +378,8 @@ ul li span {
 	}
 	ul li small {
 		font-size: 8pt;
-		color: #888;
+		color: #777;
 	}
-	ul li small a {
-		opacity: 0.7;
-	}
-		ul li small a:hover {
-			opacity: 1;
-		}
 	ul li span::-webkit-scrollbar,
 	p.misc-header::-webkit-scrollbar {
 		height: 3px;
@@ -412,6 +406,7 @@ ul li input {
 	body.simple ul li input[type="button"] {
 		width: 17%;
 	}
+
 a {
 	text-decoration: none;
 	color: #0064E3;
@@ -420,6 +415,10 @@ a {
 	a:hover {
 		color: #0B37B4;
 		text-shadow: 0 1px 0 #fff;
+	}
+	a.toggle-main,
+	a.toggle-rules {
+		cursor: default;
 	}
 
 #disable,
@@ -469,6 +468,53 @@ a {
 	margin-top: 10px;
 	padding-bottom: 1px;
 }
+#rules-list-frames {
+	margin-bottom: 7px;
+}
+header h3 {
+	float: left;
+	font-size: 12px;
+	text-transform: uppercase;
+	color: #5C6A78;
+	padding: 0 4px;
+	margin: 5px 0;
+	cursor: default;
+}
+	li.kind-header {
+		margin-bottom: -5px;
+	}
+	li.kind-header:not(:first-child) {
+		margin-top: 4px;
+	}
+	#main h3 {
+		padding: 0;
+		margin-top: -1px;
+	}
+	#rules-list h3 {
+		float: left;
+	}
+	header a {
+		visibility: hidden;
+		float: left;
+		margin-top: 5px;
+		margin-left: 5px;
+		font-size: 12px;
+		color: #8593A1;
+		font-weight: bold;
+	}
+		header:hover a {
+			visibility: visible;
+		}
+		header a:hover {
+			color: #8593A1;
+		}
+		header a:active {
+			color: #4766E2;
+		}
+		#main header a {
+			margin-top: -1px;
+			margin-left: 8px;
+		}
 p.misc-info {
 	text-align: center;
 	font-size: 10pt;
@@ -725,11 +771,15 @@ p.above-filter {
 		white-space: pre;
 	}
 #backup-export,
-#backup-import {
+#backup-import,
+#debug-info {
 	margin-top: 1px;
 	width: 300px;
 	height: 120px;
 }
+	#debug-info {
+		height: 110px;
+	}
 	#backup-import {
 		height: 80px;
 	}

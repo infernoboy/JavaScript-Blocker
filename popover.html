@@ -26,10 +26,10 @@
 		_ = safari.extension.globalPage.contentWindow._;
 		
 		document.addEventListener('DOMContentLoaded', function () {
-			safari.extension.globalPage.contentWindow.JavaScriptBlocker.hljs = hljs;
+			safari.extension.globalPage.contentWindow.JB.hljs = hljs;
 			
 			setTimeout(function () {
-				safari.extension.globalPage.contentWindow.JavaScriptBlocker.bind_events();
+				safari.extension.globalPage.contentWindow.JB.bind_events();
 			}, 300);
 			
 			var inputs = document.getElementsByTagName('input'),
@@ -47,7 +47,7 @@
 			if (window.navigator.platform.match(/Win/)) document.body.className += ' windows';
 			else if (window.navigator.platform.match(/Mac/)) document.body.className += ' macos';
 			
-			document.body.className += ' theme-' + safari.extension.globalPage.contentWindow.JavaScriptBlocker.theme;
+			document.body.className += ' theme-' + safari.extension.globalPage.contentWindow.JB.theme;
 		});
 		
 		window.addEventListener('message', function (event) {
@@ -58,10 +58,10 @@
 
 <body class="blocking-mode">
 	<div id="modal">
-		<header><h1><script>document.write(_('JavaScript Blocker'));</script></h1></header>
+		<header class="main-header"><h1><script>document.write(_('JavaScript Blocker'));</script></h1></header>
 	</div>
 	
-	<header><h1><script>document.write(_('JavaScript Blocker'));</script></h1></header>
+	<header class="main-header"><h1><script>document.write(_('JavaScript Blocker'));</script></h1></header>
 	
 	<div id="container">
 		<div id="find-bar">
@@ -78,18 +78,24 @@
 			</p>
 			<p><script>document.write(_('Thanks for using {1}', [_('JavaScript Blocker')]));</script></p>
 			<p>
-				<input type="checkbox" id="use-large" checked="checked" />&thinsp;<label for="use-large" id="large-label"><script>document.write(_('Use large font'));</script></label>
+				<input type="checkbox" id="use-large" />&thinsp;<label for="use-large" id="large-label"><script>document.write(_('Use large font'));</script></label>
 			<p>
 				<input type="checkbox" id="block-manual" checked="checked" />&thinsp;<label for="block-manual"><script>document.write(_('Block scripts manually'));</script></label>
 			</p>
 			<p>
-				<input type="checkbox" id="secure-only" />&thinsp;<label for="secure-only"><script>document.write(_('Scripts on secure sites must also be secure'));</script></label>
+				<input type="checkbox" id="block-frames" checked="checked" />&thinsp;<label for="block-frames"><script>document.write(_('Block frames unless'));</script></label>
+			</p>
+			<p>
+				<input type="checkbox" id="block-embeds" />&thinsp;<label for="block-embeds"><script>document.write(_('Enable embed blocker'));</script></label>
+			</p>
+			<p>
+				<input type="checkbox" id="secure-only" />&thinsp;<label for="secure-only"><script>document.write(_('Items on secure sites must also be secure'));</script></label>
 			</p>
 			<p><input type="button" id="finish-setup" value="Finish Setup" /></p>
 		</div>
 		<div id="main" class="whoop">
 			<div id="page-lists">
-				<label><script>document.write(_('Page:'));</script></label>
+				<label id="page-lists-label"><script>document.write(_('Page:'));</script></label>
 				<select id="page-list">
 					<optgroup label="Main Page">
 						<option>http://javascript-blocker.toggleable.com</option>
@@ -178,7 +184,8 @@
 					</ul>
 					<br style="clear:both;" />
 				</div>
-				<ul id="rules-list-rules"></ul>
+				
+				<div id="rule-container"></div>
 			</div>
 		</div>
 		<div id="misc" class="whoop">

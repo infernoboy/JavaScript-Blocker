@@ -21,13 +21,13 @@ Strings['en-us'] = {
 	
 	/** BUTTONS & LABELS **/
 	'Domains': 'Domains',
-	'State:': 'State:', // NEW - Displayed in rules list. Label for if a rule is Enabled, Disabled, Temporary, or Any of those.
-	'Visibility:': 'Visibility:', // NEW - Displayed in rules list. Label for if a domain is Collapsed or Expanded.
+	'State:': 'State:',
+	'Visibility:': 'Visibility:',
 	'Page:': 'Page:',
 	'Allowed:': 'Allowed:',
 	'Blocked:': 'Blocked:',
 	'Unblocked:': 'Unblockable:',
-	'On:': 'On:', // NEW - The domain the new rule will be added to, e.g "On: google.com"
+	'On:': 'On:',
 	'?': '?',
 	'Edit': 'Edit',
 	'Done Editing': 'Done',
@@ -40,9 +40,12 @@ Strings['en-us'] = {
 	'Allow All': 'Allow All',
 	'Block All': 'Block All',
 	'Block': 'Block',
-	'Block scripts manually': 'Allow scripts that originate from the same domain',
-	'Scripts on secure sites must also be secure': 'Scripts on secure sites must also be secure',
+	'Block scripts manually': 'Allow scripts that originate within the same domain',
+	'Block frames unless': 'Block inline frames not originating within the same domain (verified donation required)', // NEW
+	'Enable embed blocker': 'Enable embed, object, and video blocker (verified donation required)', // NEW
+	'Items on secure sites must also be secure': 'Items on secure sites must also be secure', // NEW
 	'Finish Setup': 'Finish Setup',
+	'Show Setup': 'Show Setup',
 	'View': 'View',
 	'Disable': 'Disable',
 	'Delete': 'Delete',
@@ -64,14 +67,17 @@ Strings['en-us'] = {
 	'Reinstall Whitelist & Blacklist': 'Reinstall Whitelist & Blacklist',
 	'Show All': 'Show All',
 	'Show Active': 'Show Active',
-	'Show': 'Show', // NEW
+	'Show': 'Show',
+	'Hide': 'Hide',
 	'Continue': 'Continue',
-	'View Script': 'View Script',
+	'View Script Source': 'View Script Source', // NEW
+	'View Frame Source': 'View Frame Source', // NEW
+	'View Embed Source': 'View Embed Source', // NEW
 	'New rule for {1}': 'New rule for <b>{1}</b>', // {1} = domain name
 	'Any': 'Any',
 	'Enabled': 'Enabled',
 	'Disabled': 'Disabled',
-	'Temporary': 'Temporary', // NEW - In rules list for State:.
+	'Temporary': 'Temporary',
 	'Collapsed': 'Collapsed',
 	'Expanded': 'Expanded',
 	'Collapse All': 'Collapse All',
@@ -87,28 +93,38 @@ Strings['en-us'] = {
 	'Maybe Later': 'Maybe Later',
 	'I\'ve Donated!': 'I\'ve Donated!',
 	'Unblocked Script': 'Unblockable Script',
-	'More Info': 'More Info', // NEW - Displayed when double clicking a script in the main window with expert features on.
-	'Unlock': 'Unlock All Features', // NEW
-	'Temporary rule': 'Make this a temporary rule', // NEW
-	'Make Temporary Rules Permanent': 'Make Temporary Rules Permanent', // NEW
-	'Remove Temporary Rules': 'Remove Temporary Rules', // NEW
-	'Active Temporary Rules': 'Active Temporary Rules', // NEW
-	'Make Permanent': 'Make Permanent', // NEW
+	'More Info': 'More Info',
+	'Unlock': 'Unlock All Features',
+	'Temporary rule': 'Make this a temporary rule',
+	'Make Temporary Rules Permanent': 'Make Temporary Rules Permanent',
+	'Remove Temporary Rules': 'Remove Temporary Rules',
+	'Active Temporary Rules': 'Active Temporary Rules',
+	'Make Permanent': 'Make Permanent',
 	'Project Page': 'Project Page',
 	'Export': 'Export',
 	'Import': 'Import',
 	'Backup': 'Backup',
 	'Use large font': 'Use large font',
+	'Scripts': 'Scripts', // NEW
+	'Frames': 'Frames', // NEW
+	'Embeds': 'Embeds, Objects, & Videos', // NEW
+	'Frame Rules': 'Frame Rules', // NEW
+	'Script Rules': 'Script Rules', // NEW
+	'Embed Rules': 'Embed, Object, & Video Rules', // NEW
+	'Forgot': 'iForgot', // NEW
 	/** /BUTTONS **/
 	
 	/** POPPIES **/
 	'Whitelist and blacklist rules have been reinstalled.': 'Whitelist and blacklist rules have been reinstalled.',
-	'All temporary rules are now permanent.': 'All temporary rules are now permanent.', // NEW
-	'All temporary rules have been removed.': 'All temporary rules have been removed.', // NEW
+	'All temporary rules are now permanent.': 'All temporary rules are now permanent.',
+	'All temporary rules have been removed.': 'All temporary rules have been removed.',
 	'Rule succesfully edited.': 'Rule succesfully edited.',
 	'Rule succesfully added for {1}': 'Rule succesfully added for <b>{1}</b>', // {1} = domain name
 	'Changes will appear when you reload the rules list.': 'Changes will appear when you reload the rules list.',
 	'Loading script': 'Loading script&hellip;',
+	'Loading frame': 'Loading frame&hellip;', // NEW
+	'Loading embed': 'Loading embed&hellip;', // NEW
+	'Loading object': 'Loading object&hellip;', // NEW
 	'Loading rules': 'Loading rules&hellip;',
 	'Copy above': 'Copy the above and save it to a file to create a backup.',
 	'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
@@ -123,12 +139,16 @@ Strings['en-us'] = {
 	/** ERRORS-ISH **/
 	'This data URI cannot be displayed.': 'This data URI cannot be displayed.',	
 	'Predefined rules cannot be edited.': 'Predefined rules cannot be edited. ',
-	'Update Failure': 'Information about the current webpage is unavailable due to a bug with Safari. Reloading the page should resolve the issue.', // NEW?
+	'Update Failure': 'Information about the current webpage is unavailable due to a bug with Safari. Reloading the page should resolve the issue.',
+	'Unable to view source of embedded.': 'Unable to view source of embedded.',
 	/** /ERRORS-ISH **/
 	
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
 	'Adding a Rule For {1}': 'Adding a Rule For <b>{1}</b>', // {1} = domain name
 	'Editing a Rule For {1}': 'Editing a Rule For <b>{1}</b>', // *
+	'Adding a Script Rule': 'Adding a Script Rule',
+	'Adding a Frame Rule': 'Adding a Frame Rule',
+	'Adding a Embed Rule': 'Adding an Embed, Object & Video Rule',
 	
 	/** MISC HEADERS **/
 	'{1} domain, {2} rule': '{1} domain, {2} rule', // {1} = number of domains in list, {2} = number of rules in list
@@ -153,7 +173,7 @@ Strings['en-us'] = {
 	'You can also create a new rule to affect just this one.': 'You can also create a new rule to affect just this one.',
 	/** /INFO **/
 			
-	/** DONATION STUFF - ALL NEW **/
+	/** DONATION STUFF **/
 	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
 	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
 	'Please, if you can': 'Please, if you can, show your support by making a donation of any amount. ' +
@@ -177,7 +197,7 @@ Strings['en-us'] = {
 	'New donation method {1}': 'Due to many complaints about features not remaining unlocked, a new donation verification system has been created. Please click <b>{1}</b> to verify your donation one final time.',
 	/** /DONATION **/
 	
-	/** SCRIPT INFO STUFF - ALL NEW **/
+	/** SCRIPT INFO STUFF **/
 	'No information available.': 'No information available.',
 	'Most likely not required for proper website functionality.': 'Most likely not required for proper website functionality.',
 	'Probably required for proper website functionality.': 'Probably required for proper website functionality.',

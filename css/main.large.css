@@ -50,6 +50,13 @@ p.misc-header,
 	font-size: 10pt;
 }
 
+header h3 {
+	font-size: 13px;
+}
+	header a {
+		font-size: 13px;
+	}
+
 #disable,
 #view-rules,
 #unlock,

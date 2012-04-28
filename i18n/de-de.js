@@ -41,8 +41,9 @@ Strings['de-de'] = {
 	'Block All': 'Alle blockieren',
 	'Block': 'Blockieren',
 	'Block scripts manually': 'Scripte zulassen, die von der selben Domain stammen',
-	'Scripts on secure sites must also be secure': 'Scripte auf HTTPS Domains müssen auch verschlüsselt sein',
+	'Items on secure sites must also be secure': 'Artikel auf HTTPS Domains müssen auch verschlüsselt sein',
 	'Finish Setup': 'Einstellungen sichern',
+	'Show Setup': 'Einstellungen zeige',
 	'View': 'Zeige',
 	'Disable': 'Deaktivieren',
 	'Delete': 'Löschen',
@@ -64,7 +65,8 @@ Strings['de-de'] = {
 	'Reinstall Whitelist & Blacklist': 'Whitelist & Blacklist erneut installieren',
 	'Show All': 'Alle Zeigen',
 	'Show Active': 'Aktive Zeigen',
-	'Show': 'Zeigen',
+	'Show': 'Einblenden',
+	'Hide': 'Ausblenden',
 	'Color Key': 'Farbbedeutung',
 	'Continue': 'Sichern',
 	'View Script': 'Zeige Script',
@@ -100,6 +102,7 @@ Strings['de-de'] = {
 	'Remove Temporary Rules': 'Temporäre Regel(n) entfernen', // Done
 	'Active Temporary Rules': 'Aktive Temporäre Regeln', // NEW
 	'Make Permanent': 'Machen Unbestimmte',
+	'Forgot': 'Vergessen',
 	/** /BUTTONS */
 
 	/** POPPIES **/

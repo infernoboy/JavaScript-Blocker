@@ -25,27 +25,27 @@
 
 		<script>
 			document.addEventListener('DOMContentLoaded', function () {
-				JavaScriptBlocker.load_language();
+				JB.load_language();
 			});
 
 			window.addEventListener('message', function (event) {
 				if (event.source === window && event.data === 'zero-timeout') {
 					event.stopPropagation();
-					if (JavaScriptBlocker.utils._zero_timeouts.length) {
-						var o = JavaScriptBlocker.utils._zero_timeouts.shift();
+					if (JB.utils._zero_timeouts.length) {
+						var o = JB.utils._zero_timeouts.shift();
 						if (typeof o[0] === 'function')
-							o[0].apply(JavaScriptBlocker, o[1]);
+							o[0].apply(JB, o[1]);
 					}
 				}
 			}, true);
 			
-			safari.application.addEventListener('close', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
-			safari.application.addEventListener('beforeNavigate', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
-			safari.application.addEventListener('beforeNavigate', $.proxy(JavaScriptBlocker.anonymize, JavaScriptBlocker), true);
-			safari.application.addEventListener('popover', $.proxy(JavaScriptBlocker.open_popover, JavaScriptBlocker), true);
-			safari.application.addEventListener('validate', $.proxy(JavaScriptBlocker.validate, JavaScriptBlocker), false);
-			safari.application.addEventListener('message', $.proxy(JavaScriptBlocker.handle_message, JavaScriptBlocker), true);
-			safari.extension.settings.addEventListener('change', $.proxy(JavaScriptBlocker.setting_changed, JavaScriptBlocker), true);
+			safari.application.addEventListener('close', $.proxy(JB.open_popover, JB), true);
+			safari.application.addEventListener('beforeNavigate', $.proxy(JB.open_popover, JB), true);
+			safari.application.addEventListener('beforeNavigate', $.proxy(JB.anonymize, JB), true);
+			safari.application.addEventListener('popover', $.proxy(JB.open_popover, JB), true);
+			safari.application.addEventListener('validate', $.proxy(JB.validate, JB), false);
+			safari.application.addEventListener('message', $.proxy(JB.handle_message, JB), true);
+			safari.extension.settings.addEventListener('change', $.proxy(JB.setting_changed, JB), true);
 		</script>
 	</head>
 	<body>
@@ -59,6 +59,17 @@
 					<option value="<%=((n === 0 ? '' : '.') + self.page_parts[n])%>"><%=(self.page_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + self.page_parts[n]))%></option>
 			<% } %>
 			</select>
+		</textarea>
+		
+		<textarea id="tmpl_rule_wrapper">
+			<header id="head-<%=self.kind%>-rules" class="rules-header">
+				<h3 id="<%=self.kind%>-rules"><%=self.local%></h3>
+				<a id="toggle-<%=self.kind%>-rules" class="toggle-rules"><%=_('Hide')%></a>
+				<br style="clear:both;" />
+			</header>
+			<div style="overflow:hidden;">
+				<ul id="rules-list-<%=self.kind%>s" class="rules-wrapper"></ul>
+			</div>
 		</textarea>
 	</body>
 </html>

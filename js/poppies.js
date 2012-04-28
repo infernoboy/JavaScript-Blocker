@@ -4,10 +4,10 @@
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
  ***************************************/
 
-JavaScriptBlocker.poppies = {
+JB.poppies = {
 	verify_donation: function (main) {
 		var zoo = {
-			url: JavaScriptBlocker.donation_url,
+			url: JB.donation_url,
 			me: this,
 			main: main,
 			content: [
@@ -18,7 +18,7 @@ JavaScriptBlocker.poppies = {
 				'<input type="text" placeholder="', _('PayPal Email Address'), '" id="donation-id" /> ',
 				'<input type="button" value="', _('Continue'), '" id="donation-confirm" /><br />',
 				'<a class="outside" href="mailto:travis@toggleable.com?subject=I cannot donate to JavaScript Blocker, but want all the features!&body=Reason: ">', _('I can\'t donate'), '</a> | ',
-				'<a class="outside" href="mailto:travis@toggleable.com?subject=I forgot my JavaScript Blocker activation information!&body=Help me out!">iForgot</a>'].join(''),
+				'<a class="outside" href="mailto:travis@toggleable.com?subject=I forgot my JavaScript Blocker activation information!&body=Help me out!">', _('Forgot'), '</a>'].join(''),
 			callback: function () {
 				var did = _$('#donation-id');
 				did.focus().val(zoo.me.length === 4 ? zoo.me[3] : '');
@@ -40,7 +40,7 @@ JavaScriptBlocker.poppies = {
 							case 1:
 							case 2:
 							case 3:
-								JavaScriptBlocker.donationVerified = id;
+								JB.donationVerified = id;
 								
 								new Poppy(zoo.me[0], zoo.me[1], [
 									'<p>', _('Your donation has been verified'), '</p>',
@@ -52,9 +52,9 @@ JavaScriptBlocker.poppies = {
 						}
 						
 						if (error)
-							new Poppy(zoo.me[0], zoo.me[1], JavaScriptBlocker.poppies.verify_donation.call([zoo.me[0], zoo.me[1], error, id], main));
+							new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], error, id], main));
 					}).error(function (req) {
-						new Poppy(zoo.me[0], zoo.me[1], JavaScriptBlocker.poppies.verify_donation.call([zoo.me[0], zoo.me[1], 'Error ' + req.status + ': ' + req.statusText, id], main));
+						new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], 'Error ' + req.status + ': ' + req.statusText, id], main));
 					});
 				}).siblings('#donation-id').keypress(function (e) {
 					if (e.keyCode == 13 || e.keyCode == 3) _$('#donation-confirm').click();
@@ -65,7 +65,7 @@ JavaScriptBlocker.poppies = {
 		return zoo;
 	},
 	add_rule: function (main) {
-		if (!JavaScriptBlocker.donationVerified)
+		if (!JB.donationVerified)
 			return {
 				content: _('Donation Required'),
 				save: $.noop,
@@ -98,7 +98,7 @@ JavaScriptBlocker.poppies = {
 					'</div>',
 				'</div>'].join(''),
 			save: function (no_refresh) {
-				main.rules.add(_$('#domain-picker').val(), this.val(), this.parent().prev().prev().find('input:checked').val(), true, _$('#rule-temporary').is(':checked'));
+				main.rules.add(zoo.me.li.data('kind'), _$('#domain-picker').val(), this.val(), this.parent().prev().prev().find('input:checked').val(), true, _$('#rule-temporary').is(':checked'));
 
 				if (!no_refresh) {
 					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
