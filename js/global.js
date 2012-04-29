@@ -55,8 +55,8 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.4.1',
-	bundleid: 61,
+	displayv: '2.4.2',
+	bundleid: 62,
 	donation_url: 'http://lion.toggleable.com:160/jsblocker/verify.php?id=',
 	
 	set_theme: function (theme) {
@@ -742,7 +742,7 @@ var Template = {
 		var ip = /^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})$/,
 				s = domain.split(/\./g).reverse(), t = s[0], p = ['*'], i, b,
 				ex = ['co.uk', 'me.uk', 'org.uk', 'com.cn', 'org.cn', 'com.tw', 'org.tw', 'com.mx', 'co.nz', 'net.nz', 'org.nz',
-						'us.com', 'uk.com', 'eu.com', 'de.com'];
+						'us.com', 'uk.com', 'eu.com', 'de.com', 'co.jp'];
 						
 		if (ip.test(domain)) return [domain, '*'];
 		
@@ -884,16 +884,16 @@ var Template = {
 			
 			if (typeof rule_found === 'number')
 				return rule_found;
-				
-			if (host === 'blank' && alwaysFrom !== 'everywhere') return 1;
 							
-			if (alwaysFrom !== 'nowhere' && rule_found !== true && host !== 'blank') {
+			if (alwaysFrom !== 'nowhere' && rule_found !== true) {
 				var sproto = this.utils.active_protocol(message[2]),
 						aproto = this.utils.active_protocol(message[1]);
 				
 				if (!(safari.extension.settings.allowExtensions && sproto === 'safari-extension')) {
 					var page_parts = this.domain_parts(host),
 							script_parts = this.domain_parts(this.active_host(message[2]));
+							
+					if (script_parts[0] === 'blank' && alwaysFrom !== 'everywhere') return 1;
 					
 					if ((alwaysFrom === 'topLevel' && page_parts[0] !== script_parts[0]) ||
 							(alwaysFrom === 'domain' && page_parts[page_parts.length - 2] !== script_parts[script_parts.length - 2]) ||

@@ -369,7 +369,12 @@ JB.rules.whitelist = {
 			'^http:\\/\\/([^\\/]+\\.)?ytimg\\.com\\/.*$',
 		]
 	},
-	image: {}
+	image: {
+		'.google.com': [
+			'^data:.*$',
+			'^https?:\\/\\/([^\\/]+\\.)?gstatic\\.com\\/.*$',
+		]
+	}
 };
 
 var wl = JB.rules.whitelist.script;

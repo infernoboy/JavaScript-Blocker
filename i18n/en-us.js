@@ -149,9 +149,10 @@ Strings['en-us'] = {
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
 	'Adding a Rule For {1}': 'Adding a Rule For <b>{1}</b>', // {1} = domain name
 	'Editing a Rule For {1}': 'Editing a Rule For <b>{1}</b>', // *
-	'Adding a Script Rule': 'Adding a Script Rule',
-	'Adding a Frame Rule': 'Adding a Frame Rule',
-	'Adding a Embed Rule': 'Adding an Embed, Object & Video Rule',
+	'Adding a Script Rule': 'Adding a Script Rule', // NEW
+	'Adding a Frame Rule': 'Adding a Frame Rule', // NEW
+	'Adding a Embed Rule': 'Adding an Embed, Object & Video Rule', // NEW
+	'Adding a Image Rule': 'Adding an Image Rule', // NEW
 	
 	/** MISC HEADERS **/
 	'{1} domain, {2} rule': '{1} domain, {2} rule', // {1} = number of domains in list, {2} = number of rules in list

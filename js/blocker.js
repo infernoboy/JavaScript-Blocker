@@ -17,7 +17,7 @@ function pageHost(not_real) {
 		case 'https:':
 		case 'file:':
 			var base = window.location.origin + (bv[0] >= 535 ?
-					window.location.pathname : escape(window.location.pathname)) + window.location.search;
+					window.location.pathname : encodeURI(window.location.pathname)) + window.location.search;
 			if (window.location.hash.length > 0) return base + window.location.hash;
 			else if (window.location.href.substr(-1) === '#') return base + '#';
 			else return base;
@@ -35,19 +35,27 @@ function setCSS(st, pr, pl) {
 }
 
 function fitFont(e, f) {
-	var fs = 19, maxH = e.offsetHeight, maxW = e.offsetWidth - 10, text = e.querySelector(f),
-			wr = e.querySelector('.jsblocker-node-wrap'), tH, tW;
+	var fs = 19, maxH = e.offsetHeight, maxW = e.offsetWidth - 10, text = e.querySelector('.jsblocker-node'),
+			text2 = e.querySelector('.jsblocker-node-two'), wr = e.querySelector('.jsblocker-node-wrap'), tH, tW;
 	
-	text.style.setProperty('opacity', '0.4', 'important')
+	text.style.setProperty('opacity', '0.5', 'important')
+	text2.style.setProperty('opacity', '0.5', 'important')
 	
 	do {
-		if (fs < 11) text.style.setProperty('opacity', '0.9', 'important');
 		text.style.setProperty('font-size', fs + 'pt', 'important');
-		wr.style.setProperty('margin-top', '-' + (text.offsetHeight / 2) + 'px', 'important');
+		text2.style.setProperty('font-size', fs + 'pt', 'important');
+		wr.style.setProperty('margin-top', '-' + ((text.offsetHeight / 2) - 3) + 'px', 'important');
+		text2.style.setProperty('margin-left', '-' + Math.round(text.offsetWidth / 2) + 'px', 'important');
 		tH = text.offsetHeight;
 		tW = text.offsetWidth;
 		fs -= 1;
 	} while ((tH > maxH || tW > maxW) && fs > 8);
+	
+	text.style.setProperty('position', 'absolute', 'important');
+	text.style.setProperty('top', 'auto', 'important');
+	text.style.setProperty('left', '50%', 'important');
+	text.style.setProperty('margin-left', '-' + Math.round(text.offsetWidth / 2) + 'px', 'important');
+	
 }
 
 function createPlaceholder(e, host, url) {
@@ -57,8 +65,8 @@ function createPlaceholder(e, host, url) {
 		host = 'about:blank';
 		url = 'about:blank';
 	}
-
-	var pl, st, pl, i, p, w, t, o, proto = activeProtocol(host),
+		
+	var pl, st, pl, i, p, w, t, o, proto = activeProtocol(host), host = host.substr(proto.length),
 			pa = url.substr(host.length).replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&/g, '&<wbr />').replace(/=/g, '=<wbr />'),
 			pr = ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'];
 
@@ -76,9 +84,8 @@ function createPlaceholder(e, host, url) {
 	p.title = p2.title;
 	pB.title = p.title;
 	
-	pa = (host === 'blank' ? '' : (pa.charAt(0) === '/' ? p.substr(1) : pa));
+	pa = (host === 'blank' ? '' : (pa.charAt(0) === '/' ? pa.substr(1) : pa));
 	
-	host = host.substr(proto.length);
 	
 	if (host.substr(0, 3) === '://') {
 		proto = proto + host.substr(0, 3);
@@ -126,8 +133,7 @@ function createPlaceholder(e, host, url) {
 		
 	e.parentNode.replaceChild(pl, e);
 	
-	fitFont(pl, '.jsblocker-node');
-	fitFont(pl, '.jsblocker-node-two');
+	fitFont(pl);
 
 	pl.addEventListener('click', function (ev) {
 		ev.preventDefault();
@@ -217,8 +223,8 @@ function activeHost(url) {
 	var r = /^(https?|file|safari\-extension):\/\/([^\/]+)\//;
 
 	if (url === 'about:blank') return 'blank';
-	if (/^javascript:/.test(url)) return 'JavaScript Protocol';
-	if (/^data:/.test(url)) return 'Data URI';
+	if (/^javascript:/.test(url)) return 'javascript';
+	if (/^data:/.test(url)) return 'data';
 	if (url.match(r) && url.match(r).length > 2) return url.match(r)[1] + '://' + url.match(r)[2] + '/';
 	return 'ERROR';
 }
