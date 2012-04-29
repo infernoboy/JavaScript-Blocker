@@ -55,8 +55,8 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.4.0',
-	bundleid: 60,
+	displayv: '2.4.1',
+	bundleid: 61,
 	donation_url: 'http://lion.toggleable.com:160/jsblocker/verify.php?id=',
 	
 	set_theme: function (theme) {
@@ -132,7 +132,10 @@ var Template = {
 					});
 				}, null, null, true);
 		else {
-			new Poppy();
+			new Poppy($(this.popover.body).width() / 2, 13, [
+				'<p>',
+					_('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']),
+				'</p>'].join(''));
 			this.installedBundle = this.bundleid;
 		}
 	},
@@ -216,35 +219,41 @@ var Template = {
 			this.rules.reinstall_predefined('frame');
 			this.rules.reinstall_predefined('embed');
 			
-			if (this.donationVerified)
-				new Poppy($(this.popover.body).width() / 2, 13, [
-					'<p class="misc-info">Update 2.4.0</p>',
-					'<p>A new donator-only feature has been added!</p>',
-					'<p>You can now block the loading of frames, embeds, objects, and videos.</p>',
-					'<p>',
-						'<input type="button" id="rawr-continue" value="', _('Understood'), '" /> ',
-						'<input type="button" id="rawr-setup" value="', _('Show Setup'), '" />',
-					'</p>'].join(''), function () {
-						_$('#rawr-continue').click(function () {
-							self.donate();
-						}).siblings('#rawr-setup').click(function () {
-							new Poppy();
-							self.setupDone = 0;
-							self.open_popover({});
-							
-							var ss = safari.extension.settings;
-							
-							_$('#setup input[type="checkbox"]').attr('checked', null);
-							
-							if (ss.largeFont) _$('#use-large').attr('checked', 'checked');
-							if (ss.alwaysBlock === 'domain') _$('#block-manual').attr('checked', 1);
-							if (ss.secureOnly) _$('#secure-only').attr('checked', 1);
-							if (ss.enableframe) _$('#block-frames').attr('checked', 1);
-							if (ss.enableembed) _$('#block-embeds').attr('checked', 1);
-						});
-					}, $.noop, null, true);
-			else
-				this.donate();
+			new Poppy($(this.popover.body).width() / 2, 13, [
+				'<p class="misc-info">Update 2.4.0</p>',
+				'<p>A new donator-only feature has been added!</p>',
+				'<p>You can now block the loading of frames, embeds, objects, and videos.</p>',
+				'<p>',
+					'<input type="button" id="rawr-continue" value="', _('Understood'), '" /> ',
+					'<input type="button" id="rawr-setup" value="', _('Show Setup'), '" />',
+				'</p>'].join(''), function () {
+					_$('#rawr-continue').click(function () {
+						self.updater();
+					}).siblings('#rawr-setup').click(function () {
+						new Poppy();
+						self.setupDone = 0;
+						self.open_popover({});
+						self.setupDone = 1;
+						
+						for (var key in self.rules.data_types)
+							self.rules.reinstall_predefined(key);
+						
+						var ss = safari.extension.settings;
+						
+						_$('#setup input[type="checkbox"]').attr('checked', null);
+						
+						if (ss.largeFont) _$('#use-large').attr('checked', 'checked');
+						if (ss.alwaysBlock === 'domain') _$('#block-manual').attr('checked', 1);
+						if (ss.secureOnly) _$('#secure-only').attr('checked', 1);
+						if (ss.enableframe) _$('#block-frames').attr('checked', 1);
+						if (ss.enableembed) _$('#block-embeds').attr('checked', 1);
+					});
+				}, $.noop, null, true);
+		} else if (v < 61) {
+			for (var key in this.rules.data_types)
+				this.rules.reinstall_predefined(key);
+				
+			this.donate();
 		} else if (v < this.bundleid)
 			this.donate();
 	},
@@ -751,7 +760,7 @@ var Template = {
 	},
 	rules: {
 		get data_types() {
-			return { script: {}, frame: {}, embed: {} };
+			return { script: {}, frame: {}, embed: {}, image: {} };
 		},
 		_loaded: false,
 		get rules() {
@@ -875,8 +884,10 @@ var Template = {
 			
 			if (typeof rule_found === 'number')
 				return rule_found;
-			
-			if (alwaysFrom !== 'nowhere' && rule_found !== true) {
+				
+			if (host === 'blank' && alwaysFrom !== 'everywhere') return 1;
+							
+			if (alwaysFrom !== 'nowhere' && rule_found !== true && host !== 'blank') {
 				var sproto = this.utils.active_protocol(message[2]),
 						aproto = this.utils.active_protocol(message[1]);
 				
@@ -1790,10 +1801,12 @@ var Template = {
 			
 			if (self.donationVerified)
 				for (var kind in self.rules.data_types) {
+					if (!safari.extension.settings.getItem('enable' + kind)) continue;
+					
 					var ki = kind.charAt(0).toUpperCase() + kind.substr(1) + 's';
 				
 					kinds.push('<input class="ba-kind" id="ba-kind-' + kind + '" type="checkbox" ' + (!self.collapsed(kind + 'Unchecked') ? 'checked' : '') + '>' +
-							'<label for="ba-kind-' + kind + '">&thinsp;' + _(ki) + '</label>&nbsp;&nbsp;&nbsp;');
+							'<label for="ba-kind-' + kind + '">&nbsp;' + _(ki) + '</label>&nbsp;&nbsp;&nbsp;');
 				}
 			
 			new Poppy(off.left + $(this).outerWidth() / 2, off.top + 8, [
@@ -2538,7 +2551,7 @@ var Template = {
 					toolbarItem.badge = safari.extension.settings.toolbarDisplay === 'allowed' ?
 							jsblocker.allowed.count + frames_allowed_count :
 							(safari.extension.settings.toolbarDisplay === 'blocked' ? jsblocker.blocked.count + frames_blocked_count : 0);
-				else
+				else {
 					var allowed_items = 0, blocked_items = 0;
 					
 					for (var kind in jsblocker.allowed.items) {
@@ -2549,6 +2562,7 @@ var Template = {
 					toolbarItem.badge = safari.extension.settings.toolbarDisplay === 'allowed' ?
 							allowed_items + frames_allowed_item_count :
 							(safari.extension.settings.toolbarDisplay === 'blocked' ? blocked_items + frames_blocked_item_count : 0);
+				}
 			}
 			
 			if (!badge_only) {

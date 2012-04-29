@@ -366,6 +366,54 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>enableimage</string>
+		<key>Title</key>
+		<string>Enable image blocker</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>showPlaceholderimage</string>
+		<key>Title</key>
+		<string>Show a clickable placeholder for blocked images</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
+		<string>nowhere</string>
+		<key>Key</key>
+		<string>alwaysBlockimage</string>
+		<key>Title</key>
+		<string>Automatically block images from</string>
+		<key>Titles</key>
+		<array>
+			<string>Different hosts &amp; subdomains</string>
+			<string>Different hostnames</string>
+			<string>Nowhere</string>
+			<string>Anywhere</string>
+		</array>
+		<key>Type</key>
+		<string>PopUpButton</string>
+		<key>Values</key>
+		<array>
+			<string>topLevel</string>
+			<string>domain</string>
+			<string>nowhere</string>
+			<string>everywhere</string>
+		</array>
+	</dict>
+	<dict>
+		<key>Type</key>
+		<string>Separator</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
 		<false/>
 		<key>Key</key>
 		<string>blockReferrer</string>

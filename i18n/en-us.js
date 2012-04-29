@@ -107,10 +107,12 @@ Strings['en-us'] = {
 	'Use large font': 'Use large font',
 	'Scripts': 'Scripts', // NEW
 	'Frames': 'Frames', // NEW
+	'Images': 'Images', // NEW
 	'Embeds': 'Embeds, Objects, & Videos', // NEW
 	'Frame Rules': 'Frame Rules', // NEW
 	'Script Rules': 'Script Rules', // NEW
 	'Embed Rules': 'Embed, Object, & Video Rules', // NEW
+	'Image Rules': 'Image Rules',
 	'Forgot': 'iForgot', // NEW
 	/** /BUTTONS **/
 	
@@ -125,6 +127,7 @@ Strings['en-us'] = {
 	'Loading frame': 'Loading frame&hellip;', // NEW
 	'Loading embed': 'Loading embed&hellip;', // NEW
 	'Loading object': 'Loading object&hellip;', // NEW
+	'Loading image': 'Loading image&hellip;', // NEW
 	'Loading rules': 'Loading rules&hellip;',
 	'Copy above': 'Copy the above and save it to a file to create a backup.',
 	'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',

@@ -158,6 +158,15 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 						t.style.setProperty('display', 'none', 'important');
 					});
 			}],
+			image: [{ IMG: 'src' }, function (allowed, host, url) {
+				var t = this;
+				if (!allowed)
+					if_setting('showPlaceholderimage', true, function () {
+						createPlaceholder(t, host, url);
+					}, function () {
+						t.style.setProperty('display', 'none', 'important');
+					});
+			}],
 		},
 		jsblocker = {
 			allowed: {
