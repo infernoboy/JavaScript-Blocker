@@ -416,11 +416,7 @@ JB.rules.blacklist = {
 			'^https?:\\/\\/.*(' + def.join('|') + ').*$'
 		]
 	},
-	image: {
-		'.*': [
-			'^https?:\\/\\/.*(' + def.join('|') + ').*$'
-		]
-	}
+	image: {}
 };
 
 delete def;

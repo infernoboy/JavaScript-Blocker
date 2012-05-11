@@ -2,3 +2,9 @@
 	background: rgba(215,215,215,0.93) url(../images/texture.png) left top repeat;
 	border-color: #999;
 }
+
+#poppy-arrow-settings {
+	background-image: url(../images/texture.png);
+	background-color: rgba(215,215,215,0.98);
+	border-color: #999;
+}

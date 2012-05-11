@@ -36,6 +36,16 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
+		<true/>
+		<key>Key</key>
+		<string>floaters</string>
+		<key>Title</key>
+		<string>Use floating headers</string>
+		<key>Type</key>
+		<string>CheckBox</string>
+	</dict>
+	<dict>
+		<key>DefaultValue</key>
 		<false/>
 		<key>Key</key>
 		<string>showUnblocked</string>
@@ -65,7 +75,6 @@
 		<array>
 			<string>Automatic</string>
 			<string>US English</string>
-			<string>Française (Partiel)</string>
 			<string>Deutsch</string>
 		</array>
 		<key>Type</key>
@@ -74,7 +83,6 @@
 		<array>
 			<string>Automatic</string>
 			<string>en-us</string>
-			<string>fr-fr</string>
 			<string>de-de</string>
 		</array>
 	</dict>
@@ -226,6 +234,7 @@
 			<string>Default</string>
 			<string>Textured Metal</string>
 			<string>OS X Lion</string>
+			<string>Linen</string>
 		</array>
 		<key>Type</key>
 		<string>PopUpButton</string>
@@ -234,6 +243,7 @@
 			<string>default</string>
 			<string>metal</string>
 			<string>lion</string>
+			<string>linen</string>
 		</array>
 	</dict>
 	<dict>
@@ -338,7 +348,7 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
-		<string>domain</string>
+		<string>everywhere</string>
 		<key>Key</key>
 		<string>alwaysBlockembed</string>
 		<key>Title</key>
@@ -366,11 +376,11 @@
 	</dict>
 	<dict>
 		<key>DefaultValue</key>
-		<true/>
+		<false/>
 		<key>Key</key>
 		<string>enableimage</string>
 		<key>Title</key>
-		<string>Enable image blocker</string>
+		<string>Enable image blocker—DOM only</string>
 		<key>Type</key>
 		<string>CheckBox</string>
 	</dict>
@@ -436,7 +446,6 @@
 			<string>Create temporary rules</string>
 			<string>Create a backup of rules</string>
 			<string>Edit rules from the rule list</string>
-			<string>Double click host for more info</string>
 		</array>
 		<key>Type</key>
 		<string>ListBox</string>
@@ -445,7 +454,6 @@
 			<string>temp</string>
 			<string>backup</string>
 			<string>edit</string>
-			<string>double</string>
 		</array>
 	</dict>
 	<dict>

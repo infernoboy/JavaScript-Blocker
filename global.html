@@ -26,10 +26,11 @@
 		<script>
 			document.addEventListener('DOMContentLoaded', function () {
 				JB.load_language();
+				JB.validate();
 			});
-
+			
 			window.addEventListener('message', function (event) {
-				if (event.source === window && event.data === 'zero-timeout') {
+				if (event.data === 'zero-timeout') {
 					event.stopPropagation();
 					if (JB.utils._zero_timeouts.length) {
 						var o = JB.utils._zero_timeouts.shift();
@@ -37,7 +38,7 @@
 							o[0].apply(JB, o[1]);
 					}
 				}
-			}, true);
+			});
 			
 			safari.application.addEventListener('close', $.proxy(JB.open_popover, JB), true);
 			safari.application.addEventListener('beforeNavigate', $.proxy(JB.open_popover, JB), true);
@@ -49,27 +50,5 @@
 		</script>
 	</head>
 	<body>
-		<textarea id="tmpl_domain_picker">
-			<% if (!self.no_label) { %><label for="domain-picker"><%=_('On:')%> </label><% } %>
-			<select id="domain-picker">
-			<%
-				var n;
-				for (n = 0; n < self.page_parts.length; n++) {
-					if (self.page_parts[n] === null || (self.no_all && n === self.page_parts.length - 1)) continue; %>
-					<option value="<%=((n === 0 ? '' : '.') + self.page_parts[n])%>"><%=(self.page_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + self.page_parts[n]))%></option>
-			<% } %>
-			</select>
-		</textarea>
-		
-		<textarea id="tmpl_rule_wrapper">
-			<header id="head-<%=self.kind%>-rules" class="rules-header">
-				<h3 id="<%=self.kind%>-rules"><%=self.local%></h3>
-				<a id="toggle-<%=self.kind%>-rules" class="toggle-rules"><%=_('Hide')%></a>
-				<br style="clear:both;" />
-			</header>
-			<div style="overflow:hidden;">
-				<ul id="rules-list-<%=self.kind%>s" class="rules-wrapper"></ul>
-			</div>
-		</textarea>
 	</body>
 </html>

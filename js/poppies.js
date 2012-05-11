@@ -28,7 +28,7 @@ JB.poppies = {
 				_$('#donation-confirm').click(function (event) {
 					var id = _$('#donation-id').val().substr(0, 100);
 				
-					$.get(zoo.url + escape(id) + '&install=' + safari.extension.settings.installID).success(function (data) {
+					$.get(zoo.url + encodeURIComponent(id) + '&install=' + encodeURIComponent(safari.extension.settings.installID)).success(function (data) {
 						var datai = parseInt(data, 10),
 								error = null;
 						

@@ -28,7 +28,7 @@ var Poppy = function (x, y, content, cb, cb2, time, modal) {
 		
 		content = temporary;
 	}
-	
+		
 	this.modal = modal;
 	this.removeOnly = $.makeArray(arguments).length === 0 || x === null;
 	this.callback = (cb && typeof cb == 'function') ? cb : $.noop;
@@ -36,7 +36,7 @@ var Poppy = function (x, y, content, cb, cb2, time, modal) {
 	this.popover = safari.extension.toolbarItems[0].popover.contentWindow.document;
 	this.p = $(this.popover.body);
 	
-	this._time = typeof time === 'number' ? time : 0.3;
+	this._time = typeof time === 'number' ? time : 0.25;
 	
 	if (!this.removeOnly) {
 		this.center = {
@@ -62,10 +62,10 @@ Poppy.prototype = {
 	a: '#poppy-arrow',
 	init: function () {
 		this._time *= JB.speedMultiplier;
-
+		
 		if ($(this.e, this.p).length)
 			return this.remove((this.removeOnly !== false) ? $.noop : this.create);
-
+				
 		return (this.removeOnly !== false) ? false : JB.utils.zero_timeout($.proxy(this.create, this));
 	},
 	remove: function (cb) {
@@ -74,9 +74,8 @@ Poppy.prototype = {
 		_$('#modal').fadeOut(this._time * 1000);
 
 		this.p.find(this.e).css({
-			opacity: 0.7,
-			WebkitTransitionDuration: (this._time * .5) + 's',
-			WebkitTransform: 'scale(0)'
+			opacity: 0,
+			WebkitTransitionDuration: (this._time * .5) + 's'
 		}).one('webkitTransitionEnd', { s: this, c: cb }, function (event) {
 			var d = event.data;
 			
@@ -92,12 +91,12 @@ Poppy.prototype = {
 	},
 	create: function () {
 		if ($(this.e, this.p).length) $(this.e, this.p).remove();
-
+		
 		var mo = _$('#modal'),
 				self = this,
 				eC = '<div id="' + this.e.substr(1) + '"></div>',
 				cC = '<div id="' + this.c.substr(1) + '"></div>',
-				aC = '<img id="' + this.a.substr(1) + '" src="images/arrow-mask' + (JB.theme.indexOf('default') !== 0 ? '-' + JB.theme : '') + '.png" alt=""/>';
+				aC = '<div id="' + this.a.substr(1) + '"></div>';
 				
 		if (this.modal) mo.fadeIn(this._time * 1000);
 		
@@ -115,7 +114,7 @@ Poppy.prototype = {
 			
 		var points = this.calcPoints(), left;
 		
-		if (points.arrow.bottom == 'auto') $(this.a, m).attr('src', 'images/arrow-mask-reverse' + (JB.theme !== 'default' ? '-' + JB.theme : '') + '.png');
+		if (points.arrow.bottom == 'auto') $(this.a, m).addClass('flip');
 		
 		m.css({
 			WebkitTransitionProperty: '-webkit-transform, opacity',
@@ -162,6 +161,8 @@ Poppy.prototype = {
 				WebkitTransitionTimingFunction: 'ease'
 			});
 		});
+		
+		this.createArrow();
 	},
 	calcPoints: function () {
 		var o = {
@@ -216,5 +217,91 @@ Poppy.prototype = {
 		}
 		
 		return o;
+	},
+	createArrow: function (fill, stroke) {
+		var set = _$('#poppy-arrow-settings'), com = window.getComputedStyle(set[0]),
+				shd = 'rgba(0,0,0,0.15)', bg = com.backgroundColor, brd = com.borderTopColor,
+				img = com.backgroundImage, ig, trans, trans_flip,
+				ctx = JB.popover.getCSSCanvasContext('2d', 'poppy-arrow', 30, 22),
+				ctx_flip = JB.popover.getCSSCanvasContext('2d', 'poppy-arrow-flip', 30, 22);
+	
+		img = img === 'none' || !img ? null : img.substr(4, img.length - 5);
+		
+		function triangle() {
+			ctx.clearRect(0, 0, 30, 22)
+			ctx_flip.clearRect(0, 0, 30, 22)
+		
+		  ctx.shadowOffsetX = 0;
+		  ctx.shadowOffsetY = 3;
+		  ctx.shadowBlur = 9;
+		  ctx.shadowColor = shd;
+
+			ctx.fillStyle = bg;
+			ctx.strokeStyle = brd;
+
+		  ctx.beginPath();
+			ctx.moveTo(3, 0);
+			ctx.lineTo(15 ,12);
+			ctx.lineTo(27, 0);
+			ctx.closePath();
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.moveTo(3, 0);
+			ctx.lineTo(15, 12);
+			ctx.moveTo(15, 12)
+			ctx.lineTo(27, 0);
+			ctx.closePath();
+			ctx.stroke();
+
+		  ctx_flip.shadowOffsetX = 0;
+		  ctx_flip.shadowOffsetY = 3;
+		  ctx_flip.shadowBlur = 9;
+		  ctx_flip.shadowColor = shd;
+
+			ctx_flip.fillStyle = bg
+			ctx_flip.strokeStyle = brd;
+
+		  ctx_flip.beginPath();
+			ctx_flip.moveTo(3, 22);
+			ctx_flip.lineTo(15, 10);
+			ctx_flip.lineTo(27, 22);
+			ctx_flip.fill();
+
+			ctx_flip.beginPath();
+			ctx_flip.moveTo(3, 22);
+			ctx_flip.lineTo(15, 10);
+			ctx_flip.moveTo(15, 10);
+			ctx_flip.lineTo(27, 22);
+			ctx_flip.closePath();
+			ctx_flip.stroke();
+		}
+			
+		if (img &&  !ctx.has_image) {
+			ctx.has_image = 1;
+				
+			ig = new Image();
+			ig.onload = function () {
+				triangle();
+				
+				ctx.beginPath();
+				ctx.moveTo(4, 0);
+				ctx.lineTo(15, 11);
+				ctx.lineTo(26, 0);
+				ctx.closePath();
+				ctx.clip();
+				ctx.drawImage(ig, 0, 0, 30, 22);
+				
+			  ctx_flip.beginPath();
+				ctx_flip.moveTo(4, 22);
+				ctx_flip.lineTo(15, 11);
+				ctx_flip.lineTo(26, 22);
+				ctx_flip.closePath();
+				ctx_flip.clip();
+				ctx_flip.drawImage(ig, 0, 0, 30, 22);
+			};
+			ig.src = img;
+		} else
+			triangle();
 	}
 }

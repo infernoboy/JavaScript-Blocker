@@ -93,7 +93,7 @@ Strings['en-us'] = {
 	'Maybe Later': 'Maybe Later',
 	'I\'ve Donated!': 'I\'ve Donated!',
 	'Unblocked Script': 'Unblockable Script',
-	'More Info': 'More Info',
+	'More Info': 'Safety Info',
 	'Unlock': 'Unlock All Features',
 	'Temporary rule': 'Make this a temporary rule',
 	'Make Temporary Rules Permanent': 'Make Temporary Rules Permanent',
@@ -103,12 +103,12 @@ Strings['en-us'] = {
 	'Project Page': 'Project Page',
 	'Export': 'Export',
 	'Import': 'Import',
-	'Backup': 'Backup',
-	'Use large font': 'Use large font',
+	'Backup': 'Backup', // NEW
+	'Use large font': 'Use large font', // NEW
 	'Scripts': 'Scripts', // NEW
 	'Frames': 'Frames', // NEW
 	'Images': 'Images', // NEW
-	'Embeds': 'Embeds, Objects, & Videos', // NEW
+	'Embeds': 'Embeds, objects, & videos', // NEW
 	'Frame Rules': 'Frame Rules', // NEW
 	'Script Rules': 'Script Rules', // NEW
 	'Embed Rules': 'Embed, Object, & Video Rules', // NEW
@@ -128,22 +128,23 @@ Strings['en-us'] = {
 	'Loading embed': 'Loading embed&hellip;', // NEW
 	'Loading object': 'Loading object&hellip;', // NEW
 	'Loading image': 'Loading image&hellip;', // NEW
-	'Loading rules': 'Loading rules&hellip;',
-	'Copy above': 'Copy the above and save it to a file to create a backup.',
-	'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
-	'Error importing': 'Error importing rules.',
+	'Copy above': 'Copy the above and save it to a file to create a backup.', // NEW
+	'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.', // NEW
+	'Error importing': 'Error importing rules.', // NEW
 	
 	'The rule allowing this item will be removed.': 'The rule allowing this item will be removed.',
 	'The rule blocking this item will be removed.': 'The rule blocking this item will be removed.',
 	'The temporary rule allowing this item will be removed.': 'The temporary rule allowing this item will be removed.',
 	'The temporary rule blocking this item will be removed.': 'The temporary rule blocking this item will be removed.',
+	
+	'Safety Information for {1}': 'Safety Information for {1}', // NEW
 	/** /POPPIES **/
 	
 	/** ERRORS-ISH **/
 	'This data URI cannot be displayed.': 'This data URI cannot be displayed.',	
 	'Predefined rules cannot be edited.': 'Predefined rules cannot be edited. ',
-	'Update Failure': 'Information about the current webpage is unavailable due to a bug with Safari. Reloading the page should resolve the issue.',
-	'Unable to view source of embedded.': 'Unable to view source of embedded.',
+	'Update Failure': 'Information about the current webpage is unavailable, possibly due to a bug with Safari. Reloading the page may resolve the issue.', // UPDATED
+	'Unable to view source of embedded.': 'Unable to view source of embedded.', // NEW
 	/** /ERRORS-ISH **/
 	
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
@@ -200,11 +201,4 @@ Strings['en-us'] = {
 	'Either disable expert': 'Either disable expert features or click <b>{1}</b> below to verify your donation.',
 	'New donation method {1}': 'Due to many complaints about features not remaining unlocked, a new donation verification system has been created. Please click <b>{1}</b> to verify your donation one final time.',
 	/** /DONATION **/
-	
-	/** SCRIPT INFO STUFF **/
-	'No information available.': 'No information available.',
-	'Most likely not required for proper website functionality.': 'Most likely not required for proper website functionality.',
-	'Probably required for proper website functionality.': 'Probably required for proper website functionality.',
-	'Not known if required for proper website functionality.': 'Not know if required for proper website functionality.'
-	/** /SCRIPT **/
 };

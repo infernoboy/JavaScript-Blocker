@@ -21,7 +21,9 @@ ul li input[type="button"] {
 		width: 21%;
 		max-width: 21%;
 	}
-
+	#rules-list .info-container .misc-info {
+		margin-left: 50px;
+	}
 body.simple #domain-script {
 	max-width: 180px;
 }

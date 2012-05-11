@@ -18,7 +18,7 @@
 	<link rel="stylesheet" href="" type="text/css" id="poppy-theme-style" />
 	<link rel="stylesheet" href="css/main.css" type="text/css" id="main-style"/>
 	<link rel="stylesheet" href="" type="text/css" id="main-theme-style"/>
-	<link rel="stylesheet" href="css/main.large.css" type="text/css" id="main-large-style"/>
+	<link rel="stylesheet" href="" type="text/css" id="main-large-style"/>
 	<link rel="stylesheet" href="css/highlight.css" />
 	
 	<script src="js/highlight.js"></script>
@@ -27,31 +27,31 @@
 		
 		document.addEventListener('DOMContentLoaded', function () {
 			safari.extension.globalPage.contentWindow.JB.hljs = hljs;
-			
+					
 			setTimeout(function () {
 				safari.extension.globalPage.contentWindow.JB.bind_events();
+				safari.extension.globalPage.contentWindow.JB.load_language(true);
+				safari.extension.globalPage.contentWindow.JB.open_popover({ type: 'popover' });
 			}, 300);
 			
 			var inputs = document.getElementsByTagName('input'),
 					ogroups = document.getElementsByTagName('optgroup'),
-					i,
-					b;
+					infos = document.querySelectorAll('.info-container label');
 					
-			for (i = 0; i < inputs.length; i++) {
+			for (var i = 0; inputs[i]; i++) {
 				if (inputs[i].value && inputs[i].value.length) inputs[i].value = _(inputs[i].value);
 				if (inputs[i].placeholder && inputs[i].placeholder.length) inputs[i].placeholder = _(inputs[i].placeholder);
 			}
-			for (b = 0; b < ogroups.length; b++)
+			for (var b = 0; ogroups[b]; b++)
 				ogroups[b].label = _(ogroups[b].label);
+			
+			for (var x = 0; infos[x]; x++)
+				infos[x].innerHTML = _(infos[x].innerHTML);
 				
 			if (window.navigator.platform.match(/Win/)) document.body.className += ' windows';
 			else if (window.navigator.platform.match(/Mac/)) document.body.className += ' macos';
 			
 			document.body.className += ' theme-' + safari.extension.globalPage.contentWindow.JB.theme;
-		});
-		
-		window.addEventListener('message', function (event) {
-			if (event.data === 'reloadOnce') window.location.reload();
 		});
 	</script>
 </head>
@@ -106,28 +106,28 @@
 				</select>
 			</div>
 			<div class="info-container">
-				<label class="allowed-label"><script>document.write(_('Allowed:'));</script></label> <span id="allowed-scripts-count">0</span>
+				<label class="allowed-label">Allowed:</label> <span id="allowed-scripts-count">0</span>
 				<input type="button" value="Block All" id="block-domain" />
 			</div>
 	
-			<div id="allowed-script-urls">
+			<div id="allowed-script-urls" class="urls-wrapper">
 				<ul class="main-wrapper"></ul>
 			</div>
-	
+				
 			<div class="info-container">
-				<label class="blocked-label"><script>document.write(_('Blocked:'));</script></label> <span id="blocked-scripts-count">0</span>
+				<label class="blocked-label">Blocked:</label> <span id="blocked-scripts-count">0</span>
 				<input type="button" value="Allow All" id="allow-domain" />
 			</div>
 	
-			<div id="blocked-script-urls">
+			<div id="blocked-script-urls" class="urls-wrapper">
 				<ul class="main-wrapper"></ul>
 			</div>
 	
 			<div class="info-container">
-				<label class="unblocked-label"><script>document.write(_('Unblocked:'));</script></label> <span id="unblocked-scripts-count">0</span>
+				<label class="unblocked-label">Unblocked:</label> <span id="unblocked-scripts-count">0</span>
 			</div>
 	
-			<div id="unblocked-script-urls">
+			<div id="unblocked-script-urls" class="urls-wrapper">
 				<ul class="main-wrapper"></ul>
 			</div>
 
@@ -195,6 +195,34 @@
 			</div>
 			<div id="misc-content"></div>
 		</div>
+	</div>
+	
+	<div id="hidden-extras">
+		<textarea id="tmpl_domain_picker">
+			<% if (!self.no_label) { %><label for="domain-picker"><%=_('On:')%> </label><% } %>
+			<select id="domain-picker">
+			<%
+				var n;
+				for (n = 0; n < self.page_parts.length; n++) {
+					if (self.page_parts[n] === null || (self.no_all && n === self.page_parts.length - 1)) continue; %>
+					<option value="<%=((n === 0 ? '' : '.') + self.page_parts[n])%>"><%=(self.page_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + self.page_parts[n]))%></option>
+			<% } %>
+			</select>
+		</textarea>
+		
+		<textarea id="tmpl_rule_wrapper">
+			<header id="head-<%=self.kind%>-rules" class="rules-header">
+				<h3 id="<%=self.kind%>-rules"><%=self.local%></h3>
+				<a id="toggle-<%=self.kind%>-rules" class="toggle-rules"><%=_('Hide')%></a>
+				<br style="clear:both;" />
+			</header>
+			<div id="rules-list-<%=self.kind%>-container" class="rules-list-container" style="overflow:hidden;">
+				<ul id="rules-list-<%=self.kind%>s" class="rules-wrapper"></ul>
+			</div>
+		</textarea>
+		
+		<div id="poppy-arrow-settings"></div>
+		<div id="select-arrow-settings"></div>
 	</div>
 </body>
 </html>
