@@ -6,13 +6,13 @@
    <array>
      <dict>
        <key>CFBundleIdentifier</key>
-       <string>com.toggleable.JB</string>
+       <string>com.toggleable.JavaScriptBlocker</string>
        <key>Developer Identifier</key>
        <string>6S8J5HV3H4</string>
        <key>CFBundleVersion</key>
-       <string>65</string>
+       <string>69</string>
        <key>CFBundleShortVersionString</key>
-       <string>2.4.4</string>
+       <string>2.4.8</string>
        <key>URL</key>
        <string>http://dl.dropbox.com/u/11967/JS%20Blocker.safariextz</string>
      </dict>

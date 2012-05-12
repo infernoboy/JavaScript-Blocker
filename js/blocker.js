@@ -268,7 +268,6 @@ function canLoad(event) {
 }
 
 function ready(event) {
-	console.log(pageHost(), jsblocker)
 	safari.self.tab.dispatchMessage('updateReady');
 		
 	var t = event.type === 'DOMContentLoaded' ? 1 : 0;

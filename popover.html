@@ -25,6 +25,11 @@
 	<script>
 		_ = safari.extension.globalPage.contentWindow._;
 		
+		if (safari.extension.globalPage.contentWindow.JB.isBeta)
+			window.onerror = function (d, p, l, c) {
+				safari.extension.globalPage.contentWindow._$('#jsconsolelogger').append('<li class="jsoutputcode error">Error: ' + d + ', ' + p + ', ' + l);
+			};
+		
 		document.addEventListener('DOMContentLoaded', function () {
 			safari.extension.globalPage.contentWindow.JB.hljs = hljs;
 					
@@ -32,7 +37,7 @@
 				safari.extension.globalPage.contentWindow.JB.bind_events();
 				safari.extension.globalPage.contentWindow.JB.load_language(true);
 				safari.extension.globalPage.contentWindow.JB.open_popover({ type: 'popover' });
-			}, 300);
+			}, 1000);
 			
 			var inputs = document.getElementsByTagName('input'),
 					ogroups = document.getElementsByTagName('optgroup'),
@@ -198,6 +203,7 @@
 	</div>
 	
 	<div id="hidden-extras">
+		<div id="jsconsolelogger"></div>
 		<textarea id="tmpl_domain_picker">
 			<% if (!self.no_label) { %><label for="domain-picker"><%=_('On:')%> </label><% } %>
 			<select id="domain-picker">

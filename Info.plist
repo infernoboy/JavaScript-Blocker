@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.4.4</string>
+	<string>2.4.9</string>
 	<key>CFBundleVersion</key>
-	<string>65</string>
+	<string>70</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -68,7 +68,7 @@
 		</array>
 	</dict>
 	<key>Description</key>
-	<string>Controls the loading of external scripts in &lt;script&gt; tags.</string>
+	<string>Controls the loading of external resources on webpages.</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>

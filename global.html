@@ -22,6 +22,7 @@
 		<script src="js/global.js"></script>
 		<script src="js/poppies.js"></script>
 		<script src="js/predefined.js"></script>
+		<script src="js/beta.js"></script>
 
 		<script>
 			document.addEventListener('DOMContentLoaded', function () {
@@ -39,6 +40,11 @@
 					}
 				}
 			});
+			
+			if (JB.isBeta)
+				window.onerror = function (d, p, l, c) {
+					_$('#jsconsolelogger').append('<li class="jsoutputcode error">Error: ' + d + ', ' + p + ', ' + l);
+				};
 			
 			safari.application.addEventListener('close', $.proxy(JB.open_popover, JB), true);
 			safari.application.addEventListener('beforeNavigate', $.proxy(JB.open_popover, JB), true);

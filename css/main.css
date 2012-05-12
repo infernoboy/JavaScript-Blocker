@@ -819,6 +819,13 @@ p.above-filter {
 	width: 0;
 }
 
+#jsoutput {
+	min-height: 118px;
+}
+#jsinput {
+	width: 300px;
+}
+
 .floater {
 	position: absolute;
 	margin-top: 0;

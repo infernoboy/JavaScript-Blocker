@@ -1,0 +1,1 @@
+JB.isBeta = 0;

@@ -56,9 +56,10 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.4.4',
-	bundleid: 65,
+	displayv: '2.4.9',
+	bundleid: 70,
 	update_attention_required: 61,
+	beta_attention_required: 1,
 	donation_url: 'http://lion.toggleable.com:160/jsblocker/verify.php?id=',
 	
 	set_theme: function (theme) {
@@ -79,30 +80,6 @@ var Template = {
 			t.attr('href', 'css/poppy.' + theme + '.css');
 			_$('#main-theme-style').attr('href', 'css/main.' + theme + '.css');
 		}
-	},
-	
-	verify_donation: function (id, cb) {
-		$.get(this.donation_url + encodeURIComponent(id) +
-				'&install=' + encodeURIComponent(safari.extension.settings.installID)).success(function (data) {
-				var datai = parseInt(data, 10),
-						error = null;
-				
-				switch (datai) {
-					case -3: error = _('An email address was not specified.'); break;
-					case -2: error = _('A donation with that email address was not found.'); break;
-					case -1: error = _('The maximum number'); break;
-					case 0:
-					case 1:
-					case 2:
-					case 3:
-						JB.donationVerified = id;
-					break;
-					
-					default: error = data;
-				}
-				
-				cb.call(JB, error);
-		});
 	},
 
 	donate: function () {
@@ -135,6 +112,8 @@ var Template = {
 					});
 				}, null, null, true);
 		else {
+			if (this.isBeta && this.beta_attention_required) this.utils.open_url('http://javascript-blocker.toggleable.com/change-log/beta');
+			
 			new Poppy($(this.popover.body).width() / 2, 13, [
 				'<p>',
 					_('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']),
@@ -147,119 +126,11 @@ var Template = {
 		var v = this.installedBundle, self = this;
 		
 		if (v === this.bundleid) return false;
-		else if (v < 54) {
-			if (!self.RulesWereUpgraded2) {
-				self.RulesWereUpgraded2 = true;
-				
-				window.localStorage.removeItem('CollapsedDomains');
-				window.localStorage.removeItem('InstallID');
-				
-				var ex = ['CollapsedDomains', 'ExamineUpdateTime', 'InstalledBundleID', 'LastRuleWasTemporary', 'ERROR', 'Rules',
-						'allowedIsCollapsed', 'blockedIsCollapsed', 'unblockedIsCollapsed'], key, n = {};
-				
-				for (key in window.localStorage) {
-					if (~ex.indexOf(key)) continue;
-					
-					try {
-						n[key] = JSON.parse(window.localStorage[key]);
-					} catch (e) {
-						continue;
-					} finally {
-						window.localStorage.removeItem(key);
-					}
-				}
-				
-				window.localStorage.setItem('Rules', JSON.stringify(n));
-			}
-			
-			new Poppy($(this.popover.body).width() / 2, 13, [
-				'<p class="misc-info">Update 2.3.0</p>',
-				'<p>You can now enable the use of a larger display font.</p>',
-				'<p>A new option will let you block some referer headers. This utilizes the \'rel="noreferrer"\' attribute of anchors.</p>',
-				'<p><b>Donators only:</b> A more full-featured referrer blocker, including the ability to block even server-side redirect ones.</p>',
-				'<p><b>Donators only:</b> You can now create a backup of your rules.</p>',
-				'<p>Donations can now be made via Bitcoin! Send to: 1C9in5xaFcwi7aYLuK1soZ8mvJBiEN9MNA</p>',
-				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
-				'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'].join(''), function () {
-					_$('#rawr-continue').click(function () {
-						self.installedBundle = 54;
-						self.updater();
-					});
-			}, null, null, true);
-		} else if (v < 59) {
-			var x;
-			
-			if (x = safari.extension.secureSettings.installID) safari.extension.settings.setItem('installID', x);
-			else safari.extension.settings.setItem('installID', this.utils.id() + '~' + this.displayv);
-			
-			if (safari.extension.settings.donationVerified) {
-				self.installedBundle = 59;
-				return this.updater();
-			}
-			
-			new Poppy($(this.popover.body).width() / 2, 13, [
-				'<p class="misc-info">Important Donator Information</p>',
-				'<p>', _('New donation method {1}', [_('Unlock')]), '</p>',
-				'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'].join(''), function () {
-					_$('#rawr-continue').click(function () {
-						self.installedBundle = 59;
-						self.updater();
-					});
-				}, $.noop, null, true);
-		} else if (v < 60) {
-			if (!self.RulesWereUpgraded3) {
-				self.RulesWereUpgraded3 = true;
-				
-				var test = window.localStorage.getItem('Rules');
-				
-				try {
-					test = JSON.parse(test);
-					if (!('script' in test))
-						window.localStorage.setItem('Rules', JSON.stringify({
-							script: JSON.parse(window.localStorage.getItem('Rules')),
-							frame: {}
-						}));
-				} catch (e) {}
-			}
-			
-			this.rules.reinstall_predefined('frame');
-			this.rules.reinstall_predefined('embed');
-			
-			new Poppy($(this.popover.body).width() / 2, 13, [
-				'<p class="misc-info">Update 2.4.0</p>',
-				'<p>A new donator-only feature has been added!</p>',
-				'<p>You can now block the loading of frames, embeds, objects, and videos.</p>',
-				'<p>',
-					'<input type="button" id="rawr-continue" value="', _('Understood'), '" /> ',
-					'<input type="button" id="rawr-setup" value="', _('Show Setup'), '" />',
-				'</p>'].join(''), function () {
-					_$('#rawr-continue').click(function () {
-						self.installedBundle = 60;
-						self.updater();
-					}).siblings('#rawr-setup').click(function () {
-						new Poppy();
-						self.installedBundle = 60;
-						self.setupDone = 0;
-						self.open_popover({});
-						self.setupDone = 1;
-						
-						for (var key in self.rules.data_types)
-							self.rules.reinstall_predefined(key);
-						
-						var ss = safari.extension.settings;
-						
-						_$('#setup input[type="checkbox"]').attr('checked', null);
-						
-						if (ss.largeFont) _$('#use-large').attr('checked', 'checked');
-						if (ss.alwaysBlock === 'domain') _$('#block-manual').attr('checked', 1);
-						if (ss.secureOnly) _$('#secure-only').attr('checked', 1);
-						if (ss.enableframe) _$('#block-frames').attr('checked', 1);
-						if (ss.enableembed) _$('#block-embeds').attr('checked', 1);
-					});
-				}, $.noop, null, true);
-		} else if (v < 61) {
+		else if (v < 61) {
 			for (var key in this.rules.data_types)
 				this.rules.reinstall_predefined(key);
+				
+			this.installedBundle = 61;
 				
 			this.updater();
 		} else if (v < 64) {
@@ -358,7 +229,8 @@ var Template = {
 			
 		this.collapsedDomains(new_collapsed);
 	},
-	get simpleMode() {
+	isBeta: 0,
+ 	get simpleMode() {
 		return safari.extension.settings.simpleMode;
 	},
 	set simpleMode(value) {
@@ -2441,7 +2313,10 @@ var Template = {
 		});
 		
 		_$('#js-help').click(function () {
-			self.utils.open_url('http://javascript-blocker.toggleable.com/help');
+			if (self.isBeta)
+				self.utils.open_url('http://javascript-blocker.toggleable.com/change-log/beta');
+			else
+				self.utils.open_url('http://javascript-blocker.toggleable.com/help');
 		}).siblings('#js-project').click(function () {
 			self.utils.open_url('http://javascript-blocker.toggleable.com/');
 		});
@@ -2542,6 +2417,54 @@ var Template = {
 				t.selectionEnd = t.innerHTML.length;
 			});
 		});
+		
+		if (this.isBeta) {
+			_$('header.main-header').dblclick(function () {
+				new Poppy($(self.popover.body).width() / 2, 13, [
+					'<ul id="jsoutput"></ul>',
+					'<textarea id="jsinput"></textarea>'
+				].join(''), function () {
+					var l = _$('#jsconsolelogger'), ol = _$('#jsoutput').html(l.hide().html());
+					
+					_$('#poppy-content').scrollTop(9999999999999);
+					
+					_$('#jsinput').focus().keypress(function (theEvent) {
+						var js = $.trim($(this).val());
+						
+						if (theEvent.which === 13 || theEvent.which === 3) {
+							theEvent.preventDefault();
+						
+							if (js.indexOf('safari') === 0 || ~js.indexOf('donationVerified')) return false;
+							
+							ol.append('<li class="jsinputcode">' + js.replace(/</g, '&lt;') + '</li>');
+							
+							try {
+								var re = eval(js);
+								ol.append('<li class="jsoutputcode">Result: ' + JSON.stringify(re).replace(/</g, '&lt;') + '<div class="divider"></div></li>');
+							} catch (e) {
+								ol.append('<li class="jsoutputcode error">Error: ' + e.toString().replace(/</g, '&lt;') + '<div class="divider"></div></li>');
+							}
+							
+							$(this).val('');
+						}
+						
+						_$('#poppy-content').scrollTop(9999999999999);
+						
+						$('.divider', ol).show().filter(':last').hide();
+						
+						switch (js) {
+							case 'clear':
+								ol.html('');
+								l.html('');
+								return false;
+							break;
+						}
+						
+						l.html(ol.html());
+					})
+				});
+			});
+		}
 	},
 	
 	/**

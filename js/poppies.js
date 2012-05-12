@@ -32,24 +32,24 @@ JB.poppies = {
 						var datai = parseInt(data, 10),
 								error = null;
 						
-						switch (datai) {
-							case -3: error = _('An email address was not specified.'); break;
-							case -2: error = _('A donation with that email address was not found.'); break;
-							case -1: error = _('The maximum number'); break;
-							case 0:
-							case 1:
-							case 2:
-							case 3:
-								JB.donationVerified = id;
-								
-								new Poppy(zoo.me[0], zoo.me[1], [
-									'<p>', _('Your donation has been verified'), '</p>',
-									'<p>', _('You may unlock {1}', [datai]), '</p>',
-									'<p>', _('Thanks for your support!'), '</p>'].join(''));
-							break;
+						if (datai < 0) {
+							switch (datai) {
+								case -3: error = _('An email address was not specified.'); break;
+								case -2: error = _('A donation with that email address was not found.'); break;
+								case -1: error = _('The maximum number'); break;
+
+								default: error = data;
+							}
+						} else if (datai >= 0) {
+							JB.donationVerified = id;
 							
-							default: error = data;
-						}
+							new Poppy(zoo.me[0], zoo.me[1], [
+								'<p>', _('Your donation has been verified'), '</p>',
+								'<p>', _('You may unlock {1}', [datai]), '</p>',
+								'<p>', _('Thanks for your support!'), '</p>'].join(''));
+						} else
+							error = data;
+						
 						
 						if (error)
 							new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], error, id], main));

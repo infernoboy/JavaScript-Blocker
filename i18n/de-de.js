@@ -114,6 +114,7 @@ Strings['de-de'] = {
 	'Embed Rules': 'Regeln für eingebundenes, Objekte, & Videos', // Done
 	'Image Rules': 'Bilderregeln',  // NEW - Was not there :-(
 	'Forgot': 'iForgot', // Done
+	'Rules': 'Regeln',
 	/** /BUTTONS */
 
 	/** POPPIES **/
