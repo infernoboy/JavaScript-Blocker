@@ -165,22 +165,16 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 			}]
 		},
 		jsblocker = {
-			allowed: {
-				items: {}
-			},
-			blocked: {
-				items: {}
-			},
-			unblocked: {
-				items: {}
-			},
+			allowed: {},
+			blocked: {},
+			unblocked: {},
 			href: pageHost()
 		}, readyTimeout = [null, null], lastAddedFrameData = false, jsonBlocker = false, zero = [], settings = {};
 		
 for (var kind in kinds) {
-	jsblocker.allowed.items[kind] = { all: [], unique: [] }
-	jsblocker.blocked.items[kind] = { all: [], unique: [] }
-	jsblocker.unblocked.items[kind] = { all: [], unique: [] }
+	jsblocker.allowed[kind] = { all: [], unique: [] }
+	jsblocker.blocked[kind] = { all: [], unique: [] }
+	jsblocker.unblocked[kind] = { all: [], unique: [] }
 }
 
 if (window !== window.top && blank)
@@ -250,14 +244,14 @@ function canLoad(event) {
 			
 			if (!isAllowed)	event.preventDefault();
 			
-			jsblocker[mo].items[kind].all.push(use_source);
+			jsblocker[mo][kind].all.push(use_source);
 		
-			if (!~jsblocker[mo].items[kind].unique.indexOf(host)) jsblocker[mo].items[kind].unique.push(host);
+			if (!~jsblocker[mo][kind].unique.indexOf(host)) jsblocker[mo][kind].unique.push(host);
 			if (kinds[kind][1]) kinds[kind][1].call(event.target, isAllowed, host, use_source);
 		} else if ((!source || source.length === 0) && event.type === 'DOMNodeInserted') {
 			did_something = 1;
 			
-			jsblocker.unblocked.items[kind].all.push(event.target.innerHTML);
+			jsblocker.unblocked[kind].all.push(event.target.innerHTML);
 			
 			if (kinds[kind][1]) kinds[kind][1].call(event.target, 1);
 		}
@@ -279,7 +273,7 @@ function ready(event) {
 			var script_tags = document.getElementsByTagName('script'), i, b = script_tags.length;
 			for (i = 0; i < b; i++) {
 				if (!script_tags[i].getAttribute('src') || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
-					jsblocker.unblocked.items.script.all.push(script_tags[i].innerHTML);
+					jsblocker.unblocked.script.all.push(script_tags[i].innerHTML);
 					
 					if (kinds.script[1]) kinds.script[1].call(script_tags[i], 1);
 				}
@@ -383,7 +377,7 @@ function prepareAnchor(anchor, i) {
 			if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length)) anchor.setAttribute('rel', 'noreferrer');
 		}, null, [anchor]);
 		
-		if (anchor.getAttribute('href').charAt(0) === '#')
+		if (anchor.getAttribute('href') && anchor.getAttribute('href').charAt(0) === '#')
 			safari.self.tab.dispatchMessage('cannotAnonymize', anchor.href);
 		else	
 			anchor.addEventListener('mousedown', function (e) {

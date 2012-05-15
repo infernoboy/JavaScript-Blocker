@@ -90,7 +90,7 @@ button.confirm-click {
 #select-arrow-settings {
 	background-color: #555;
 }
-li.kind-header.floater,
+.kind-header.floater,
 .info-container.floater,
 .rules-header.floater {
 	background: rgba(210,210,210,0.98) url(../images/texture.png) left top repeat

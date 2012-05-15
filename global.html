@@ -20,6 +20,7 @@
 		<script src="i18n/en-us.js"></script>
 		<script src="js/poppy.js"></script>
 		<script src="js/global.js"></script>
+		<script src="js/updater.js"></script>
 		<script src="js/poppies.js"></script>
 		<script src="js/predefined.js"></script>
 		<script src="js/beta.js"></script>
@@ -43,7 +44,7 @@
 			
 			if (JB.isBeta)
 				window.onerror = function (d, p, l, c) {
-					_$('#jsconsolelogger').append('<li class="jsoutputcode error">Error: ' + d + ', ' + p + ', ' + l);
+					_$('#jsconsolelogger').append('<li class="jsoutputcode error">' + d + ', ' + p + ', ' + l);
 				};
 			
 			safari.application.addEventListener('close', $.proxy(JB.open_popover, JB), true);

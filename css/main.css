@@ -491,13 +491,17 @@ header h3 {
 	margin: 5px 0;
 	cursor: default;
 }
-	li.kind-header {
-		margin-bottom: -5px;
+	.kind-header {
+		margin-left: 10px;
+		margin-top: -1px;
+		padding-top: 4px;
+		margin-bottom: -3px;
 	}
-		li.kind-header.floater,
+		.kind-header.floater,
 		.info-container.floater,
 		.rules-header.floater {
 			background: rgba(235,235,235,0.96);
+			padding-bottom: 0;
 		}
 	#main h3 {
 		padding: 0;
@@ -597,6 +601,10 @@ p.above-filter {
 	font-size: 9pt;
 	cursor: default;
 }
+	.domain-name + li {
+		overflow: hidden;
+		padding-top: 1px;
+	}
 	.domain-name.hidden {
 		background-image: url(../images/disclosure-closed.png);
 	}
@@ -820,10 +828,8 @@ p.above-filter {
 }
 
 #jsoutput {
-	min-height: 118px;
-}
-#jsinput {
-	width: 300px;
+	min-height: 10px;
+	min-width: 300px;
 }
 
 .floater {
@@ -831,9 +837,13 @@ p.above-filter {
 	margin-top: 0;
 	margin-bottom: 0;
 	padding-bottom: 1px;
-	-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.18), 0 2px 0 rgba(255,255,255,0.32);
 }
 	.floater *:not(input) {
 		margin-bottom: 0;
 		padding-bottom: 0;
+	}
+	.floater .floater-divider {
+		margin: 0 0 -2px;
+		visibility: visible !important;
+		display: block !important;
 	}

@@ -42,6 +42,13 @@ var Template = {
 	_$ = function (s) {
 		return $(s, JB.popover);
 	},
+	d = function () {
+		if (JB.isBeta) {
+			console.log.apply(console, arguments);
+			_$('#jsconsolelogger').append('<li class="jsoutputcode">' + $.makeArray(arguments).join(' ') + '<div class="divider"></div></li>')
+				.find('.divider').css('visibility', 'visible').filter(':last').css('visibility', 'hidden');
+		}
+	},
 	JB = {
 	tab: null,
 	updating: !1,
@@ -56,9 +63,9 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.4.9',
-	bundleid: 70,
-	update_attention_required: 61,
+	displayv: '2.4.10',
+	bundleid: 71,
+	update_attention_required: 70,
 	beta_attention_required: 1,
 	donation_url: 'http://lion.toggleable.com:160/jsblocker/verify.php?id=',
 	
@@ -87,7 +94,7 @@ var Template = {
 		
 		this.utils.send_installid();
 		
-		if (!self.donationVerified)
+		if (!this.donationVerified)
 			new Poppy($(this.popover.body).width() / 2, 13, [
 				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/240">' + this.displayv + '</a>']), '</p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
@@ -112,48 +119,16 @@ var Template = {
 					});
 				}, null, null, true);
 		else {
-			if (this.isBeta && this.beta_attention_required) this.utils.open_url('http://javascript-blocker.toggleable.com/change-log/beta');
-			
 			new Poppy($(this.popover.body).width() / 2, 13, [
 				'<p>',
 					_('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']),
 				'</p>'].join(''));
+			
 			this.installedBundle = this.bundleid;
+			
+			if (this.isBeta && this.beta_attention_required) this.utils.open_url('http://javascript-blocker.toggleable.com/change-log/beta');
 		}
 	},
-	
-	updater: function () {
-		var v = this.installedBundle, self = this;
-		
-		if (v === this.bundleid) return false;
-		else if (v < 61) {
-			for (var key in this.rules.data_types)
-				this.rules.reinstall_predefined(key);
-				
-			this.installedBundle = 61;
-				
-			this.updater();
-		} else if (v < 64) {
-			new Poppy($(this.popover.body).width() / 2, 13, [
-				'<p class="misc-info">Update 2.4.3</p>',
-				'<p><b>New:</b> You can now click on an item in the main window to find out safety information about the host.</p>',
-				'<p><b>New for Donators:</b> A new theme called Linen.</p>',
-				'<p><b>Important:</b> The image blocker function is now disabled by default because WebKit does <b>not</b> ',
-						'prevent images from loading; it merely hides them from the DOM. This is a limitation of Safari, not JavaScript Blocker. ',
-						'Please be aware that any extension that claims to block tracking companies that use images to track users does <b>not</b> ',
-						'work. I do not want to give anyone a false sense of security so I have disabled the feature by default and have removed the blacklist ',
-						'rules for tracker images.</p>',
-				'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'
-			].join(''), function () {
-				_$('#rawr-continue').click(function () {
-					self.donate();
-				});
-			}, $.noop, null, true);
-				
-		} else if (v < this.bundleid)
-			this.donate();
-	},
-	
 	load_language: function (css) {
 		function set_popover_css (self, load_language, f) {
 			if (self.popover && _$('#lang-css-' + load_language).length === 0) {
@@ -175,7 +150,6 @@ var Template = {
 		else if (load_language !== 'en-us' && !(load_language in Strings))
 			$.getScript('i18n/' + load_language + '.js', function (data, status) { });
 	},
-	
 	enabled: function (kind) {
 		if (!this.donationVerified && kind !== 'script') return false;
 		
@@ -261,13 +235,19 @@ var Template = {
 		$(this.popover.body).toggleClass('busy', value === 1);
 	},
 	get installedBundle() {
-		var id = window.localStorage.getItem('InstalledBundleID');
+		var id = safari.extension.settings.getItem('installedBundle'),
+				id_fixed = typeof id === 'string' ? parseInt(id, 10) : null;
 		
-		return typeof id === 'string' ? parseInt(id, 10) : null;
+		if (id_fixed && id_fixed > 0) return id_fixed;
+		
+		id = window.localStorage.getItem('InstalledBundleID');
+		
+		return typeof id === 'string' ? parseInt(id, 10) : id_fixed || null;
 	},
 	set installedBundle(value) {
 		if (value === this.bundleid) this.utils.attention(-1);
 		window.localStorage.setItem('InstalledBundleID', value);
+		safari.extension.settings.setItem('installedBundle', value);
 	},
 	get donationVerified() {
 		return safari.extension.settings.getItem('donationVerified');
@@ -328,7 +308,7 @@ var Template = {
 				off = typeof d.off === 'function' ? d.off.call(JB) : 0;
 				
 				var s = d.scroller, soff = s.offset().top + off, stop = s.scrollTop(),
-						eoff = parseInt(s.css('marginTop')),
+						eoff = parseInt(s.css('marginTop'), 10),
 						every = $('*', s),
 						all = s.find(d.to_float).css({ top: 'auto', left: 'auto', opacity: 1 }).width('auto'), behind;
 								
@@ -371,7 +351,7 @@ var Template = {
 					current_header_clone.css({
 						top: top + _$('#find-bar:visible').outerHeight(true),
 						zIndex: 999 - off
-					}).width(current_header.width()).addClass('floater');
+					}).width(current_header.width()).addClass('floater').append('<div class="divider floater-divider"></div>');
 					
 					current_header.css('opacity', 0);
 				}
@@ -705,7 +685,7 @@ var Template = {
 		
 			this._loaded = true;
 			
-			var c = window.localStorage.getItem('Rules');
+			var c = safari.extension.settings.getItem('Rules');
 			
 			this._rules = c ? JSON.parse(c) : this.data_types;
 			this._rules = $.extend(this.data_types, this._rules);
@@ -715,7 +695,7 @@ var Template = {
 		save: function () {
 			this.utils.timer.timeout('save_rules', function (rules) {
 				try {
-					window.localStorage.setItem('Rules', JSON.stringify(rules));
+					safari.extension.settings.setItem('Rules', JSON.stringify(rules));
 				} catch (e) { }
 			}, 1000, [this.rules]);
 		},
@@ -728,8 +708,9 @@ var Template = {
 			if (!this.donationVerified) return false;
 		
 			this._loaded = false;
-			this.cache.script = {};
-			this.cache.frame = {};
+			
+			for (var kind in this.data_types)
+				this.cache[kind] = {};
 		
 			try {
 				var r = JSON.parse(string);
@@ -753,7 +734,7 @@ var Template = {
 			
 				var s = JSON.stringify(r);
 
-				window.localStorage.setItem('Rules', s);
+				safari.extension.settings.setItem('Rules', s);
 			
 				return true;
 			} catch (e) {
@@ -1143,9 +1124,20 @@ var Template = {
 	},
 	bind_events: function(some, host) {
 		var add_rule, remove_rule, self = this;
+		
+		if (safari.extension.settings.showUnblocked) {
+			_$('#unblocked-script-urls').show().prev().show();
+			
+			this.make_list('unblocked', _('View'), jsblocker);
+		} else
+			_$('#unblocked-script-urls').hide().prev().hide();
+		
+		_$('#unlock-p').toggleClass('hidden', !(this.donationVerified === false || this.donationVerified === null || this.donationVerified === undefined));
+		_$('#above-temporary').toggleClass('hidden', !this.donationVerified);
+		_$('#filter-temporary').toggleClass('hidden', !this.donationVerified);
 			
 		function url_display (e) {
-			var t = $(this), pa = t.parent(), off = t.offset(), kind = pa[0].className.substr(5),
+			var t = $(this), pa = t.parent(), off = t.offset(), kind = pa[0].className.substr(pa[0].className.indexOf('kind-') + 5),
 					kindP = kind.charAt(0).toUpperCase() + kind.substr(1);
 					
 			function codeify(data) {
@@ -1325,51 +1317,62 @@ var Template = {
 		$(this.popover).on('click', 'ul .domain-name', function () {
 			if (this.className.match(/no\-disclosure/)) return false;
 			
-			var d = $(this).data('domain'), t = $(this).next(), x;
+			var me = $(this), d = me.data('domain'), t = me.next(), x;
 			
 			if (d === '.*') d = _('All Domains');
 						
-			if ($(this).hasClass('floater')) {
+			if (me.hasClass('floater')) {
 				t = t.next();
-				x = $(this).next();
+				x = me.next();
 			} else
 				x = $('<div />');
-								
-			if (t.is(':animated')) return false;
-		
+				
+			var ul = $('ul', t);
+			
+			if (ul.is(':animated')) return false;
+			
+			me.toggleClass('hidden');
+			x.toggleClass('hidden');
+			
+			t.css('display', 'block');
+			
+			if (me.hasClass('floater') && !hid)
+				x.css('opacity', 1).prev().remove();
+			
 			var c = self.collapsedDomains(),
 					dex = c.indexOf(d),
 					rulesList = _$('#rules-list'),
-					sTop = rulesList.scrollTop(),
+					hid = !me.hasClass('hidden'),
+					o = t.outerHeight(true),
+					h = t.height(),
 					height;
-						
-			if (!$(this).toggleClass('hidden').hasClass('hidden')) {
-				if (dex > -1) c.splice(dex, 1);
-			} else {
-				if (dex === -1) c.push(d);
+										
+			ul.css({ marginTop: hid ? -o : 0 }).animate({
+				marginTop: hid ? 0 : -o
+			}, {
+				duration: 200 * self.speedMultiplier,
+				complete: function () {
+					if (!me.hasClass('hidden')) {
+						if (dex > -1) c.splice(dex, 1);
+					} else {
+						if (dex === -1) c.push(d);
+					}
 				
-				if ($(this).hasClass('floater'))
-					$(this).next().css('opacity', 1).prev().remove();
-			}
-			
-			x.toggleClass('hidden');
+					t.css('display', '');
+					ul.css({ marginTop: 0 });
 				
-			self.collapsedDomains(c);
-			
-			t.toggle();
-			
-			height = t.height();
-						
-			t.slideToggle(200 * self.speedMultiplier, function () {
-				this.style.display = null;
-				rulesList.trigger('scroll');
+					self.collapsedDomains(c);
+		
+					rulesList.trigger('scroll');
+				},
+				step: function () {
+					rulesList.trigger('scroll');
+				}
 			});
-			
-			rulesList.scrollTop(sTop);
-			
+						
 			if (!this.className.match(/hidden/)) {
 				var offset = t.offset(),
-					bottomView = offset.top + height - _$('header').height();
+					bottomView = offset.top + h - _$('header').height();
 				
 				if (bottomView > rulesList.height())
 					rulesList.animate({
@@ -1886,7 +1889,7 @@ var Template = {
 						}
 						
 						var s = self.utils.sort_object(self.rules.rules[key]),
-								ul = _$('#rules-list #data ul#rules-list-' + key + 's').html('').css({ marginTop: 0, marginBottom: '6px', opacity: 1 });
+								ul = _$('#rules-list #data ul#rules-list-' + key + 's').html('').css({ marginTop: '-3px', marginBottom: '6px', opacity: 1 });
 
 						for (domain in s)
 							self.utils.zero_timeout(appendrules, [ul, domain, self, key]);
@@ -2009,7 +2012,7 @@ var Template = {
 		});
 		
 		_$('.allowed-label, .blocked-label, .unblocked-label').click(function () {
-			var $this = $(this), which = this.className.substr(0, this.className.indexOf('-')), e = _$('#' + which + '-script-urls ul');
+			var $this = $(this), which = this.className.substr(0, this.className.indexOf('-')), e = _$('#' + which + '-script-urls .urls-inner');
 			
 			if (e.is(':animated')) return false;
 
@@ -2022,6 +2025,9 @@ var Template = {
 					marginTop: 0
 				}, {
 					duration: 200 * self.speedMultiplier,
+					complete: function () {
+						$('.kind-header', e).addClass('visible');
+					},
 					step: function () {
 						self.utils.zero_timeout(function () {
 							_$('#main').trigger('scroll');
@@ -2032,6 +2038,7 @@ var Template = {
 				self.collapsed(which, 1);
 				
 				$this.addClass('hidden');
+				$('.kind-header', e).removeClass('visible').css('opacity', 1).filter('.floater').remove();
 								
 				e.css('marginTop', 0).animate({
 					marginTop: -e.height()
@@ -2047,7 +2054,7 @@ var Template = {
 					}
 				}).addClass('was-hidden');
 			}
-			
+						
 			if ($(this).parent().hasClass('floater')) $(this).parent().next().find('label').toggleClass('hidden');
 			
 			self.utils.timer.timeout('label_search', function (self) {
@@ -2137,7 +2144,7 @@ var Template = {
 			var l = _$('.rules-wrapper');
 			
 			if (l.is(':visible'))
-				l.find('span.temporary:not(.type-2)').removeClass('temporary').siblings('input').click().click();
+				l.find('span.temporary').removeClass('temporary type-2').addClass('type-1').siblings('input').click().click();
 
 			_$('#filter-type-state li.selected').click();
 			
@@ -2178,7 +2185,7 @@ var Template = {
 					wrap.hide();
 				}
 				
-				rs.css({ opacity: a ? 0 : 1, marginBottom: a ? 0 : '6px', marginTop: a ? -(rs.outerHeight() * 2) : 0 }).toggleClass('visible', !a);
+				rs.css({ opacity: a ? 0 : 1, marginBottom: a ? 0 : '6px', marginTop: a ? -(rs.outerHeight() * 2) : -3 }).toggleClass('visible', !a);
 			}
 			
 			var d = _$('#rules-list .domain-name:visible').length,
@@ -2336,14 +2343,14 @@ var Template = {
 			
 			e.find('li.domain-name:not(.floater)').toggleClass('header-hidden', a);
 								
-			e.css({ opacity: 1, marginTop: !a ? -o : 0 }).animate({
-				marginTop: a ? -oT : 0,
+			e.css({ opacity: 1, marginTop: !a ? -o : -3 }).animate({
+				marginTop: a ? -oT : -3,
 				marginBottom: a ? 0 : '6px'
 			}, {
 				duration: 200 * self.speedMultiplier,
 				complete: function () {
 					this.style.opacity = a ? 0 : 1;
-					this.style.marginTop = a ? -(oT * 2) + 'px' : 0;
+					this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
 				
 					$(this).toggleClass('visible', !a);
 					
@@ -2357,44 +2364,40 @@ var Template = {
 		
 		$(this.popover).on('click', 'a.toggle-main', function (event) {
 			var me = $(this),
-					pos = me.parents('.main-wrapper').parent().attr('id'),
-					e = me.parent().parent(),
-					a;
-												
-			if (e.hasClass('floater')) {
-				var is_next = 1;
-				e = e.next();
-			} else
-				var is_next = 0;
+					head = me.parent(),
+					pos = me.hasClass('floater') ? me.next().attr('id') : this.id,
+					e = me.parent().next().find('.main-wrapper');
 			
-			e = e.nextUntil('li.kind-header').filter(':not(.show-more-hidden)');
-			a = e.css('opacity') === '1';
-										
+			if (!e.length) e = me.parent().next().next().find('.main-wrapper');
+			
+			var o = e.outerHeight(), oT = e.outerHeight(true), a = e.css('opacity') === '1';
+						
 			if (e.is(':animated')) return false;
 					
 			this.innerHTML = a ? _('Show') : _('Hide');
 						
-			if (is_next) e.prevAll('.kind-header').find('a').html(this.innerHTML);
-					
-			self.collapsed(pos + '-' + me[0].className.substr(17), a);
+			if (head.hasClass('floater')) head.next().find('a').html(this.innerHTML);
+							
+			self.collapsed(pos, a);
+			
+			if (!a) head.removeClass('collapsed');
 
-			e.css({ opacity: 1 }).animate({
-				height: 'toggle',
-				margin: 'toggle',
-				padding: 'toggle'
-			}, 200 * self.speedMultiplier, function () {
-				this.style.opacity = a ? 0 : 1;
+			e.css({ opacity: 1, marginTop: !a ? -o : 0 }).animate({
+				marginTop: a ? -oT : 0
+			}, {
+				duration: 200 * self.speedMultiplier,
+				complete: function () {
+					this.style.opacity = a ? 0 : 1;
+					this.style.marginTop = a ? -(oT * 2) + 'px' : 0;
 				
-				$(this).toggleClass('visible', !a);
+					$(this).parent().prev().toggleClass('collapsed', a).css('opacity', 1);
+					
+					_$('#main').trigger('scroll');
+				},
+				step: function () {
+					_$('#main').trigger('scroll');
+				}
 			});
-			
-			self.utils.timer.interval('toggle_main_scroll', function () {
-				_$('#main').trigger('scroll');
-			}, 100);
-			
-			self.utils.timer.timeout('delete_toggle_main_scroll', function () {
-				self.utils.timer.remove('interval', 'toggle_main_scroll');
-			}, 201 * self.speedMultiplier);
 		});
 		
 		_$('#page-lists-label').dblclick(function () {
@@ -2406,6 +2409,7 @@ var Template = {
 				'<p>This data contains a copy of your settings and current webpage. It does NOT reveal your rules.</p>',
 				'<textarea id="debug-info" readonly>',
 					'Version', "\n", self.displayv, '-', self.bundleid, "\n\n",
+					'Beta', "\n", self.isBeta, "\n\n",
 					'User Agent', "\n", window.navigator.userAgent, "\n\n",
 					'window.localStorage', "\n", JSON.stringify(l), "\n\n", 
 					'Settings', "\n", JSON.stringify(safari.extension.settings), "\n\n",
@@ -2417,51 +2421,22 @@ var Template = {
 				t.selectionEnd = t.innerHTML.length;
 			});
 		});
-		
+				
 		if (this.isBeta) {
 			_$('header.main-header').dblclick(function () {
 				new Poppy($(self.popover.body).width() / 2, 13, [
 					'<ul id="jsoutput"></ul>',
-					'<textarea id="jsinput"></textarea>'
+					'<input id="set-version" value="Set Installed Version" type="button" />'
 				].join(''), function () {
 					var l = _$('#jsconsolelogger'), ol = _$('#jsoutput').html(l.hide().html());
 					
 					_$('#poppy-content').scrollTop(9999999999999);
 					
-					_$('#jsinput').focus().keypress(function (theEvent) {
-						var js = $.trim($(this).val());
+					_$('#set-version').click(function () {
+						var x = prompt('Enter the desired installed bundle version.', 69);
 						
-						if (theEvent.which === 13 || theEvent.which === 3) {
-							theEvent.preventDefault();
-						
-							if (js.indexOf('safari') === 0 || ~js.indexOf('donationVerified')) return false;
-							
-							ol.append('<li class="jsinputcode">' + js.replace(/</g, '&lt;') + '</li>');
-							
-							try {
-								var re = eval(js);
-								ol.append('<li class="jsoutputcode">Result: ' + JSON.stringify(re).replace(/</g, '&lt;') + '<div class="divider"></div></li>');
-							} catch (e) {
-								ol.append('<li class="jsoutputcode error">Error: ' + e.toString().replace(/</g, '&lt;') + '<div class="divider"></div></li>');
-							}
-							
-							$(this).val('');
-						}
-						
-						_$('#poppy-content').scrollTop(9999999999999);
-						
-						$('.divider', ol).show().filter(':last').hide();
-						
-						switch (js) {
-							case 'clear':
-								ol.html('');
-								l.html('');
-								return false;
-							break;
-						}
-						
-						l.html(ol.html());
-					})
+						self.installedBundle = x;
+					});
 				});
 			});
 		}
@@ -2475,9 +2450,9 @@ var Template = {
 	 * @param {Object} jsblocker Information about scripts allowed, blocked, or unblocked and frames.
 	 */
 	make_list: function (text, button, jsblocker) {
-		var self = this, el = _$('#' + text + '-script-urls'), ul = _$('#' + text + '-script-urls ul'), li, use_url, protocol, poopy,
+		var self = this, el = _$('#' + text + '-script-urls .urls-inner'), use_url, protocol, poopy,
 				shost_list = {}, lab = _$('#' + text + '-scripts-count'), cn = 0;
-		
+
 		for (var key in this.rules.data_types)
 			shost_list[key] = { 'http': {}, 'https': {}, 'file': {}, 'safari-extension': {}, 'data': {}, 'javascript': {}, 'about': {} };
 			
@@ -2515,17 +2490,17 @@ var Template = {
 		if (self.simpleMode && text !== 'unblocked') {
 			cn = 0;
 			
-			for (var kind in jsblocker[text].items)
+			for (var kind in jsblocker[text])
 				if (self.enabled(kind))
-					cn += jsblocker[text].items[kind].unique.length;
+					cn += jsblocker[text][kind].unique.length;
 				
 			lab.html(cn);
 		} else {
 			cn = 0;
 			
-			for (var kind in jsblocker[text].items)
+			for (var kind in jsblocker[text])
 				if (self.enabled(kind))
-					cn += jsblocker[text].items[kind].all.length;
+					cn += jsblocker[text][kind].all.length;
 
 			lab.html(cn);
 		}
@@ -2534,22 +2509,25 @@ var Template = {
 			if (!this.enabled(key)) continue;
 			
 			var ki = _(key.charAt(0).toUpperCase() + key.substr(1) + 's'),
-					do_hide = _$('#main').is(':visible') && this.collapsed(el.attr('id') + '-' + key) && !_$('.' + text + '-label').hasClass('hidden'),
+					do_hide = this.collapsed('toggle-' + key + '-' + text + '-items'),
+					ul = _$('#' + text + '-items-' + key),
 					li, ccheck, show_me = $('<div />');
 			
-			if (jsblocker[text].items[key].all.length) {
-				ul.append([
-					'<li class="kind-header kind-', key, '">',
-						'<header>',
-							'<h3>' + ki + '</h3>',
-							'<a class="toggle-main kind-', key, '">', do_hide ? _('Show') : _('Hide'), '</a>',
-							'<br style="clear:both;" />',
-						'</header>',
-					'</li>'].join(''));
+			if (!ul.length)
+				ul = $(Template.create('tmpl_main_wrapper', {
+					local: ki,
+					which: text,
+					kind: key
+				})).appendTo(el).filter('div').find('ul');
 			
-				for (var i = 0, b = jsblocker[text].items[key].all.length; i < b; i++) {
-					li = add_item(i, key, jsblocker[text].items[key].all[i]);
-					ccheck = $('li:not(.kind-header,.show-me-more).kind-' + key, ul).length;
+			ul.parent().prev().toggleClass('visible', !do_hide).find('.toggle-main').html(_(do_hide ? 'Show' : 'Hide'));;
+			
+			if (jsblocker[text][key].all.length) {
+				ul.parent().prev().show();
+					
+				for (var i = 0, b = jsblocker[text][key].all.length; i < b; i++) {
+					li = add_item(i, key, jsblocker[text][key].all[i]);
+					ccheck = $('li:not(.show-me-more).kind-' + key, ul).length;
 									
 					if (ccheck > safari.extension.settings.sourceCount) {
 						if (!$('.show-me-more', ul).length)
@@ -2567,52 +2545,49 @@ var Template = {
 				else
 					show_me.nextAll().removeClass('show-more-hidden').end().remove();
 				
-				if (do_hide)
-					$('li.kind-header:last', ul).nextAll('li:not(.show-more-hidden)').show()
-						.animate({ opacity: 0, height: 'toggle', margin: 'toggle', padding: 'toggle' }, 0).removeClass('visible');
-			}
-		}
-		
-		if (this.simpleMode && safari.extension.settings.showPerHost) {
-			for (var kind in shost_list)
-				for (poopy in shost_list[kind])
-					for (use_url in shost_list[kind][poopy]) {
-						$('li#' + shost_list[kind][poopy][use_url][1], ul).find('small')
-								.html('<a href="javascript:void(0);" class="show-scripts">(' + shost_list[kind][poopy][use_url][0] + ')</a>');
-					}
-			
-			_$('.show-scripts', ul).click(function () {
-				var off = $(this).offset(), scripts = $(this.parentNode.parentNode).data('script').map(function (v) { return encodeURI(v); });
-
-				new Poppy(off.left + -1 + $(this).width() / 2, off.top + 2, [
-					'<ul>',
-						'<li><span><a href="javascript:void(0)">', scripts.join(['</a></span> ',
-							'<div class="divider"></div>',
-						'</li>',
-						'<li><span><a href="javascript:void(0)">'].join('')), '</a></span></li>',
-					'</ul>'].join(''), function () {
-						_$('#poppy a').click(function (e) {
-							e.preventDefault();
-							self.utils.open_url($('<div />').html(this.innerHTML).text());
-						}).parent().scrollLeft(88888);
-					});
-			});
-		}
+				if (do_hide) ul.css({ marginTop: -999999, opacity: 0 }).removeClass('visible');
+			} else
+				ul.parent().prev().hide();
 				
-		$('li.kind-header', ul).each(function () {
-			$('.divider', $(this).nextUntil('.kind-header')).filter(':last').css('visibility', 'hidden');
-		});
-
-		$('.show-more', ul).click(function () {
-			$(this).parent().nextUntil('li.kind-header').filter('.show-more-hidden').slideDown(200 * self.speedMultiplier).removeClass('show-more-hidden').end().end().slideUp(300  * self.speedMultiplier, function () {
-				$(this).remove();
-			});
-			_$('#find-bar-search:visible').trigger('search');
-		});
+			$('.divider:last', ul).css('visibility', 'hidden');
 		
-		if (self.collapsed(text)) {
-			ul.addClass('was-hidden').hide();
-			_$('.' + text + '-label').addClass('hidden');
+			if (this.simpleMode && safari.extension.settings.showPerHost) {
+				for (var kind in shost_list)
+					for (poopy in shost_list[kind])
+						for (use_url in shost_list[kind][poopy]) {
+							$('li#' + shost_list[kind][poopy][use_url][1], ul).find('small')
+									.html('<a href="javascript:void(0);" class="show-scripts">(' + shost_list[kind][poopy][use_url][0] + ')</a>');
+						}
+			
+				_$('.show-scripts', ul).click(function () {
+					var off = $(this).offset(), scripts = $(this.parentNode.parentNode).data('script').map(function (v) { return encodeURI(v); });
+
+					new Poppy(off.left + -1 + $(this).width() / 2, off.top + 2, [
+						'<ul>',
+							'<li><span><a href="javascript:void(0)">', scripts.join(['</a></span> ',
+								'<div class="divider"></div>',
+							'</li>',
+							'<li><span><a href="javascript:void(0)">'].join('')), '</a></span></li>',
+						'</ul>'].join(''), function () {
+							_$('#poppy a').click(function (e) {
+								e.preventDefault();
+								self.utils.open_url($('<div />').html(this.innerHTML).text());
+							}).parent().scrollLeft(88888);
+						});
+				});
+			}
+		
+			$('.show-more', ul).click(function () {
+				$(this).parent().nextUntil('.kind-header').filter('.show-more-hidden').slideDown(200 * self.speedMultiplier).removeClass('show-more-hidden').end().end().slideUp(300  * self.speedMultiplier, function () {
+					$(this).remove();
+				});
+				_$('#find-bar-search:visible').trigger('search');
+			});
+		
+			if (self.collapsed(text)) {
+				_$('.' + text + '-label:not(.hidden)').click();
+				$('.kind-header', ul).removeClass('visible');
+			}
 		}
 	},
 	do_update_popover: function (event, index, badge_only) {
@@ -2633,9 +2608,9 @@ var Template = {
 			
 			for (var act in jsblocker) {
 				if (act === 'href') continue;
-				for (var kind in jsblocker[act].items)
+				for (var kind in jsblocker[act])
 					if (this.enabled(kind))
-						count[act] += jsblocker[act].items[kind].all.length;
+						count[act] += jsblocker[act][kind].all.length;
 			}
 			
 			if (jsblocker.href in this.frames) {
@@ -2649,16 +2624,16 @@ var Template = {
 
 					for (var act in xx[frame]) {
 						if (act === 'href') continue;
-						for (var kind in xx[frame][act].items)
+						for (var kind in xx[frame][act])
 							if (this.enabled(kind))
-								frame_count[act] += xx[frame][act].items[kind].all.length;
+								frame_count[act] += xx[frame][act][kind].all.length;
 					}
 					
-					for (var key in xx[frame].blocked.items) {
+					for (var key in xx[frame].blocked) {
 						if (!this.enabled(key)) continue;
 						
-						frames_blocked_item_count += xx[frame].blocked.items[key].unique.length;
-						frames_allowed_item_count += xx[frame].allowed.items[key].unique.length;
+						frames_blocked_item_count += xx[frame].blocked[key].unique.length;
+						frames_allowed_item_count += xx[frame].allowed[key].unique.length;
 					}
 					
 					d = ('display' in xx[frame]) ? xx[frame].display : xx[frame].href;
@@ -2681,11 +2656,11 @@ var Template = {
 				else {
 					var allowed_items = 0, blocked_items = 0;
 					
-					for (var kind in jsblocker.allowed.items) {
+					for (var kind in jsblocker.allowed) {
 						if (!this.enabled(kind)) continue;
 											
-						allowed_items += jsblocker.allowed.items[kind].unique.length;
-						blocked_items += jsblocker.blocked.items[kind].unique.length;
+						allowed_items += jsblocker.allowed[kind].unique.length;
+						blocked_items += jsblocker.blocked[kind].unique.length;
 					}
 												
 					toolbarItem.badge = safari.extension.settings.toolbarDisplay === 'allowed' ?
@@ -2718,17 +2693,6 @@ var Template = {
 
 				this.make_list('blocked', _('Allow'), jsblocker);
 				this.make_list('allowed', _('Block'), jsblocker);
-				
-				if (safari.extension.settings.showUnblocked) {
-					_$('#unblocked-script-urls').show().prev().show();
-					
-					this.make_list('unblocked', _('View'), jsblocker);
-				} else
-					_$('#unblocked-script-urls').hide().prev().hide();
-				
-				_$('#unlock-p').toggleClass('hidden', !(self.donationVerified === false || self.donationVerified === null || self.donationVerified === undefined));
-				_$('#above-temporary').toggleClass('hidden', !self.donationVerified);
-				_$('#filter-temporary').toggleClass('hidden', !self.donationVerified);
 			}
 		}
 		
@@ -2833,7 +2797,7 @@ var Template = {
 					event.message = 1;
 					break theSwitch;
 				} else if (this.installedBundle < this.update_attention_required || !this.methodAllowed) {
-					event.message = 0;
+					event.message = this.enabled(event.message[0]) ? 0 : 1;
 					break theSwitch;
 				}
 
@@ -3061,11 +3025,7 @@ var Template = {
 					return every.filter('.urls-wrapper:first');
 				});
 			
-				JB.utils.floater('#main', '.kind-header:visible', function (every) {
-					var t = _$('#main .kind-header.floater-clone');
-												
-					if (t.parents('.urls-wrapper').find('.main-wrapper').is(':animated')) t.remove();
-								
+				JB.utils.floater('#main', '.kind-header:visible:not(.collapsed).visible', function (every) {
 					return every.filter('li:first').parent();
 				}, function () {
 					return _$('#main .info-container.floater').outerHeight(true) || 0;

@@ -27,7 +27,7 @@
 		
 		if (safari.extension.globalPage.contentWindow.JB.isBeta)
 			window.onerror = function (d, p, l, c) {
-				safari.extension.globalPage.contentWindow._$('#jsconsolelogger').append('<li class="jsoutputcode error">Error: ' + d + ', ' + p + ', ' + l);
+				safari.extension.globalPage.contentWindow._$('#jsconsolelogger').append('<li class="jsoutputcode error">' + d + ', ' + p + ', ' + l);
 			};
 		
 		document.addEventListener('DOMContentLoaded', function () {
@@ -116,7 +116,7 @@
 			</div>
 	
 			<div id="allowed-script-urls" class="urls-wrapper">
-				<ul class="main-wrapper"></ul>
+				<div class="urls-inner"></div>
 			</div>
 				
 			<div class="info-container">
@@ -125,7 +125,7 @@
 			</div>
 	
 			<div id="blocked-script-urls" class="urls-wrapper">
-				<ul class="main-wrapper"></ul>
+				<div class="urls-inner"></div>
 			</div>
 	
 			<div class="info-container">
@@ -133,7 +133,7 @@
 			</div>
 	
 			<div id="unblocked-script-urls" class="urls-wrapper">
-				<ul class="main-wrapper"></ul>
+				<div class="urls-inner"></div>
 			</div>
 
 			<div id="disclaimer">
@@ -224,6 +224,17 @@
 			</header>
 			<div id="rules-list-<%=self.kind%>-container" class="rules-list-container" style="overflow:hidden;">
 				<ul id="rules-list-<%=self.kind%>s" class="rules-wrapper"></ul>
+			</div>
+		</textarea>
+		
+		<textarea id="tmpl_main_wrapper">
+			<header id="head-<%=self.which%>-<%=self.kind%>" class="kind-header visible">
+				<h3 id="<%=self.which%>-<%=self.kind%>-items"><%=self.local%></h3>
+				<a id="toggle-<%=self.kind%>-<%=self.which%>-items" class="toggle-main">Hide</a>
+				<br style="clear:both;" />
+			</header>
+			<div id="<%=self.which%>-items-<%=self.kind%>-container" class="item-list-container" style="overflow:hidden;">
+				<ul id="<%=self.which%>-items-<%=self.kind%>" class="main-wrapper"></ul>
 			</div>
 		</textarea>
 		

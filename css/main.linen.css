@@ -85,7 +85,7 @@ select {
 	border-top-color: #eee;
 	background: -webkit-linear-gradient(top, rgba(0,0,0,0.02), rgba(0,0,0,0.08)), url(../images/linen.png);
 }
-li.kind-header.floater,
+.kind-header.floater,
 .info-container.floater,
 .rules-header.floater {
 	background: url(../images/linen.png);
