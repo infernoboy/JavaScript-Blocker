@@ -4,6 +4,8 @@
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
  ***************************************/
 
+"use strict";
+
 var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
 		random = +new Date,
 		blank = window.location.href === 'about:blank',
@@ -20,6 +22,7 @@ function pageHost(not_real) {
 					window.location.pathname : encodeURI(window.location.pathname)) + window.location.search;
 			if (window.location.hash.length > 0) return base + window.location.hash;
 			else if (window.location.href.substr(-1) === '#') return base + '#';
+			else if (/\?$/.test(window.location.href)) return base + '?';
 			else return base;
 		break;
 		
@@ -49,7 +52,7 @@ function fitFont(e, f) {
 		tH = text.offsetHeight;
 		tW = text.offsetWidth;
 		fs -= 1;
-	} while ((tH > maxH || tW > maxW) && fs > 8);
+	} while ((tH > maxH || tW > maxW) && fs > 4);
 	
 	text.style.setProperty('position', 'absolute', 'important');
 	text.style.setProperty('top', 'auto', 'important');
@@ -74,7 +77,7 @@ function createPlaceholder(e, host, url) {
 	pw.className = 'jsblocker-node-wrap';
 	pB.className = 'jsblocker-node-two';
 	p2.className = 'jsblocker-url';
-	p2.title = url;
+	p2.title = e.nodeName.toLowerCase() + ' - ' + url;
 	p.title = p2.title;
 	pB.title = p.title;
 		
@@ -145,10 +148,19 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 						t.parentNode.removeChild(t);
 					});
 			}],
-			embed: [{ EMBED: 1, OBJECT: 1, VIDEO: 1 }, function (allowed, host, url) {
+			embed: [{ EMBED: 1, OBJECT: 1 }, function (allowed, host, url) {
 				var t = this;
 				if (!allowed)
 					if_setting('showPlaceholderembed', true, function () {
+						createPlaceholder(t, host, url);
+					}, function () {
+						t.parentNode.removeChild(t);
+					});
+			}],
+			video: [{ VIDEO: 1 }, function (allowed, host, url) {
+				var t = this;
+				if (!allowed)
+					if_setting('showPlaceholdervideo', true, function () {
 						createPlaceholder(t, host, url);
 					}, function () {
 						t.parentNode.removeChild(t);
@@ -162,7 +174,8 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 					}, function () {
 						t.parentNode.removeChild(t);
 					});
-			}]
+			}],
+			special: [{}]
 		},
 		jsblocker = {
 			allowed: {},
@@ -193,11 +206,13 @@ function if_setting(setting, value, cb, cb2, args) {
 			settings[s[i]] = safari.self.tab.canLoad(beforeLoad, ['setting', s[i]]);
 	
 		if (settings[s[i]] === value) {
-			cb.apply(window, args);
+			if (typeof cb === 'function') cb.apply(window, args);
 			break;
 		} else if (i === (s.length -1) && typeof cb2 === 'function')
 			cb2.apply(window, args);
 	}
+	
+	return settings[s[--i]];
 }
 
 function activeHost(url, real) {
@@ -238,7 +253,7 @@ function canLoad(event) {
 				var use_source = 'about:blank', host = 'blank';
 			else
 				continue;
-								
+			
 			var isAllowed = safari.self.tab.canLoad(event, [kind, jsblocker.href, use_source, !(window == window.top)]),
 					mo = isAllowed ? 'allowed' : 'blocked';
 			
@@ -262,7 +277,8 @@ function canLoad(event) {
 }
 
 function ready(event) {
-	safari.self.tab.dispatchMessage('updateReady');
+	if (window === window.top)
+		safari.self.tab.dispatchMessage('updateReady');
 		
 	var t = event.type === 'DOMContentLoaded' ? 1 : 0;
 	
@@ -305,9 +321,7 @@ function messageHandler(event) {
 		case 'updatePopover': ready(event); break;
 		case 'updatePopoverNow': ready(event); break;
 		case 'validateFrame':
-			var a = [pageHost(), jsblocker], sr;
-
-			function validateFrame(f) {
+			var validateFrame = function (f) {
 				for (var y = 0; y < f.length; y++) {
 					sr = f[y].getAttribute('src');
 					
@@ -317,7 +331,9 @@ function messageHandler(event) {
 						break;
 					}
 				}
-			}
+			};
+
+			var a = [pageHost(), jsblocker], sr;
 			
 			validateFrame(document.getElementsByTagName('iframe'));
 			
@@ -357,7 +373,7 @@ function prepareAnchors(event, anchors, forms) {
 	for (var y = 0; y < f.length; y++)
 		zero_timeout(function (fo) {
 			if (fo.method && fo.method.toLowerCase() === 'post')
-				safari.self.tab.dispatchMessage('cannotAnonymize', fo.action);
+				safari.self.tab.dispatchMessage('cannotAnonymize', getAbsoluteURL(fo.getAttribute('action')));
 		}, [f[y]]);
 }
 
@@ -378,7 +394,7 @@ function prepareAnchor(anchor, i) {
 		}, null, [anchor]);
 		
 		if (anchor.getAttribute('href') && anchor.getAttribute('href').charAt(0) === '#')
-			safari.self.tab.dispatchMessage('cannotAnonymize', anchor.href);
+			safari.self.tab.dispatchMessage('cannotAnonymize', getAbsoluteURL(anchor.getAttribute('href')));
 		else	
 			anchor.addEventListener('mousedown', function (e) {
 				var k = (window.navigator.platform.match(/Win/)) ? e.ctrlKey : e.metaKey;
@@ -402,6 +418,10 @@ function windowMessenger(event) {
 		}
 	}
 }
+
+setInterval(function () {
+	jsblocker.href = pageHost();
+}, 1000);
 
 safari.self.addEventListener('message', messageHandler, true);
 window.addEventListener('hashchange', hashUpdate, true);

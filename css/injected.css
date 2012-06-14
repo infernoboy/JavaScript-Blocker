@@ -79,3 +79,87 @@
 		margin-top: 0 !important;
 		color: #888 !important;
 	}
+
+.jsblocker-alert {
+	position: fixed !important;
+	top: 0;
+	right: 3px !important;
+	z-index: 10000000000000 !important;
+	width: 310px !important;
+	border: none !important;
+	opacity: 0;
+	padding-bottom: 4px !important;
+	overflow: hidden !important;
+	font-family: 'Lucida Grande', 'Lucida Sans Unicode', Helvetica, sans-serif !important;
+	color: #333 !important;
+}
+	.jsblocker-alert p {
+		margin-bottom: 8px;
+	}
+	.jsblocker-alert-inner {
+		-webkit-transform: perspective(500px) rotateX(-35deg);
+		-webkit-transition: -webkit-transform 0.45s, -webkit-filter 2s;
+		background: -webkit-linear-gradient(top, rgba(248,248,248,0.97), rgba(231,231,231,0.97)) !important;
+		margin: 8px 10px 10px !important;
+		padding: 5px 5px 5px 10px !important;
+		z-index: 0 !important;
+		-webkit-border-radius: 5px !important;
+		-webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.4) !important;
+		border: 1px solid rgba(0,0,0,0.3) !important;
+		border-left-color: rgba(0,0,0,0.2) !important;
+		border-right-color: rgba(0,0,0,0.2) !important;
+		border-top-color: rgba(0,0,0,0.05) !important;
+		overflow: hidden !important;
+	}
+	.jsblocker-close {
+		opacity: 0;
+		text-align: center !important;
+		position: absolute !important;
+		font-family: Arial !important;
+		top: 2px !important;
+		right: 3px !important;
+		font-size: 8pt !important;
+		color: #fff !important;
+		text-decoration: none !important;
+		border: 2px solid #fff !important;
+		-webkit-border-radius: 15px !important;
+		padding: 0 0 2px !important;
+		font-weight: bold !important;
+		background: #000 !important;
+		height: 12px !important;
+		width: 14px !important;
+		-webkit-box-shadow: 0 2px 3px rgba(0,0,0,0.3) !important;
+		-webkit-font-smoothing: antialiased !important;
+		z-index: 3 !important;
+		-webkit-transition: opacity 0.15s !important;
+		-webkit-user-select: none !important;
+		text-shadow: none !important;
+		cursor: default !important;
+	}
+		.jsblocker-close:hover {
+			opacity: 1 !important;
+			color: #fff !important;
+		}
+		.jsblocker-close:active {
+			border-color: #ddd !important;
+			color: #ddd !important;
+		}
+	.jsblocker-alert-text {
+		position: relative !important;
+		z-index: 2 !important;
+		overflow: auto !important;
+		max-height: 200px !important;
+		margin-bottom: 20px !important;
+		font-size: 10pt !important;
+	}
+	.jsblocker-alert-bg {
+		position: fixed !important;
+		bottom: 3px !important;
+		right: 5px !important;
+		font-size: 16pt !important;
+		color: #cacaca !important;
+		text-shadow: 0 1px 0 rgba(255,255,255,0.3) !important;
+		-webkit-user-select: none !important;
+		cursor: default !important;
+		z-index: 1 !important;
+	}

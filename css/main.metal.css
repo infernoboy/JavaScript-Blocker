@@ -1,6 +1,6 @@
 body,
 body.windows {
-	background: rgba(200,200,200,0.6) url(../images/texture.png) left top repeat;
+	background: rgba(200,200,200,0.8) url(../images/texture.png) left top repeat;
 }
 
 input,
@@ -35,8 +35,9 @@ textarea {
 #disable,
 #view-rules,
 #switch-interface,
-#js-project,
-#js-help {
+#js-settings,
+#js-help,
+#unlock {
 	border-color: #979797;
 }
 
@@ -86,18 +87,33 @@ button.confirm-click {
 		color: #eee !important;
 		background-image: -webkit-linear-gradient(top, rgb(190,30,0), rgb(240,50,0));
 	}
-
+#allowed-column {
+	border-right-color: #b3b3b3;
+}
+#blocked-column {
+	border-left-color: #b3b3b3;
+}
+.info-link {
+	border-color: #bbb;
+	background-image: -webkit-linear-gradient(top, #ddd, #ccc);
+	-webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.4), inset 0 7px 0 rgba(255,255,255,0.15), inset 0 5px 0 rgba(255,255,255,0.35);
+}
+	.info-link:active {
+		border-color: #aaa;
+		background-image: -webkit-linear-gradient(top, #ccc, #bbb);
+		-webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.7), inset 0 7px 0 rgba(255,255,255,0.15), inset 0 5px 0 rgba(255,255,255,0.35);
+	}
 #select-arrow-settings {
 	background-color: #555;
 }
 .kind-header.floater,
 .info-container.floater,
 .rules-header.floater {
-	background: rgba(210,210,210,0.98) url(../images/texture.png) left top repeat
+	background: rgba(210,210,210,0.92) url(../images/texture.png) left top repeat;
 }
 .domain-name.floater {
-	background: url(../images/disclosure-open.png) no-repeat left 7px, rgba(210,210,210,0.98) url(../images/texture.png) left top repeat;
+	background: url(../images/disclosure-open.png) no-repeat left 7px, rgba(210,210,210,0.92) url(../images/texture.png) left top repeat;
 }
 	.domain-name.hidden.floater {
-		background: url(../images/disclosure-closed.png) no-repeat left 7px, rgba(210,210,210,0.98) url(../images/texture.png) left top repeat;
+		background: url(../images/disclosure-closed.png) no-repeat left 7px, rgba(210,210,210,0.92) url(../images/texture.png) left top repeat;
 	}

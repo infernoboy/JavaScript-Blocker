@@ -6,7 +6,9 @@
 
 var Strings = {},
 		_ = function (string, args) {
-	var s, load_language = (safari.extension.settings.language !== 'Automatic') ? safari.extension.settings.language : window.navigator.language;
+	var s,
+			lang = safari.extension.settings ? safari.extension.settings.language : Settings.current_value('language'),
+			load_language = (lang !== 'Automatic') ? lang : window.navigator.language;
 		
 	s = Strings[load_language] && (string in Strings[load_language]) ? Strings[load_language][string] : Strings['en-us'][string] || string + ':NOT_LOCALIZED';
 	

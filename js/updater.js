@@ -1,7 +1,9 @@
+"use strict";
+
 JB.updater = function () {
 	var v = this.installedBundle, self = this;
 				
-	if (v === this.bundleid) return false;
+	if ((v === this.bundleid && !this.isBeta) || this.silence) return false;
 	
 	switch (true) {
 		case v < 54: // 2.3.0
@@ -34,7 +36,6 @@ JB.updater = function () {
 				'<p><b>Donators only:</b> A more full-featured referrer blocker, including the ability to block even server-side redirect ones.</p>',
 				'<p><b>Donators only:</b> You can now create a backup of your rules.</p>',
 				'<p>Donations can now be made via Bitcoin! Send to: 1C9in5xaFcwi7aYLuK1soZ8mvJBiEN9MNA</p>',
-				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
 				'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'].join(''), function () {
 					_$('#rawr-continue').click(function () {
 						self.installedBundle = 54;
@@ -122,6 +123,53 @@ JB.updater = function () {
 			}
 		
 			safari.extension.settings.setItem('installedBundle', v);
+		
+		case v < 75: // 2.5.0
+			new Poppy($(this.popover.body).width() / 2, 13, [
+				'<p class="misc-info">Update 2.5.0</p>',
+				'<p>If you have not made a donation before, you will receive a 10-day free trial of all JavaScript Blocker has to offer.</p>',
+				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
+				'<p><input type="button" id="rawr-ok" value="', _('Understood'), '" /></p>'].join(''), function () {
+					_$('#rawr-ok').click(function () {
+						window.localStorage.clear();
+						
+						self.trialStart = safari.extension.settings.getItem('donationVerified') ? -1 : +new Date;
+
+						self.setupDone = 0;
+						self.open_popover({ type: 'popover' });
+					});
+				}, null, null, true);
+		break;
+		
+		case v < 79: // 2.6.0
+
+			new Poppy($(this.popover.body).width() / 2, 13, [
+				'<p class="misc-info"><a class="outside" href="http://javascript-blocker.toggleable.com/change-log/260/">Update 2.6.0</a></p>',
+				'<p><b>New:</b> A two-column makes it even easier to see what\'s been allowed or blocked. To improve the look and feel of this ',
+				'layout, the Allow and Block buttons have been removed. All you have to do is click on the allowed or blocked item for the ',
+				'same behavior. A "?" appears next to an item to bring up the poppy that originally appeared when clicking on an item.',
+				'<p><small>If you hate this new two-column layout, please do not hesitate to let me know!</small></p>',
+				'<p><b>New:</b> All settings have been moved to their own dedicated page which can be reached by clicking the <b>Settings</b> button at ',
+				'the bottom of this popover.</p>',
+				'<p><b>New:</b> The script blocker can now be disabled.</p>',
+				'<p><i>Changed:</i> The video blocker is now separate from the embed and object blocker. Existing embed, object, and video rules will be imported ',
+				'as video rules automatically.</p>',
+				'<p><b>New for Donators:</b> A new "other" feature to prevent webpages from disabling autocomplete.</p>',
+				'<p><b>New for Donators:</b> A new "other" feature to allow users to use a custom font for webpages.</p>',
+				'<p><input type="button" id="rawr-ok" value="', _('Understood'), '" /> <input type="button" id="rawr-settings" value="', _('Settings'), '" /></p>'].join(''), function () {
+					_$('#rawr-ok').click(function () {
+						if (Settings.getItem('enableembed')) Settings.setItem('enablevideo', 1);
+
+						for (var d in self.rules.rules.embed)
+							for (var r in self.rules.rules.embed[d])
+								self.rules.add('video', d, r, self.rules.rules.embed[d][r][0], self.rules.rules.embed[d][r][1]);
+
+						self.donate();
+					}).siblings('#rawr-settings').click(function () {
+						_$('#js-settings').click();
+					});
+				}, null, null, true);
+		break;
 		
 		case v < this.bundleid:
 			this.donate();

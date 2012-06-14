@@ -6,10 +6,20 @@ p.misc-info select {
 }
 
 #page-list {
-	max-width: 88%;
+	width: 412px;
 }
 	body.simple #page-list {
-		max-width: 85%;
+		width: 312px;
+	}
+	#previous-frame,
+	#next-frame {
+		font-size: 9pt;
+	}
+	#frame-switcher {
+		width: 85px;
+	}
+	#frame-switcher .divider {
+		margin-bottom: -3px;
 	}
 	
 #domain-script,
@@ -60,7 +70,7 @@ header h3 {
 #view-rules,
 #unlock,
 #switch-interface,
-#js-project,
+#js-settings,
 #js-help {
 	font-size: 8pt;
 }

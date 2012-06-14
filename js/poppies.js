@@ -6,22 +6,26 @@
 
 JB.poppies = {
 	verify_donation: function (main) {
-		var zoo = {
+		var rem = main.trial_remaining(),
+			zoo = {
 			url: JB.donation_url,
 			me: this,
 			main: main,
+			modal: this[2],
 			content: [
 				'<p class="misc-info">', _('Donation Verification'), '</p>',
-				(this.length === 4) ? '<p class="error">' + this[2] + '</p>' : '',
-				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>',
+				(this.length === 5) ? '<p class="error">' + this[3] + '</p>' : '',
+				'<p>', main.trial_active() ? _('Trial remaining {1} days, {2} hours, and {3} minutes', rem) :
+					'<a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">' + _('What donation?') + '</a>', '</p>',
 				'<p>', _('To complete the unlocking'), '</p>',
-				'<input type="text" placeholder="', _('PayPal Email Address'), '" id="donation-id" /> ',
-				'<input type="button" value="', _('Continue'), '" id="donation-confirm" /><br />',
-				'<a class="outside" href="mailto:travis@toggleable.com?subject=I cannot donate to JavaScript Blocker, but want all the features!&body=Reason: ">', _('I can\'t donate'), '</a> | ',
-				'<a class="outside" href="mailto:travis@toggleable.com?subject=I forgot my JavaScript Blocker activation information!&body=Help me out!">', _('Forgot'), '</a>'].join(''),
+				'<p><input type="text" placeholder="', _('PayPal Email Address'), '" id="donation-id" /> ',
+				'<input type="button" value="', _('Continue'), '" id="donation-confirm" /></p>',
+				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donate ">', _('Make a Donation'), '</a> <span class="label">￨</span> ',
+				'<a class="outside" href="mailto:travis@toggleable.com?subject=I cannot donate to JavaScript Blocker, but want all the features!&body=Reason: ">', _('I can\'t donate'), '</a> <span class="label">￨</span> ',
+				'<a class="outside" href="mailto:travis@toggleable.com?subject=I forgot my JavaScript Blocker activation information!&body=Help me out!">', _('Forgot'), '</a></p>'].join(''),
 			callback: function () {
 				var did = _$('#donation-id');
-				did.focus().val(zoo.me.length === 4 ? zoo.me[3] : '');
+				did.focus().val(zoo.me.length === 5 ? zoo.me[4] : '');
 				did[0].selectionStart = 0;
 				did[0].selectionEnd = did.val().length;
 				
@@ -42,19 +46,19 @@ JB.poppies = {
 							}
 						} else if (datai >= 0) {
 							JB.donationVerified = id;
+							JB.trialStart = -1;
 							
 							new Poppy(zoo.me[0], zoo.me[1], [
 								'<p>', _('Your donation has been verified'), '</p>',
-								'<p>', _('You may unlock {1}', [datai]), '</p>',
 								'<p>', _('Thanks for your support!'), '</p>'].join(''));
 						} else
 							error = data;
 						
 						
 						if (error)
-							new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], error, id], main));
+							new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], error, id], main));
 					}).error(function (req) {
-						new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], 'Error ' + req.status + ': ' + req.statusText, id], main));
+						new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], 'Error ' + req.status + ': ' + req.statusText, id], main));
 					});
 				}).siblings('#donation-id').keypress(function (e) {
 					if (e.keyCode == 13 || e.keyCode == 3) _$('#donation-confirm').click();
@@ -89,7 +93,7 @@ JB.poppies = {
 					'</p>',
 					main.donationVerified ? [
 						'<p id="rules-temp">',
-							'<input id="rule-temporary" type="checkbox"', parseInt(window.localStorage.LastRuleWasTemporary) ? ' checked' : '', ' />',
+							'<input id="rule-temporary" type="checkbox"', main.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
 							'<label for="rule-temporary">&thinsp;', _('Temporary rule'), '</label> ',
 						'</p>'].join('') : '',
 					'<div class="inputs">',
@@ -109,7 +113,7 @@ JB.poppies = {
 			},
 			callback: function () {
 				var i = _$('#poppy #rule-input').val(zoo.me.url).focus();
-		
+					
 				i.keypress(function (e) {
 					if (e.keyCode == 13 || e.keyCode == 3) {
 						zoo.save.call(i);

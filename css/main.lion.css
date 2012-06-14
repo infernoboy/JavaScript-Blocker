@@ -48,7 +48,7 @@ textarea {
 	button.confirm-click {
 		color: #fff;
 		border: 1px solid #883A3D !important;
-		background-image: -webkit-linear-gradient(top, rgba(240,50,0,0.3), rgb(190,30,0,0.3)), url(../images/linen.png);
+		background-image: -webkit-linear-gradient(top, rgba(240,50,0,0.3), rgba(190,30,0,1));
 		background-color: rgba(240,50,0,0.7);
 		text-shadow: 0 1px 0 rgba(0,0,0,0.2);
 		-webkit-box-shadow: 0 0 1px rgba(255,0,0,0.5);
@@ -75,3 +75,14 @@ select {
 .divider {
 	margin-top: 6px;
 }
+.kind-header.floater,
+.info-container.floater,
+.rules-header.floater {
+	background: rgba(239,239,239,0.93);
+}
+.domain-name.floater {
+	background: url(../images/disclosure-open.png) no-repeat left 7px, rgba(239,239,239,0.93);
+}
+	.domain-name.hidden.floater {
+		background: url(../images/disclosure-closed.png) no-repeat left 7px, rgba(239,239,239,0.93);
+	}

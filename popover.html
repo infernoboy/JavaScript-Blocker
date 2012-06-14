@@ -27,7 +27,7 @@
 		
 		if (safari.extension.globalPage.contentWindow.JB.isBeta)
 			window.onerror = function (d, p, l, c) {
-				safari.extension.globalPage.contentWindow._$('#jsconsolelogger').append('<li class="jsoutputcode error">' + d + ', ' + p + ', ' + l);
+				safari.extension.globalPage.contentWindow._d(d + ', ' + p + ', ' + l);
 			};
 		
 		document.addEventListener('DOMContentLoaded', function () {
@@ -44,7 +44,7 @@
 					infos = document.querySelectorAll('.info-container label');
 					
 			for (var i = 0; inputs[i]; i++) {
-				if (inputs[i].value && inputs[i].value.length) inputs[i].value = _(inputs[i].value);
+				if (inputs[i].getAttribute('value') && inputs[i].value.length) inputs[i].value = _(inputs[i].value);
 				if (inputs[i].placeholder && inputs[i].placeholder.length) inputs[i].placeholder = _(inputs[i].placeholder);
 			}
 			for (var b = 0; ogroups[b]; b++)
@@ -63,40 +63,16 @@
 
 <body class="blocking-mode">
 	<div id="modal">
-		<header class="main-header"><h1><script>document.write(_('JavaScript Blocker'));</script></h1></header>
+		<header class="main-header"><h1><script>document.write(_('JavaScript Blocker'));</script><span class="console-unread"> 0</span></h1></header>
 	</div>
 	
-	<header class="main-header"><h1><script>document.write(_('JavaScript Blocker'));</script></h1></header>
+	<header class="main-header"><h1><script>document.write(_('JavaScript Blocker'));</script><span class="console-unread"> 0</span></h1></header>
 	
 	<div id="container">
 		<div id="find-bar">
 			<input type="button" id="find-bar-done" value="Done" />
 			<input type="search" id="find-bar-search" incremental="incremental" results="10" autosave="find_on" />
 			<label for="find-bar-search" id="find-bar-matches"></label>
-		</div>
-		<div id="setup" class="whoop">
-			<p>
-				<a class="outside" href="http://javascript-blocker.toggleable.com/">
-					<img src="images/toggleable.png" alt="Toggleable" style="margin-bottom: -5px;"/>
-					<img src="Icon-32.png" alt="JS Blocker" />
-				</a>
-			</p>
-			<p><script>document.write(_('Thanks for using {1}', [_('JavaScript Blocker')]));</script></p>
-			<p>
-				<input type="checkbox" id="use-large" />&thinsp;<label for="use-large" id="large-label"><script>document.write(_('Use large font'));</script></label>
-			<p>
-				<input type="checkbox" id="block-manual" checked="checked" />&thinsp;<label for="block-manual"><script>document.write(_('Block scripts manually'));</script></label>
-			</p>
-			<p>
-				<input type="checkbox" id="block-frames" checked="checked" />&thinsp;<label for="block-frames"><script>document.write(_('Block frames unless'));</script></label>
-			</p>
-			<p>
-				<input type="checkbox" id="block-embeds" />&thinsp;<label for="block-embeds"><script>document.write(_('Enable embed blocker'));</script></label>
-			</p>
-			<p>
-				<input type="checkbox" id="secure-only" />&thinsp;<label for="secure-only"><script>document.write(_('Items on secure sites must also be secure'));</script></label>
-			</p>
-			<p><input type="button" id="finish-setup" value="Finish Setup" /></p>
 		</div>
 		<div id="main" class="whoop">
 			<div id="page-lists">
@@ -109,26 +85,40 @@
 						<option>http://example.com</option>
 					</optgroup>
 				</select>
+				<div id="frame-switcher">
+					<a href="javascript:void(0)" id="previous-frame" class="disabled"><span class="arrow"></span> <span class="text"><script>document.write(_('Main page'));</script></span></a>
+					<div class="divider disabled"></div>
+					<a href="javascript:void(0)" id="next-frame" class="disabled"><span class="arrow"></span> <span class="text"><script>document.write(_('Next frame'));</script></span></a>
+				</div>
 			</div>
-			<div class="info-container">
-				<label class="allowed-label">Allowed:</label> <span id="allowed-scripts-count">0</span>
-				<input type="button" value="Block All" id="block-domain" />
-			</div>
+			
+			<div id="allowed-blocked-columns">
+				<div id="allowed-column" class="column">
+					<div class="info-container" id="allowed-container">
+						<label class="allowed-label">Allowed:</label> <span id="allowed-scripts-count">0</span>
+						<input type="button" value="Block All" id="block-domain" />
+					</div>
 	
-			<div id="allowed-script-urls" class="urls-wrapper">
-				<div class="urls-inner"></div>
-			</div>
+					<div id="allowed-script-urls" class="urls-wrapper">
+						<div class="urls-inner"></div>
+					</div>
+				</div>
+								
+				<div id="blocked-column" class="column">
+					<div class="info-container" id="blocked-container">
+						<label class="blocked-label">Blocked:</label> <span id="blocked-scripts-count">0</span>
+						<input type="button" value="Allow All" id="allow-domain" />
+					</div>
+	
+					<div id="blocked-script-urls" class="urls-wrapper">
+						<div class="urls-inner"></div>
+					</div>
+				</div>
 				
-			<div class="info-container">
-				<label class="blocked-label">Blocked:</label> <span id="blocked-scripts-count">0</span>
-				<input type="button" value="Allow All" id="allow-domain" />
+				<br style="clear:both;" />
 			</div>
-	
-			<div id="blocked-script-urls" class="urls-wrapper">
-				<div class="urls-inner"></div>
-			</div>
-	
-			<div class="info-container">
+			
+			<div class="info-container" id="unblocked-container">
 				<label class="unblocked-label">Unblocked:</label> <span id="unblocked-scripts-count">0</span>
 			</div>
 	
@@ -140,7 +130,7 @@
 				<p>
 					<input type="button" value="Rules" id="view-rules" />
 					<input type="button" value="Help" id="js-help" />
-					<input type="button" value="Project Page" id="js-project" />
+					<input type="button" value="Settings" id="js-settings" />
 					<input type="button" value="Disable JavaScript Blocker" id="disable" />
 					<br style="clear:both;">
 				</p>
@@ -203,10 +193,10 @@
 	</div>
 	
 	<div id="hidden-extras">
-		<div id="jsconsolelogger"></div>
+		<ul id="jsconsolelogger"><li id="console-header"><p class="misc-info">Console</p></li></ul>
 		<textarea id="tmpl_domain_picker">
 			<% if (!self.no_label) { %><label for="domain-picker"><%=_('On:')%> </label><% } %>
-			<select id="domain-picker">
+			<select id="domain-picker" <% if ((self.page_parts.length === 2 && self.no_all) || (self.page_parts[0] === null && !self.no_all)) { %>class="single"<% } %>>
 			<%
 				var n;
 				for (n = 0; n < self.page_parts.length; n++) {

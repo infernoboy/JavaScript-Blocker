@@ -69,17 +69,15 @@ Poppy.prototype = {
 		return (this.removeOnly !== false) ? false : JB.utils.zero_timeout($.proxy(this.create, this));
 	},
 	remove: function (cb) {
-		var self = this;
-		
 		_$('#modal').fadeOut(this._time * 1000);
 
-		this.p.find(this.e).css({
+		$(this.e, this.p).css({
 			opacity: 0,
-			WebkitTransitionDuration: (this._time * .5) + 's'
+			WebkitTransitionDuration: (this._time * .3) + 's'
 		}).one('webkitTransitionEnd', { s: this, c: cb }, function (event) {
 			var d = event.data;
 			
-			$(d.s.e, d.s.p).remove();
+			$(this).remove();
 			
 			JB.utils.zero_timeout($.proxy(d.c, d.s));
 			
@@ -117,42 +115,26 @@ Poppy.prototype = {
 		if (points.arrow.bottom == 'auto') $(this.a, m).addClass('flip');
 		
 		m.css({
-			WebkitTransitionProperty: '-webkit-transform, opacity',
-			WebkitTransitionDuration: '0s',
-			WebkitTransitionTimingFunction: 'ease-in',
-			WebkitTransform: 'scale(0)',
+			WebkitTransitionDuration: [this._time, this._time * 1.4].join('s,') + 's',
+			WebkitTransform: JB.speedMultiplier < 1 ? 'scale(1)' : 'scale(1.15)',
 			WebkitTransformOrigin: (points.arrow.left + 15) + 'px ' + ((points.main.bottom === 'auto') ? '-5%' : '105%'),
-			opacity: 0.3,
+			opacity: 1,
 			left: points.main.left,
 			bottom: points.main.bottom,
 			top: points.main.top,
 			width: m.width(),
 			height: m.height()
-		});
-		
-		JB.utils.zero_timeout(function (self, m, points) {
-			m.css({
-				WebkitTransitionDuration: [self._time, self._time * 1.4, self._time, self._time].join('s,') + 's',
-				opacity: 1,
-				WebkitTransform: JB.speedMultiplier < 1 ? 'scale(1)' : 'scale(1.15)'
-			}).find(self.a).css({
-				left: points.arrow.left,
-				bottom: points.arrow.bottom,
-				top: points.arrow.top
-			});
-			
-			$('> *:not(#poppy):not(#modal)', self.p).one('click', function () {
-				new Poppy();
-			});
-		}, [this, m, points]);
-
-		m.one('webkitTransitionEnd', { s: self, m: m }, function (event) {
+		}).find(self.a).css({
+			left: points.arrow.left,
+			bottom: points.arrow.bottom,
+			top: points.arrow.top
+		}).end().one('webkitTransitionEnd', { s: self, m: m }, function (event) {
 			var d = event.data;
 			
 			try {
 				d.s.callback2.call($(d.s.e, d.s.p));
 			} catch (e) {
-				alert('Error with callback2 for poppy: ' + e);
+				_d('Error with callback2 for poppy:', e);
 			}
 		
 			d.m.css({
@@ -162,12 +144,14 @@ Poppy.prototype = {
 			});
 		});
 		
+		$('> *:not(#poppy,#modal)', this.p).one('click', function () {
+			new Poppy();
+		});
+		
 		this.createArrow();
 	},
 	calcPoints: function () {
 		var o = {
-					underflow: false,
-					overflow: false,
 					arrow: {
 						left: 0,
 						bottom: -$(this.a, this.p).height(),
@@ -194,16 +178,12 @@ Poppy.prototype = {
 			o.main.left = base_width;
 			o.arrow.left = this.center.x - half_arrow - base_width;
 			
-			if (o.arrow.left < half_arrow / 2) o.arrow.left = half_arrow - 10;
-			
-			o.underflow = true;
+			if (o.arrow.left < half_arrow / 2) o.arrow.left = half_arrow - 16;
 		} else if (this.center.x + my_width / 2 > max_width) { // If overflow on right side
 			o.main.left = max_width - my_width;
 			o.arrow.left = this.center.x - o.main.left - half_arrow;
 				
-			if (o.arrow.left >= my_width - half_arrow * 2) o.arrow.left = my_width - half_arrow * 2 - 5;
-			
-			o.overflow = true;
+			if (o.arrow.left >= my_width - half_arrow * 2) o.arrow.left = my_width - half_arrow * 2 - 1;
 		} else { // If fits
 			o.main.left = this.center.x - (my_width / 2);
 			o.arrow.left = my_width / 2 - half_arrow;
@@ -277,9 +257,7 @@ Poppy.prototype = {
 			ctx_flip.stroke();
 		}
 			
-		if (img &&  !ctx.has_image) {
-			ctx.has_image = 1;
-				
+		if (img) {
 			ig = new Image();
 			ig.onload = function () {
 				triangle();
