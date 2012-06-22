@@ -77,9 +77,7 @@ select {
 	body.simple ul li input[type="button"] {
 		max-width: 17%;
 	}
-.divider {
-	margin-top: 6px;
-}
+
 .info-link {
 	-webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.5), inset 0 7px 0 rgba(255,255,255,0.23), inset 0 5px 0 rgba(255,255,255,0.43);
 }

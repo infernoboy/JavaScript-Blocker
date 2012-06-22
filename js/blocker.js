@@ -63,7 +63,7 @@ function fitFont(e, f) {
 function createPlaceholder(e, host, url) {
 	if (!e.parentNode || !url) return false;
 		
-	var pl, st, pl, i, p, w, t, o, proto = activeProtocol(url), ex = /^https?/.test(proto) ? 3 : 1,
+	var pl, st, pl, i, p, w, pw, pB, p2, t, o, proto = activeProtocol(url), ex = /^https?/.test(proto) ? 3 : 1,
 			pr = ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
 			pa = url.substr(proto.length + host.length + ex).replace(/</g, '&lt;').replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&(?!lt;)/g, '&<wbr />').replace(/=/g, '=<wbr />'),
 			
@@ -140,40 +140,36 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 				if (!allowed && this.parentNode) this.parentNode.removeChild(this);
 			}],
 			frame: [{ FRAME: 1, IFRAME: 1 }, function (allowed, host, url) {
-				var t = this;
 				if (!allowed)
-					if_setting('showPlaceholderframe', true, function () {
+					if_setting('showPlaceholderframe', true, function (t) {
 						createPlaceholder(t, host, url);
-					}, function () {
+					}, function (t) {
 						t.parentNode.removeChild(t);
-					});
+					}, [this]);
 			}],
 			embed: [{ EMBED: 1, OBJECT: 1 }, function (allowed, host, url) {
-				var t = this;
 				if (!allowed)
-					if_setting('showPlaceholderembed', true, function () {
+					if_setting('showPlaceholderembed', true, function (t) {
 						createPlaceholder(t, host, url);
 					}, function () {
 						t.parentNode.removeChild(t);
-					});
+					}, [this]);
 			}],
 			video: [{ VIDEO: 1 }, function (allowed, host, url) {
-				var t = this;
 				if (!allowed)
-					if_setting('showPlaceholdervideo', true, function () {
+					if_setting('showPlaceholdervideo', true, function (t) {
 						createPlaceholder(t, host, url);
 					}, function () {
 						t.parentNode.removeChild(t);
-					});
+					}, [this]);
 			}],
 			image: [{ IMG: 1 }, function (allowed, host, url) {
-				var t = this;
 				if (!allowed)
-					if_setting('showPlaceholderimage', true, function () {
+					if_setting('showPlaceholderimage', true, function (t) {
 						createPlaceholder(t, host, url);
 					}, function () {
 						t.parentNode.removeChild(t);
-					});
+					}, [this]);
 			}],
 			special: [{}]
 		},
@@ -239,7 +235,7 @@ function getAbsoluteURL(url) {
 
 function canLoad(event) {
 	var node = event.target.nodeName.toUpperCase(), source = getAbsoluteURL(event.url), pathname, host, at, arr, did_something = 0;
-	
+
 	if (event.target.allowedToLoad) return true;
 			
 	for (var kind in kinds) {
@@ -253,22 +249,27 @@ function canLoad(event) {
 				var use_source = 'about:blank', host = 'blank';
 			else
 				continue;
+
+			var allo = safari.self.tab.canLoad(event, [kind, jsblocker.href, use_source, !(window == window.top)]),
+					isAllowed = allo[0],
+					mo = isAllowed || !event.preventDefault ? 'allowed' : 'blocked';
+
+			if (!isAllowed && event.preventDefault)	event.preventDefault();
 			
-			var isAllowed = safari.self.tab.canLoad(event, [kind, jsblocker.href, use_source, !(window == window.top)]),
-					mo = isAllowed ? 'allowed' : 'blocked';
-			
-			if (!isAllowed)	event.preventDefault();
-			
-			jsblocker[mo][kind].all.push(use_source);
+			jsblocker[mo][kind].all.push([use_source, allo[1]]);
 		
 			if (!~jsblocker[mo][kind].unique.indexOf(host)) jsblocker[mo][kind].unique.push(host);
-			if (kinds[kind][1]) kinds[kind][1].call(event.target, isAllowed, host, use_source);
+
+			if (kinds[kind][1] && event.preventDefault) kinds[kind][1].call(event.target, isAllowed, host, use_source);
 		} else if ((!source || source.length === 0) && event.type === 'DOMNodeInserted') {
 			did_something = 1;
+
+			if (event.target.innerHTML.length && !event.target.getAttribute('data-jsblocker_added')) {
+				event.target.setAttribute('data-jsblocker_added', 1);
+				jsblocker.unblocked[kind].all.push(event.target.innerHTML);
 			
-			jsblocker.unblocked[kind].all.push(event.target.innerHTML);
-			
-			if (kinds[kind][1]) kinds[kind][1].call(event.target, 1);
+				if (kinds[kind][1]) kinds[kind][1].call(event.target, 1);
+			}
 		}
 	}
 
@@ -288,16 +289,18 @@ function ready(event) {
 		if (event.type === 'DOMContentLoaded') {
 			var script_tags = document.getElementsByTagName('script'), i, b = script_tags.length;
 			for (i = 0; i < b; i++) {
-				if (!script_tags[i].getAttribute('src') || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
-					jsblocker.unblocked.script.all.push(script_tags[i].innerHTML);
+				if (!script_tags[i].getAttribute('data-jsblocker_added')) {
+					if (!script_tags[i].getAttribute('src') || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
+						script_tags[i].setAttribute('data-jsblocker_added', 1);
+						jsblocker.unblocked.script.all.push(script_tags[i].innerHTML);
 					
-					if (kinds.script[1]) kinds.script[1].call(script_tags[i], 1);
+						if (kinds.script[1]) kinds.script[1].call(script_tags[i], 1);
+					}
 				}
 			}
 		}
-		if (window == window.top && event.type === 'DOMContentLoaded')
-			safari.self.tab.dispatchMessage('setPopoverClass');
-		else if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
+
+		if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
 			lastAddedFrameData = jsonBlocker;
 			safari.self.tab.dispatchMessage('addFrameData', [jsblocker.href, jsblocker]);
 		}
@@ -345,8 +348,38 @@ function messageHandler(event) {
 				
 			safari.self.tab.dispatchMessage('addFrameData', a);
 		break;
+
 		case 'setting':
 			settings[event.message[0]] = event.message[1];
+		break;
+
+		case 'openSettings':
+			if (document.getElementById('jsblocker-settings') || window !== window.top) break;
+
+			var fr = document.createElement('iframe');
+			fr.id = 'jsblocker-settings';
+			fr.src = event.message;
+
+			fr.style.setProperty('visibility', 'hidden');
+			fr.style.setProperty('width', '100%');
+			fr.style.setProperty('height', '100%');
+			fr.style.setProperty('position', 'fixed');
+			fr.style.setProperty('top', '0px');
+			fr.style.setProperty('z-index', +new Date)
+			fr.style.setProperty('border', 'none');
+			fr.style.setProperty('background', 'rgba(0,0,0,0.1)');
+
+			document.documentElement.appendChild(fr);
+
+			fr.onload = function () {
+				fr.style.setProperty('visibility', 'visible');
+			};
+		break;
+
+		case 'closeSettings':
+			var fr = document.getElementById('jsblocker-settings');
+
+			if (fr) fr.parentNode.removeChild(fr);
 		break;
 	}
 }
@@ -392,6 +425,19 @@ function prepareAnchor(anchor, i) {
 		if_setting('simpleReferrer', true, function (anchor) {
 			if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length)) anchor.setAttribute('rel', 'noreferrer');
 		}, null, [anchor]);
+
+		if (window !== window.top)
+			if_setting('confirmShortURL', true, function (anchor) {
+				anchor.addEventListener('click', function (ev) {
+					var target = this.getAttribute('target');
+
+					if (target !== '_blank' && target !== '_top')
+						if (!safari.self.tab.canLoad(beforeLoad, ['confirmShortURL', this.href, jsblocker.href])) {
+							ev.preventDefault();
+							ev.stopPropagation();
+						}
+				});
+			}, null, [anchor]);
 		
 		if (anchor.getAttribute('href') && anchor.getAttribute('href').charAt(0) === '#')
 			safari.self.tab.dispatchMessage('cannotAnonymize', getAbsoluteURL(anchor.getAttribute('href')));
@@ -408,13 +454,58 @@ function prepareAnchor(anchor, i) {
 	}
 }
 
+function prepareFrames() {
+	var iframes = document.getElementsByTagName('iframe'),
+			frames = document.getElementsByTagName('frame');
+
+	for (var i = 0; iframes[i]; i++)
+		prepareFrame(iframes[i]);
+	for (var i = 0; frames[i]; i++)
+		prepareFrame(frames[i]);
+}
+
+function prepareFrame(frame) {
+	var fr = frame.target ? frame.target : frame;
+
+	if (!~['FRAME', 'IFRAME'].indexOf(fr.nodeName.toUpperCase())) return false;
+
+	if (!fr.getAttribute('id')) fr.setAttribute('id', 'frame-' + +new Date);
+
+	fr.setAttribute('data-url', fr.src);
+
+	fr.addEventListener('load', function () {
+		this.contentWindow.postMessage('mayIPleaseKnowYourURL:' + this.id, '*');
+	}, false);
+}
+
 function windowMessenger(event) {
-	if (event.source === window && event.data === 'zero-timeout') {
+	var mayI = 'mayIPleaseKnowYourURL:', sure = 'theURLFor:';
+
+	if (event.data === 'zero-timeout') {
 		event.stopPropagation();
 		if (zero.length) {
 			var o = zero.shift();
 			if (typeof o[0] === 'function')
 				o[0].apply(window, o[1]);
+		}
+	} else if (event.data.indexOf(mayI) === 0) {
+		var id = event.data.substr(mayI.length);
+		window.top.postMessage(sure + id + '#' + encodeURI(jsblocker.href), '*');
+	} else if (event.data.indexOf(sure) === 0) {
+		var off = event.data.substr(sure.length),
+				id = off.substr(0, off.indexOf('#')),
+				url = decodeURI(off.substr(id.length + 1)),
+				fr = document.getElementById(id),
+				old = fr.getAttribute('data-url');
+
+		fr.allowedToLoad = 0;
+
+		if (old !== url) {
+			var t = beforeLoad;
+			t.target = fr;
+			t.url = url;
+			canLoad(t);
+			fr.setAttribute('data-url', url);
 		}
 	}
 }
@@ -423,13 +514,16 @@ setInterval(function () {
 	jsblocker.href = pageHost();
 }, 1000);
 
+
 safari.self.addEventListener('message', messageHandler, true);
 window.addEventListener('hashchange', hashUpdate, true);
 window.addEventListener('message', windowMessenger, true);
 
 document.addEventListener('DOMContentLoaded', ready, true);
 document.addEventListener('DOMContentLoaded', prepareAnchors, true);
+document.addEventListener('DOMContentLoaded', prepareFrames, true);
 document.addEventListener('beforeload', canLoad, true);
 document.addEventListener('DOMNodeInserted', canLoad, true);
 document.addEventListener('DOMNodeInserted', prepareAnchor, true);
+document.addEventListener('DOMNodeInserted', prepareFrame, true);
 document.addEventListener('DOMNodeElementChanged', prepareAnchor, true);

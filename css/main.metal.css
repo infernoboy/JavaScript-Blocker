@@ -1,6 +1,7 @@
 body,
 body.windows {
 	background: rgba(200,200,200,0.8) url(../images/texture.png) left top repeat;
+	text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
 
 input,

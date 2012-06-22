@@ -61,6 +61,7 @@ var Template = {
 	finding: !1,
 	reloaded: !1,
 	caches: {
+		redirects: {},
 		domain_parts: {},
 		active_host: {},
 		collapsed_domains: null,
@@ -71,66 +72,30 @@ var Template = {
 					all: ['http://sample.data.url/script.js', 'http://sample.data.url/script_two.js'],
 					unique: ['sample.data.url']
 				},
-				embed: {
-					all: [],
-					unique: []
-				},
-				image: {
-					all: [],
-					unique: []
-				},
-				frame: {
-					all: [],
-					unique: []
-				},
-				special: {
-					all: [],
-					unique: []
-				}
+				embed: { all: [], unique: [] },
+				image: { all: [], unique: [] },
+				frame: { all: [], unique: [] },
+				special: { all: [], unique: [] }
 			},
 			blocked: {
 				script: {
 					all: ['http://sample.external.data.url/script.js', 'http://sample.external_two.data.url/script_two.js'],
 					unique: ['sample.external.data.url', 'sample.external_two.data.url']
 				},
-				embed: {
-					all: [],
-					unique: []
-				},
-				image: {
-					all: [],
-					unique: []
-				},
-				frame: {
-					all: [],
-					unique: []
-				},
-				special: {
-					all: [],
-					unique: []
-				}
+				embed: { all: [], unique: [] },
+				image: { all: [], unique: [] },
+				frame: { all: [], unique: [] },
+				special: { all: [], unique: [] }
 			},
 			unblocked: {
 				script: {
 					all: ['var sample = 1;'],
 					unique: []
 				},
-				embed: {
-					all: [],
-					unique: []
-				},
-				image: {
-					all: [],
-					unique: []
-				},
-				frame: {
-					all: [],
-					unique: []
-				},
-				special: {
-					all: [],
-					unique: []
-				}
+				embed: { all: [], unique: [] },
+				image: { all: [], unique: [] },
+				frame: { all: [], unique: [] },
+				special: { all: [], unique: [] }
 			}
 		},
 		jsblocker: {}
@@ -139,11 +104,12 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.6.0',
-	bundleid: 79,
+	displayv: '2.6.5',
+	bundleid: 85,
 	update_attention_required: 75,
 	beta_attention_required: 0,
-	donation_url: 'http://lion.toggleable.com:160/jsblocker/verify.php?id=',
+	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
+	longURL: 'http://api.longurl.org/v2/expand?user-agent=ToggleableJavaScriptBlocker&title=1&format=json&url=',
 	
 	set_theme: function (theme) {
 		_$('#main-large-style').attr('href', Settings.getItem('largeFont') ? 'css/main.large.css' : '');
@@ -227,10 +193,19 @@ var Template = {
 	},
 	special_enabled: function (special) {
 		if (!this.donationVerified) return false;
-		return Settings.getItem('enable_special_' + special);
+		var s = Settings.getItem('enable_special_' + special);
+		return s === '0' ? 0 : s;
 	},
 	enabled: function (kind) {
 		if (!this.donationVerified && kind !== 'script') return false;
+
+		if (kind === 'special') {
+			for (var item in Settings.settings.other)
+				if (~item.indexOf('enable_special_') && this.special_enabled(item.substr('enable_special_'.length)))
+					return true;
+
+			return false;
+		}
 		
 		return Settings.getItem('enable' + kind);
 	},
@@ -782,7 +757,7 @@ var Template = {
 		if (p.length === 1) p.push(domain);
 		
 		this.caches.domain_parts[domain] = p.reverse();
-		
+				
 		return this.caches.domain_parts[domain];
 	},
 	rules: {
@@ -851,7 +826,7 @@ var Template = {
 		},
 		temporary_cleared: [],
 		clear_temporary: function (kind) {
-			if (~this.temporary_cleared.indexOf(kind) || !this.donationVerified) return false;
+			if (~this.temporary_cleared.indexOf(kind)) return false;
 		
 			this.temporary_cleared.push(kind);
 			
@@ -910,9 +885,9 @@ var Template = {
 			return 0;
 		},
 		allowed: function (kind, message) {
-			if ((kind !== 'script' && !this.donationVerified) || !this.enabled(kind)) return 1;
+			if ((kind !== 'script' && !this.donationVerified) || !this.enabled(kind)) return [1, -1];
 				
-			var rule_found = false,
+			var rule_found = false, the_rule = -1,
 					host = this.active_host(message[1]),
 					domains = this.for_domain(kind, host), domain, rule,
 					alwaysFrom = kind === 'script' ? Settings.getItem('alwaysBlock') : Settings.getItem('alwaysBlock' + kind) || Settings.getItem('alwaysBlock');
@@ -926,13 +901,14 @@ var Template = {
 							(Settings.getItem('ignoreWhitelist') && domains[domain][rule][0] === 5)) continue;
 					if ((new RegExp(rule)).test(message[2])) {
 						rule_found = domains[domain][rule][0] < 0 ? true : domains[domain][rule][0] % 2;
+						the_rule = domains[domain][rule][0];
 						break domainFor;
 					}
 				}
 			}
 							
 			if (typeof rule_found === 'number')
-				return rule_found;
+				return [rule_found, the_rule];
 							
 			if (alwaysFrom !== 'nowhere' && rule_found !== true) {
 				var sproto = this.utils.active_protocol(message[2]),
@@ -942,7 +918,7 @@ var Template = {
 					var page_parts = this.domain_parts(host),
 							script_parts = this.domain_parts(this.active_host(message[2]));
 							
-					if (script_parts[0] === 'blank' && alwaysFrom !== 'everywhere') return 1;
+					if (script_parts[0] === 'blank' && alwaysFrom !== 'everywhere') return [1, -1];
 					
 					if ((alwaysFrom === 'topLevel' && page_parts[0] !== script_parts[0]) ||
 							(alwaysFrom === 'domain' && page_parts[page_parts.length - 2] !== script_parts[script_parts.length - 2]) ||
@@ -961,12 +937,12 @@ var Template = {
 							this.add(kind, host, rr, 2, true, true);
 						}
 					
-						return 0;
+						return [0, this.saveAutomatic && !this.simpleMode ? 2 : -1];
 					}
 				}
 			}
 	
-			return 1;
+			return [1, -1];
 		},
 		for_domain: function (kind, domain, one) {
 			if (kind !== 'script' && !this.donationVerified) return {};
@@ -1018,9 +994,7 @@ var Template = {
 			
 			if (kind !== 'script' && !this.donationVerified) return false;
 			if (pattern.length === 0) return this.remove(kind, domain, pattern, true);
-			
-			if (!this.donationVerified) temporary = false;
-			
+						
 			this.collapsed('LastRuleWasTemporary', temporary ? 1 : 0);
 		
 			var crules = this.for_domain(kind, domain, true);
@@ -1234,11 +1208,10 @@ var Template = {
 			
 		new Poppy(left, top + 8, [
 				'<p class="misc-info">', _('Adding a ' + kind.charAt(0).toUpperCase() + kind.substr(1) + ' Rule'), '</p>',
-				this.donationVerified ? [
-					'<p>',
-						'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
-						'<label for="domain-script-temporary">&thinsp;', _('Temporary rule'), '</label> ',
-					'</p>'].join('') : '',
+				'<p>',
+					'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+					'<label for="domain-script-temporary">&thinsp;', _('Temporary rule'), '</label> ',
+				'</p>',
 				'<p>',
 					Template.create('tmpl_domain_picker', { page_parts: page_parts }),
 				'</p>',
@@ -1254,6 +1227,8 @@ var Template = {
 						self.rules.add(kind, h, _$('#domain-script').val(), allow ? 1 : 0, true, temp);
 							
 						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+
+						_$('#page-list')[0].selectedIndex = 0;
 					})
 		});
 	},
@@ -1268,11 +1243,9 @@ var Template = {
 		var ver = Settings.getItem('donationVerified');
 		
 		_$('#unlock-p').toggleClass('hidden', (ver === 1 || (typeof ver === 'string' && ver.length)));
-		_$('#above-temporary').toggleClass('hidden', !this.donationVerified);
-		_$('#filter-temporary').toggleClass('hidden', !this.donationVerified);
 		
 		function url_display (e) {
-			var me = $(this), t = $(this).siblings('span:first'), pa = t.parent(), off = t.offset(), kind = pa[0].className.substr(pa[0].className.indexOf('kind-') + 5),
+			var me = $(this), t = $(this).siblings('span:first'), pa = t.parent(), off = t.offset(), kind = pa.data('kind'),
 					kindP = kind.charAt(0).toUpperCase() + kind.substr(1), left = Math.floor(me.offset().left + me.outerWidth() / 2);
 		
 			function codeify(data) {
@@ -1318,13 +1291,34 @@ var Template = {
 				var wh = t.parents('.urls-wrapper').is('#blocked-script-urls') ? 0 : 1,
 						sp = t.parent().data('script')[0];
 				new Poppy(left, off.top + 6, _(sp+ ':' + wh, [self.special_enabled(sp)]));
-			} else if (self.simpleMode || kind === 'embed')
+			} else if (self.simpleMode && !pa.hasClass('by-rule'))
 				script_info();
 			else 
 				new Poppy(left, off.top + 6, [
 					'<input type="button" value="', _('More Info'), '" id="script-info" /> ',
-					'<input type="button" value="', _('View ' + kindP + ' Source'), '" id="view-script" />'].join(''), function () {
-						_$('#poppy #script-info').click(script_info).siblings('#view-script').click(function () {
+					self.simpleMode || kind === 'embed' ? '' : '<input type="button" value="' + _('View ' + kindP + ' Source') + '" id="view-script" /> ',
+					pa.hasClass('by-rule') ? '<input type="button" value="' + _('Show Matched Rules') + '" id="matched-rules" />' : ''].join(''), function () {
+						_$('#poppy #script-info').click(script_info);
+						_$('#poppy #matched-rules').click(function () {
+							var m = !me.parents('div').attr('id').match(/blocked/), rs = [],
+									to_delete = self.rules.remove_matching_URL(pa.data('kind'), self.host, pa.data('script'), false, m), d,
+									rs = [],
+									con = $('<div />'),
+									wrapper = $('<ul class="rules-wrapper" />').appendTo(con);
+							
+							con.prepend('<p class="misc-info">' + _('Matched ' + me.parents('.main-wrapper').attr('id').substr(14) + ' Rules') + '</p>');
+
+							for (d in to_delete) {
+								wrapper.append(self.rules.view(pa.data('kind'), d, pa.data('script'), true).find('> li').find('input').remove().end());
+
+								rs.push(to_delete[d][0]);
+							}
+
+							$('li.domain-name', wrapper).removeClass('hidden').addClass('no-disclosure');
+
+							new Poppy(left, off.top + 6, con);
+						});
+						_$('#poppy #view-script').click(function () {
 							if (kind === 'image') {
 								new Poppy();
 								_$('#beautify-script').remove();
@@ -1695,6 +1689,7 @@ var Template = {
 					_$('#poppy #delete-continue').click(function () {
 						self.rules.remove_matching_URL(li.data('kind'), self.host, url, true, m);
 						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+						_$('#page-list')[0].selectedIndex = 0;
 						new Poppy();
 					}).siblings('#new-rule').click(newHigh);
 				});
@@ -1916,11 +1911,10 @@ var Template = {
 			
 			new Poppy(off.left + $(this).outerWidth() / 2, off.top + 8, [
 					'<p class="misc-info">', this.value, '</p>',
-					self.donationVerified ? [
-						'<p>',
-							'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
-							'<label for="domain-script-temporary">&nbsp;', _('Temporary rule'), '</label> ',
-						'</p>'].join('') : '',
+					'<p>',
+						'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+						'<label for="domain-script-temporary">&nbsp;', _('Temporary rule'), '</label> ',
+					'</p>',
 					'<p>',
 						kinds.join('<br />'),
 					'</p>',
@@ -1946,6 +1940,7 @@ var Template = {
 							}
 							
 							safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+							_$('#page-list')[0].selectedIndex = 0;
 						});
 					});
 		});
@@ -1972,12 +1967,11 @@ var Template = {
 				top = offset.top + 8;
 			
 			new Poppy(left, top, [
-				self.donationVerified ? [
-					'<p class="misc-info">', _('Active Temporary Rules'), '</p>',
-					'<input type="button" value="', _('Make Permanent'), '" id="rules-make-perm" /> ',
-					'<input type="button" value="', _('Revoke'), '" id="rules-remove-temp" /> ',
-					'<input type="button" value="', _('Show'), '" id="rules-show-temp" />',
-					'<div class="divider" style="margin:7px 0 6px;"></div>'].join('') : '',
+				'<p class="misc-info">', _('Active Temporary Rules'), '</p>',
+				'<input type="button" value="', _('Make Permanent'), '" id="rules-make-perm" /> ',
+				'<input type="button" value="', _('Revoke'), '" id="rules-remove-temp" /> ',
+				'<input type="button" value="', _('Show'), '" id="rules-show-temp" />',
+				'<div class="divider" style="margin:7px 0 6px;"></div>',
 				'<input type="button" value="', _('Show All'), '" id="view-all" /> ',
 				'<input type="button" value="', _('Show Active'), '" id="view-domain" /> ',
 				self.donationVerified ? ['<input type="button" value="', _('Backup'), '" id="rules-backup" />'].join('') : ''].join(''), function () {
@@ -2087,6 +2081,28 @@ var Template = {
 							}
 						}, [self]);
 					}, [self]);
+				}).siblings('#rules-make-perm, #rules-remove-temp').click(function () {
+					for (var key in self.rules.data_types) {
+						var rules = self.rules.for_domain(key, self.host), domain, rule;
+
+						for (domain in rules)
+							for (rule in rules[domain])
+								if (rules[domain][rule][1]) {
+									if (this.id === 'rules-make-perm')
+										self.rules.add(key, domain, rule, rules[domain][rule][0], true, false);
+									else
+										self.rules.remove(key, domain, rule);
+								}
+					}
+					
+					if (this.id === 'rules-remove-temp') {
+						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+						_$('#page-list')[0].selectedIndex = 0;
+					} else
+						new Poppy();
+				}).siblings('#rules-show-temp').click(function () {
+					_$('#view-domain').click();
+					_$('#filter-temporary').click();
 				}).siblings('#rules-backup').click(function () {
 					new Poppy(left, top, [
 						'<p class="misc-info">', _('Backup'), '</p>',
@@ -2119,27 +2135,6 @@ var Template = {
 								});
 							});
 					});
-				}).siblings('#rules-make-perm, #rules-remove-temp').click(function () {
-					for (var key in self.rules.data_types) {
-						var rules = self.rules.for_domain(key, self.host), domain, rule;
-
-						for (domain in rules)
-							for (rule in rules[domain])
-								if (rules[domain][rule][1]) {
-									if (this.id === 'rules-make-perm')
-										self.rules.add(key, domain, rule, rules[domain][rule][0], true, false);
-									else
-										self.rules.remove(key, domain, rule);
-								}
-					}
-					
-					if (this.id === 'rules-remove-temp')
-						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
-					else
-						new Poppy();
-				}).siblings('#rules-show-temp').click(function () {
-					_$('#view-domain').click();
-					_$('#filter-temporary').click();
 				});
 			});
 		});
@@ -2253,9 +2248,7 @@ var Template = {
 		
 		_$('#make-temp-perm').click(function () {
 			var off = $(this).offset();
-			
-			if (!self.donationVerified) return new Poppy(off.left + $(this).width() / 2, off.top, _('Donation Required'));
-			
+						
 			for (var key in self.rules.data_types)
 				for (var domain in self.rules.rules[key]) {
 					var rules = self.rules.for_domain(key, domain, true), rule;
@@ -2275,9 +2268,7 @@ var Template = {
 		
 		_$('#remove-all-temp').click(function () {
 			var off = $(this).offset();
-			
-			if (!self.donationVerified) return new Poppy(off.left + $(this).width() / 2, off.top, _('Donation Required'));
-			
+						
 			for (var key in self.rules.data_types)
 				for (var domain in self.rules.rules[key]) {
 					var rules = self.rules.for_domain(key, domain, true), rule;
@@ -2312,7 +2303,9 @@ var Template = {
 
 			switch (this.value) {
 				case 'reset-all-settings':
+					var t = self.trialStart;
 					safari.extension.settings.clear();
+					self.trialStart = t;
 					safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
 					return false;
 				break;
@@ -2481,7 +2474,12 @@ var Template = {
 			else
 				self.utils.open_url('http://javascript-blocker.toggleable.com/help');
 		}).siblings('#js-settings').click(function () {
-			self.utils.open_url(safari.extension.baseURI + 'settings.html');
+			safari.extension.toolbarItems[0].popover.hide();
+
+			if (safari.application.activeBrowserWindow.activeTab)
+				safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('openSettings', safari.extension.baseURI + 'settings.html');
+			else
+				self.utils.open_url(safari.extension.baseURI + 'settings.html');
 		});
 
 		$(this.popover).on('click', '.toggle-rules', function () {
@@ -2609,7 +2607,7 @@ var Template = {
 				new Poppy($(self.popover.body).width() / 2, 13, [
 					'<ul id="jsoutput"></ul>',
 					'<input id="clear-console" value="Clear" type="button" /> ',
-					'<input id="mimic-upgrade" value="Mimic Upgrade From Previous Version" type="button" />'
+					'<input id="mimic-upgrade" value="Mimic Upgrade From 84" type="button" />'
 				].join(''), function () {
 					var l = _$('#jsconsolelogger'), ol = _$('#jsoutput').html(l.hide().html());
 					
@@ -2623,7 +2621,7 @@ var Template = {
 						$('li:not(#console-header)', l).remove();
 						_$('header.main-header').trigger('dblclick');
 					}).siblings('#mimic-upgrade').click(function () {
-						JB.installedBundle -= 1;
+						JB.installedBundle = 84;
 						safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
 					});
 				});
@@ -2639,42 +2637,47 @@ var Template = {
 	 * @param {Object} jsblocker Information about scripts allowed, blocked, or unblocked and frames.
 	 */
 	make_list: function (text, button, jsblocker) {
-		var self = this, el = _$('#' + text + '-script-urls .urls-inner'), use_url, protocol, poopy,
+		var self = this, el = _$('#' + text + '-script-urls .urls-inner'), use_url, test_url, protocol, poopy,
 				shost_list = {}, lab = _$('#' + text + '-scripts-count'), cn = 0;
 
 		for (var key in this.rules.data_types)
 			shost_list[key] = { 'http': {}, 'https': {}, 'file': {}, 'safari-extension': {}, 'data': {}, 'javascript': {}, 'about': {} };
 			
-		function append_url(index, kind, ul, use_url, script, button, protocol) {
+		function append_url(index, kind, ul, use_url, script, type, button, protocol) {
 			return ul.append('<li>' + (text !== 'unblocked' ? '<div class="info-link">?</div>' : '') + '<span></span> <small></small><div class="divider"></div></li>').find('li:last')
 					.attr('id', text.toLowerCase() + '-' + kind + '-' + index)
-					.data('url', use_url).data('script', [script]).data('kind', kind).addClass('visible kind-' + kind).find('span')
+					.data('url', use_url).data('script', [script]).data('kind', kind).addClass('visible kind-' + kind)
+					.toggleClass('by-rule', type > -1).toggleClass('rule-type-' + type, type > -1).find('span')
 					.text(use_url).addClass(protocol).parent();
 		}
 		
-		function add_item(index, kind, item) {
+		function add_item(index, kind, the_item) {
+			var item = the_item[0];
+
 			if (text !== 'unblocked' && self.simpleMode) {
 				use_url = self.utils.active_host(item);
 				protocol = self.utils.active_protocol(item);
+
+				test_url = use_url + the_item[1];
 									
-				if (!(use_url in shost_list[kind][protocol])) {
-					li = append_url(index, kind, ul, use_url, item, button, protocol);
-					shost_list[kind][protocol][use_url] = [1, li.attr('id')];
+				if (!(test_url in shost_list[kind][protocol])) {
+					li = append_url(index, kind, ul, use_url, item, the_item[1], button, protocol);
+					shost_list[kind][protocol][test_url] = [1, li.attr('id')];
 				} else {
-					shost_list[kind][protocol][use_url][0]++;
+					shost_list[kind][protocol][test_url][0]++;
 					
 					try {
-						$('li#' + shost_list[kind][protocol][use_url][1], ul).data('script').push(item);
+						$('li#' + shost_list[kind][protocol][test_url][1], ul).data('script').push(item);
 					} catch (e) {
 						return self.make_list(text, button, jsblocker);
 					}
 				}
 			} else
-				li = append_url(index, kind, ul, item, item, button);
+				li = append_url(index, kind, ul, item, item, the_item[1], button);
 			
 			return li;
 		}
-			
+
 		if (self.simpleMode && text !== 'unblocked') {
 			cn = 0;
 			
@@ -2717,7 +2720,7 @@ var Template = {
 				for (var i = 0, b = jsblocker[text][key].all.length; i < b; i++) {
 					if (key === 'special' && !this.special_enabled(jsblocker[text][key].all[i])) continue;
 					
-					li = key === 'special' ? append_url(i, key, ul, _(jsblocker[text][key].all[i]), jsblocker[text][key].all[i], button, key) :
+					li = key === 'special' ? append_url(i, key, ul, _(jsblocker[text][key].all[i]), jsblocker[text][key].all[i], -1, button, key) :
 							add_item(i, key, jsblocker[text][key].all[i]);
 					ccheck = $('li:not(.show-me-more).kind-' + key, ul).length;
 									
@@ -2800,6 +2803,7 @@ var Template = {
 					_$('#click-understood').click(function () {
 						self.trialStart = -1;
 						new Poppy();
+						safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
 					});
 				}, null, null, true);
 			}, 1000, [this]);
@@ -2821,7 +2825,10 @@ var Template = {
 					
 			this.caches.jsblocker[event.message.href] = jsblocker;
 					
-			page_list.find('optgroup:eq(1)').remove();
+			page_list.empty();
+
+			$('<optgroup />').attr('label', _('Main Page')).appendTo(page_list).append('<option />').find('option')
+				.attr('value', jsblocker.href).text(jsblocker.href);
 			
 			for (var act in jsblocker) {
 				if (act === 'href') continue;
@@ -2835,7 +2842,7 @@ var Template = {
 
 				for (frame in xx) {
 					if (page_list.find('optgroup').length == 1)
-						inline = $('<optgroup label="' + _('Inline Frame Pages') + '"></optgroup>').appendTo(page_list);
+						inline = $('<optgroup />').attr('label', _('Inline Frame Pages')).appendTo(page_list);
 					else
 						inline = page_list.find('optgroup:eq(1)');
 
@@ -2855,7 +2862,7 @@ var Template = {
 					
 					d = ('display' in xx[frame]) ? xx[frame].display : xx[frame].href;
 				
-					$('<option></option>').addClass('frame-page').attr('value', xx[frame].href).text(d).appendTo(inline);
+					$('<option />').addClass('frame-page').attr('value', xx[frame].href).text(d).appendTo(inline);
 				}
 			}
 			
@@ -2886,9 +2893,7 @@ var Template = {
 				}
 			}
 			
-			if (!badge_only) {
-				page_list.find('optgroup:first option').attr('value', jsblocker.href).text(jsblocker.href);
-				
+			if (!badge_only) {				
 				_$('#previous-frame, #next-frame, #frame-switcher .divider').removeClass('disabled').filter('#previous-frame').find('.text').html(_('Main page'));
 				
 				var max = $('option', page_list).length - 1;
@@ -2911,17 +2916,13 @@ var Template = {
 				if (max === 0)
 					_$('#next-frame').addClass('disabled');
 					
-				if (_$('#next-frame').hasClass('disabled') && _$('#previous-frame').hasClass('disabled'))
+				if (_$('#next-frame.disabled, #previous-frame.disabled').length === 2)
 					_$('#frame-switcher .divider').addClass('disabled');
 				
-				page_list.attr('title', page_list.val());
-						
-				page_list.unbind('change').change(function () {
+				page_list.attr('title', page_list.val()).unbind('change').change(function () {
 					new Poppy();
 					self.do_update_popover(event, this.selectedIndex);
 				});
-			
-				var host = this.active_host(page_list.val());
 
 				_$('#main ul').empty();
 
@@ -3016,18 +3017,23 @@ var Template = {
 	handle_message: function (event) {
 		theSwitch:
 		switch (event.name) {
+			case 'closeSettings':
+				safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('closeSettings');
+			break;
+
 			case 'canLoad':
 				if (event.message === 'parentURL') {
 					event.message = event.target.url;
 					break;
 				} else if (event.message[0])
+					typeSwitch:
 					switch (event.message[0]) {
 						case 'arbitrary':
-							var al = ['displayv', 'bundleid', 'trial_remaining', 'trial_active'], r;
+							var al = ['displayv', 'bundleid', 'trial_remaining', 'trial_active', 'domain_parts'], r;
 							
 							if (~al.indexOf(event.message[1])) {
 								r = this[event.message[1]];
-								event.message = typeof r === 'function' ? r() : r;
+								event.message = typeof r === 'function' ? r.call(JB, event.message[2]) : r;
 							} else
 								event.message = null;
 						break theSwitch;
@@ -3054,14 +3060,30 @@ var Template = {
 						case 'special':
 							event.message = this.disabled ? 1 : this.rules.special_allowed(event.message[1], event.message[2]);
 						break theSwitch;
+
+						case 'confirmShortURL':
+							var re = this.handle_navigate({
+								preventDefault: new Function (),
+								target: {
+									url: event.message[2]
+								},
+								url: event.message[1]
+							});
+
+							event.message = re;
+						break theSwitch;
+
+						case 'localize':
+							event.message = _(event.message[1], event.message[2]);
+						break theSwitch;
 					}
 				
 				if (this.disabled ||
 					(event.message[0] !== 'script' && !this.donationVerified)) {
-					event.message = 1;
+					event.message = [1, -1];
 					break theSwitch;
 				} else if (this.installedBundle < this.update_attention_required || !this.methodAllowed) {
-					event.message = this.enabled(event.message[0]) ? 0 : 1;
+					event.message = this.enabled(event.message[0]) ? [0, -1] : [1, -1];
 					break theSwitch;
 				}
 
@@ -3069,11 +3091,12 @@ var Template = {
 			break;
 
 			case 'updatePopover':
-				if (event.target != safari.application.activeBrowserWindow.activeTab) break;
+				if (event.target != safari.application.activeBrowserWindow.activeTab ||
+						(this.popover_visible() && _$('#page-list')[0].selectedIndex > 0)) break;
 					
 				this.utils.timer.timeout('update_popover', function (event, self) {
 					self.do_update_popover(event, undefined, !self.popover_visible());
-				}, 50, [event, this]);
+				}, 10, [event, this]);
 			break;
 			
 			case 'updateReady':
@@ -3098,7 +3121,7 @@ var Template = {
 					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover', event.message);
 				} catch(e) {}
 			break;
-			
+
 			case 'updateFrameData':
 				try {
 					this.frames[event.message[0]] = this.frames[event.message[2]];
@@ -3138,6 +3161,45 @@ var Template = {
 			case 'doNothing': break;
 		}
 	},
+	_redirectors: {"0rz.tw":{"domain":"0rz.tw","regex":""},"1link.in":{"domain":"1link.in","regex":""},"1url.com":{"domain":"1url.com","regex":""},"2.gp":{"domain":"2.gp","regex":""},"2big.at":{"domain":"2big.at","regex":""},"2tu.us":{"domain":"2tu.us","regex":""},"3.ly":{"domain":"3.ly","regex":""},"307.to":{"domain":"307.to","regex":""},"4ms.me":{"domain":"4ms.me","regex":""},"4sq.com":{"domain":"4sq.com","regex":""},"4url.cc":{"domain":"4url.cc","regex":""},"6url.com":{"domain":"6url.com","regex":""},"7.ly":{"domain":"7.ly","regex":""},"a.gg":{"domain":"a.gg","regex":""},"a.nf":{"domain":"a.nf","regex":""},"aa.cx":{"domain":"aa.cx","regex":""},"abcurl.net":{"domain":"abcurl.net","regex":""},"ad.vu":{"domain":"ad.vu","regex":""},"adf.ly":{"domain":"adf.ly","regex":""},"adjix.com":{"domain":"adjix.com","regex":""},"afx.cc":{"domain":"afx.cc","regex":""},"all.fuseurl.com":{"domain":"all.fuseurl.com","regex":""},"alturl.com":{"domain":"alturl.com","regex":""},"amzn.to":{"domain":"amzn.to","regex":""},"ar.gy":{"domain":"ar.gy","regex":""},"arst.ch":{"domain":"arst.ch","regex":""},"atu.ca":{"domain":"atu.ca","regex":""},"azc.cc":{"domain":"azc.cc","regex":""},"b23.ru":{"domain":"b23.ru","regex":""},"b2l.me":{"domain":"b2l.me","regex":""},"bacn.me":{"domain":"bacn.me","regex":""},"bcool.bz":{"domain":"bcool.bz","regex":""},"binged.it":{"domain":"binged.it","regex":""},"bit.ly":{"domain":"bit.ly","regex":""},"bizj.us":{"domain":"bizj.us","regex":""},"bloat.me":{"domain":"bloat.me","regex":""},"bravo.ly":{"domain":"bravo.ly","regex":""},"bsa.ly":{"domain":"bsa.ly","regex":""},"budurl.com":{"domain":"budurl.com","regex":""},"canurl.com":{"domain":"canurl.com","regex":""},"chilp.it":{"domain":"chilp.it","regex":""},"chzb.gr":{"domain":"chzb.gr","regex":""},"cl.lk":{"domain":"cl.lk","regex":""},"cl.ly":{"domain":"cl.ly","regex":""},"clck.ru":{"domain":"clck.ru","regex":""},"cli.gs":{"domain":"cli.gs","regex":""},"cliccami.info":{"domain":"cliccami.info","regex":""},"clickthru.ca":{"domain":"clickthru.ca","regex":""},"clop.in":{"domain":"clop.in","regex":""},"conta.cc":{"domain":"conta.cc","regex":""},"cort.as":{"domain":"cort.as","regex":""},"cot.ag":{"domain":"cot.ag","regex":""},"crks.me":{"domain":"crks.me","regex":""},"ctvr.us":{"domain":"ctvr.us","regex":""},"cutt.us":{"domain":"cutt.us","regex":""},"dai.ly":{"domain":"dai.ly","regex":""},"decenturl.com":{"domain":"decenturl.com","regex":""},"dfl8.me":{"domain":"dfl8.me","regex":""},"digbig.com":{"domain":"digbig.com","regex":""},"digg.com":{"domain":"digg.com","regex":"http:\\\/\\\/digg\\.com\\\/(?!news)[^\\\/]+$"},"disq.us":{"domain":"disq.us","regex":""},"dld.bz":{"domain":"dld.bz","regex":""},"dlvr.it":{"domain":"dlvr.it","regex":""},"do.my":{"domain":"do.my","regex":""},"doiop.com":{"domain":"doiop.com","regex":""},"dopen.us":{"domain":"dopen.us","regex":""},"easyuri.com":{"domain":"easyuri.com","regex":""},"easyurl.net":{"domain":"easyurl.net","regex":""},"eepurl.com":{"domain":"eepurl.com","regex":""},"eweri.com":{"domain":"eweri.com","regex":""},"fa.by":{"domain":"fa.by","regex":""},"fav.me":{"domain":"fav.me","regex":""},"fb.me":{"domain":"fb.me","regex":""},"fbshare.me":{"domain":"fbshare.me","regex":""},"ff.im":{"domain":"ff.im","regex":""},"fff.to":{"domain":"fff.to","regex":""},"fire.to":{"domain":"fire.to","regex":""},"firsturl.de":{"domain":"firsturl.de","regex":""},"firsturl.net":{"domain":"firsturl.net","regex":""},"flic.kr":{"domain":"flic.kr","regex":""},"flq.us":{"domain":"flq.us","regex":""},"fly2.ws":{"domain":"fly2.ws","regex":""},"fon.gs":{"domain":"fon.gs","regex":""},"freak.to":{"domain":"freak.to","regex":""},"fuseurl.com":{"domain":"fuseurl.com","regex":""},"fuzzy.to":{"domain":"fuzzy.to","regex":""},"fwd4.me":{"domain":"fwd4.me","regex":""},"fwib.net":{"domain":"fwib.net","regex":""},"g.ro.lt":{"domain":"g.ro.lt","regex":""},"gizmo.do":{"domain":"gizmo.do","regex":""},"gl.am":{"domain":"gl.am","regex":""},"go.9nl.com":{"domain":"go.9nl.com","regex":""},"go.ign.com":{"domain":"go.ign.com","regex":""},"go.usa.gov":{"domain":"go.usa.gov","regex":""},"goo.gl":{"domain":"goo.gl","regex":""},"goshrink.com":{"domain":"goshrink.com","regex":""},"gurl.es":{"domain":"gurl.es","regex":""},"hex.io":{"domain":"hex.io","regex":""},"hiderefer.com":{"domain":"hiderefer.com","regex":""},"hmm.ph":{"domain":"hmm.ph","regex":""},"href.in":{"domain":"href.in","regex":""},"hsblinks.com":{"domain":"hsblinks.com","regex":""},"htxt.it":{"domain":"htxt.it","regex":""},"huff.to":{"domain":"huff.to","regex":""},"hulu.com":{"domain":"hulu.com","regex":""},"hurl.me":{"domain":"hurl.me","regex":""},"hurl.ws":{"domain":"hurl.ws","regex":""},"icanhaz.com":{"domain":"icanhaz.com","regex":""},"idek.net":{"domain":"idek.net","regex":""},"ilix.in":{"domain":"ilix.in","regex":""},"is.gd":{"domain":"is.gd","regex":""},"its.my":{"domain":"its.my","regex":""},"ix.lt":{"domain":"ix.lt","regex":""},"j.mp":{"domain":"j.mp","regex":""},"jijr.com":{"domain":"jijr.com","regex":""},"kl.am":{"domain":"kl.am","regex":""},"klck.me":{"domain":"klck.me","regex":""},"korta.nu":{"domain":"korta.nu","regex":""},"krunchd.com":{"domain":"krunchd.com","regex":""},"l9k.net":{"domain":"l9k.net","regex":""},"lat.ms":{"domain":"lat.ms","regex":""},"liip.to":{"domain":"liip.to","regex":""},"liltext.com":{"domain":"liltext.com","regex":""},"linkbee.com":{"domain":"linkbee.com","regex":""},"linkbun.ch":{"domain":"linkbun.ch","regex":""},"liurl.cn":{"domain":"liurl.cn","regex":""},"ln-s.net":{"domain":"ln-s.net","regex":""},"ln-s.ru":{"domain":"ln-s.ru","regex":""},"lnk.gd":{"domain":"lnk.gd","regex":""},"lnk.ms":{"domain":"lnk.ms","regex":""},"lnkd.in":{"domain":"lnkd.in","regex":""},"lnkurl.com":{"domain":"lnkurl.com","regex":""},"lru.jp":{"domain":"lru.jp","regex":""},"lt.tl":{"domain":"lt.tl","regex":""},"lurl.no":{"domain":"lurl.no","regex":""},"macte.ch":{"domain":"macte.ch","regex":""},"mash.to":{"domain":"mash.to","regex":""},"merky.de":{"domain":"merky.de","regex":""},"migre.me":{"domain":"migre.me","regex":""},"miniurl.com":{"domain":"miniurl.com","regex":""},"minurl.fr":{"domain":"minurl.fr","regex":""},"mke.me":{"domain":"mke.me","regex":""},"moby.to":{"domain":"moby.to","regex":""},"moourl.com":{"domain":"moourl.com","regex":""},"mrte.ch":{"domain":"mrte.ch","regex":""},"myloc.me":{"domain":"myloc.me","regex":""},"myurl.in":{"domain":"myurl.in","regex":""},"n.pr":{"domain":"n.pr","regex":""},"nbc.co":{"domain":"nbc.co","regex":""},"nblo.gs":{"domain":"nblo.gs","regex":""},"nn.nf":{"domain":"nn.nf","regex":""},"not.my":{"domain":"not.my","regex":""},"notlong.com":{"domain":"notlong.com","regex":""},"nsfw.in":{"domain":"nsfw.in","regex":""},"nutshellurl.com":{"domain":"nutshellurl.com","regex":""},"nxy.in":{"domain":"nxy.in","regex":""},"nyti.ms":{"domain":"nyti.ms","regex":""},"o-x.fr":{"domain":"o-x.fr","regex":""},"oc1.us":{"domain":"oc1.us","regex":""},"om.ly":{"domain":"om.ly","regex":""},"omf.gd":{"domain":"omf.gd","regex":""},"omoikane.net":{"domain":"omoikane.net","regex":""},"on.cnn.com":{"domain":"on.cnn.com","regex":""},"on.mktw.net":{"domain":"on.mktw.net","regex":""},"onforb.es":{"domain":"onforb.es","regex":""},"orz.se":{"domain":"orz.se","regex":""},"ow.ly":{"domain":"ow.ly","regex":""},"ping.fm":{"domain":"ping.fm","regex":""},"pli.gs":{"domain":"pli.gs","regex":""},"pnt.me":{"domain":"pnt.me","regex":""},"politi.co":{"domain":"politi.co","regex":""},"post.ly":{"domain":"post.ly","regex":""},"pp.gg":{"domain":"pp.gg","regex":""},"profile.to":{"domain":"profile.to","regex":""},"ptiturl.com":{"domain":"ptiturl.com","regex":""},"pub.vitrue.com":{"domain":"pub.vitrue.com","regex":""},"qlnk.net":{"domain":"qlnk.net","regex":""},"qte.me":{"domain":"qte.me","regex":""},"qu.tc":{"domain":"qu.tc","regex":""},"qy.fi":{"domain":"qy.fi","regex":""},"r.im":{"domain":"r.im","regex":""},"rb6.me":{"domain":"rb6.me","regex":""},"read.bi":{"domain":"read.bi","regex":""},"readthis.ca":{"domain":"readthis.ca","regex":""},"reallytinyurl.com":{"domain":"reallytinyurl.com","regex":""},"redir.ec":{"domain":"redir.ec","regex":""},"redirects.ca":{"domain":"redirects.ca","regex":""},"redirx.com":{"domain":"redirx.com","regex":""},"retwt.me":{"domain":"retwt.me","regex":""},"ri.ms":{"domain":"ri.ms","regex":""},"rickroll.it":{"domain":"rickroll.it","regex":""},"riz.gd":{"domain":"riz.gd","regex":""},"rt.nu":{"domain":"rt.nu","regex":""},"ru.ly":{"domain":"ru.ly","regex":""},"rubyurl.com":{"domain":"rubyurl.com","regex":""},"rurl.org":{"domain":"rurl.org","regex":""},"rww.tw":{"domain":"rww.tw","regex":""},"s4c.in":{"domain":"s4c.in","regex":""},"s7y.us":{"domain":"s7y.us","regex":""},"safe.mn":{"domain":"safe.mn","regex":""},"sameurl.com":{"domain":"sameurl.com","regex":""},"sdut.us":{"domain":"sdut.us","regex":""},"shar.es":{"domain":"shar.es","regex":""},"shink.de":{"domain":"shink.de","regex":""},"shorl.com":{"domain":"shorl.com","regex":""},"short.ie":{"domain":"short.ie","regex":""},"short.to":{"domain":"short.to","regex":""},"shortlinks.co.uk":{"domain":"shortlinks.co.uk","regex":""},"shorturl.com":{"domain":"shorturl.com","regex":""},"shout.to":{"domain":"shout.to","regex":""},"show.my":{"domain":"show.my","regex":""},"shrinkify.com":{"domain":"shrinkify.com","regex":""},"shrinkr.com":{"domain":"shrinkr.com","regex":""},"shrt.fr":{"domain":"shrt.fr","regex":""},"shrt.st":{"domain":"shrt.st","regex":""},"shrten.com":{"domain":"shrten.com","regex":""},"shrunkin.com":{"domain":"shrunkin.com","regex":""},"simurl.com":{"domain":"simurl.com","regex":""},"slate.me":{"domain":"slate.me","regex":""},"smallr.com":{"domain":"smallr.com","regex":""},"smsh.me":{"domain":"smsh.me","regex":""},"smurl.name":{"domain":"smurl.name","regex":""},"sn.im":{"domain":"sn.im","regex":""},"snipr.com":{"domain":"snipr.com","regex":""},"snipurl.com":{"domain":"snipurl.com","regex":""},"snurl.com":{"domain":"snurl.com","regex":""},"sp2.ro":{"domain":"sp2.ro","regex":""},"spedr.com":{"domain":"spedr.com","regex":""},"srnk.net":{"domain":"srnk.net","regex":""},"srs.li":{"domain":"srs.li","regex":""},"starturl.com":{"domain":"starturl.com","regex":""},"su.pr":{"domain":"su.pr","regex":""},"surl.co.uk":{"domain":"surl.co.uk","regex":""},"surl.hu":{"domain":"surl.hu","regex":""},"t.cn":{"domain":"t.cn","regex":""},"t.co":{"domain":"t.co","regex":""},"t.lh.com":{"domain":"t.lh.com","regex":""},"ta.gd":{"domain":"ta.gd","regex":""},"tbd.ly":{"domain":"tbd.ly","regex":""},"tcrn.ch":{"domain":"tcrn.ch","regex":""},"tgr.me":{"domain":"tgr.me","regex":""},"tgr.ph":{"domain":"tgr.ph","regex":""},"tighturl.com":{"domain":"tighturl.com","regex":""},"tiniuri.com":{"domain":"tiniuri.com","regex":""},"tiny.cc":{"domain":"tiny.cc","regex":""},"tiny.ly":{"domain":"tiny.ly","regex":""},"tiny.pl":{"domain":"tiny.pl","regex":""},"tinylink.in":{"domain":"tinylink.in","regex":""},"tinyuri.ca":{"domain":"tinyuri.ca","regex":""},"tinyurl.com":{"domain":"tinyurl.com","regex":""},"tk.":{"domain":"tk.","regex":""},"tl.gd":{"domain":"tl.gd","regex":""},"tmi.me":{"domain":"tmi.me","regex":""},"tnij.org":{"domain":"tnij.org","regex":""},"tnw.to":{"domain":"tnw.to","regex":""},"tny.com":{"domain":"tny.com","regex":""},"to.":{"domain":"to.","regex":""},"to.ly":{"domain":"to.ly","regex":""},"togoto.us":{"domain":"togoto.us","regex":""},"totc.us":{"domain":"totc.us","regex":""},"toysr.us":{"domain":"toysr.us","regex":""},"tpm.ly":{"domain":"tpm.ly","regex":""},"tr.im":{"domain":"tr.im","regex":""},"tra.kz":{"domain":"tra.kz","regex":""},"trunc.it":{"domain":"trunc.it","regex":""},"twhub.com":{"domain":"twhub.com","regex":""},"twirl.at":{"domain":"twirl.at","regex":""},"twitclicks.com":{"domain":"twitclicks.com","regex":""},"twitterurl.net":{"domain":"twitterurl.net","regex":""},"twitterurl.org":{"domain":"twitterurl.org","regex":""},"twiturl.de":{"domain":"twiturl.de","regex":""},"twurl.cc":{"domain":"twurl.cc","regex":""},"twurl.nl":{"domain":"twurl.nl","regex":""},"u.mavrev.com":{"domain":"u.mavrev.com","regex":""},"u.nu":{"domain":"u.nu","regex":""},"u76.org":{"domain":"u76.org","regex":""},"ub0.cc":{"domain":"ub0.cc","regex":""},"ulu.lu":{"domain":"ulu.lu","regex":""},"updating.me":{"domain":"updating.me","regex":""},"ur1.ca":{"domain":"ur1.ca","regex":""},"url.az":{"domain":"url.az","regex":""},"url.co.uk":{"domain":"url.co.uk","regex":""},"url.ie":{"domain":"url.ie","regex":""},"url360.me":{"domain":"url360.me","regex":""},"url4.eu":{"domain":"url4.eu","regex":""},"urlborg.com":{"domain":"urlborg.com","regex":""},"urlbrief.com":{"domain":"urlbrief.com","regex":""},"urlcover.com":{"domain":"urlcover.com","regex":""},"urlcut.com":{"domain":"urlcut.com","regex":""},"urlenco.de":{"domain":"urlenco.de","regex":""},"urli.nl":{"domain":"urli.nl","regex":""},"urls.im":{"domain":"urls.im","regex":""},"urlshorteningservicefortwitter.com":{"domain":"urlshorteningservicefortwitter.com","regex":""},"urlx.ie":{"domain":"urlx.ie","regex":""},"urlzen.com":{"domain":"urlzen.com","regex":""},"usat.ly":{"domain":"usat.ly","regex":""},"use.my":{"domain":"use.my","regex":""},"vb.ly":{"domain":"vb.ly","regex":""},"vgn.am":{"domain":"vgn.am","regex":""},"vl.am":{"domain":"vl.am","regex":""},"vm.lc":{"domain":"vm.lc","regex":""},"w55.de":{"domain":"w55.de","regex":""},"wapo.st":{"domain":"wapo.st","regex":""},"wapurl.co.uk":{"domain":"wapurl.co.uk","regex":""},"wipi.es":{"domain":"wipi.es","regex":""},"wp.me":{"domain":"wp.me","regex":""},"x.vu":{"domain":"x.vu","regex":""},"xr.com":{"domain":"xr.com","regex":""},"xrl.in":{"domain":"xrl.in","regex":""},"xrl.us":{"domain":"xrl.us","regex":""},"xurl.es":{"domain":"xurl.es","regex":""},"xurl.jp":{"domain":"xurl.jp","regex":""},"y.ahoo.it":{"domain":"y.ahoo.it","regex":""},"yatuc.com":{"domain":"yatuc.com","regex":""},"ye.pe":{"domain":"ye.pe","regex":""},"yep.it":{"domain":"yep.it","regex":""},"yfrog.com":{"domain":"yfrog.com","regex":""},"yhoo.it":{"domain":"yhoo.it","regex":""},"yiyd.com":{"domain":"yiyd.com","regex":""},"youtu.be":{"domain":"youtu.be","regex":""},"yuarel.com":{"domain":"yuarel.com","regex":""},"z0p.de":{"domain":"z0p.de","regex":""},"zi.ma":{"domain":"zi.ma","regex":""},"zi.mu":{"domain":"zi.mu","regex":""},"zipmyurl.com":{"domain":"zipmyurl.com","regex":""},"zud.me":{"domain":"zud.me","regex":""},"zurl.ws":{"domain":"zurl.ws","regex":""},"zz.gd":{"domain":"zz.gd","regex":""},"zzang.kr":{"domain":"zzang.kr","regex":""},"\u203a.ws":{"domain":"\u203a.ws","regex":""},"\u2729.ws":{"domain":"\u2729.ws","regex":""},"\u273f.ws":{"domain":"\u273f.ws","regex":""},"\u2765.ws":{"domain":"\u2765.ws","regex":""},"\u2794.ws":{"domain":"\u2794.ws","regex":""},"\u279e.ws":{"domain":"\u279e.ws","regex":""},"\u27a1.ws":{"domain":"\u27a1.ws","regex":""},"\u27a8.ws":{"domain":"\u27a8.ws","regex":""},"\u27af.ws":{"domain":"\u27af.ws","regex":""},"\u27b9.ws":{"domain":"\u27b9.ws","regex":""},"\u27bd.ws":{"domain":"\u27bd.ws","regex":""}},
+	handle_navigate: function (event) {
+		if (!Settings.getItem('confirmShortURL')) return 1;
+		else if (!event.url || event.url.toLowerCase().indexOf('http') !== 0) return 1;
+
+		var url = event.url, host = this.utils.active_host(url), re = 1, self = this, do_test = function (url, title, redirect) {
+			if (!event.no_confirm)
+				re = url !== redirect ? confirm(_('The short URL—{1}—is redirecting you to: {2} {3} Do you want to continue?', [url, title ? title.replace(/\n/g, ' ') : '', redirect])) : 1;
+			else
+				re = [url, title, redirect];
+
+			if (!re) event.preventDefault();
+		};
+
+		if (host in this._redirectors) {
+			if (event.url in this.caches.redirects)
+				do_test(event.url, this.caches.redirects[event.url].title, this.caches.redirects[event.url]['long-url']);
+			else if (!this._redirectors[host].regex.length ||
+				(this._redirectors[host].regex && (new RegExp(this._redirectors[host].regex)).test(event.url))) {
+				console.log('Request:', event.url)
+				$.ajax({
+					async: false,
+					url: this.longURL + encodeURI(url),
+					dataType: 'json'
+				}).success(function (r) {
+					self.caches.redirects[event.url] = r;
+
+					do_test(event.url, r.title, r['long-url']);
+				}).error(function (er) {
+					if (er.status !== 400)
+						alert(_('You cannot enable confirmShortURL'));
+					re = 1;
+				});
+			} else
+				re = 1;
+		}
+
+		return re;
+	},
 	open_popover: function (event) {
 		var self = this, s = _$('#setup');
 
@@ -3159,11 +3221,14 @@ var Template = {
 			new Poppy();
 		} else if (!event || (event && ('type' in event) && ~['beforeNavigate', 'close'].indexOf(event.type))) {
 			new Poppy();
-			
-			if (event.type === 'close') {
-				delete this.caches.jsblocker[event.target.url];
+
+			if (event.target.url === event.url || event.type === 'close')
 				delete this.frames[event.target.url];
-			}
+
+			if (event.type === 'close')
+				delete this.caches.jsblocker[event.target.url];
+
+			if (event.type === 'beforeNavigate') this.handle_navigate(event);
 			
 			setTimeout(function (self, event) {
 				delete self.anonymous.newTab[event.target.url];
@@ -3195,6 +3260,9 @@ var Template = {
 		
 		try {
 			if (event.type === 'popover') {
+				_$('#page-list')[0].selectedIndex = 0;
+				_$('.whoop').scrollTop(0);
+
 				var url = safari.application.activeBrowserWindow.activeTab.url || '';
 				
 				if (!this.methodAllowed) {
@@ -3252,7 +3320,7 @@ var Template = {
 		
 		if (!('cache' in this.rules)) this.rules.cache = this.rules.data_types;
 		
-		if (Settings.getItem('installID') === null)
+		if (!Settings.getItem('installID'))
 			Settings.setItem('installID', this.utils.id() + '~' + this.displayv);
 			
 		this.speedMultiplier = this.useAnimations ? 1 : 0.001;
@@ -3284,6 +3352,7 @@ var Template = {
 			safari.extension.toolbarItems[0].popover.height = this.simpleMode ? 350 : 400;
 			
 			$(this.popover.body).toggleClass('simple', this.simpleMode);
+			$(this.popover.body).toggleClass('highlight-matched', Settings.getItem('highlight'));
 				
 			event.target.disabled = !event.target.browserWindow.activeTab.url;
 

@@ -259,13 +259,16 @@ section {
 		max-width: 301px;
 		text-indent: -16px;
 	}
+	section li.disabled * {
+		opacity: 0.5;
+	}
 	section li .help {
 		float: right;
 	}
 	section li .help {
 		background-image: -webkit-linear-gradient(top, #eee, #ddd);
 		border: 1px solid #b4b4b4;
-		-webkit-box-shadow: 0 1px 0 #fff, inset 0 7px 0 rgba(255,255,255,0.32), inset 0 5px 0 rgba(255,255,255,0.52);
+		-webkit-box-shadow: 0 1px 0 #fff, inset 0 8px 0 rgba(255,255,255,0.32), inset 0 6px 0 rgba(255,255,255,0.52);
 		padding: 1px 2px 0;
 		display: inline-block;
 		-webkit-border-radius: 20px;
@@ -274,6 +277,7 @@ section {
 		text-align: center;
 		font-size: 9pt;
 		margin-left: 5px;
+		margin-top: -1px;
 		text-shadow: 0 1px 0 rgba(255,255,255,0.7);
 		cursor: default;
 		color: #454545;
@@ -283,7 +287,7 @@ section {
 		section li .help:active {
 			border-color: #aaa;
 			background-image: -webkit-linear-gradient(top, #ddd, #ccc);
-			-webkit-box-shadow: 0 1px 0 #fff, inset 0 7px 0 rgba(255,255,255,0.15), inset 0 5px 0 rgba(255,255,255,0.45);
+			-webkit-box-shadow: 0 1px 0 #fff, inset 0 8px 0 rgba(255,255,255,0.15), inset 0 6px 0 rgba(255,255,255,0.45);
 		}
 	section p {
 		margin-bottom: 5px;

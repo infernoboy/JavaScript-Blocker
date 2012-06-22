@@ -7,6 +7,11 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 	tba: 0,
 	bind_events: function () {
 		var self = this;
+
+		$(document.body).click(function (e) {
+			if (e.target && e.target.nodeName === 'BODY')
+				safari.self.tab.dispatchMessage('closeSettings');
+		});
 		
 		$('#toolbar').on('click', 'li', function () {
 			if ($(this).hasClass('selected')) return false;
@@ -124,6 +129,9 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 				}
 			}
 
+			if (this.getAttribute('type') === 'checkbox' && Settings.settings[group][setting].confirm && this.checked)
+				this.checked = Settings.settings[group][setting].confirm();
+
 			Settings.set_value(group, setting, ('checked' in this) ? (Settings.settings[group][setting].opposite ? !this.checked : this.checked) : this.value);
 		});
 		
@@ -222,13 +230,15 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 		
 		if (setting === 'language')
 			window.location.reload();
-		
-		if (setting === 'largeFont')
+		else if (setting === 'largeFont')
 			$(document.body).toggleClass('large', v);
 			
-		if ($('#toolbar li.selected').is('#for-search')) $('#search').trigger('search');
+		if ($('#toolbar li.selected#for-search').length) $('#search').trigger('search');
 		
 		safari.self.tab.canLoad(beforeLoad, ['setting_set', setting, v]);
+	},
+	invalid_donation_setting: function () {
+		return (!Settings.current_value('donationVerified') && !safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'trial_active']));
 	},
 	make_setting: function (group, setting, setting_item, sec) {
 		var sec, setting_item, set, select, li, current, label, other = 0;
@@ -237,24 +247,25 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 		current = setting_item.opposite ? !current : current;
 		
 		if (setting_item.donator)
-			$('<li class="donator"></li>').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
+			$('<li class="donator" />').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
 
 		if (setting_item.description)
-			$('<li class="description"></li>').html(setting_item.description).appendTo(sec);
+			$('<li class="description" />').html(setting_item.description).appendTo(sec);
 
-		li = $('<li></li>').attr({
+		li = $('<li />').attr({
 			'data-setting': setting,
-			'id': 'setting-' + setting
-		}).data('group', group).appendTo(sec);
+			'id': 'setting-' + setting,
+		}).data('group', group).toggleClass('disabled', setting_item.donator_only ? this.invalid_donation_setting() : false).appendTo(sec);
 		
-		label = $('<div></div>').addClass('label').html(typeof setting_item.setting === 'boolean' ? '' : (setting_item.label ? _(setting_item.label) : '')).appendTo(li);
-		set = $('<div></div>').addClass('setting').insertAfter(label);
+		label = $('<div />').addClass('label').html(typeof setting_item.setting === 'boolean' ? '' : (setting_item.label ? _(setting_item.label) : '')).appendTo(li);
+		set = $('<div />').addClass('setting').insertAfter(label);
 					
 		if (typeof setting_item.setting === 'boolean') {
 			$('<input />').attr({
 				'type': 'checkbox',
 				'id': 'setting-check-' + setting,
-				'checked': current
+				'checked': current,
+				'disabled': (setting_item.donator_only && this.invalid_donation_setting())
 			}).appendTo(set);
 			
 			$('<label></label>').attr('for', 'setting-check-' + setting).html(' ' + _(setting_item.label)).appendTo(set);
@@ -262,10 +273,11 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 			$('<input />').attr({
 				'type': 'button',
 				'id': 'button-' + setting,
-				'value': _(setting_item.setting)
+				'value': _(setting_item.setting),
+				'disabled': (setting_item.donator_only && this.invalid_donation_setting())
 			}).appendTo(set)
 		} else if (setting_item.label && setting_item.setting) {
-			select = $('<select></select>').appendTo(set);
+			select = $('<select />').attr('disabled', (setting_item.donator_only && this.invalid_donation_setting())).appendTo(set);
 			
 			for (var b = 0; setting_item.setting[b]; b++) {
 				if ((typeof current === 'string' || typeof curent === 'string') && setting_item.setting[b][0].toString() === current.toString()) break;
@@ -284,6 +296,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 					$('<optgroup />').attr('label', '----------').appendTo(select);
 					
 				$('<option />').attr({
+					'disabled': (setting_item.donator_only && this.invalid_donation_setting()),
 					'value': setting_item.setting[i][0],
 					'class': is_other ? 'other-option' : '',
 					'selected': (typeof current === 'string' || typeof curent === 'string') && (current == setting_item.setting[i][0] || current.toString() === setting_item.setting[i][0])
@@ -292,7 +305,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 		}
 		
 		if (setting_item.divider)
-			$('<li class="divider"></li>').appendTo(sec);
+			$('<li class="divider" />').appendTo(sec);
 		
 		if (setting_item.id)
 			li.attr('id', setting_item.id);
@@ -340,14 +353,15 @@ $(function () {
 	
 	for (var section in Settings.settings)
 		if (section !== 'misc')
-			$('<section></section>').attr('id', section).appendTo('#content').append('<ul class="settings"></ul>');
+			$('<section />').attr('id', section).appendTo('#content').append('<ul class="settings"></ul>');
 	
 	for (var setting in Settings.settings.about)
 		Settings.make_setting('about', setting, Settings.settings.about[setting], $('#about ul'));
 	
-	for (var tool in Settings.toolbar_items)
-		$('<li></li>').attr('id', 'for-' + tool)
+	for (var tool in Settings.toolbar_items) {
+		$('<li />').attr('id', 'for-' + tool)
 				.html('<div class="left"></div><span>' + (tool !== 'search' ? _(Settings.toolbar_items[tool]) : Settings.toolbar_items[tool]) + '</span><div class="right"></div>').appendTo('#toolbar');
+	}
 		
 	if (window.location.hash.length > 1) $(window.location.hash).click();
 	else if (window.localStorage.tab) $('#' + window.localStorage.tab).click();
@@ -356,19 +370,20 @@ $(function () {
 	var dv = safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'displayv']),
 			bi = safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'bundleid']),
 			rem = safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'trial_remaining']),
-			don = Settings.current_value('donationVerified'),
-			rem = rem < 0 ? 0 : rem;
-	
+			don = Settings.current_value('donationVerified');
+
+	rem.push('<a class="outside" href="http://javascript-blocker.toggleable.com/donation_only" target="_top">' + _('donator-only features.') + '</a>');
+
 	$('#js-displayv').html(dv);
 	$('#js-bundleid').html(bi);
 	
 	if (!don) {
 		if (safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'trial_active']))
-			$('#trial-remaining').html(_('Trial remaining {1} days, {2} hours, and {3} minutes', rem));
+			$('#trial-remaining').html(_('Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>', rem));
 		else
 			$('#trial-remaining').html([
 				'<p>', _('Free trial expired', [_('JavaScript Blocker')]), '</p>',
-				'<p><a href="http://javascript-blocker.toggleable.com/donation_only">', _('What donation?'), '</a></p>'].join(''));
+				'<p><a href="http://javascript-blocker.toggleable.com/donation_only" target="_top">', _('What donation?'), '</a></p>'].join(''));
 	} else
 		$('#trial-remaining').html(_('Your donation has been verified') + ' ' + _('Thanks for your support!'));
 		

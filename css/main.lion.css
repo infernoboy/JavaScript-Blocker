@@ -72,9 +72,7 @@ select {
 	body.simple ul li input[type="button"] {
 		max-width: 17%;
 	}
-.divider {
-	margin-top: 6px;
-}
+
 .kind-header.floater,
 .info-container.floater,
 .rules-header.floater {

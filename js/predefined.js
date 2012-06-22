@@ -330,7 +330,9 @@ JB.rules.whitelist = {
 			'^https?:\\/\\/.*\\/prototype\\.js(\\?.*)?$',
 		
 			// Readability
-			'^https?:\\/\\/www\\.readability\\.com\\/.*$'
+			'^https?:\\/\\/www\\.readability\\.com\\/.*$',
+
+			'^https:\\/\\/seal\\.verisign\\.com\\/.*$'
 		],
 		'.amazon.com': [
 			'^https?:\\/\\/([^\\/]+\\.)?(ssl\\-)?images\\-amazon\\.com\\/.*$'
@@ -359,6 +361,9 @@ JB.rules.whitelist = {
 	frame: {
 		'.facebook.com': [
 			'^https?:\\/\\/(.*\\.)?facebook\\.com\\/.*$'
+		],
+		'.stumbleupon.com': [
+			'.*(All Frames)?'
 		]
 	},
 	embed: {
@@ -399,7 +404,16 @@ JB.rules.blacklist = {
 			// Used for tracking purposes.
 			'^https?:\\/\\/(ssl|www)\\.google\\-analytics\\.com\\/(ga|urchin)\\.js$', '^https?:\\/\\/edge\\.quantserve\\.com\\/.*$',
 			
-			'^https?:\\/\\/.*(' + def.join('|') + ').*$'
+			'^(This is just a lot of bad stuff)?https?:\\/\\/.*(' + def.join('|') + ').*$',
+			'^https?:\\/\\/pagead[0-9]+\\.googlesyndication\\.com\\/.*$',
+			'^https?:\\/\\/(.*\\.)?blogads\\.com\\/.*$',
+			'^https?:\\/\\/(.*\\.)?admeld\\.com\\/.*$',
+			'^https?:\\/\\/(.*\\.)?scorecardresearch\\.com\\/.*$',
+			'^https?:\\/\\/(.*\\.)?ad\\.doubleclick\\.net\\/.*$',
+			'^https?:\\/\\/(.*\\.)?connect\\.facebook\\.(com|net)\\/.*$',
+			'^https?:\\/\\/(.*\\.)?platform\\.twitter\\.com\\/.*$',
+			'^https?:\\/\\/(.*\\.)?engine\\.carbonads\\.com\\/.*$',
+			'^https?:\\/\\/widgets\\.twimg\\.com\\/.*$',
 		]
 	},
 	frame: {

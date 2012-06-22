@@ -6,16 +6,17 @@
 
 JB.poppies = {
 	verify_donation: function (main) {
-		var rem = main.trial_remaining(),
-			zoo = {
-			url: JB.donation_url,
+		var rem = main.trial_remaining();
+		rem.push('<a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">' + _('donator-only features.') + '</a>');
+		var zoo = {
+			url: main.baseURL + 'verify.php?id=',
 			me: this,
 			main: main,
 			modal: this[2],
 			content: [
 				'<p class="misc-info">', _('Donation Verification'), '</p>',
 				(this.length === 5) ? '<p class="error">' + this[3] + '</p>' : '',
-				'<p>', main.trial_active() ? _('Trial remaining {1} days, {2} hours, and {3} minutes', rem) :
+				'<p>', main.trial_active() ? _('Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>', rem) :
 					'<a class="outside" href="http://javascript-blocker.toggleable.com/donation_only">' + _('What donation?') + '</a>', '</p>',
 				'<p>', _('To complete the unlocking'), '</p>',
 				'<p><input type="text" placeholder="', _('PayPal Email Address'), '" id="donation-id" /> ',
@@ -91,11 +92,10 @@ JB.poppies = {
 						'<input id="select-type-allow" type="radio" name="select-type" value="1" />',
 						'<label for="select-type-allow"> ', _('Allow'), '</label>',
 					'</p>',
-					main.donationVerified ? [
-						'<p id="rules-temp">',
-							'<input id="rule-temporary" type="checkbox"', main.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
-							'<label for="rule-temporary">&thinsp;', _('Temporary rule'), '</label> ',
-						'</p>'].join('') : '',
+					'<p id="rules-temp">',
+						'<input id="rule-temporary" type="checkbox"', main.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+						'<label for="rule-temporary">&thinsp;', _('Temporary rule'), '</label> ',
+					'</p>',
 					'<div class="inputs">',
 						'<textarea id="rule-input" wrap="off" placeholder="RegExp"></textarea> ',
 						'<input type="button" value="', _('Save'), '" id="rule-save" />',

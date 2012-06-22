@@ -135,14 +135,13 @@ JB.updater = function () {
 						
 						self.trialStart = safari.extension.settings.getItem('donationVerified') ? -1 : +new Date;
 
-						self.setupDone = 0;
-						self.open_popover({ type: 'popover' });
+						self.installedBundle = 75;
+						self.updater();
 					});
 				}, null, null, true);
 		break;
 		
 		case v < 79: // 2.6.0
-
 			new Poppy($(this.popover.body).width() / 2, 13, [
 				'<p class="misc-info"><a class="outside" href="http://javascript-blocker.toggleable.com/change-log/260/">Update 2.6.0</a></p>',
 				'<p><b>New:</b> A two-column makes it even easier to see what\'s been allowed or blocked. To improve the look and feel of this ',
@@ -164,13 +163,45 @@ JB.updater = function () {
 							for (var r in self.rules.rules.embed[d])
 								self.rules.add('video', d, r, self.rules.rules.embed[d][r][0], self.rules.rules.embed[d][r][1]);
 
-						self.donate();
+						self.installedBundle = 79;
+						self.updater();
 					}).siblings('#rawr-settings').click(function () {
 						_$('#js-settings').click();
 					});
 				}, null, null, true);
 		break;
-		
+
+		case v < 83: // 2.6.3
+			new Poppy($(this.popover.body).width() / 2, 13, [
+				'<p class="misc-info"><a class="outside" href="http://javascript-blocker.toggleable.com/change-log/263/">Update 2.6.3</a></p>',
+				'<p><b>New:</b> A feature to ask for confirmation before navigating to short URLs has been added. This uses the LongURL.org service. It can be enabled from the Settings page under "Other Features".</p>',
+				'<p><input type="button" id="rawr-ok" value="', _('Understood'), '" /> <input type="button" id="rawr-settings" value="', _('Settings'), '" /></p>'].join(''), function () {
+					_$('#rawr-ok').click(function () {
+						self.installedBundle = 83;
+						self.updater();
+					}).siblings('#rawr-settings').click(function () {
+						_$('#js-settings').click();
+					});
+			}, null, null, true);
+		break;
+
+		case v < 85: // 2.6.5
+			new Poppy($(this.popover.body).width() / 2, 13, [
+				'<p class="misc-info"><a class="outside" href="http://javascript-blocker.toggleable.com/change-log/263/">Update 2.6.5</a></p>',
+				'<p><b>New:</b> Items in the main window affected by the blacklist will have a red background, by the whitelist a green one, and a standard rule gray. ',
+					'This may be disabled from the <b>User Interface</b> section on the settings page.</p>',
+				'<p><b>New:</b> Clicking the "?" next to a blocked or allowed item affected by a rule will let you view the matched rules.</p>',
+				'<p><input type="button" id="rawr-ok" value="', _('Understood'), '" /> <input type="button" id="rawr-settings" value="', _('Settings'), '" /></p>'].join(''), function () {
+					_$('#rawr-ok').click(function () {
+						self.donate();
+						for (var key in self.rules.data_types)
+							self.rules.reinstall_predefined(key);
+					}).siblings('#rawr-settings').click(function () {
+						_$('#js-settings').click();
+					});;
+			}, null, null, true);
+		break;
+
 		case v < this.bundleid:
 			this.donate();
 	}

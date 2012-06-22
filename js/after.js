@@ -17,6 +17,8 @@ var special_actions = {
 	},
 	alert_dialogs: function () {
 		window.alert = function (a, text) {
+			a = a.toString();
+			
 			var cur_all = document.querySelectorAll('.jsblocker-alert'), top = 0;
 
 			for (var i = 0; cur_all[i]; i++)
@@ -141,7 +143,8 @@ var special_actions = {
 		s.innerText = '*:not(pre):not(code) { font-family: "' + v + '" !important; }';
 		document.documentElement.appendChild(s);
 	}
-};
+},
+non_injected_special_actions = {};
 
 function appendScript(script, v) {
 	var s = document.createElement('script');
@@ -150,24 +153,28 @@ function appendScript(script, v) {
 	document.documentElement.appendChild(s);
 }
 
-/*
-appendScript(function (base) {
+/*appendScript(function (base) {
 	window.jsblockerBaseURI = base;
-}, safari.extension.baseURI);
-*/
+}, safari.extension.baseURI);*/
 
-var v;
+function doSpecial(do_append, n, action) {
+	var v = if_setting('enable_special_' + n);
 
-if (typeof if_setting === 'function')
-	for (var n in special_actions) {
-		v = if_setting('enable_special_' + n);
-	
-		if ((v === true || parseInt(v, 10)) || (typeof v === 'string' && v.length && v !== '0')) {
-			if (!safari.self.tab.canLoad(beforeLoad, ['special', n, jsblocker.href])) {
-				jsblocker.blocked.special.all.push(n);
-					
-				appendScript(special_actions[n], v);
-			} else
-				jsblocker.allowed.special.all.push(n);
-		};
+	if ((v === true || parseInt(v, 10))) {
+		if (!safari.self.tab.canLoad(beforeLoad, ['special', n, jsblocker.href])) {
+			jsblocker.blocked.special.all.push(n);
+				
+			if (do_append) appendScript(action, v);
+			else action(v);
+		} else
+			jsblocker.allowed.special.all.push(n);
 	}
+}
+
+if (typeof if_setting === 'function') {
+	for (var n in special_actions)
+		doSpecial(1, n, special_actions[n]);
+
+	for (var b in non_injected_special_actions)
+		doSpecial(0, b, non_injected_special_actions[b]);
+}

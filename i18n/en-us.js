@@ -98,9 +98,9 @@ Strings['en-us'] = {
 	'Understood': 'Understood',
 	'Reset JS Blocker': 'Reset JS Blocker',
 	'Leave Settings Alone': 'Leave Settings Alone', // TO BE DELETED
-	'Make a Donation': 'Make a Donation',
+	'Make a Donation': 'Make a Contribution', // UPDATED
 	'Maybe Later': 'Maybe Later',
-	'I\'ve Donated!': 'I\'ve Donated!',
+	'I\'ve Donated!': 'I\'ve Paid!', // UPDATED
 	'Unblocked Script': 'Unblockable Script',
 	'More Info': 'Safety Info',
 	'Unlock': 'Unlock All Features Permanently',
@@ -130,6 +130,7 @@ Strings['en-us'] = {
 	'Main page': 'Main page', // NEW
 	'Prev. frame': 'Prev. frame', // NEW
 	'Next frame': 'Next frame', // NEW
+	'Show Matched Rules': 'Show Matched Rules', // NEW
 	/** /BUTTONS **/
 	
 	/** POPPIES **/
@@ -154,6 +155,12 @@ Strings['en-us'] = {
 	'The temporary rule blocking this item will be removed.': 'The temporary rule blocking this item will be removed.',
 	
 	'Safety Information for {1}': 'Safety Information for {1}',
+	'Matched script Rules': 'Matched Script Rules', // NEW
+	'Matched frame Rules': 'Matched Frame Rules', // NEW
+	'Matched image Rules': 'Matched Image Rules', // NEW
+	'Matched embed Rules': 'Matched Embed & Object Rules', // NEW
+	'Matched video Rules': 'Matched Video Rules', // NEW
+	'Matched special Rules': 'Matched Other Rules', // NEW
 	/** /POPPIES **/
 	
 	/** ERRORS-ISH **/
@@ -218,48 +225,50 @@ Strings['en-us'] = {
 	'font': 'Default webpage font',
 		'font:0': 'Custom font is set to {1}',
 		'font:1': 'Webpage will use its own font.',
+
 	/** /SPECIALS **/
 			
 	/** DONATION STUFF **/
-	'Donator-only Features': 'Donator-only Features', // NEW
-	'Trial remaining {1} days, {2} hours, and {3} minutes': 'You have {1} days, {2} hours, and {3} minutes remaining in your free trial.',
-	'Free trial expired': 'Your free trial has expired. You must make a donation and have it verified in order to continue using the donator-only features of {1}.', // NEW
+	'Donator-only Features': 'Pay-for Features', // NEW
+	'Trial remaining {1} days, {2} hours, and {3} minutes': 'You have {1} days, {2} hours, and {3} minutes remaining in your free trial.', // TO BE DELETED
+	'Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>': 'You have {1} days, {2} hours, and {3} minutes remaining in your trial of the <b>{4}</b>', // UPDATED
+		'donator-only features.': 'pay-for features.',
+	'Free trial expired': 'Your free trial has expired. You must make a contribution and have it verified in order to continue using the pay-for features of {1}.', // NEW
 	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
 	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
-	'Please, if you can': 'Please, if you can, show your support by making a donation of any amount. ' +
-			'It would be greatly appreciated and will encourage me to create an even better product.',
-	'Donation Verification': 'Donation Verification',
-	'To complete the unlocking': 'To complete the unlocking process, you must have made a donation. Please note that ' +
-			'it may take up to 24 hours for your PayPal email address to become active on the server.',
+	'Please, if you can': 'Please, if you can, show your support by making a contribution of any amount. ' +
+			'It would be greatly appreciated and will encourage me to create an even better product.', // UPDATED
+	'Donation Verification': 'Payment Verification', // UPDATED
+	'To complete the unlocking': 'To unlock all features permanently, you must enter the email address you used to make your payment. Please note that ' +
+			'it may take up to 24 hours for it to become active on the server.', // UPDATED
 	'PayPal Email Address': 'PayPal Email Address',
 	'An email address was not specified.': 'An email address was not specified.',
-	'A donation with that email address was not found.': 'A donation with that email address was not found.',
+	'A donation with that email address was not found.': 'A contribution with that email address was not found.', // UPDATED
 	'The maximum number': 'The maximum number of activations has been used for that email address.',
-	'Your donation has been verified': 'Your donation has been verified and all features have been unlocked.',
+	'Your donation has been verified': 'Your payment has been verified and all features have been unlocked.', // UPDATED
 	'You may unlock {1}': 'You may unlock JavaScript Blocker on {1} more copies of Safari.',
 	'Thanks for your support!': 'Thanks for your support!',
 	'All features are already unlocked.': 'All features are already unlocked.',
-	'Donation Required': 'A verified donation is required to use that feature. Click "Unlock All Features Permanently" from the main window to do so.',
-	"I can't donate": "I can't donate",
-	'What donation?': 'What donator-only features are there?',
-	'You cannot use JavaScript Blocker': 'You cannot use JavaScript Blocker with expert features enabled until you have made a donation and had it verified.',
-	'Either disable expert': 'Either disable expert features or click <b>{1}</b> below to verify your donation.',
-	'New donation method {1}': 'Due to many complaints about features not remaining unlocked, a new donation verification system has been created. Please click <b>{1}</b> to verify your donation one final time.',
+	'Donation Required': 'A verified contribution is required to use that feature. Click "Unlock All Features Permanently" from the main window to do so.', // UPDATED
+	"I can't donate": "I can't contribute", // UPDATED
+	'What donation?': 'What pay-for features are there?', // UPDATED
+	'You cannot use JavaScript Blocker': 'You cannot use JavaScript Blocker with expert features enabled until you have made a contribution and had it verified.', // UPDATED
+	'Either disable expert': 'Either disable expert features or click <b>{1}</b> below to verify your contribution.', // UPDATED
+	'New donation method {1}': 'Due to many complaints about features not remaining unlocked, a new payment verification system has been created. Please click <b>{1}</b> to verify your payment one final time.', // UPDATED
 	/** /DONATION **/
 	
 	/** SETTINGS - NEW **/
 	'JavaScript Blocker Settings': 'JavaScript Blocker Settings',
 	'Once any of these features are active, they can be disabled on a per-domain basis. They will appear in the main window under <b>OTHER</b> and will not count towards the amount of blocked/allowed resources.':
-		'Once any of these features are active, they can be disabled on a per-domain basis. They will appear in the main window under <b>OTHER</b> and will not count towards the amount of blocked/allowed resources.',
+		'Once any of the following features are active, they can be disabled on a per-domain basis. They will appear in the main window under <b>OTHER</b> and will not count towards the amount of blocked/allowed resources.',
 	
 	// Toolbar items
 	'User Interface': 'User Interface',
-	//'Rules': 'Rules', // already localized
 	'Other Features': 'Other Features',
 	'Search': 'Search',
 	'About': 'About',
 	
-	'Donator-only features': 'Donator-only features', // Header displayed above the section containing donator-only features.
+	'Donator-only features': 'Pay-for features', // Header displayed above the section containing donator-only features.
 	
 	'Language:': 'Language:',
 	'Sources displayed by default:': 'Sources displayed by default:',
@@ -267,7 +276,9 @@ Strings['en-us'] = {
 	'Use animations': 'Use animations',
 	'Use floating headers': 'Use floating headers',
 	'Use a large font': 'Use a large font',
+	'Highlight items that matched a rule': 'Highlight items that matched a rule', // NEW
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
+	'Hide donator-only features': 'Hide pay-for features', // NEW
 	'Show the number of items blocked or allowed for each host': 'Show the number of items blocked or allowed for each host',
 	'Theme:': 'Theme:',
 	'Enable expert features to block individual items instead of full hosts': 'Enable expert features to block individual items instead of full hosts',
@@ -298,14 +309,16 @@ Strings['en-us'] = {
 	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete', // NEW
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
-	
+
+	'The short URL—{1}—is redirecting you to: {2} {3} Do you want to continue?':
+		"The short URL—{1}—is redirecting you to:\n\n{2}\n{3}\n\nDo you want to continue?", // NEW
+
 	'Search Results': 'Search Results', // Header displayed in the search panel.
 	
 	'Other…': 'Other…', // Generic option
-	'Custom Option': 'Custom Option', // <optgroup> label
 	
 	// Zoom
-	'Enter a custom zoom level to use.': 'Enter a custom zoom level to use. Do not include the % symbol.',
+	'Enter a custom zoom level to use.': 'Enter a custom zoom level to use. Do not include the % symbol.', // When "Other..."
 	
 	// Font size
 	'Normal': 'Normal',
@@ -334,7 +347,7 @@ Strings['en-us'] = {
 	'Arial': 'Arial', // do not localize
 	'Times': 'Times', // do not localize
 	'Comic Sans MS': 'Comic Sans MS', // do not localize
-	'Enter a custom font to use.': 'Enter a custom font to use.',
+	'Enter a custom font to use.': 'Enter a custom font to use.', // When "Other..."
 	
 	// Automatically block items from...
 	'Different hostnames': 'Different hostnames',
@@ -346,9 +359,18 @@ Strings['en-us'] = {
 		'EXPERIMENTAL: Enable full referrer blocking. This will only work on GET requests in the main window. Inline frames will not ' +
 		'have referrer headers blocked due to a limitation of Safari. You can <b><a href="javascript:void(0);" id="search-simple">enable simple referrer blocking</a></b> to help ' +
 		'block some in these cases. This setting may cause a loop when trying to navigate back/forward.',
-	
+
+	// Short URL stuff - NEW
+	'Confirm short URL redirects before they occur': 'Show a confirmation dialog before navigating to a short URL', // NEW
+	'confirmShortURL confirm': 'Before navigating to a short URL, it will be sent to LongURL.org to determine where it will redirect to. ' +
+		'This cannot be done in JavaScript. No identifiable information is sent; just the URL ' +
+		'that needs to be examined. You may view their privacy policy at: http://longurl.org/privacy-policy' +
+		"\n\nAre you sure you want to enable this feature?", // NEW
+	'You cannot enable confirmShortURL': 'Your computer seems to be having problems connecting to the server needed for URL examination. ' +
+		'Please check your firewall and/or Little Snitch settings and try again. If everything seems okay, the server itself may be down temporarily.', // NEW
+
 	'These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.':
-		'These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.',
+		'These actions are permanent and cannot be undone. If you are a paid user, backup your rules before proceeding.',
 	
 	'Reset all settings to their default values:': 'Reset all settings to their default values:', // label
 	'Reset Settings': 'Reset Settings', // button
@@ -357,18 +379,19 @@ Strings['en-us'] = {
 	'Remove Rules': 'Remove Rules', // button
 	'All rules have been removed.': 'All rules have been removed.', // popup
 	
+	'highlight help': 'Whitelist matches appear in green, blacklist matches in red, and standard rules in gray.', // NEW
 	'contextmenu_overrides help': 'Other extensions not being able to create custom menu items is an unfortunate side effect and cannot be prevented.', // NEW
 	'showPerHost help': 'With this option enabled, you will be able to click on the number next to the host to show each item associated with it.',
 	'showUnblocked help': 'Some scripts on webpages are embedded in the page itself rather than loaded from an external resource. These scripts cannot be blocked and will always execute.',
 	'alwaysBlock help': [
 		'<p>If you visit "www.example.com"…</p>',
 		'<p><b>Different hostnames</b> will allow "dif.example.com", ',
-				'"www.example.com/", and "example.com".</p>',
+				'"www.example.com", and "example.com".</p>',
 		'<p><b>Different hosts & subdomains</b> will allow only "www.example.com".</p>',
 		'<p><b>Nowhere</b> will allow everything.</p>',
 		'<p><b>Anywhere</b> will allow nothing.</p>'].join(''),
 		
-	'simpleReferrer help': 'Adds the attribute <b>rel="noreferrer"</b> to anchor tags.', // <b>rel="noreferrer"</b>; do not localize.
+	'simpleReferrer help': 'Adds the attribute <b>rel="noreferrer"</b> to anchor tags.', // <b>rel="noreferrer"</b> = do not localize.
 	'enableimage help': 'This will <b>not</b> prevent the network request from being made on images. It will only hide it in the DOM. ' +
 		'This is a Safari limitation and there is nothing that can be done to prevent it from loading.'
 	/** /SETTINGS **/
