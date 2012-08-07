@@ -24,16 +24,19 @@ p.misc-info select {
 	
 #domain-script,
 #domain-picker {
-	max-width: 240px;
+	max-width: 310px;
 }
 	body.simple #domain-script,
 	body.simple #domain-picker {
-		max-width: 190px;
+		max-width: 240px;
 	}
 
 select {
 	background-position: right 1px, left top, left top;
 }
+	p.misc-info select {
+		background-position: right 2px, left top, left top;
+	}
 
 input,
 button,
@@ -66,18 +69,27 @@ header h3 {
 		font-size: 13px;
 	}
 
-#disable,
-#view-rules,
-#unlock,
-#switch-interface,
-#js-settings,
-#js-help {
+#disclaimer input {
 	font-size: 8pt;
 }
 
 #poppy #rule-input {
-	width: 355px;
+	width: 435px;
 }
 	body.simple #poppy #rule-input {
-		width: 255px;
+		width: 335px;
 	}
+	body.simplified #poppy #rule-input {
+		width: 302px;
+	}
+
+#main .item-list-container select {
+	left: -3px;
+	max-width: 195px;
+}
+	#main .item-list-container .rule-input {
+		max-width: 234px;
+	}
+#main .some-helper {
+	font-size: 9pt;
+}

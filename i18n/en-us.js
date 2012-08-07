@@ -37,9 +37,19 @@ Strings['en-us'] = {
 	'Done': 'Done',
 	'{1} matches': '{1} matches', // {1} = Number of items found using the find bar (Cmd+F)
 	'Allow': 'Allow',
-	'Allow All': 'Allow All',
-	'Block All': 'Block All',
+	'Allow/Hide': 'Allow or Hide', // NEW
+	'Allow All': 'Allow or Hide All', // UPDATED
+	'Allow…': 'Allow or Hide…', // NEW
+	'Allow Some': 'Allow or Hide Some', // NEW
+	'Block All': 'Block or Hide All',
+	'Block…': 'Block or Hide…', // NEW
 	'Block': 'Block',
+	'Block/Hide': 'Block or Hide', // NEW
+	'Block Some': 'Block or Hide Some', // NEW
+	'Some': 'Some', // NEW
+	'All': 'All', // NEW
+	'{1} selected items': '{1} selected items', // NEW - Block/Allow/Hide selected items
+	'{1} All': '{1} All', // NEW
 	'Block scripts manually': 'Allow scripts that originate within the same domain',
 	'Block frames unless': 'Block inline frames not originating within the same domain',
 	'Enable embed blocker': 'Enable embed, object, and video blocker',
@@ -60,6 +70,8 @@ Strings['en-us'] = {
 	'Delete': 'Delete',
 	'Restore': 'Restore',
 	'Save': 'Save',
+	'Show Hidden': 'Show Hidden', // NEW
+	'Hide Hidden': 'Hide Hidden', // NEW
 	'Rules': 'Rules',
 	'Edit Rule': 'Edit Rule',
 	'New Rule': 'New Rule',
@@ -73,7 +85,7 @@ Strings['en-us'] = {
 			'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.',
 	'Close Rules List': 'Close Rules',
 	'Close': 'Close',
-	'Reinstall Whitelist & Blacklist': 'Reinstall Whitelist & Blacklist',
+	'Reinstall whitelist and blacklist rules:': 'Reinstall whitelist and blacklist rules:', // CHANGED
 	'Show All': 'Show All',
 	'Show Active': 'Show Active',
 	'Show': 'Show',
@@ -105,6 +117,7 @@ Strings['en-us'] = {
 	'More Info': 'Safety Info',
 	'Unlock': 'Unlock All Features Permanently',
 	'Temporary rule': 'Make this a temporary rule',
+	'Make these temporary rules': 'Make these temporary rules', // NEW
 	'Make Temporary Rules Permanent': 'Make Temporary Rules Permanent',
 	'Remove Temporary Rules': 'Remove Temporary Rules',
 	'Active Temporary Rules': 'Active Temporary Rules',
@@ -120,12 +133,25 @@ Strings['en-us'] = {
 	'Embeds': 'Embeds & objects',
 	'Videos': 'Videos', // NEW
 	'Specials': 'Other',
+
+	'scripts': 'scripts', // NEW
+	'frames': 'frames', // NEW
+	'images': 'images', // NEW
+	'embeds': 'embeds and objects', // NEW
+	'videos': 'videos', // NEW
+	'specials': 'Other',
 	'Frame Rules': 'Frame Rules',
 	'Script Rules': 'Script Rules',
 	'Embed Rules': 'Embed & Object Rules',
 	'Video Rules': 'Video Rules', // NEW
 	'Image Rules': 'Image Rules',
 	'Special Rules': 'Other Rules',
+	'Hide_script Rules': 'Hide-Script Rules', // NEW
+	'Hide_frame Rules': 'Hide-Frame Rules', // NEW
+	'Hide_embed Rules': 'Hide-Embed-&-Object Rules', // NEW
+	'Hide_video Rules': 'Hide-Video Rules', // NEW
+	'Hide_image Rules': 'Hide-Image Rules', // NEW
+	'Hide_special Rules': 'Hide-Other Rules', // NEW
 	'Forgot': 'iForgot',
 	'Main page': 'Main page', // NEW
 	'Prev. frame': 'Prev. frame', // NEW
@@ -139,6 +165,7 @@ Strings['en-us'] = {
 	'All temporary rules have been removed.': 'All temporary rules have been removed.',
 	'Rule succesfully edited.': 'Rule succesfully edited.',
 	'Rule succesfully added for {1}': 'Rule succesfully added for <b>{1}</b>', // {1} = domain name
+	'Rule succesfully moved to {1}': 'Rule succesfully moved to <b>{1}</b>', // {1} = domain name NEW
 	'Changes will appear when you reload the rules list.': 'Changes will appear when you reload the rules list.',
 	'Loading script': 'Loading script&hellip;',
 	'Loading frame': 'Loading frame&hellip;',
@@ -146,6 +173,7 @@ Strings['en-us'] = {
 	'Loading object': 'Loading object&hellip;',
 	'Loading image': 'Loading image&hellip;',
 	'Copy above': 'Copy the above and save it to a file to create a backup.',
+	'Copy below': 'Copy the below and save it to a file to create a backup.',
 	'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
 	'Error importing': 'Error importing rules.',
 	
@@ -161,6 +189,8 @@ Strings['en-us'] = {
 	'Matched embed Rules': 'Matched Embed & Object Rules', // NEW
 	'Matched video Rules': 'Matched Video Rules', // NEW
 	'Matched special Rules': 'Matched Other Rules', // NEW
+
+	'Nothing is hidden': 'Nothing is hidden.', // NEW
 	/** /POPPIES **/
 	
 	/** ERRORS-ISH **/
@@ -168,18 +198,53 @@ Strings['en-us'] = {
 	'Predefined rules cannot be edited.': 'Predefined rules cannot be edited. ',
 	'Update Failure': 'Information about the current webpage is outdated or unavailable, possibly due to a bug with Safari. Reloading the page may resolve the issue.', // UPDATED
 	'Unable to view source of embedded items.': 'Unable to view source of embedded items.',
+
+	'Unblockable frame': 'This frame\'s source cannot be blocked because it is the result of a navigation event that occurred from ' +
+		'the original URL. The original URL may appear as "blank" or "about:blank"; blocking that instead may work.', // NEW
 	/** /ERRORS-ISH **/
 	
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
-	'Adding a Rule For {1}': 'Adding a Rule For <b>{1}</b>', // {1} = domain name
-	'Editing a Rule For {1}': 'Editing a Rule For <b>{1}</b>', // *
-	'Adding a Script Rule': 'Adding a Script Rule',
-	'Adding a Frame Rule': 'Adding a Frame Rule',
-	'Adding a Embed Rule': 'Adding an Embed & Object Rule', // UPDATED
-	'Adding a Video Rule': 'Adding a Video Rule', // NEW
-	'Adding a Image Rule': 'Adding an Image Rule',
-	'Adding a Special Rule': 'Adding a Rule', 
-	
+	'Adding a Rule For {1}': 'Adding a Rule For {1}', // {1} = domain name
+	'Editing a Rule For {1}': 'Editing a Rule For {1}', // *
+	'Adding a script Rule': 'Adding a Script Rule',
+	'Adding a frame Rule': 'Adding a Frame Rule',
+	'Adding a embed Rule': 'Adding an Embed & Object Rule', // UPDATED
+	'Adding a video Rule': 'Adding a Video Rule', // NEW
+	'Adding a image Rule': 'Adding an Image Rule',
+	'Adding a special Rule': 'Adding a Rule',
+	'Adding a hide_script Rule': 'Adding a Hide-Script Rule', // NEW
+	'Adding a hide_frame Rule': 'Adding a Hide-Frame Rule', // NEW
+	'Adding a hide_embed Rule': 'Adding a Hide-Embed-&-Object Rule', // NEW
+	'Adding a hide_video Rule': 'Adding a Hide-Video Rule', // NEW
+	'Adding a hide_image Rule': 'Adding a Hide-Image Rule', // NEW
+	'Adding a hide_special Rule': 'Adding a Hide-Other Rule', // NEW
+
+	'Adding a script Rule For {1}': 'Adding a Script Rule For {1}',
+	'Adding a frame Rule For {1}': 'Adding a Frame Rule For {1}',
+	'Adding a embed Rule For {1}': 'Adding an Embed & Object Rule For {1}', // UPDATED
+	'Adding a video Rule For {1}': 'Adding a Video Rule For {1}', // NEW
+	'Adding a image Rule For {1}': 'Adding an Image Rule For {1}',
+	'Adding a special Rule For {1}': 'Adding an Other Rule For {1}',
+	'Adding a hide_script Rule For {1}': 'Adding a Hide-Script Rule For {1}', // NEW
+	'Adding a hide_frame Rule For {1}': 'Adding a Hide-Frame Rule For {1}', // NEW
+	'Adding a hide_embed Rule For {1}': 'Adding a Hide-Embed-&-Object Rule For {1}', // NEW
+	'Adding a hide_video Rule For {1}': 'Adding a Hide-Video Rule For {1}', // NEW
+	'Adding a hide_image Rule For {1}': 'Adding a Hide-Image Rule For {1}', // NEW
+	'Adding a hide_special Rule For {1}': 'Adding a Hide-Other Rule For {1}', // NEW
+
+	'Editing a script Rule For {1}': 'Editing a Script Rule For {1}',
+	'Editing a frame Rule For {1}': 'Editing a Frame Rule For {1}',
+	'Editing a embed Rule For {1}': 'Editing an Embed & Object Rule For {1}', // UPDATED
+	'Editing a video Rule For {1}': 'Editing a Video Rule For {1}', // NEW
+	'Editing a image Rule For {1}': 'Editing an Image Rule For {1}',
+	'Editing a special Rule For {1}': 'Editing an Other Rule For {1}',
+	'Editing a hide_script Rule For {1}': 'Editing a Hide-Script Rule For {1}', // NEW
+	'Editing a hide_frame Rule For {1}': 'Editing a Hide-Frame Rule For {1}', // NEW
+	'Editing a hide_embed Rule For {1}': 'Editing a Hide-Embed-&-Object Rule For {1}', // NEW
+	'Editing a hide_video Rule For {1}': 'Editing a Hide-Video Rule For {1}', // NEW
+	'Editing a hide_image Rule For {1}': 'Editing a Hide-Image Rule For {1}', // NEW
+	'Editing a hide_special Rule For {1}': 'Editing a Hide-Other Rule For {1}', // NEW
+
 	/** MISC HEADERS **/
 	'{1} domain, {2} rule': '{1} domain, {2} rule', // {1} = number of domains in list, {2} = number of rules in list
 	'{1} domain, {2} rules': '{1} domain, {2} rules', // *
@@ -202,6 +267,35 @@ Strings['en-us'] = {
 	'This may inadvertently affect other scripts.': 'This may inadvertently affect other scripts.',
 	'You can also create a new rule to affect just this one.': 'You can also create a new rule to affect just this one.',
 	/** /INFO **/
+
+	/** RULE STUFF - NEW **/
+	'HTTP': 'non-secure',
+	'HTTPS': 'secure',
+	'SAFARI-EXTENSION': 'Safari extension',
+	'ABOUT': '',
+	'DATA': 'data URI',
+	'JAVASCRIPT': 'JavaScript URI',
+	'Temporarily': 'Temporarily',
+	'allow': 'allow',
+	'block': 'block',
+	'hide': 'hide',
+	'within': 'within',
+	'from': 'from',
+	'matching': 'matching',
+	'others matching': 'others matching',
+	'all others': 'all others',
+	'and': 'and',
+	'all': 'all',
+
+	// Temporarily allow secure scripts from google.com
+	// Allow insecure scripts from google.com
+	// Allow insecure scripts within google.com
+	// Temporarily block secure scripts from google.com
+	// Hide insecure and secure scripts from google.com
+	// Hide Safari extension, secure and insecure scripts within google.com
+	// Allow others matching ^window_resize$
+	// Allow window resize fucntions
+	// Block scripts matching ^http:\/\/google\.com\/.*$
 	
 	/** SPECIALS (Other Features) **/
 	'alert_dialogs': 'Modal alert dialogs',
@@ -276,10 +370,12 @@ Strings['en-us'] = {
 	'Use animations': 'Use animations',
 	'Use floating headers': 'Use floating headers',
 	'Use a large font': 'Use a large font',
+	'Use simplified rules': 'Use simplified rules', // NEW
 	'Highlight items that matched a rule': 'Highlight items that matched a rule', // NEW
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
 	'Hide donator-only features': 'Hide pay-for features', // NEW
-	'Show the number of items blocked or allowed for each host': 'Show the number of items blocked or allowed for each host',
+	'Show the number of items blocked or allowed for each host': 'Show the number of items blocked/allowed per host',
+	'Show whitelist and blacklist rules in the rule list': 'Show whitelist and blacklist rules in the rule list', // NEW
 	'Theme:': 'Theme:',
 	'Enable expert features to block individual items instead of full hosts': 'Enable expert features to block individual items instead of full hosts',
 	'Ignore whitelist rules': 'Ignore whitelist rules',
@@ -318,7 +414,7 @@ Strings['en-us'] = {
 	'Other…': 'Other…', // Generic option
 	
 	// Zoom
-	'Enter a custom zoom level to use.': 'Enter a custom zoom level to use. Do not include the % symbol.', // When "Other..."
+	'Enter a custom zoom level to use.': 'Enter a custom zoom level to use. Do not include the % symbol.', // Pops up when "Other..." is clicked
 	
 	// Font size
 	'Normal': 'Normal',
@@ -341,13 +437,14 @@ Strings['en-us'] = {
 	'Textured Metal': 'Textured Metal',
 	'OS X Lion': 'OS X Lion',
 	'Blue Linen': 'Blue Linen',
+	'Twilight (Incomplete)': 'Twilight (Incomplete)', // NEW
 	
 	// Font selection
 	'Helvetica': 'Helvetica', // do not localize
 	'Arial': 'Arial', // do not localize
 	'Times': 'Times', // do not localize
 	'Comic Sans MS': 'Comic Sans MS', // do not localize
-	'Enter a custom font to use.': 'Enter a custom font to use.', // When "Other..."
+	'Enter a custom font to use.': 'Enter a custom font to use.', // Pops up when "Other..." is clicked
 	
 	// Automatically block items from...
 	'Different hostnames': 'Different hostnames',
@@ -356,9 +453,10 @@ Strings['en-us'] = {
 	'Anywhere': 'Anywhere',
 	
 	'EXPERIMENTAL: Enable full referrer blocking':
-		'EXPERIMENTAL: Enable full referrer blocking. This will only work on GET requests in the main window. Inline frames will not ' +
+		'EXPERIMENTAL: Enable full referrer blocking', // UPDATED
+	'blockReferrer help': 'This will only work on GET requests in the main window. Inline frames will not ' +
 		'have referrer headers blocked due to a limitation of Safari. You can <b><a href="javascript:void(0);" id="search-simple">enable simple referrer blocking</a></b> to help ' +
-		'block some in these cases. This setting may cause a loop when trying to navigate back/forward.',
+		'block some in these cases. This setting may cause a loop when trying to navigate back/forward.', // NEW
 
 	// Short URL stuff - NEW
 	'Confirm short URL redirects before they occur': 'Show a confirmation dialog before navigating to a short URL', // NEW
@@ -370,7 +468,7 @@ Strings['en-us'] = {
 		'Please check your firewall and/or Little Snitch settings and try again. If everything seems okay, the server itself may be down temporarily.', // NEW
 
 	'These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.':
-		'These actions are permanent and cannot be undone. If you are a paid user, backup your rules before proceeding.',
+		'These actions are permanent and cannot be undone. If you are a paid user, create a backup before proceeding.',
 	
 	'Reset all settings to their default values:': 'Reset all settings to their default values:', // label
 	'Reset Settings': 'Reset Settings', // button
@@ -378,6 +476,25 @@ Strings['en-us'] = {
 	'Remove all rules:': 'Remove all rules:', // label
 	'Remove Rules': 'Remove Rules', // button
 	'All rules have been removed.': 'All rules have been removed.', // popup
+	'Rule removed.': 'Rule removed.',
+
+	'Reinstall': 'Reinstall', // reinstall WL and BL
+
+	'Convert non-simplified rules:': 'Convert non-simplified rules:', // NEW
+	'Convert Rules': 'Convert Rules', // NEW
+	'Rules converted.': 'All rules have been successfully converted. Please review the newly created rules.', // NEW
+	'Some rules could not be converted {1}': 'Some rules could not be converted {1} Please review the newly created rules.',
+
+	'Full backup description': 'Creating a full backup will <b>not</b> include the donation verification. You may have to re-verify ' + 
+		'after importing a backup. All existing settings and rules will be removed when importing a backup.', // NEW
+	'Create a full backup:': 'Create a full backup:', // NEW
+	'Import a full backup:': 'Import a full backup:', // NEW
+	'Create Backup': 'Create Backup', // NEW
+	'Import Backup': 'Import Backup', // NEW
+	'Error importing backup': 'Error importing backup', // NEW
+	'Paste your backup below': 'Paste the contents of your backup and click OK. Current settings and rules will be replaced and you ' +
+		'may have to re-verify your donation if applicable.', // NEW
+	'Your backup has been successfully restored.': 'Your backup has been successfully restored.', // NEW
 	
 	'highlight help': 'Whitelist matches appear in green, blacklist matches in red, and standard rules in gray.', // NEW
 	'contextmenu_overrides help': 'Other extensions not being able to create custom menu items is an unfortunate side effect and cannot be prevented.', // NEW
@@ -393,6 +510,13 @@ Strings['en-us'] = {
 		
 	'simpleReferrer help': 'Adds the attribute <b>rel="noreferrer"</b> to anchor tags.', // <b>rel="noreferrer"</b> = do not localize.
 	'enableimage help': 'This will <b>not</b> prevent the network request from being made on images. It will only hide it in the DOM. ' +
-		'This is a Safari limitation and there is nothing that can be done to prevent it from loading.'
+		'This is a Safari limitation and there is nothing that can be done to prevent it from loading.',
+	'simplifiedRules help': 'Rules will be displayed in the rule list in plain English without the complexity of regular expressions. ' +
+		'Because rules are saved differently when this option is enabled, existing rules must be converted before they can be used. ' +
+		'This can be done from the About tab and choosing Convert Rules.',
+	'convertRules help': 'This will attempt to convert rules created using the non-expert UI (with simplified rules disabled) into simplified ones. Any custom or edited rules may not be converted ' +
+		'and will have to be re-added manually when using the simplified rules UI. Any existing rules will remain untouched.',
+	'Settings page requirements': 'You have to allow scripts from the host <b>com.toggleable.JavaScriptBlocker-6S8J5HV3H4</b> (or <b>com.toggleable.JavaScriptBlockerBeta-6S8J5HV3H4</b> ' +
+		'if using the beta) in order for the settings page to function.' // NEW
 	/** /SETTINGS **/
 };

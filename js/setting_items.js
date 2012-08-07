@@ -12,6 +12,24 @@ Settings.settings = {
 		enablespecial: {
 			default: true
 		},
+		enablehide_script: {
+			default: true
+		},
+		enablehide_embed: {
+			default: true
+		},
+		enablehide_video: {
+			default: true
+		},
+		enablehide_image: {
+			default: true
+		},
+		enablehide_special: {
+			default: true
+		},
+		enablehide_frame: {
+			default: true
+		},
 		installID: {
 			default: false
 		},
@@ -28,15 +46,22 @@ Settings.settings = {
 			setting: true,
 			default: true
 		},
-		floaters: {
+	/*	floaters: {
 			label: 'Use floating headers',
 			setting: true,
 			default: true
-		},
+		},*/
 		largeFont: {
 			label: 'Use a large font',
 			setting: false,
 			default: false
+		},
+		simplifiedRules: {
+			label: 'Use simplified rules',
+			setting: false,
+			if_setting: ['simpleMode', true],
+			help: _('simplifiedRules help'),
+			default: true
 		},
 		highlight: {
 			label: 'Highlight items that matched a rule',
@@ -55,7 +80,12 @@ Settings.settings = {
 			label: 'Show scripts that can\'t be blocked',
 			setting: false,
 			help: _('showUnblocked help'),
-			default: false,
+			default: false
+		},
+		showWLBLRules: {
+			label: 'Show whitelist and blacklist rules in the rule list',
+			setting: true,
+			default: true,
 			divider: 1
 		},
 		language: {
@@ -66,7 +96,7 @@ Settings.settings = {
 		sourceCount: {
 			label: 'Sources displayed by default:',
 			setting: [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [99999999, 'All of them']],
-			default: '3'
+			default: '99999999'
 		},
 		toolbarDisplay: {
 			label: 'Toolbar badge shows number of:',
@@ -76,7 +106,7 @@ Settings.settings = {
 		},
 		theme: {
 			label: 'Theme:',
-			setting: [['default', 'Default'], ['metal', 'Textured Metal'], ['lion', 'OS X Lion'], ['linen', 'Blue Linen']],
+			setting: [['default', 'Default'], ['metal', 'Textured Metal'], ['lion', 'OS X Lion'], ['linen', 'Blue Linen'], ['twilight', 'Twilight (Incomplete)']],
 			donator: 1,
 			divider: 1,
 			default: 'default',
@@ -116,14 +146,8 @@ Settings.settings = {
 		allowExtensions: {
 			label: 'Automatically allow resources from other extensions',
 			setting: true,
-			default: true
-		},
-		simpleReferrer: {
-			label: 'Prevent links on webpages from sending referrer information',
-			setting: false,
 			divider: 1,
-			help: _('simpleReferrer help'),
-			default: false
+			default: true
 		},
 		enablescript: {
 			label: 'Enable script blocker',
@@ -229,6 +253,12 @@ Settings.settings = {
 		}
 	},
 	other: {
+		simpleReferrer: {
+			label: 'Prevent links on webpages from sending referrer information',
+			setting: false,
+			help: _('simpleReferrer help'),
+			default: false
+		},
 		confirmShortURL: {
 			label: 'Confirm short URL redirects before they occur',
 			setting: false,
@@ -256,7 +286,8 @@ Settings.settings = {
 			donator: 1,
 			divider: 1,
 			default: false,
-			donator_only: 1
+			donator_only: 1,
+			help: _('blockReferrer help')
 		},
 		enable_special_alert_dialogs: {
 			label: 'Display alert() messages within the webpage instead of a popup dialog',
@@ -321,14 +352,36 @@ Settings.settings = {
 			classes: 'description',
 			divider: 1
 		},
+		reinstallWLBL: {
+			label: 'Reinstall whitelist and blacklist rules:',
+			setting: 'Reinstall',
+			description: _('These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.')
+		},
 		resetSettings: {
 			label: 'Reset all settings to their default values:',
-			setting: 'Reset Settings',
-			description: _('These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.')
+			setting: 'Reset Settings'
 		},
 		removeRules: {
 			label: 'Remove all rules:',
-			setting: 'Remove Rules'
+			setting: 'Remove Rules',
+		},
+		convertRules: {
+			label: 'Convert non-simplified rules:',
+			setting: 'Convert Rules',
+			divider: 1,
+			help: _('convertRules help')
+		},
+		createBackup: {
+			label: 'Create a full backup:',
+			setting: 'Create Backup',
+			donator: 1,
+			donator_only: 1,
+			description: _('Full backup description')
+		},
+		importBackup: {
+			label: 'Import a full backup:',
+			setting: 'Import Backup',
+			donator_only: 1
 		}
 	},
 	search: {

@@ -33,12 +33,8 @@ textarea {
 		select:active {
 			background: url(../images/select-arrows.png) no-repeat right top, url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #CCC, #E7E7E7) left top;
 		}
-#disable,
-#view-rules,
-#switch-interface,
-#js-settings,
-#js-help,
-#unlock {
+
+#disclaimer input {
 	border-color: #979797;
 }
 
@@ -56,7 +52,7 @@ p.misc-info select {
 		background: url(../images/select-arrows.png) no-repeat 100% top, url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #CCC, #E7E7E7) left top;
 	}
 ul li span.https,
-#domain-script.https {
+select.https {
 	color: #815808;
 }
 ul li small {

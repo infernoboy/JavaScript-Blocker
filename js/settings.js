@@ -88,7 +88,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 			}, [c, nh, s, self]);
 		});
 		
-		$(document.body).on('click', 'a', function (e) {
+		$(document).on('click', 'a', function (e) {
 			e.stopImmediatePropagation();
 			
 			var h = this.getAttribute('href');
@@ -98,10 +98,10 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 				$(window.location.hash).click();
 				return true;
 			}
-			
+
 			switch (this.id) {
 				case 'search-simple':
-					$('#for-search input').val(_(Settings.settings.predefined.simpleReferrer.label)).trigger('search');
+					$('#for-search input').val(_(Settings.settings.other.simpleReferrer.label)).trigger('search');
 				break;
 			}
 		});
@@ -149,8 +149,77 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 				break;
 				
 				case 'removeRules':
-					Settings.set_value('Rules', null);
+					Settings.set_value(null, 'Rules', '{}');
+					Settings.set_value(null, 'SimpleRules', '{}');
 					alert(_('All rules have been removed.'));
+				break;
+
+				case 'reinstallWLBL':
+					safari.self.tab.dispatchMessage('reinstallWLBL');
+
+					alert(_('Whitelist and blacklist rules have been reinstalled.'), 'reinstallWLBL');
+				break;
+
+				case 'createBackup':
+					if (Settings.invalid_donation_setting()) {
+						alert(_('Donation Required'));
+						break;
+					}
+
+					var all_settings = $.extend({}, Settings.items), settings = {},
+							ignore = ['donationVerified', 'trialStart', 'installID', 'installedBundle'];
+
+					for (var setting in all_settings) {
+						if (~ignore.indexOf(setting)) continue;
+
+						settings[setting] = Settings.current_value(setting);
+					}
+
+					alert('<textarea readonly>' + JSON.stringify({
+						settings: settings,
+						rules: Settings.current_value('Rules') || '{}',
+						simpleRules: Settings.current_value('SimpleRules') || '{}'
+					}) + '</textarea>', _('Copy below'));
+
+					var ta = document.querySelector('.jsblocker-alert textarea');
+
+					ta.focus();
+					ta.selectionStart = 0;
+					ta.selectionEnd = ta.value.length;
+				break;
+
+				case 'importBackup':
+					if (Settings.invalid_donation_setting()) {
+						alert(_('Donation Required'));
+						break;
+					}
+
+					var inp = prompt(_('Paste your backup below'));
+
+					if (!inp) break;
+
+					try {
+						var js = JSON.parse(inp);
+
+						if (!('settings' in js) || !('rules' in js)) throw 'Invalid backup data.';
+
+						Settings.set_value(null, 'Rules', js.rules || '{}');
+						Settings.set_value(null, 'SimpleRules', js.simpleRules || '{}');
+
+						for (var setting in js.settings)
+							Settings.set_value(null, setting, js.settings[setting], 1);
+
+						alert(_('Your backup has been successfully restored.'));
+					} catch (e) {
+						alert(e.toString(), _('Error importing backup'));
+					}
+				break;
+
+				case 'convertRules':
+					var re = safari.self.tab.canLoad(beforeLoad, ['convert_rules']);
+
+					if (re === true) alert(_('Rules converted.'), 'convertRules');
+					else alert(_('Some rules could not be converted {1}', ['<textarea readonly>' + re + '</textarea>']), 'convertRules');
 				break;
 			}
 		});
@@ -212,7 +281,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 		this._current[setting] = safari.self.tab.canLoad(beforeLoad, ['setting', setting]);
 		return this._current[setting];
 	},
-	set_value: function (group, setting, v) {
+	set_value: function (group, setting, v, no_reload) {
 		safari.self.tab.dispatchMessage('reloadPopover');
 		
 		v = v === 'false' ? false : (v === 'true' ? true : v);
@@ -228,7 +297,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 						else
 							$('#setting-' + set).slideDown(this.current_value('animations') ? 150 : 0.001);
 		
-		if (setting === 'language')
+		if (setting === 'language' && !no_reload)
 			window.location.reload();
 		else if (setting === 'largeFont')
 			$(document.body).toggleClass('large', v);
@@ -250,7 +319,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 			$('<li class="donator" />').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
 
 		if (setting_item.description)
-			$('<li class="description" />').html(setting_item.description).appendTo(sec);
+			$('<li class="description" />').html(setting_item.description).appendTo(sec).toggleClass('disabled', setting_item.donator_only ? this.invalid_donation_setting() : false);
 
 		li = $('<li />').attr({
 			'data-setting': setting,
@@ -280,7 +349,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 			select = $('<select />').attr('disabled', (setting_item.donator_only && this.invalid_donation_setting())).appendTo(set);
 			
 			for (var b = 0; setting_item.setting[b]; b++) {
-				if ((typeof current === 'string' || typeof curent === 'string') && setting_item.setting[b][0].toString() === current.toString()) break;
+				if ((typeof current === 'string' || typeof curent === 'number') && setting_item.setting[b][0].toString() === current.toString()) break;
 				else if (b === setting_item.setting.length - 1) {
 					other = 1;
 					setting_item.setting.push([current, current]);
@@ -302,6 +371,9 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 					'selected': (typeof current === 'string' || typeof curent === 'string') && (current == setting_item.setting[i][0] || current.toString() === setting_item.setting[i][0])
 				}).html(isNaN(parseInt(setting_item.setting[i][1])) ? (!other ? _(setting_item.setting[i][1]) : setting_item.setting[i][1]) : setting_item.setting[i][1]).appendTo(select);
 			}
+
+			if (other)
+				setting_item.setting = setting_item.setting.slice(0, setting_item.setting.length - 1);
 		}
 		
 		if (setting_item.divider)
@@ -347,6 +419,8 @@ if (load_language !== 'en-us' && !(load_language in Strings))
 	$('<script></script>').attr('src', 'i18n/' + load_language + '.js').appendTo(document.head);
 
 $(function () {
+	$('#requirements').remove();
+	
 	Settings.bind_events();
 
 	var section, sec, setting, setting_item, set, select, li, current;
@@ -407,4 +481,4 @@ window.addEventListener('message', function (e) {
 				o[0].apply(null, o[1]);
 		}
 	}
-})
+});

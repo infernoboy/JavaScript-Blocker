@@ -193,12 +193,64 @@ JB.updater = function () {
 				'<p><b>New:</b> Clicking the "?" next to a blocked or allowed item affected by a rule will let you view the matched rules.</p>',
 				'<p><input type="button" id="rawr-ok" value="', _('Understood'), '" /> <input type="button" id="rawr-settings" value="', _('Settings'), '" /></p>'].join(''), function () {
 					_$('#rawr-ok').click(function () {
-						self.donate();
+						self.installedBundle = 85;
+						self.updater();
 						for (var key in self.rules.data_types)
 							self.rules.reinstall_predefined(key);
 					}).siblings('#rawr-settings').click(function () {
 						_$('#js-settings').click();
 					});;
+			}, null, null, true);
+		break;
+
+		case v < 87: // 2.7.0
+			var rs = this.rules.rules, k, d, r;
+
+			for (k in rs)
+				this.rules.reinstall_predefined(k);
+
+		case v < 89: // 2.8.0
+			new Poppy($(this.popover.body).width() / 2, 13, [
+				'<p class="misc-info"><a class="outside" href="http://javascript-blocker.toggleable.com/change-log/280/">Update 2.8.0</a></p>',
+				'<p><b>New:</b> A new UI has been added that makes managing rules even easier. In the rule list, rules will appear in plain English ',
+					'without complex regular expressions. This UI is the default for new installations, but because it requires a new rule set, ',
+					'existing installations will not be upgraded automatically. You must manually update them by clicking Convert Rules. This ',
+					'can also be done from the settings page. To turn on the new rule display, open the settings page and check ',
+					'<b>Use simplified rules</b> under the User Interface tab. The setting will be visible only if expert features are disabled.</p>',
+				'<p>',
+					'<input type="button" id="rawr-ok" value="', _('Understood'), '" /> ',
+					'<input type="button" id="convert-rules" value="', _('Convert Rules'), '" /> ',
+					'<input type="button" id="rawr-settings" value="', _('Settings'), '" />',
+				'</p>'].join(''), function () {
+					_$('#rawr-ok').click(function () {
+						Settings.setItem('simplifiedRules', false);
+						self.donate();
+						for (var key in self.rules.data_types)
+							self.rules.reinstall_predefined(key);
+					}).siblings('#rawr-settings').click(function () {
+						_$('#js-settings').click();
+					}).siblings('#convert-rules').click(function () {
+						var re = self.rules.convert(), message = null;
+
+						if (re === true) message = _('Rules converted.');
+						else message = _('Some rules could not be converted {1}', ['<textarea readonly>' + re + '</textarea>']);
+
+						new Poppy($(self.popover.body).width() / 2, 13, [
+							'<p>', message, '</p>',
+							'<p>',
+								'<input type="button" id="rawr-ok" value="', _('Understood'), '" /> ',
+								'<input type="button" id="rawr-settings" value="', _('Settings'), '" />',
+							'</p>'].join(''), function () {
+								_$('#rawr-ok').click(function () {
+									Settings.setItem('simplifiedRules', false);
+									self.donate();
+									for (var key in self.rules.data_types)
+										self.rules.reinstall_predefined(key);
+								}).siblings('#rawr-settings').click(function () {
+									_$('#js-settings').click();
+								});
+						}, null, null, true);
+					});
 			}, null, null, true);
 		break;
 

@@ -7,32 +7,29 @@ var special_actions = {
 		}, true);
 	},
 	window_resize: function () {
+		var wo = 'window_open_' + +new Date;
+
 		window.resizeBy = function () {};
 		window.resizeTo = function () {};
 		window.moveTo = function () {};
-		window._jsblocker_window_open = window.open;
+		window[wo] = window.open;
 		window.open = function (URL, name, specs, replace) {
-			window._jsblocker_window_open(URL, name, undefined, replace);
+			window[wo](URL, name, undefined, replace);
 		};
 	},
 	alert_dialogs: function () {
 		window.alert = function (a, text) {
 			a = a.toString();
 			
-			var cur_all = document.querySelectorAll('.jsblocker-alert'), top = 0;
+			var cur_all = document.querySelectorAll('.jsblocker-alert'), top = 0,
+					ht = document.createElement('div'),
+					more = parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10) >= 536;
 
-			for (var i = 0; cur_all[i]; i++)
-				top += cur_all[i].offsetHeight - 8;
-			
-			var ht = document.createElement('div'),
-					win = /Win/.test(window.navigator.platform);
-
-			ht.className = 'jsblocker-alert';
 			ht.innerHTML = [
 				'<div class="jsblocker-alert-inner">',
-					'<a href="javascript:void(0);" class="jsblocker-close">x</a>',
-					'<div class="jsblocker-alert-text">', (!text ? a.replace(/</g, '&lt;') : a), '</div>',
+					'<a href="javascript:void(0);" class="jsblocker-close"></a>',
 					'<div class="jsblocker-alert-bg">', (text ? text.replace(/</g, '&lt;') : 'alert()'), '</div>',
+					'<div class="jsblocker-alert-text">', (!text ? a.replace(/</g, '&lt;') : a), '</div>',
 				'</div>'].join('');
 			ht.className = 'jsblocker-alert';
 			ht.id = 'jsblocker-alert-' + (+new Date);
@@ -40,15 +37,64 @@ var special_actions = {
 			document.documentElement.appendChild(ht);
 
 			ht.style.setProperty('top', -ht.offsetHeight + 'px');	
+			ht.style.setProperty('z-index', (cur_all.length ? 90000 - cur_all.length : 90000), 'important');	
 
-			setTimeout(function (ht, top) {
-				ht.style.setProperty('-webkit-transition', 'opacity 0.5s, top 0.5s' + (!win ? ', -webkit-filter 0.4s' : ''));
+			setTimeout(function (ht, now) {
+				var dur = '0.65s, 0.45s' + (more ? ', 0.55s' : '');
+
+				for (var oh = 0; now[oh]; oh++) {
+					now[oh].style.setProperty('-webkit-transition-duration', dur);
+					now[oh].style.setProperty('top', (parseInt(now[oh].style.top, 10) + ht.offsetHeight - 20) + 'px');
+				}
+
+				ht.style.setProperty('-webkit-transition', 'opacity 0.65s, top 0.45s ease-out' + (more ? ', -webkit-filter 0.55s' : ''));
 				ht.style.setProperty('opacity', '1');
-				ht.style.setProperty('top', top + 'px');
+				ht.style.setProperty('top', '0px');
 				ht.querySelector('.jsblocker-alert-inner').style.setProperty('-webkit-transform', 'perspective(200px) rotateX(0deg)');
 			
 				var inn = ht.querySelector('.jsblocker-alert-inner'),
 						cl = ht.querySelector('.jsblocker-close');
+
+				ht.addEventListener('mousewheel', function (event) {
+					if (ht.removed) return;
+
+					if (event.wheelDeltaX) event.preventDefault();
+
+					if (this.disallowMouseWheel || event.wheelDeltaY) return console.log(event.wheelDeltaY);
+
+					clearTimeout(ht.resetTimeout);
+
+					var st = window.getComputedStyle(inn, null),
+							right = parseInt(st.getPropertyValue('right'), 10),
+							del = event.wheelDeltaX * (event.webkitDirectionInvertedFromDevice ? -1 : 1),
+							nright = right + del;
+
+					if (nright > 0) nright = 0;
+
+					var per = 1 - Math.abs(nright) / (ht.clientWidth + 15);
+
+					ht.style.setProperty('-webkit-transition-duration', '0' + dur.substr(4));
+
+					inn.style.setProperty('right', nright + 'px', 'important');
+					ht.style.setProperty('opacity', per, 'important');
+
+					if (per <= 0.1) {
+						ht.removed = 1;
+
+						var event = document.createEvent('HTMLEvents');
+						event.initEvent('click', true, true);
+
+						cl.dispatchEvent(event);
+					} else
+						ht.resetTimeout = setTimeout(function (ht, inn) {
+							inn.style.setProperty('right', '0px', 'important');
+							ht.style.setProperty('opacity', '1', 'important');
+						}, 500, ht, inn);
+
+					setTimeout(function (ht, more, dur) {
+						ht.style.setProperty('-webkit-transition-duration', dur);
+					}, 100, ht, more, dur);
+				}, true);
 				
 				inn.addEventListener('mouseover', function () {
 					cl.style.opacity = 1;
@@ -65,11 +111,16 @@ var special_actions = {
 					for (var i = 0; all[i]; i++)
 						all_fixed.push(all[i].getAttribute('id'));
 
+					all_fixed.reverse();
+
 					all_fixed = all_fixed.slice(all_fixed.indexOf(ht.id) + 1);
 
 					if (cur) {
 						cur.style.setProperty('opacity', '0');
-						cur.style.setProperty('-webkit-filter', 'blur(4px)');
+
+						if (more)
+							cur.style.setProperty('-webkit-filter', 'blur(4px)');
+
 						cur.addEventListener('webkitTransitionEnd', function () {
 							try {
 								cur.parentNode.removeChild(cur);
@@ -81,14 +132,23 @@ var special_actions = {
 						for (var b = 0; all_fixed[b]; b++) {
 							var item = document.getElementById(all_fixed[b]);
 
-							item.style.setProperty('top', (parseInt(item.style.top, 10) - cur.offsetHeight + 8) + 'px');
+							item.disallowMouseWheel = 1;
+
+							item.style.setProperty('-webkit-transition-duration', '0.65s, 0.3s' + (more ? ', 0.55s' : ''));
+							item.style.setProperty('top', (parseInt(item.style.top, 10) - cur.offsetHeight + 20) + 'px');
+
+							setTimeout(function (item) {
+								item.disallowMouseWheel = 0;
+							}, 550, item);
 						}
 					}
 				}, true);
-			}, 100, ht, top);
+			}, 100, ht, cur_all);
 		};
 		
 		window.alert.prototype.jsblocker = 1;
+
+		return window.alert;
 	},
 	confirm_dialogs: function () {
 		window.confirm = window.alert.prototype.jsblocker ? function (c) { window.alert(c, 'confirm()'); return true; } : function () { return true; };
@@ -147,27 +207,30 @@ var special_actions = {
 non_injected_special_actions = {};
 
 function appendScript(script, v) {
-	var s = document.createElement('script');
+	var script = script.toString(), p = script.split(/\{/), s = document.createElement('script');
+	p[1] = "\n" + '"use strict";' + "\n// JSBlocker Injected Helper Script" + p[1];
+	script = p.join('{');
 	s.id = 'jsblocker-' + (+new Date);
 	s.innerHTML = '(' + script + ')(' + (typeof v !== 'undefined' ? (typeof v === 'string' ? '"' + v + '"' : v ): '') + ');';
 	document.documentElement.appendChild(s);
 }
 
-/*appendScript(function (base) {
+appendScript(function (base) {
 	window.jsblockerBaseURI = base;
-}, safari.extension.baseURI);*/
+}, safari.extension.baseURI);
 
 function doSpecial(do_append, n, action) {
-	var v = if_setting('enable_special_' + n);
+	var v = if_setting('enable_special_' + n), m;
 
-	if ((v === true || parseInt(v, 10))) {
-		if (!safari.self.tab.canLoad(beforeLoad, ['special', n, jsblocker.href])) {
+	if (v === true || parseInt(v, 10) || (typeof v === 'string' && v.length)) {
+		if (!(m = safari.self.tab.canLoad(beforeLoad, ['special', n, jsblocker.href]))) {
 			jsblocker.blocked.special.all.push(n);
 				
 			if (do_append) appendScript(action, v);
 			else action(v);
 		} else
-			jsblocker.allowed.special.all.push(n);
+			if (m !== 84)
+				jsblocker.allowed.special.all.push(n);
 	}
 }
 

@@ -315,72 +315,67 @@ var def = [
 
 def = def.map(function (v) { return JB.utils.escape_regexp(v).replace(/\\\*/g, '.*'); });
 
+/* ====================WHITELIST===================== */
+
+var wld = {
+	script: {
+		'.*': [
+			'www\\.readability\\.com',
+			'seal\\.verisign\\.com',
+		],
+		'.amazon.com': ['(ssl\\-)?images\\-amazon\\.com'],
+		'.reddit.com': ['www\\.redditstatic\\.com'],
+		'.paypal.com': ['www\\.paypalobjects\\.com'],
+		'.google.com': ['gstatic\\.com'],
+		'.youtube.com': ['ytimg\\.com', 'clients[0-9]+\\.google\\.com'],
+		'.readability.com': ['cloudfront\\.net'],
+		'.icloud.com': ['gstatic\\.com'],
+		'.monster.com': ['monster\\.com'],
+		'.ensighten.com': ['ensighten\\.com'],
+		'.gorillanation.com': ['gorillanation\\.com']
+	},
+	frame: {
+		'.facebook.com': ['facebook\\.com'],
+		'.stumbleupon.com': ['.*(All Frames)?']
+	},
+	embed: {
+		'.youtube.com': ['ytimg\\.com']
+	},
+	image: {
+		'.google.com': ['gstatic\\.com']
+	}
+};
+
 JB.rules.whitelist = {
 	script: {
 		'.*': [
-			// Google Libraries API - A collection of JavaScript libraries hosted by Google.
-			'^https?:\\/\\/ajax\\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js(\\?.*)?$',
-			'^https?:\\/\\/www\\.google\\.com\\/jsapi(\\?.*)?$',
-
-			// jQuery - A JavaScript library used by many sites. Includes jQuery UI, an effects library to compliment jQuery.
-			'^https?:\\/\\/.*\\/jquery(\\-ui)?(\\.min)?\\.js(\\?.*)?$',
-			'^https?:\\/\\/.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js(\\?.*)?$',
-
-			// Prototype - A JavaScript library used by some sites.
-			'^https?:\\/\\/.*\\/prototype\\.js(\\?.*)?$',
-		
-			// Readability
-			'^https?:\\/\\/www\\.readability\\.com\\/.*$',
-
-			'^https:\\/\\/seal\\.verisign\\.com\\/.*$'
-		],
-		'.amazon.com': [
-			'^https?:\\/\\/([^\\/]+\\.)?(ssl\\-)?images\\-amazon\\.com\\/.*$'
-		],
-		'.reddit.com': [
-			'^https?:\\/\\/www\\.redditstatic\\.com\\/.*$'
-		],
-		'.paypal.com': [
-			'^https:\\/\\/www\\.paypalobjects\\.com\\/.*$'
-		],
-		'.google.com': [
-			'^https?:\\/\\/([^\\/]+\.)?gstatic\\.com\\/.*$'
-		],
-		'.youtube.com': [
-			'^https?:\\/\\/([^\\/]+\.)?ytimg\\.com\\/.*$',
-			'^https?:\\/\\/clients[0-9]+\\.google\\.com\\/.*$',
-		],
-		'.readability.com': [
-			'^https?:\\/\\/([^\\/]+\\.)?cloudfront\\.net\\/.*$'
-		],
-		'.icloud.com': [
-			'^https?:\\/\\/([^\\/]+\\.)?gstatic\\.com\\/.*$',
-			'^https?:\\/\\/([^\\/]+\\.)?google\\.com\\/.*$'
-		]
-	},
-	frame: {
-		'.facebook.com': [
-			'^https?:\\/\\/(.*\\.)?facebook\\.com\\/.*$'
-		],
-		'.stumbleupon.com': [
-			'.*(All Frames)?'
+			'^(Google hosted JavaScript frameworks)?https?:\\/\\/ajax\\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js(\\?.*)?$',
+			'^(Google hosted JavaScript frameworks)?https?:\\/\\/www\\.google\\.com\\/jsapi(\\?.*)?$',
+			'^(Prototype, the JavaScript framework)?.*\\/prototype\\.js(\\?.*)?$',
+			'^(jQuery, the JavaScript framework)?.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js(\\?.*)?$',
+			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.[^.\\/]+\\.js(\\?.*)?$',
+			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.js(\\?.*)?$',
+			'^(jQuery UI, the JavaScript framework to make things pretty)?.*\\/jquery(\\-ui|\\.ui)\\.([^.\\/]+)?\\.js$'
 		]
 	},
 	embed: {
-		'.*': [
-			'^https?:\\/\\/images\\.apple\\.com\\/apple-events\\/includes\\/qtbutton\\.mov$'
-		],
-		'.youtube.com': [
-			'^http:\\/\\/([^\\/]+\\.)?ytimg\\.com\\/.*$',
-		]
+		'.*': [['Used as a placeholder to open movie files in QT Player', 'https?:\\/\\/images\\.apple\\.com\\/apple\-events\\/includes\\/qtbutton\\.mov$']]
 	},
 	image: {
-		'.google.com': [
-			'^data:.*$',
-			'^https?:\\/\\/([^\\/]+\\.)?gstatic\\.com\\/.*$',
-		]
+		'.google.com': [['Some images on Google Images are encoded as data URIs', '^data:.*$']]
 	}
 };
+
+for (var k in wld) {
+	for (var d in wld[k]) {
+		if (!(k in JB.rules.whitelist)) JB.rules.whitelist[k] = {};
+		if (!(d in JB.rules.whitelist[k])) JB.rules.whitelist[k][d] = [];
+
+		for (var i = 0; wld[k][d][i]; i++)
+			JB.rules.whitelist[k][d].push([
+				'^', typeof wld[k][d][i] === 'object' ? '(' + wld[k][d][i][0] + ')?' : '',
+				'https?:\\/\\/([^\\/]+\.)?', typeof wld[k][d][i] === 'object' ? wld[k][d][i][1] : wld[k][d][i], '\\/.*$'].join(''))	}
+}
 
 var wl = JB.rules.whitelist.script;
 
@@ -389,49 +384,91 @@ wl['.google.de'] = wl['.google.com'];
 wl['.amazon.de'] = wl['.amazon.com'];
 wl['.amazon.co.uk'] = wl['.amazon.com'];
 
-delete wl;
-wl = undefined;
+/* ====================BLACKLIST===================== */
 
-JB.rules.blacklist = {
+var bld = {
 	script: {
 		'.*': [
-			// Modifies the text you copy on a webpage.
-			'^https?:\\/\\/(.*\\.)?tynt\\.com\\/.*$',
-		
-			// Adds search links to random words on websites that may popup a box over the content if hovered on.
-			'^https?:\\/\\/(.*\\.)?kontera\\.com\\/.*$', '^https?:\\/\\/(.*\\.)?snap\\.com\\/.*$',
-		
-			// Used for tracking purposes.
-			'^https?:\\/\\/(ssl|www)\\.google\\-analytics\\.com\\/(ga|urchin)\\.js$', '^https?:\\/\\/edge\\.quantserve\\.com\\/.*$',
-			
-			'^(This is just a lot of bad stuff)?https?:\\/\\/.*(' + def.join('|') + ').*$',
-			'^https?:\\/\\/pagead[0-9]+\\.googlesyndication\\.com\\/.*$',
-			'^https?:\\/\\/(.*\\.)?blogads\\.com\\/.*$',
-			'^https?:\\/\\/(.*\\.)?admeld\\.com\\/.*$',
-			'^https?:\\/\\/(.*\\.)?scorecardresearch\\.com\\/.*$',
-			'^https?:\\/\\/(.*\\.)?ad\\.doubleclick\\.net\\/.*$',
-			'^https?:\\/\\/(.*\\.)?connect\\.facebook\\.(com|net)\\/.*$',
-			'^https?:\\/\\/(.*\\.)?platform\\.twitter\\.com\\/.*$',
-			'^https?:\\/\\/(.*\\.)?engine\\.carbonads\\.com\\/.*$',
-			'^https?:\\/\\/widgets\\.twimg\\.com\\/.*$',
+			['Blocks copy and paste on websites', 'tynt\\.com'],
+			['Turns words on webpages into clickable ads', 'kontera\\.com'],
+			['Makes a popup appear over a link when hovered on', 'snap\\.com'],
+			['User tracking and advertising', '(edge|pixel)\\.quantserve\\.com'],
+			['Advertisements', 'pagead[0-9]+\\.googlesyndication\\.com'],
+			['Advertisements', 'blogads\\.com'],
+			['Advertisements', 'admeld\\.com'],
+			['Tracks users', 'scorecardresearch\\.com'],
+			['Social media tracking', 'connect\\.facebook\\.(com|net)'],
+			['Social media tracking', 'platform\\.twitter\\.com'],
+			['Advertisements', 'engine\\.carbonads\\.com'],
+			['Adds a "tweet-this" button on webpages', 'widgets\\.twimg\\.com'],
+			['Tracks users', 'media6degrees\\.com'],
+			['Tracks users', '(ssl|www)\\.google\\-analytics\\.com'],
+			['User tracking and advertisements', '(ad|stats)\.([a-z]+\\.)?doubleclick\.net'],
+			['Tracks users', 'getclicky\\.com'],
+			['Advertisements', 'infolinks\\.com'],
+			['Tracks users', 'clicktale\\.(net|com)'],
+			['User tracking and advertisements', 'zedo\\.com'],
+			['Tracks users', 'monster\\.com'],
+			['Tracks users', 'ensighten\\.com'],
+			['User tracking and advertisements', 'gorillanation\\.com'],
+			['Tracks users', 'bizographics\\.com'],
+			['Adds a "digg-this" button on webpages', 'widgets\\.digg\\.com'],
+			['Tracks users', 'chartbeat\\.com'],
+			['Adds a "reddit-this" button on webpages', 'redditstatic.s3.amazonaws.com'],
+			['Adds a "reddit-this" button on webpages', 'reddit.com'],
+			['Tracks users', 'verticalacuity\\.com'],
+			['Tracks users', 'sail\\-horizon\\.com'],
+			['Tracks users', 'kissmetrics\\.com'],
+			['Advertisements', 'legolas\\-media\\.com'],
+			['Advertisements', 'adzerk\\.(com|net)'],
+			['Advertisements', 'adtechus\\.com'],
+			['Marketing', 'skimlinks\\.com'],
+			['Marketing', 'visualwebsiteoptimizer\\.com'],
+			['Marketing', 'marketo\\.(net|com)'],
+			['Tracks users', 'coremetrics\\.com'],
+			['Tracks users', 'serving\\-sys\\.com'],
+			['Advertisements', 'insightexpressai\\.com']
 		]
 	},
 	frame: {
 		'.*': [
-			'^https?:\\/\\/(.*\\.)?facebook\\.com\\/.*$',
-			'^https?:\\/\\/(.*\\.)?twitter\\.com\\/.*$',
-			'^https?:\\/\\/(.*\\.)?plusone\\.google\\.(com|ca|co\\.uk)\\/.*$',
-			'^https?:\\/\\/ads\\.[^\.]+\..*\\/.*$',
-			'^https?:\\/\\/.*(' + def.join('|') + ').*$'
+			['Facebook social media tracking', 'facebook\\.com'],
+			['Twitter social media tracking', 'twitter\\.com'],
+			['Google social media tracking', 'plusone\\.google\\.(com|ca|co\\.uk)'],
+			'ads\\.[^\\.]+\\..*',
+			['Tracks users', 'mediaplex\\.com'],
+			['Advertisements', 'legolas\\-media\\.com']
 		]
-	},
-	embed: {
-		'.*': [
-			'^https?:\\/\\/.*(' + def.join('|') + ').*$'
-		]
-	},
-	image: {}
+	}
 };
+
+JB.rules.blacklist = {
+	script: { '.*': ['^https?:\\/\\/.*(' + def.join('|') + ').*$'] },
+	frame: { '.*': ['^https?:\\/\\/.*(' + def.join('|') + ').*$'] },
+	embed: { '.*': ['^https?:\\/\\/.*(' + def.join('|') + ').*$'] }
+};
+
+
+for (var k in bld) {
+	for (var d in bld[k]) {
+		if (!(k in JB.rules.blacklist)) JB.rules.blacklist[k] = {};
+		if (!(d in JB.rules.blacklist[k])) JB.rules.blacklist[k][d] = [];
+
+		for (var i = 0; bld[k][d][i]; i++)
+			JB.rules.blacklist[k][d].push([
+				'^', typeof bld[k][d][i] === 'object' ? '(' + bld[k][d][i][0] + ')?' : '',
+				'https?:\\/\\/([^\\/]+\.)?', typeof bld[k][d][i] === 'object' ? bld[k][d][i][1] : bld[k][d][i], '\\/.*$'].join(''))
+	}
+}
 
 delete def;
 def = undefined;
+
+delete wl;
+wl = undefined;
+
+delete wld;
+wld = undefined;
+
+delete bld;
+bld = undefined;

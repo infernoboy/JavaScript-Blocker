@@ -16,7 +16,7 @@
  * @param {function|null|undefined} cb2 A callback called when the popover finishes displaying
  * @param {number|null|undefined} time Animation speed of popover in seconds
  */
-var Poppy = function (x, y, content, cb, cb2, time, modal) {
+var Poppy = function (x, y, content, cb, cb2, time, modal, secondary) {
 	if (content !== null && typeof content === 'object' && ('content' in content)) {
 		try {
 			var temporary = content.content;
@@ -30,13 +30,14 @@ var Poppy = function (x, y, content, cb, cb2, time, modal) {
 	}
 		
 	this.modal = modal;
-	this.removeOnly = $.makeArray(arguments).length === 0 || x === null;
+	this.removeOnly = $.makeArray(arguments).length === 0 || x === null || x === true;
 	this.callback = (cb && typeof cb == 'function') ? cb : $.noop;
 	this.callback2 = (cb2 && typeof cb2 == 'function') ? cb2 : $.noop;
 	this.popover = safari.extension.toolbarItems[0].popover.contentWindow.document;
 	this.p = $(this.popover.body);
+	this.secondary = !!secondary || x === true;
 	
-	this._time = typeof time === 'number' ? time : 0.25;
+	this._time = typeof time === 'number' ? time : 0.22;
 	
 	if (!this.removeOnly) {
 		this.center = {
@@ -61,6 +62,12 @@ Poppy.prototype = {
 	c: '#poppy-content',
 	a: '#poppy-arrow',
 	init: function () {
+		if (this.secondary) {
+			this.e += '-secondary';
+			this.c += '-secondary';
+			this.a += '-secondary';
+		}
+
 		this._time *= JB.speedMultiplier;
 		
 		if ($(this.e, this.p).length)
@@ -92,14 +99,15 @@ Poppy.prototype = {
 		
 		var mo = _$('#modal'),
 				self = this,
-				eC = '<div id="' + this.e.substr(1) + '"></div>',
-				cC = '<div id="' + this.c.substr(1) + '"></div>',
-				aC = '<div id="' + this.a.substr(1) + '"></div>';
+				eC = '<div id="' + this.e.substr(1) + '" class="poppy"></div>',
+				cC = '<div id="' + this.c.substr(1) + '" class="poppy-content"></div>',
+				aC = '<div id="' + this.a.substr(1) + '" class="poppy-arrow"></div>';
 				
 		if (this.modal) mo.fadeIn(this._time * 1000);
 		
 		$(this.s, this.p).one('scroll', function () {
 			new Poppy(null, null, null, null, null, 0.5);
+			new Poppy(null, null, null, null, null, 0.5, false, true);
 		});
 		
 		var m = this.p.append(eC)
@@ -115,10 +123,10 @@ Poppy.prototype = {
 		if (points.arrow.bottom == 'auto') $(this.a, m).addClass('flip');
 		
 		m.css({
-			WebkitTransitionDuration: [this._time, this._time * 1.4].join('s,') + 's',
-			WebkitTransform: JB.speedMultiplier < 1 ? 'scale(1)' : 'scale(1.15)',
+			WebkitTransitionDuration: this._time + 's',
+			WebkitTransform: JB.speedMultiplier < 1 ? 'scale(1)' : 'scale(1.22)',
 			WebkitTransformOrigin: (points.arrow.left + 15) + 'px ' + ((points.main.bottom === 'auto') ? '-5%' : '105%'),
-			opacity: 1,
+			opacity: 0.3,
 			left: points.main.left,
 			bottom: points.main.bottom,
 			top: points.main.top,
@@ -128,7 +136,7 @@ Poppy.prototype = {
 			left: points.arrow.left,
 			bottom: points.arrow.bottom,
 			top: points.arrow.top
-		}).end().one('webkitTransitionEnd', { s: self, m: m }, function (event) {
+		}).end().one('webkitTransitionEnd', { s: self, m: m, b: points.arrow.bottom === 'auto' }, function (event) {
 			var d = event.data;
 			
 			try {
@@ -140,14 +148,19 @@ Poppy.prototype = {
 			d.m.css({
 				WebkitTransform: 'scale(1)',
 				WebkitTransitionDuration: d.s._time + 's',
-				WebkitTransitionTimingFunction: 'ease'
+				WebkitTransitionTimingFunction: 'ease',
+				opacity: 1
 			});
 		});
 		
-		$('> *:not(#poppy,#modal)', this.p).one('click', function () {
+		$('> *:not(#poppy,#poppy-secondary,#modal)', this.p).one('mousedown', function () {
 			new Poppy();
 		});
-		
+
+		$('> *:not(#poppy-secondary,#modal)', this.p).one('mousedown', function () {
+			new Poppy(null, null, null, null, null, null, false, true);
+		});
+
 		this.createArrow();
 	},
 	calcPoints: function () {
@@ -189,11 +202,23 @@ Poppy.prototype = {
 			o.arrow.left = my_width / 2 - half_arrow;
 		}
 		
-		if (this.center.y - my_height <= base_height) { // If overflow on top side
-			o.main.bottom = 'auto';
-			o.main.top = this.center.y + half_arrow + 3;
-			o.arrow.top = o.arrow.bottom;
-			o.arrow.bottom = 'auto';
+		if (this.center.y - my_height - 3 <= base_height) {			
+			if (this.center.y <= this.p.height() / 2) {
+				o.main.bottom = 'auto';
+				o.main.top = this.center.y + half_arrow;
+				o.arrow.top = o.arrow.bottom;
+				o.arrow.bottom = 'auto';
+
+				if (this.center.y - 10 + my_height + half_arrow * 2 > this.p[0].scrollHeight) { // If overflow on bottom side
+					while (this.center.y - 10 + $(this.e, this.p).outerHeight() + half_arrow * 2 > this.p[0].scrollHeight)
+						$(this.e, this.p).find(this.c).andSelf().css('height', '-=10px');
+				}
+			} else {
+				if (my_height + half_arrow * 2 > this.center.y + 10) { // If overflow on top side
+					while ($(this.e, this.p).outerHeight() + half_arrow * 2 > this.center.y + 10)
+						$(this.e, this.p).find(this.c).andSelf().css('height', '-=10px');
+				}
+			}
 		}
 		
 		return o;

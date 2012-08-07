@@ -9,6 +9,7 @@
 var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
 		random = +new Date,
 		blank = window.location.href === 'about:blank',
+		allowedToLoad = 'al-' + Math.random() * 10000000000000000,
 		parentURL = (window !== window.top && blank) ? (safari.self.tab.canLoad(beforeLoad, 'parentURL') + '&about:blank:' + random) : false;
 
 function pageHost(not_real) {
@@ -37,6 +38,11 @@ function setCSS(st, pr, pl) {
 		pl.style.setProperty(pr[i], st.getPropertyValue(pr[i]), 'important');
 }
 
+function setCSSs(e, p, not_important) {
+	for (var prop in p)
+		e.style.setProperty(prop, p[prop], not_important ? '' : 'important');
+}
+
 function fitFont(e, f) {
 	var fs = 19, maxH = e.offsetHeight, maxW = e.offsetWidth - 10, text = e.querySelector('.jsblocker-node'),
 			text2 = e.querySelector('.jsblocker-node-two'), wr = e.querySelector('.jsblocker-node-wrap'), tH, tW;
@@ -53,11 +59,13 @@ function fitFont(e, f) {
 		tW = text.offsetWidth;
 		fs -= 1;
 	} while ((tH > maxH || tW > maxW) && fs > 4);
-	
-	text.style.setProperty('position', 'absolute', 'important');
-	text.style.setProperty('top', 'auto', 'important');
-	text.style.setProperty('left', '50%', 'important');
-	text.style.setProperty('margin-left', '-' + Math.round(tW / 2) + 'px', 'important');
+
+	setCSSs(text, {
+		position: 'absolute',
+		top: 'auto',
+		left: '50%',
+		'margin-left': '-' + Math.round(tW / 2) + 'px'
+	});
 }
 
 function createPlaceholder(e, host, url) {
@@ -66,52 +74,47 @@ function createPlaceholder(e, host, url) {
 	var pl, st, pl, i, p, w, pw, pB, p2, t, o, proto = activeProtocol(url), ex = /^https?/.test(proto) ? 3 : 1,
 			pr = ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
 			pa = url.substr(proto.length + host.length + ex).replace(/</g, '&lt;').replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&(?!lt;)/g, '&<wbr />').replace(/=/g, '=<wbr />'),
-			
-	pl = document.createElement('div');	
-	pw = document.createElement('div');	
-	p = document.createElement('p');
-	pB = document.createElement('p');
-	p2 = document.createElement('p');
+			proto = proto + (ex === 3 ? '://' : ':'),
+			place =  [
+				'<div class="jsblocker-node-wrap">',
+					'<p class="jsblocker-node">', e.nodeName.toLowerCase(), '</p>',
+					'<p class="jsblocker-node-two">', e.nodeName.toLowerCase(), '</p>',
+				'</div>',
+				'<p class="jsblocker-url">',
+					'<span class="jsblocker-protocol">', proto, '</span>',
+					'<span class="jsblocker-host">', host.replace(/\./g, '.<wbr />'), '<wbr /></span>',
+					'<span class="jsblocker-path">', pa, '</span>',
+				'</p>'].join(''),
+			pl = document.createElement('div');	
+
+	pl.innerHTML = place;
+
+	var pw = pl.querySelector('.jsblocker-node-wrap'),
+			p = pl.querySelector('.jsblocker-node'),
+			pB = pl.querySelector('.jsblocker-node-two'),
+			p2 = pl.querySelector('.jsblocker-url');
 	
-	p.className = 'jsblocker-node';
-	pw.className = 'jsblocker-node-wrap';
-	pB.className = 'jsblocker-node-two';
-	p2.className = 'jsblocker-url';
 	p2.title = e.nodeName.toLowerCase() + ' - ' + url;
 	p.title = p2.title;
 	pB.title = p.title;
-		
-	proto += ex === 3 ? '://' : ':';
-	
-	p.innerHTML = e.nodeName.toLowerCase();
-	pB.innerHTML = p.innerHTML;
-	p2.innerHTML = '<span class="jsblocker-protocol">' + proto + '</span>' +
-			'<span class="jsblocker-host">' + host.replace(/\./g, '.<wbr />') + '<wbr /></span>' + 
-			'<span class="jsblocker-path">' + pa + '</span>';
-	
-	pw.appendChild(p);
-	pw.appendChild(pB);
-	pl.appendChild(pw);
-	pl.appendChild(p2);
-	
+
 	var	w = e.offsetWidth <= 12 ? e.offsetWidth : e.offsetWidth - 12,
 			h = e.offsetHeight <= 12 ? e.offsetHeight : e.offsetHeight - 12;
 	
 	pl.className = 'jsblocker-placeholder';
-	pl.style.setProperty('display', 'inline-block', 'important');
-	pl.style.setProperty('width', w + 'px', 'important');
-	pl.style.setProperty('height', h + 'px', 'important');
-	pl.style.setProperty('padding', '6px', 'important');
+
+	setCSSs(pl, {
+		display: 'inline-block',
+		width: w + 'px',
+		height: h + 'px',
+		padding: '6px'
+	});
 	
-	if ((e.offsetWidth - 12) <= 0) {
-		pl.style.setProperty('padding-left', '0px', 'important');
-		pl.style.setProperty('padding-right', '0px', 'important');
-	}
+	if ((e.offsetWidth - 12) <= 0)
+		setCSSs(pl, { 'padding-left': '0px', 'padding-right': '0px' });
 	
-	if ((e.offsetHeight - 12) <= 0) {
-		pl.style.setProperty('padding-top', '0px', 'important');
-		pl.style.setProperty('padding-bottom', '0px', 'important');
-	}
+	if ((e.offsetHeight - 12) <= 0)
+		setCSSs(pl, { 'padding-top': '0px', 'padding-bottom': '0px' });
 	
 	st = window.getComputedStyle(e, null);
 		
@@ -129,61 +132,44 @@ function createPlaceholder(e, host, url) {
 	pl.addEventListener('click', function (ev) {
 		ev.preventDefault();
 		ev.stopImmediatePropagation();
-		e.allowedToLoad = true;
+		e[allowedToLoad] = true;
 		pl.parentNode.replaceChild(e, pl);
 	});
 }
 
 var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
+		known = ['SCRIPT', 'FRAME', 'IFRAME', 'EMBED', 'OBJECT', 'VIDEO', 'IMG'],
+		alwaysAllow = [],
 		kinds = {
-			script: [{ SCRIPT: 1 }, function (allowed) {
-				if (!allowed && this.parentNode) this.parentNode.removeChild(this);
-			}],
-			frame: [{ FRAME: 1, IFRAME: 1 }, function (allowed, host, url) {
-				if (!allowed)
-					if_setting('showPlaceholderframe', true, function (t) {
-						createPlaceholder(t, host, url);
-					}, function (t) {
-						t.parentNode.removeChild(t);
-					}, [this]);
-			}],
-			embed: [{ EMBED: 1, OBJECT: 1 }, function (allowed, host, url) {
-				if (!allowed)
-					if_setting('showPlaceholderembed', true, function (t) {
-						createPlaceholder(t, host, url);
-					}, function () {
-						t.parentNode.removeChild(t);
-					}, [this]);
-			}],
-			video: [{ VIDEO: 1 }, function (allowed, host, url) {
-				if (!allowed)
-					if_setting('showPlaceholdervideo', true, function (t) {
-						createPlaceholder(t, host, url);
-					}, function () {
-						t.parentNode.removeChild(t);
-					}, [this]);
-			}],
-			image: [{ IMG: 1 }, function (allowed, host, url) {
-				if (!allowed)
-					if_setting('showPlaceholderimage', true, function (t) {
-						createPlaceholder(t, host, url);
-					}, function () {
-						t.parentNode.removeChild(t);
-					}, [this]);
-			}],
-			special: [{}]
+			special: ['special']
 		},
 		jsblocker = {
 			allowed: {},
 			blocked: {},
 			unblocked: {},
 			href: pageHost()
-		}, readyTimeout = [null, null], lastAddedFrameData = false, jsonBlocker = false, zero = [], settings = {};
-		
+		}, readyTimeout = [null, null], lastAddedFrameData = false, jsonBlocker = false, zero = [], settings = {},
+		ph = function (kind, allowed, host, url) {
+			if (!allowed)
+				if_setting('showPlaceholder' + kind, true, function (t) {
+					createPlaceholder(t, host, url);
+				}, function (t) {
+					if (t.parentNode) t.parentNode.removeChild(t);
+				}, [this]);
+		};
+
+kinds.SCRIPT = ['script', ph];
+kinds.FRAME = ['frame', ph];
+kinds.IFRAME = kinds.FRAME;
+kinds.EMBED = ['embed', ph];
+kinds.OBJECT = kinds.EMBED;
+kinds.VIDEO = ['video', ph];
+kinds.IMG = ['image', ph];
+
 for (var kind in kinds) {
-	jsblocker.allowed[kind] = { all: [], unique: [] }
-	jsblocker.blocked[kind] = { all: [], unique: [] }
-	jsblocker.unblocked[kind] = { all: [], unique: [] }
+	jsblocker.allowed[kinds[kind][0]] = { all: [], unique: [] }
+	jsblocker.blocked[kinds[kind][0]] = { all: [], unique: [] }
+	jsblocker.unblocked[kinds[kind][0]] = { all: [], unique: [] }
 }
 
 if (window !== window.top && blank)
@@ -234,41 +220,49 @@ function getAbsoluteURL(url) {
 }
 
 function canLoad(event) {
-	var node = event.target.nodeName.toUpperCase(), source = getAbsoluteURL(event.url), pathname, host, at, arr, did_something = 0;
+	var node = event.target.nodeName.toUpperCase();
 
-	if (event.target.allowedToLoad) return true;
-			
-	for (var kind in kinds) {
-		if (!(node in kinds[kind][0])) continue;
+	if (!(node in kinds)) return 1;
+
+	var source = getAbsoluteURL(event.url), pathname, host, at, arr, use_source, did_something = 0, kind = kinds[node][0];
+
+	if (!event.target[allowedToLoad]) {
+		if (~alwaysAllow.indexOf(kind)) return 1;
 		else if (event.type !== 'DOMNodeInserted') {
 			did_something = 1;
 									
 			if (source && source.length)
-				var use_source = source, host = activeHost(source, 1);
+				use_source = source, host = activeHost(source, 1);
 			else if (node !== 'OBJECT')
-				var use_source = 'about:blank', host = 'blank';
+				use_source = 'about:blank', host = 'blank';
 			else
-				continue;
+				return 1;
 
 			var allo = safari.self.tab.canLoad(event, [kind, jsblocker.href, use_source, !(window == window.top)]),
 					isAllowed = allo[0],
 					mo = isAllowed || !event.preventDefault ? 'allowed' : 'blocked';
 
+			if (allo[1] === -84) {
+				alwaysAllow.push(kind);
+				return 1;
+			}
+
 			if (!isAllowed && event.preventDefault)	event.preventDefault();
 			
-			jsblocker[mo][kind].all.push([use_source, allo[1]]);
+			jsblocker[mo][kind].all.push([use_source, allo[1], !!event.unblockable]);
 		
 			if (!~jsblocker[mo][kind].unique.indexOf(host)) jsblocker[mo][kind].unique.push(host);
 
-			if (kinds[kind][1] && event.preventDefault) kinds[kind][1].call(event.target, isAllowed, host, use_source);
+			if (kinds[node][1] && event.preventDefault) kinds[node][1].call(event.target, kind, isAllowed, host, use_source);
 		} else if ((!source || source.length === 0) && event.type === 'DOMNodeInserted') {
 			did_something = 1;
 
 			if (event.target.innerHTML.length && !event.target.getAttribute('data-jsblocker_added')) {
 				event.target.setAttribute('data-jsblocker_added', 1);
+
 				jsblocker.unblocked[kind].all.push(event.target.innerHTML);
 			
-				if (kinds[kind][1]) kinds[kind][1].call(event.target, 1);
+				if (kinds[node][1]) kinds[node][1].call(event.target, kind, 1);
 			}
 		}
 	}
@@ -293,8 +287,8 @@ function ready(event) {
 					if (!script_tags[i].getAttribute('src') || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
 						script_tags[i].setAttribute('data-jsblocker_added', 1);
 						jsblocker.unblocked.script.all.push(script_tags[i].innerHTML);
-					
-						if (kinds.script[1]) kinds.script[1].call(script_tags[i], 1);
+
+						kinds.SCRIPT[1].call(script_tags[i], 'script', 1);
 					}
 				}
 			}
@@ -326,10 +320,7 @@ function messageHandler(event) {
 		case 'validateFrame':
 			var validateFrame = function (f) {
 				for (var y = 0; y < f.length; y++) {
-					sr = f[y].getAttribute('src');
-					
-					if (!sr || sr.length < 1) continue;
-					else if (f[y].src === event.message) {
+					if (f[y].src === event.message) {
 						a.push(f[y].src);
 						break;
 					}
@@ -360,19 +351,21 @@ function messageHandler(event) {
 			fr.id = 'jsblocker-settings';
 			fr.src = event.message;
 
-			fr.style.setProperty('visibility', 'hidden');
-			fr.style.setProperty('width', '100%');
-			fr.style.setProperty('height', '100%');
-			fr.style.setProperty('position', 'fixed');
-			fr.style.setProperty('top', '0px');
-			fr.style.setProperty('z-index', +new Date)
-			fr.style.setProperty('border', 'none');
-			fr.style.setProperty('background', 'rgba(0,0,0,0.1)');
+			setCSSs(fr, {
+				visibility: 'hidden',
+				width: '100%',
+				height: '100%',
+				position: 'fixed',
+				top: '0px',
+				'z-index': +new Date,
+				border: 'none',
+				background: 'rgba(0,0,0,0.1)'
+			});
 
 			document.documentElement.appendChild(fr);
 
 			fr.onload = function () {
-				fr.style.setProperty('visibility', 'visible');
+				fr.style.setProperty('visibility', 'visible', 'important');
 			};
 		break;
 
@@ -380,6 +373,10 @@ function messageHandler(event) {
 			var fr = document.getElementById('jsblocker-settings');
 
 			if (fr) fr.parentNode.removeChild(fr);
+		break;
+
+		case 'notification':
+			special_actions.alert_dialogs()(event.message[0], event.message[1]);
 		break;
 	}
 }
@@ -471,7 +468,7 @@ function prepareFrame(frame) {
 
 	if (!fr.getAttribute('id')) fr.setAttribute('id', 'frame-' + +new Date);
 
-	fr.setAttribute('data-url', fr.src);
+	fr.setAttribute('data-jsblocker_url', fr.src);
 
 	fr.addEventListener('load', function () {
 		this.contentWindow.postMessage('mayIPleaseKnowYourURL:' + this.id, '*');
@@ -496,16 +493,17 @@ function windowMessenger(event) {
 				id = off.substr(0, off.indexOf('#')),
 				url = decodeURI(off.substr(id.length + 1)),
 				fr = document.getElementById(id),
-				old = fr.getAttribute('data-url');
+				old = fr.getAttribute('data-jsblocker_url');
 
-		fr.allowedToLoad = 0;
+		fr[allowedToLoad] = 0;
 
 		if (old !== url) {
 			var t = beforeLoad;
 			t.target = fr;
 			t.url = url;
+			t.unblockable = 1;
 			canLoad(t);
-			fr.setAttribute('data-url', url);
+			fr.setAttribute('data-jsblocker_url', url);
 		}
 	}
 }

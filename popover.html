@@ -96,7 +96,7 @@
 				<div id="allowed-column" class="column">
 					<div class="info-container" id="allowed-container">
 						<label class="allowed-label">Allowed:</label> <span id="allowed-scripts-count">0</span>
-						<input type="button" value="Block All" id="block-domain" />
+						<input type="button" value="Block…" id="block-domain" />
 					</div>
 	
 					<div id="allowed-script-urls" class="urls-wrapper">
@@ -107,7 +107,7 @@
 				<div id="blocked-column" class="column">
 					<div class="info-container" id="blocked-container">
 						<label class="blocked-label">Blocked:</label> <span id="blocked-scripts-count">0</span>
-						<input type="button" value="Allow All" id="allow-domain" />
+						<input type="button" value="Allow…" id="allow-domain" />
 					</div>
 	
 					<div id="blocked-script-urls" class="urls-wrapper">
@@ -129,6 +129,7 @@
 			<div id="disclaimer">
 				<p>
 					<input type="button" value="Rules" id="view-rules" />
+					<input type="button" value="Show Hidden" id="toggle-hidden" />
 					<input type="button" value="Help" id="js-help" />
 					<input type="button" value="Settings" id="js-settings" />
 					<input type="button" value="Disable JavaScript Blocker" id="disable" />
@@ -150,8 +151,7 @@
 				<p class="above-filter">
 					<a href="javascript:void(0)" id="collapse-all"><script>document.write(_('Collapse All'));</script></a> <span class="label">￨</span>
 					<a href="javascript:void(0)" id="expand-all"><script>document.write(_('Expand All'));</script></a> <span class="label">￨</span>
-					<a href="javascript:void(0)" id="edit-domains"><script>document.write(_('Edit'));</script></a> <span class="label">￨</span>
-					<a href="javascript:void(0)" id="reinstall-pre"><script>document.write(_('Reinstall Whitelist & Blacklist'));</script></a>
+					<a href="javascript:void(0)" id="edit-domains"><script>document.write(_('Edit'));</script></a>
 				</p>
 				<p id="above-temporary" class="above-filter">
 					<a href="javascript:void(0)" id="make-temp-perm"><script>document.write(_('Make Temporary Rules Permanent'));</script></a> <span class="label">￨</span>
@@ -195,13 +195,16 @@
 	<div id="hidden-extras">
 		<ul id="jsconsolelogger"><li id="console-header"><p class="misc-info">Console</p></li></ul>
 		<textarea id="tmpl_domain_picker">
-			<% if (!self.no_label) { %><label for="domain-picker"><%=_('On:')%> </label><% } %>
-			<select id="domain-picker" <% if ((self.page_parts.length === 2 && self.no_all) || (self.page_parts[0] === null && !self.no_all)) { %>class="single"<% } %>>
+			<% if (!self.no_label) { %><label for="domain-picker<%=('id' in self ? '-' + self.id : '')%>"><%=_('On:')%> </label><% } %>
+			<select class="domain-picker" id="domain-picker<%=('id' in self ? '-' + self.id : '')%>" <% if ((self.page_parts.length === 2 && self.no_all) || (self.page_parts[0] === null && !self.no_all)) { %>class="single"<% } %>>
 			<%
 				var n;
 				for (n = 0; n < self.page_parts.length; n++) {
 					if (self.page_parts[n] === null || (self.no_all && n === self.page_parts.length - 1)) continue; %>
-					<option value="<%=((n === 0 ? '' : '.') + self.page_parts[n])%>"><%=(self.page_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + self.page_parts[n]))%></option>
+					<option value="<%=((n === 0 ? '' : '.') + self.page_parts[n])%>"><%=(self.page_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + JB.utils.escape_html(self.page_parts[n])))%></option>
+			<% } 
+				if (self.show_other) { %>
+					<option value="custom.other"><%=_('Other…')%></option>
 			<% } %>
 			</select>
 		</textarea>

@@ -1,0 +1,11 @@
+.poppy {
+	background: rgba(20,20,20,0.95) url(../images/texture.png) left top repeat;
+	border-color: #333;
+	text-shadow: 0 1px 0 #000;
+}
+
+#poppy-arrow-settings {
+	background-image: url(../images/texture.png);
+	background-color: rgba(20,20,20,0.95);
+	border-color: #333;
+}

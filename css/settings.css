@@ -259,8 +259,11 @@ section {
 		max-width: 301px;
 		text-indent: -16px;
 	}
-	section li.disabled * {
-		opacity: 0.5;
+	section li.disabled {
+		opacity: 0.4;
+	}
+	section li input[disabled] {
+		pointer-events: none;
 	}
 	section li .help {
 		float: right;
@@ -269,18 +272,18 @@ section {
 		background-image: -webkit-linear-gradient(top, #eee, #ddd);
 		border: 1px solid #b4b4b4;
 		-webkit-box-shadow: 0 1px 0 #fff, inset 0 8px 0 rgba(255,255,255,0.32), inset 0 6px 0 rgba(255,255,255,0.52);
-		padding: 1px 2px 0;
+		padding: 0 2px 0 3px;
 		display: inline-block;
 		-webkit-border-radius: 20px;
 		height: 16px;
-		width: 13px;
+		width: 11px;
 		text-align: center;
-		font-size: 9pt;
+		font-size: 10pt;
 		margin-left: 5px;
 		margin-top: -1px;
-		text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+		text-shadow: 0 1px 0 #fff;
 		cursor: default;
-		color: #454545;
+		color: #484848;
 		font-weight: bold;
 		-webkit-user-select: none;
 	}
@@ -305,4 +308,6 @@ a {
 		color: #0B37B4;
 		text-shadow: 0 1px 0 #fff;
 	}
-	
+#requirements {
+	display: block;
+}

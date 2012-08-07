@@ -8,15 +8,15 @@
 	height: 30px;
 	width: 30px;
 	border: 1px solid;
-	background-color: rgba(239,239,239,.97);
+	background-color: rgba(242,242,242,.97);
 	border-color: rgba(160,160,160,0.75);
 }
-#poppy {
+.poppy {
 	position: absolute;
 	padding: 8px 3px;
 	-webkit-border-radius: 5px;
 	z-index: 10000;
-	background: rgba(239,239,239,0.93);
+	background: rgba(242,242,242,0.93);
 	border: 1px solid rgba(160,160,160,0.8);
 	-webkit-box-shadow: 0 3px 15px rgba(0,0,0,0.2);
 	font-size: 8pt;
@@ -25,33 +25,39 @@
 	-webkit-transition-timing-function: ease-in;
 	-webkit-transition-duration: 0s;
 	-webkit-transform: scale(0);
-	opacity: 0.1;
+	opacity: 0.25;
 }
-	#poppy #poppy-arrow {
+	.poppy .poppy-arrow {
 		pointer-events: none;
 		position: absolute;
 		height: 22px;
 		width: 30px;
 		background: -webkit-canvas(poppy-arrow);
 	}
-		#poppy #poppy-arrow.flip {
+		.poppy .poppy-arrow.flip {
 			background: -webkit-canvas(poppy-arrow-flip);
 		}
-	#poppy #poppy-content {
+	.poppy .poppy-content {
 		padding: 0 7px;
-		max-height: 200px;
-		max-width: 520px;
-		overflow: auto;
+		max-height: 340px;
+		max-width: 530px;
+		overflow-y: scroll;
+		overflow-x: auto;
 	}
-		body.simple #poppy #poppy-content {
-			max-height: 190px;
-			max-width: 420px;
+		body.simple .poppy .poppy-content {
+			max-height: 290px;
+			max-width: 430px;
 		}
-	#poppy p {
+		.poppy .poppy-content::-webkit-scrollbar-track:vertical {
+			border-left-color:  rgba(0,0,0,0.1);
+			background: -webkit-linear-gradient(0deg, rgba(0,0,0,0.07), rgba(0,0,0,0.01));
+		}
+	.poppy p {
 		margin: 0 3px 3px 4px;
 	}
-	#poppy #rule-input {
-		height: 17px;
+	.poppy #rule-input,
+	.rule-input {
+		height: 16px;
 		width: 460px;
 		padding: 2px 3px 3px;
 		margin-right: 3px;
@@ -59,36 +65,47 @@
 		overflow-x: scroll;
 		overflow-y: hidden;
 		resize: none;
+		display: inline-block;
 	}
-		body.simple #poppy #rule-input {
+		.poppy #rule-proto-input {
+			display: inline-block;
+			width: 45px;
+		}
+		body.simple .poppy #rule-input {
 			width: 360px;
 		}
-		body.windows #poppy #rule-input {
+			body.simplified .poppy #rule-input {
+				width: 305px;
+			}
+		body.windows .poppy #rule-input {
 			float: left !important;
 		}
-		body.windows #poppy #rule-save {
+		body.windows .poppy #rule-save {
 			float: left !important;
 		}
-		#poppy #rule-input::-webkit-scrollbar {
-			height: 4px;
+		.poppy #rule-input::-webkit-scrollbar,
+		.rule-input::-webkit-scrollbar {
+			height: 3px;
 		}
-	#poppy .inputs {
+		body.windows .rule-input {
+			height: 17px;
+		}
+	.poppy .inputs {
 		margin-top: 3px;
 		float: right;
 	}
-	#poppy ul li span {
+	.poppy ul li span {
 		width: auto;
 		max-width: 100%;
-		white-space: wrap;
-		
+		white-space: nowrap;
 	}
-	#poppy p.misc-info {
+	.poppy p.misc-info {
 		margin-bottom: 7px;
 	}
-	#poppy #rules-radios,
-	#poppy #rules-temp {
+	.poppy #rules-radios,
+	.poppy #rules-temp {
 		margin: 4px 0 2px;
 	}
-		#poppy #rules-temp {
+		.poppy #rules-temp {
 			margin-left: 2px;
 		}
