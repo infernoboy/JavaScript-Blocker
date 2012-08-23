@@ -21,7 +21,9 @@ p.misc-info select {
 	#frame-switcher .divider {
 		margin-bottom: -3px;
 	}
-	
+#rule-list-actions  {
+	margin-bottom: -3px;
+}
 #domain-script,
 #domain-picker {
 	max-width: 310px;
@@ -47,7 +49,8 @@ ul li small,
 #disclaimer,
 #rules-list,
 #misc,
-#poppy {
+#poppy,
+#snapshots {
 	font-size: 9pt;
 }
 
@@ -62,12 +65,13 @@ p.misc-header,
 	font-size: 10pt;
 }
 
-header h3 {
+#main .actions-bar li {
+	font-size: 8pt;
+}
+header h3,
+header a {
 	font-size: 13px;
 }
-	header a {
-		font-size: 13px;
-	}
 
 #disclaimer input {
 	font-size: 8pt;

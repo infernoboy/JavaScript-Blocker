@@ -7,10 +7,11 @@
 "use strict";
 
 var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
-		random = +new Date,
+		random = +new Date(),
 		blank = window.location.href === 'about:blank',
 		allowedToLoad = 'al-' + Math.random() * 10000000000000000,
-		parentURL = (window !== window.top && blank) ? (safari.self.tab.canLoad(beforeLoad, 'parentURL') + '&about:blank:' + random) : false;
+		parentURL = (window !== window.top && blank) ? (safari.self.tab.canLoad(beforeLoad, 'parentURL') + '&about:blank:' + random) : false,
+		disabled = safari.self.tab.canLoad(beforeLoad, ['disabled']);
 
 function pageHost(not_real) {
 	if (parentURL) return parentURL;
@@ -228,9 +229,7 @@ function canLoad(event) {
 
 	if (!event.target[allowedToLoad]) {
 		if (~alwaysAllow.indexOf(kind)) return 1;
-		else if (event.type !== 'DOMNodeInserted') {
-			did_something = 1;
-									
+		else if (event.type !== 'DOMNodeInserted') {									
 			if (source && source.length)
 				use_source = source, host = activeHost(source, 1);
 			else if (node !== 'OBJECT')
@@ -247,6 +246,8 @@ function canLoad(event) {
 				return 1;
 			}
 
+			did_something = 1;
+
 			if (!isAllowed && event.preventDefault)	event.preventDefault();
 			
 			jsblocker[mo][kind].all.push([use_source, allo[1], !!event.unblockable]);
@@ -255,9 +256,9 @@ function canLoad(event) {
 
 			if (kinds[node][1] && event.preventDefault) kinds[node][1].call(event.target, kind, isAllowed, host, use_source);
 		} else if ((!source || source.length === 0) && event.type === 'DOMNodeInserted') {
-			did_something = 1;
-
 			if (event.target.innerHTML.length && !event.target.getAttribute('data-jsblocker_added')) {
+				did_something = 1;
+
 				event.target.setAttribute('data-jsblocker_added', 1);
 
 				jsblocker.unblocked[kind].all.push(event.target.innerHTML);
@@ -267,13 +268,15 @@ function canLoad(event) {
 		}
 	}
 
-	if (did_something && (window !== window.top || event.type === 'DOMNodeInserted'))
+	if (did_something)
 		ready(event);
 }
 
 function ready(event) {
+	if (disabled) return false;
+
 	if (window === window.top)
-		safari.self.tab.dispatchMessage('updateReady');
+		GlobalPage.dispatchMessage('updateReady');
 		
 	var t = event.type === 'DOMContentLoaded' ? 1 : 0;
 	
@@ -296,12 +299,12 @@ function ready(event) {
 
 		if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
 			lastAddedFrameData = jsonBlocker;
-			safari.self.tab.dispatchMessage('addFrameData', [jsblocker.href, jsblocker]);
+			GlobalPage.dispatchMessage('addFrameData', [jsblocker.href, jsblocker]);
 		}
 			
 		try {
 			if (window === window.top)
-				safari.self.tab.dispatchMessage('updatePopover', jsblocker);
+				GlobalPage.dispatchMessage('updatePopover', jsblocker);
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
@@ -337,7 +340,7 @@ function messageHandler(event) {
 				if (a.length < 3) a.push(-1);
 			}
 				
-			safari.self.tab.dispatchMessage('addFrameData', a);
+			GlobalPage.dispatchMessage('addFrameData', a);
 		break;
 
 		case 'setting':
@@ -357,7 +360,7 @@ function messageHandler(event) {
 				height: '100%',
 				position: 'fixed',
 				top: '0px',
-				'z-index': +new Date,
+				'z-index': +new Date(),
 				border: 'none',
 				background: 'rgba(0,0,0,0.1)'
 			});
@@ -386,7 +389,7 @@ function hashUpdate(event) {
 	
 	jsblocker.href = pageHost();
 		
-	safari.self.tab.dispatchMessage('updateFrameData', [jsblocker.href, jsblocker, ohref])
+	GlobalPage.dispatchMessage('updateFrameData', [jsblocker.href, jsblocker, ohref])
 	
 	ready(event);
 }
@@ -403,7 +406,7 @@ function prepareAnchors(event, anchors, forms) {
 	for (var y = 0; y < f.length; y++)
 		zero_timeout(function (fo) {
 			if (fo.method && fo.method.toLowerCase() === 'post')
-				safari.self.tab.dispatchMessage('cannotAnonymize', getAbsoluteURL(fo.getAttribute('action')));
+				GlobalPage.dispatchMessage('cannotAnonymize', getAbsoluteURL(fo.getAttribute('action')));
 		}, [f[y]]);
 }
 
@@ -437,15 +440,15 @@ function prepareAnchor(anchor, i) {
 			}, null, [anchor]);
 		
 		if (anchor.getAttribute('href') && anchor.getAttribute('href').charAt(0) === '#')
-			safari.self.tab.dispatchMessage('cannotAnonymize', getAbsoluteURL(anchor.getAttribute('href')));
+			GlobalPage.dispatchMessage('cannotAnonymize', getAbsoluteURL(anchor.getAttribute('href')));
 		else	
 			anchor.addEventListener('mousedown', function (e) {
 				var k = (window.navigator.platform.match(/Win/)) ? e.ctrlKey : e.metaKey;
 			
-				safari.self.tab.dispatchMessage('anonymousNewTab', k ? 1 : 0);
+				GlobalPage.dispatchMessage('anonymousNewTab', k ? 1 : 0);
 			
 				setTimeout(function () {
-					safari.self.tab.dispatchMessage('anonymousNewTab', 0);
+					GlobalPage.dispatchMessage('anonymousNewTab', 0);
 				}, 1000);
 			}, true);
 	}
@@ -466,7 +469,7 @@ function prepareFrame(frame) {
 
 	if (!~['FRAME', 'IFRAME'].indexOf(fr.nodeName.toUpperCase())) return false;
 
-	if (!fr.getAttribute('id')) fr.setAttribute('id', 'frame-' + +new Date);
+	if (!fr.getAttribute('id')) fr.setAttribute('id', 'frame-' + +new Date());
 
 	fr.setAttribute('data-jsblocker_url', fr.src);
 
@@ -508,20 +511,22 @@ function windowMessenger(event) {
 	}
 }
 
-setInterval(function () {
-	jsblocker.href = pageHost();
-}, 1000);
+Events.addTabListener('message', messageHandler, true);
 
+if (!disabled) {
+	setInterval(function () {
+		jsblocker.href = pageHost();
+	}, 1000);
 
-safari.self.addEventListener('message', messageHandler, true);
-window.addEventListener('hashchange', hashUpdate, true);
-window.addEventListener('message', windowMessenger, true);
+	window.addEventListener('hashchange', hashUpdate, true);
+	window.addEventListener('message', windowMessenger, true);
 
-document.addEventListener('DOMContentLoaded', ready, true);
-document.addEventListener('DOMContentLoaded', prepareAnchors, true);
-document.addEventListener('DOMContentLoaded', prepareFrames, true);
-document.addEventListener('beforeload', canLoad, true);
-document.addEventListener('DOMNodeInserted', canLoad, true);
-document.addEventListener('DOMNodeInserted', prepareAnchor, true);
-document.addEventListener('DOMNodeInserted', prepareFrame, true);
-document.addEventListener('DOMNodeElementChanged', prepareAnchor, true);
+	document.addEventListener('DOMContentLoaded', ready, true);
+	document.addEventListener('DOMContentLoaded', prepareAnchors, true);
+	document.addEventListener('DOMContentLoaded', prepareFrames, true);
+	document.addEventListener('beforeload', canLoad, true);
+	document.addEventListener('DOMNodeInserted', canLoad, true);
+	document.addEventListener('DOMNodeInserted', prepareAnchor, true);
+	document.addEventListener('DOMNodeInserted', prepareFrame, true);
+	document.addEventListener('DOMNodeElementChanged', prepareAnchor, true);
+}

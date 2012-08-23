@@ -18,16 +18,13 @@
 	<link rel="stylesheet" href="css/injected.css" type="text/css" id="injected-style" />
 	
 	<script src="js/jquery.js"></script>
+	<script src="js/safari.js"></script>
+	<script src="js/chrome.js"></script>
 	<script src="js/after.js"></script>
 	<script src="i18n/i18n.js"></script>
 	<script src="i18n/en-us.js"></script>
-	<script src="js/settings.js"></script>
 	<script src="js/setting_items.js"></script>
-	<script>
-		__ = function (s, a) {
-			document.write(_(s, a));
-		};
-	</script>
+	<script src="js/settings.js"></script>
 </head>
 
 <body>
@@ -37,7 +34,7 @@
 		<br style="clear:both;">
 		
 		<div id="content">
-			<section id="requirements"><script>__('Settings page requirements');</script></section>
+			<section id="requirements"><script>document.write(_('Settings page requirements'));</script></section>
 		</div>
 	</div>
 </body>

@@ -1,0 +1,24 @@
+{
+	"name": "JavaScript Blocker",
+	"version": "3.0.0",
+	"manifest_version": 2,
+	"description": "Controls which resources are allowed to load on a webpage.",
+	"icons": {
+		"16": "Icon-32.png",
+		"48": "Icon-48.png",
+		"128": "Icon-64.png"
+	},
+	"browser_action": {
+		"default_icon": "images/toolbar.png",
+		"default_title": "JavaScript Blocker",
+		"default_popup": "popover.html"
+	},
+	"background": {
+		"page": "global.html"
+	},
+	"permissions": ["<all_urls>", "tabs"],
+	"content_scripts": [{
+		"matches": ["<all_urls>"],
+		"js": ["js/chrome.js", "js/blocker.js", "js/after.js"]
+	}]
+}

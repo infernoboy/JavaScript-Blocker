@@ -6,9 +6,7 @@
 
 var Strings = {},
 		_ = function (string, args) {
-	var s,
-			lang = safari.extension.settings ? safari.extension.settings.language : Settings.current_value('language'),
-			load_language = (lang !== 'Automatic') ? lang : window.navigator.language;
+	var s, load_language = Strings.getLanguage();
 		
 	s = Strings[load_language] && (string in Strings[load_language]) ? Strings[load_language][string] : Strings['en-us'][string] || string + ':NOT_LOCALIZED';
 	
@@ -24,4 +22,9 @@ var Strings = {},
 	}
 	
 	return s;
+};
+
+Strings.getLanguage = function () {
+	var lang = Settings.current_value ? Settings.current_value('language') : Settings.getItem('language');
+	return (lang !== 'Automatic') ? lang : window.navigator.language;
 };

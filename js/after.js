@@ -7,7 +7,7 @@ var special_actions = {
 		}, true);
 	},
 	window_resize: function () {
-		var wo = 'window_open_' + +new Date;
+		var wo = 'window_open_' + +new Date();
 
 		window.resizeBy = function () {};
 		window.resizeTo = function () {};
@@ -32,7 +32,7 @@ var special_actions = {
 					'<div class="jsblocker-alert-text">', (!text ? a.replace(/</g, '&lt;') : a), '</div>',
 				'</div>'].join('');
 			ht.className = 'jsblocker-alert';
-			ht.id = 'jsblocker-alert-' + (+new Date);
+			ht.id = 'jsblocker-alert-' + (+new Date());
 			
 			document.documentElement.appendChild(ht);
 
@@ -60,7 +60,7 @@ var special_actions = {
 
 					if (event.wheelDeltaX) event.preventDefault();
 
-					if (this.disallowMouseWheel || event.wheelDeltaY) return console.log(event.wheelDeltaY);
+					if (this.disallowMouseWheel || event.wheelDeltaY) return;
 
 					clearTimeout(ht.resetTimeout);
 
@@ -199,7 +199,7 @@ var special_actions = {
 	font: function (v) {
 		var s = document.createElement('style');
 		s.type = 'text/css';
-		s.id = 'jsblocker-css-' + (+new Date);
+		s.id = 'jsblocker-css-' + (+new Date());
 		s.innerText = '*:not(pre):not(code) { font-family: "' + v + '" !important; }';
 		document.documentElement.appendChild(s);
 	}
@@ -210,14 +210,14 @@ function appendScript(script, v) {
 	var script = script.toString(), p = script.split(/\{/), s = document.createElement('script');
 	p[1] = "\n" + '"use strict";' + "\n// JSBlocker Injected Helper Script" + p[1];
 	script = p.join('{');
-	s.id = 'jsblocker-' + (+new Date);
+	s.id = 'jsblocker-' + (+new Date());
 	s.innerHTML = '(' + script + ')(' + (typeof v !== 'undefined' ? (typeof v === 'string' ? '"' + v + '"' : v ): '') + ');';
 	document.documentElement.appendChild(s);
 }
 
-appendScript(function (base) {
+/*appendScript(function (base) {
 	window.jsblockerBaseURI = base;
-}, safari.extension.baseURI);
+}, ExtensionURL());*/
 
 function doSpecial(do_append, n, action) {
 	var v = if_setting('enable_special_' + n), m;

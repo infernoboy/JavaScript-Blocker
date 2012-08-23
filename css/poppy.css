@@ -4,6 +4,60 @@
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
  ***************************************/
 
+@-webkit-keyframes shake {
+	0% {
+		-webkit-transform: translateX(0);
+	}
+	14% {
+		-webkit-transform: translateX(-13px);
+	}
+	28% {
+		-webkit-transform: translateX(13px);
+	}
+	43% {
+		-webkit-transform: translateX(-9px);
+	}
+	57% {
+		-webkit-transform: translateX(9px);
+	}
+	71% {
+		-webkit-transform: translateX(-7px);
+	}
+	86% {
+		-webkit-transform: translateX(7px);
+	}
+	100% {
+		-webkit-transform: translateX(0);
+	}
+}
+
+@-webkit-keyframes unshake {
+	0% {
+		-webkit-transform: translateX(0);
+	}
+	14% {
+		-webkit-transform: translateX(13px);
+	}
+	28% {
+		-webkit-transform: translateX(-13px);
+	}
+	43% {
+		-webkit-transform: translateX(9px);
+	}
+	57% {
+		-webkit-transform: translateX(-9px);
+	}
+	71% {
+		-webkit-transform: translateX(7px);
+	}
+	86% {
+		-webkit-transform: translateX(-7px);
+	}
+	100% {
+		-webkit-transform: translateX(0);
+	}
+}
+
 #poppy-arrow-settings {
 	height: 30px;
 	width: 30px;
@@ -18,7 +72,7 @@
 	z-index: 10000;
 	background: rgba(242,242,242,0.93);
 	border: 1px solid rgba(160,160,160,0.8);
-	-webkit-box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+	box-shadow: 0 3px 15px rgba(0,0,0,0.2);
 	font-size: 8pt;
 	text-shadow: 0 1px 0 rgba(255,255,255,0.6);
 	-webkit-transition-property: -webkit-transform, opacity;
@@ -27,6 +81,12 @@
 	-webkit-transform: scale(0);
 	opacity: 0.25;
 }
+	.poppy.shake {
+		-webkit-animation: shake 0.5s linear 0 1;
+	}
+	.poppy.shake.slow {
+		-webkit-animation: shake 5s linear 0 1;
+	}
 	.poppy .poppy-arrow {
 		pointer-events: none;
 		position: absolute;
@@ -37,6 +97,12 @@
 		.poppy .poppy-arrow.flip {
 			background: -webkit-canvas(poppy-arrow-flip);
 		}
+		.poppy.shake .poppy-arrow {
+			-webkit-animation: unshake 0.5s linear 0 1;
+		}
+			.poppy.shake.slow .poppy-arrow {
+				-webkit-animation: unshake 5s linear 0 1;
+			}
 	.poppy .poppy-content {
 		padding: 0 7px;
 		max-height: 340px;
@@ -71,12 +137,15 @@
 			display: inline-block;
 			width: 45px;
 		}
+			body.windows .poppy #rule-proto-input {
+				float: left;
+			}
 		body.simple .poppy #rule-input {
 			width: 360px;
 		}
-			body.simplified .poppy #rule-input {
-				width: 305px;
-			}
+		body.simplified .poppy #rule-input {
+			width: 305px;
+		}
 		body.windows .poppy #rule-input {
 			float: left !important;
 		}
@@ -87,8 +156,13 @@
 		.rule-input::-webkit-scrollbar {
 			height: 3px;
 		}
-		body.windows .rule-input {
-			height: 17px;
+		body.windows #rule-proto-input {
+			height: 19px;
+		}
+		body.windows .rule-input,
+		body.windows #rule-input {
+			height: 18px;
+			padding-top: 0;
 		}
 	.poppy .inputs {
 		margin-top: 3px;

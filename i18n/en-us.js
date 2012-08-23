@@ -21,8 +21,10 @@ Strings['en-us'] = {
 	
 	/** BUTTONS & LABELS **/
 	'Domains': 'Domains',
+	'Filter:': 'Filter:', // NEW
 	'State:': 'State:',
 	'Visibility:': 'Visibility:',
+	'Actions:': 'Actions:', // NEW
 	'Page:': 'Page:',
 	'Allowed:': 'Allowed:',
 	'Blocked:': 'Blocked:',
@@ -69,6 +71,9 @@ Strings['en-us'] = {
 	'Disable': 'Disable',
 	'Delete': 'Delete',
 	'Restore': 'Restore',
+	'Recover': 'Recover', // NEW
+	'Merge': 'Merge', // NEW
+	'Replace': 'Replace', // NEW
 	'Save': 'Save',
 	'Show Hidden': 'Show Hidden', // NEW
 	'Hide Hidden': 'Hide Hidden', // NEW
@@ -76,24 +81,29 @@ Strings['en-us'] = {
 	'Edit Rule': 'Edit Rule',
 	'New Rule': 'New Rule',
 	'Restore/Delete Rules': 'Restore/Delete Rules',
-	'Restore Rule': 'Restore Rule',
-	'Restore Rules': 'Restore Rules',
+	'Disable/Delete Rules': 'Disable/Delete Rules',
+	'restore Rule': 'Restore Rule',
+	'disable Rule': 'Disable Rule', // NEW
+	'restore Rules': 'Restore Rules',
+	'disable Rules': 'Disable Ruels', // NEW
 	'Delete Rule': 'Delete Rule',
 	'Delete Rules': 'Delete Rules',
 	'Do you want to completely remove all rules for this domain?': 'Do you want to completely remove all rules for this domain?',
 	'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.':
 			'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.',
 	'Close Rules List': 'Close Rules',
+	'Close Snapshots': 'Close Snapshots', // NEW
 	'Close': 'Close',
 	'Reinstall whitelist and blacklist rules:': 'Reinstall whitelist and blacklist rules:', // CHANGED
+	'Reinstall Whitelist and Blacklist': 'Reinstall Whitelist and Blacklist', // NEW
 	'Show All': 'Show All',
 	'Show Active': 'Show Active',
 	'Show': 'Show',
 	'Hide': 'Hide',
 	'Continue': 'Continue',
-	'View Script Source': 'View Script Source',
-	'View Frame Source': 'View Frame Source',
-	'View Image Source': 'View Image',
+	'View script Source': 'View Script Source',
+	'View frame Source': 'View Frame Source',
+	'View image Source': 'View Image',
 	'New rule for {1}': 'New rule for <b>{1}</b>', // {1} = domain name
 	'Any': 'Any',
 	'Enabled': 'Enabled',
@@ -103,8 +113,8 @@ Strings['en-us'] = {
 	'Expanded': 'Expanded',
 	'Collapse All': 'Collapse All',
 	'Expand All': 'Expand All',
-	'Enable JavaScript Blocker': 'Enable JavaScript Blocker',
-	'Disable JavaScript Blocker': 'Disable JavaScript Blocker',
+	'Enable JavaScript Blocker': 'Enable',
+	'Disable JavaScript Blocker': 'Disable',
 	'Show {1} more': 'Show {1} more', // {1} = number of hidden items in main window.
 	'Help': 'Help',
 	'Understood': 'Understood',
@@ -115,7 +125,7 @@ Strings['en-us'] = {
 	'I\'ve Donated!': 'I\'ve Paid!', // UPDATED
 	'Unblocked Script': 'Unblockable Script',
 	'More Info': 'Safety Info',
-	'Unlock': 'Unlock All Features Permanently',
+	'Unlock': 'Unlock',
 	'Temporary rule': 'Make this a temporary rule',
 	'Make these temporary rules': 'Make these temporary rules', // NEW
 	'Make Temporary Rules Permanent': 'Make Temporary Rules Permanent',
@@ -133,30 +143,56 @@ Strings['en-us'] = {
 	'Embeds': 'Embeds & objects',
 	'Videos': 'Videos', // NEW
 	'Specials': 'Other',
+	'Snapshots': 'Snapshots', // NEW
 
 	'scripts': 'scripts', // NEW
 	'frames': 'frames', // NEW
 	'images': 'images', // NEW
 	'embeds': 'embeds and objects', // NEW
 	'videos': 'videos', // NEW
-	'specials': 'Other',
-	'Frame Rules': 'Frame Rules',
-	'Script Rules': 'Script Rules',
-	'Embed Rules': 'Embed & Object Rules',
-	'Video Rules': 'Video Rules', // NEW
-	'Image Rules': 'Image Rules',
-	'Special Rules': 'Other Rules',
-	'Hide_script Rules': 'Hide-Script Rules', // NEW
-	'Hide_frame Rules': 'Hide-Frame Rules', // NEW
-	'Hide_embed Rules': 'Hide-Embed-&-Object Rules', // NEW
-	'Hide_video Rules': 'Hide-Video Rules', // NEW
-	'Hide_image Rules': 'Hide-Image Rules', // NEW
-	'Hide_special Rules': 'Hide-Other Rules', // NEW
+	'specials': 'other',
+	'frame Rules': 'Frame Rules',
+	'script Rules': 'Script Rules',
+	'embed Rules': 'Embed & Object Rules',
+	'video Rules': 'Video Rules', // NEW
+	'image Rules': 'Image Rules',
+	'special Rules': 'Other Rules',
+	'hide_script Rules': 'Hide-Script Rules', // NEW
+	'hide_frame Rules': 'Hide-Frame Rules', // NEW
+	'hide_embed Rules': 'Hide-Embed-&-Object Rules', // NEW
+	'hide_video Rules': 'Hide-Video Rules', // NEW
+	'hide_image Rules': 'Hide-Image Rules', // NEW
+	'hide_special Rules': 'Hide-Other Rules', // NEW
 	'Forgot': 'iForgot',
 	'Main page': 'Main page', // NEW
 	'Prev. frame': 'Prev. frame', // NEW
 	'Next frame': 'Next frame', // NEW
 	'Show Matched Rules': 'Show Matched Rules', // NEW
+	'Current Snapshot': 'Current Snapshot', // NEW
+	'Current Comparison': 'Current Comparison', // NEW
+	'Create Snapshot': 'Create Snapshot', // NEW
+	'Snapshot': 'Snapshot', // NEW
+	'Snapshot Preview: {1}': 'Snapshot Preview ({1})', // NEW
+	'Show Snapshots': 'Show Snapshots', // NEW
+	'Close Preview': 'Close Preview', // NEW
+	'Close Comparison': 'Close Comparison', // NEW
+	'Merge With Current Rules': 'Merge Rules', // NEW
+	'Replace Current Rules': 'Replace Rules', // NEW
+	'Keep': 'Keep', // NEW
+	'Unkeep': 'Unkeep', // NEW
+	'Name': 'Name', // NEW
+	'Kept': 'Kept', // NEW
+	'Unkept': 'Unkept', // NEW
+	'Open Preview': 'Open Preview', // NEW
+	'Close Preview': 'Close Preview', // NEW
+	'Compare': 'Compare', // NEW
+	'Only in Snapshot': 'Only in Snapshot', // NEW
+	'Only in My Rules': 'Only in My Rules', // NEW
+	'In Both': 'In Both', // NEW
+	'Show Rules': 'Show Rules', // NEW
+	'Rules Only in Snapshot: {1}': 'Rules Only in Snapshot ({1})', // NEW
+	'Rules Not in Snapshot: {1}': 'Rules Not in Snapshot ({1})', // NEW
+	'Rules in Both My Rules and Snapshot: {1}': 'Rules in Both My Rules and Snapshot ({1})', // NEW
 	/** /BUTTONS **/
 	
 	/** POPPIES **/
@@ -179,8 +215,6 @@ Strings['en-us'] = {
 	
 	'The rule allowing this item will be removed.': 'The rule allowing this item will be removed.',
 	'The rule blocking this item will be removed.': 'The rule blocking this item will be removed.',
-	'The temporary rule allowing this item will be removed.': 'The temporary rule allowing this item will be removed.',
-	'The temporary rule blocking this item will be removed.': 'The temporary rule blocking this item will be removed.',
 	
 	'Safety Information for {1}': 'Safety Information for {1}',
 	'Matched script Rules': 'Matched Script Rules', // NEW
@@ -191,9 +225,18 @@ Strings['en-us'] = {
 	'Matched special Rules': 'Matched Other Rules', // NEW
 
 	'Nothing is hidden': 'Nothing is hidden.', // NEW
+
+	'Snapshot in use': 'You cannot modify rules while previewing or comparing a snapshot.', // NEW
+	'Domain replaced in current rule set.': 'Domain replaced in current rule set.', // NEW
+	'Domain merged with current rule set.': 'Domain merged with current rule set.', // NEW
+	'Rule added to current rule set.': 'Rule added to current rule set.', // NEW
+	'Snapshot created.': 'A new snapshot has been created.', // NEW
+	'You have {1} snapshots using {2} of storage.': 'You have {1} snapshots using {2} of storage.', // NEW
 	/** /POPPIES **/
 	
 	/** ERRORS-ISH **/
+	'Safari extensions website': 'JavaScript Blocker has been successfully installed, but will not be able to run on the Safari Extensions ' +
+		'Gallery website for security reasons.',
 	'This data URI cannot be displayed.': 'This data URI cannot be displayed.',	
 	'Predefined rules cannot be edited.': 'Predefined rules cannot be edited. ',
 	'Update Failure': 'Information about the current webpage is outdated or unavailable, possibly due to a bug with Safari. Reloading the page may resolve the issue.', // UPDATED
@@ -201,6 +244,7 @@ Strings['en-us'] = {
 
 	'Unblockable frame': 'This frame\'s source cannot be blocked because it is the result of a navigation event that occurred from ' +
 		'the original URL. The original URL may appear as "blank" or "about:blank"; blocking that instead may work.', // NEW
+	'{1} cannot function when its toolbar icon is hidden.': '{1} cannot function when its toolbar icon is hidden.', // NEW
 	/** /ERRORS-ISH **/
 	
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
@@ -256,12 +300,17 @@ Strings['en-us'] = {
 	/** INFO ABOUT REMOVING RULES **/
 	'The following rule is allowing this item:': 'The following rule is allowing this item:',
 	'The following rules are allowing this item:': 'The following rules are allowing this item:',
+	'The following rule is blocking this item:': 'The following rule is blocking this item:', // NEW
+	'The following rules are blocking this item:': 'The following rules are blocking this item:', // NEW
 	
 	'Would you like to delete it, or add a new one?': 'Would you like to delete it, or add a new one?',
 	'Would you like to delete them, or add a new one?': 'Would you like to delete them, or add a new one?',
 	'Would you like to restore it, or add a new one?': 'Would you like to restore it, or add a new one?',
+	'Would you like to disable it, or add a new one?': 'Would you like to disable it, or add a new one?', // NEW
 	'Would you like to restore them, or add a new one?': 'Would you like to restore them, or add a new one?',
+	'Would you like to disable them, or add a new one?': 'Would you like to disable them, or add a new one?', // NEW
 	'Would you like to restore/delete them, or add a new one?': 'Would you like to restore/delete them, or add a new one?',
+	'Would you like to disable/delete them, or add a new one?': 'Would you like to disable/delete them, or add a new one?', // NEW
 	
 	'The following rule(s) would be deleted or disabled:': 'The following rule(s) would be deleted or disabled:',
 	'This may inadvertently affect other scripts.': 'This may inadvertently affect other scripts.',
@@ -385,6 +434,7 @@ Strings['en-us'] = {
 	'Prevent links on webpages from sending referrer information': 'Prevent links on webpages from sending referrer information',
 	'Automatically block scripts from:': 'Automatically block scripts from:',
 	'Create temporary rules for automatic actions': 'Create temproary rules for automatic actions',
+	'…even if Private Browsing is enabled': '… even if Private Browsing is enabled', // NEW
 	'Enable script blocker': 'Enable script blocker',
 	'Enable frame blocker': 'Enable frame blocker',
 	'Show a placeholder for blocked frames': 'Show a placeholder for blocked frames',
@@ -412,6 +462,13 @@ Strings['en-us'] = {
 	'Search Results': 'Search Results', // Header displayed in the search panel.
 	
 	'Other…': 'Other…', // Generic option
+
+	// Quick Add
+	'Enable Quick Add—lets you add rules with a single click': 'Enable Quick Add—add rules with a single click', // NEW
+		'Quick-add rules are temporary': 'Quick Add rules are temporary', // NEW
+	'Create Quick Add rules for:': 'Create Quick Add rules for:',
+	'Same hostname as page host': 'Same domain as page host',
+	'Least domain of page host': 'Root domain of page host',
 	
 	// Zoom
 	'Enter a custom zoom level to use.': 'Enter a custom zoom level to use. Do not include the % symbol.', // Pops up when "Other..." is clicked
@@ -451,6 +508,15 @@ Strings['en-us'] = {
 	'Different hosts &amp; subdomains': 'Different hosts &amp; subdomains',
 	'Nowhere': 'Nowhere',
 	'Anywhere': 'Anywhere',
+
+	 // Snapshots
+	 'Snapshots description': 'Snapshots keeps track of all changes made to your rules. It lets you easily revert to different ' +
+	 		'rule sets, or recover just a few. You\'ll never have to worry about messing up your rules again.',
+	 'Snapshots disabled': 'Snapshots are disabled.',
+	 'Enable rule snapshots': 'Enable rule snapshots',
+	 'Create a snapshot when rules are modified': 'Create a snapshot when rules are modified',
+	 'Store only': 'Store only',
+	 'unkept snapshots': 'unkept snapshots',
 	
 	'EXPERIMENTAL: Enable full referrer blocking':
 		'EXPERIMENTAL: Enable full referrer blocking', // UPDATED
@@ -507,7 +573,10 @@ Strings['en-us'] = {
 		'<p><b>Different hosts & subdomains</b> will allow only "www.example.com".</p>',
 		'<p><b>Nowhere</b> will allow everything.</p>',
 		'<p><b>Anywhere</b> will allow nothing.</p>'].join(''),
-		
+	
+	'quickAdd help': 'Lets you quickly add rules with a single click. Successive clicks in simple mode will select different parts of the host. A press-and-hold ' +
+		'will trigger the standard UI to add a rule.', // NEW
+	'simpleMode help': 'When enabled, a different rule set will be used.', // NEW
 	'simpleReferrer help': 'Adds the attribute <b>rel="noreferrer"</b> to anchor tags.', // <b>rel="noreferrer"</b> = do not localize.
 	'enableimage help': 'This will <b>not</b> prevent the network request from being made on images. It will only hide it in the DOM. ' +
 		'This is a Safari limitation and there is nothing that can be done to prevent it from loading.',
@@ -517,6 +586,14 @@ Strings['en-us'] = {
 	'convertRules help': 'This will attempt to convert rules created using the non-expert UI (with simplified rules disabled) into simplified ones. Any custom or edited rules may not be converted ' +
 		'and will have to be re-added manually when using the simplified rules UI. Any existing rules will remain untouched.',
 	'Settings page requirements': 'You have to allow scripts from the host <b>com.toggleable.JavaScriptBlocker-6S8J5HV3H4</b> (or <b>com.toggleable.JavaScriptBlockerBeta-6S8J5HV3H4</b> ' +
-		'if using the beta) in order for the settings page to function.' // NEW
+		'if using the beta) in order for the settings page to function.', // NEW
+
+	date: {
+		days_short: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+		days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+		days_full: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+		months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+		months_full: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+	}
 	/** /SETTINGS **/
 };

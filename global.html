@@ -15,47 +15,19 @@
 		<title>JavaScript Blocker</title>
 		
 		<script src="js/jquery.js"></script>
+		<script src="js/safari.js"></script>
+		<script src="js/chrome.js"></script>
 		<script src="js/beautify.min.js"></script>
 		<script src="i18n/i18n.js"></script>
 		<script src="i18n/en-us.js"></script>
 		<script src="js/setting_items.js"></script>
 		<script src="js/poppy.js"></script>
+		<script src="js/snapshots.js"></script>
 		<script src="js/global.js"></script>
 		<script src="js/updater.js"></script>
 		<script src="js/poppies.js"></script>
 		<script src="js/predefined.js"></script>
 		<script src="js/beta.js"></script>
-
-		<script>
-			document.addEventListener('DOMContentLoaded', function () {
-				JB.load_language();
-				JB.validate();
-			});
-			
-			window.addEventListener('message', function (event) {
-				if (event.data === 'zero-timeout') {
-					event.stopPropagation();
-					if (JB.utils._zero_timeouts.length) {
-						var o = JB.utils._zero_timeouts.shift();
-						if (typeof o[0] === 'function')
-							o[0].apply(JB, o[1]);
-					}
-				}
-			});
-			
-			if (JB.isBeta)
-				window.onerror = function (d, p, l, c) {
-					_d(d + ', ' + p + ', ' + l);
-				};
-			
-			safari.application.addEventListener('close', $.proxy(JB.open_popover, JB), true);
-			safari.application.addEventListener('beforeNavigate', $.proxy(JB.open_popover, JB), true);
-			safari.application.addEventListener('beforeNavigate', $.proxy(JB.anonymize, JB), true);
-			safari.application.addEventListener('popover', $.proxy(JB.open_popover, JB), true);
-			safari.application.addEventListener('validate', $.proxy(JB.validate, JB), false);
-			safari.application.addEventListener('message', $.proxy(JB.handle_message, JB), true);
-			safari.extension.settings.addEventListener('change', $.proxy(JB.setting_changed, JB), true);
-		</script>
 	</head>
 	<body>
 	</body>

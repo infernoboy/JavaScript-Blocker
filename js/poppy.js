@@ -12,16 +12,25 @@
  * @param {number} x The left position of poppy
  * @param {number} y The top position of poppy
  * @param {string|jQuery.Element} content Content to be displayed in poppy
- * @param {function|null|undefined} cb A callback called as soon as the content is placed in a poppy
- * @param {function|null|undefined} cb2 A callback called when the popover finishes displaying
+ * @param {function|null|undefined} onshowstart A onshowstart called as soon as the content is placed in a poppy
+ * @param {function|null|undefined} onshowend A onshowstart called when the popover finishes displaying
  * @param {number|null|undefined} time Animation speed of popover in seconds
  */
-var Poppy = function (x, y, content, cb, cb2, time, modal, secondary) {
+var Poppy = function (x, y, content, onshowstart, onshowend, time, modal, secondary) {
+	if (!ToolbarItems.visible()) {
+		if (!JB.toolbar_notified) {
+			JB.toolbar_notified = 1;
+			alert(_('{1} cannot function when its toolbar icon is hidden.', [_('JavaScript Blocker')]));
+		}
+
+		return false;
+	}
+
 	if (content !== null && typeof content === 'object' && ('content' in content)) {
 		try {
 			var temporary = content.content;
-			cb = content.callback || $.noop;
-			cb2 = content.callback2 || $.noop;
+			onshowstart = content.onshowstart || $.noop;
+			onshowend = content.onshowend || $.noop;
 			time = typeof content.time === 'number' ? content.time : null;
 			modal = content.modal || null;
 		} catch (e) { }
@@ -31,9 +40,9 @@ var Poppy = function (x, y, content, cb, cb2, time, modal, secondary) {
 		
 	this.modal = modal;
 	this.removeOnly = $.makeArray(arguments).length === 0 || x === null || x === true;
-	this.callback = (cb && typeof cb == 'function') ? cb : $.noop;
-	this.callback2 = (cb2 && typeof cb2 == 'function') ? cb2 : $.noop;
-	this.popover = safari.extension.toolbarItems[0].popover.contentWindow.document;
+	this.onshowstart = (onshowstart && typeof onshowstart == 'function') ? onshowstart : $.noop;
+	this.onshowend = (onshowend && typeof onshowend == 'function') ? onshowend : $.noop;
+	this.popover = Popover.window().document;
 	this.p = $(this.popover.body);
 	this.secondary = !!secondary || x === true;
 	
@@ -57,7 +66,7 @@ var Poppy = function (x, y, content, cb, cb2, time, modal, secondary) {
 
 Poppy.prototype = {
 	_dT: null,
-	s: '#setup, #main, #rules-list, #misc',
+	s: '#setup, #main, #rules-list, #misc, #snapshots',
 	e: '#poppy',
 	c: '#poppy-content',
 	a: '#poppy-arrow',
@@ -75,13 +84,13 @@ Poppy.prototype = {
 				
 		return (this.removeOnly !== false) ? false : JB.utils.zero_timeout($.proxy(this.create, this));
 	},
-	remove: function (cb) {
-		_$('#modal').fadeOut(this._time * 1000);
+	remove: function (onshowstart) {
+		$$('#modal').fadeOut(this._time * 1000);
 
 		$(this.e, this.p).css({
 			opacity: 0,
 			WebkitTransitionDuration: (this._time * .3) + 's'
-		}).one('webkitTransitionEnd', { s: this, c: cb }, function (event) {
+		}).one('webkitTransitionEnd', { s: this, c: onshowstart }, function (event) {
 			var d = event.data;
 			
 			$(this).remove();
@@ -89,15 +98,15 @@ Poppy.prototype = {
 			JB.utils.zero_timeout($.proxy(d.c, d.s));
 			
 			if (d.s.removeOnly) {
-				JB.utils.zero_timeout(d.s.callback);
-				JB.utils.zero_timeout(d.s.callback2);
+				JB.utils.zero_timeout(d.s.onshowstart);
+				JB.utils.zero_timeout(d.s.onshowend);
 			}
 		});
 	},
 	create: function () {
 		if ($(this.e, this.p).length) $(this.e, this.p).remove();
 		
-		var mo = _$('#modal'),
+		var mo = $$('#modal'),
 				self = this,
 				eC = '<div id="' + this.e.substr(1) + '" class="poppy"></div>',
 				cC = '<div id="' + this.c.substr(1) + '" class="poppy-content"></div>',
@@ -116,7 +125,7 @@ Poppy.prototype = {
 				.end()
 				.append(aC);
 		
-		this.callback.call($(this.e, this.p));
+		this.onshowstart.call($(this.e, this.p));
 			
 		var points = this.calcPoints(), left;
 		
@@ -131,7 +140,6 @@ Poppy.prototype = {
 			bottom: points.main.bottom,
 			top: points.main.top,
 			width: m.width(),
-			height: m.height()
 		}).find(self.a).css({
 			left: points.arrow.left,
 			bottom: points.arrow.bottom,
@@ -140,9 +148,9 @@ Poppy.prototype = {
 			var d = event.data;
 			
 			try {
-				d.s.callback2.call($(d.s.e, d.s.p));
+				d.s.onshowend.call($(d.s.e, d.s.p));
 			} catch (e) {
-				_d('Error with callback2 for poppy:', e);
+				_d('Error with onshowend for poppy:', e);
 			}
 		
 			d.m.css({
@@ -224,7 +232,7 @@ Poppy.prototype = {
 		return o;
 	},
 	createArrow: function (fill, stroke) {
-		var set = _$('#poppy-arrow-settings'), com = window.getComputedStyle(set[0]),
+		var set = $$('#poppy-arrow-settings'), com = window.getComputedStyle(set[0]),
 				shd = 'rgba(0,0,0,0.15)', bg = com.backgroundColor, brd = com.borderTopColor,
 				img = com.backgroundImage, ig, trans, trans_flip,
 				ctx = JB.popover.getCSSCanvasContext('2d', 'poppy-arrow', 30, 22),

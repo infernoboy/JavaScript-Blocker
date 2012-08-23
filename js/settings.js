@@ -1,23 +1,22 @@
 "use strict";
 
-var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
-		speedMultiplier = 1,
-		Settings = {
+var speedMultiplier = 1;
+$.extend(Settings, {
 	loaded: 0,
 	tba: 0,
 	bind_events: function () {
 		var self = this;
 
-		$(document.body).click(function (e) {
+		$(document).click(function (e) {
 			if (e.target && e.target.nodeName === 'BODY')
-				safari.self.tab.dispatchMessage('closeSettings');
-		});
-		
-		$('#toolbar').on('click', 'li', function () {
+				GlobalPage.dispatchMessage('closeSettings');
+		}).on('click', '#toolbar li', function () {
 			if ($(this).hasClass('selected')) return false;
-			if (self.tba) return setTimeout(function (self) {
-				self.click();
-			}, 600, $(this));
+
+			if (self.tba)
+				return setTimeout(function (self) {
+					self.click();
+				}, 600, $(this));
 
 			window.location.hash = this.id;
 			
@@ -30,11 +29,8 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 			var c = $('#container'),
 					ac = $('section.active'),
 					sec = $(this).siblings('li').removeClass('selected').end().addClass('selected').attr('id').substr(4),
-					ph = c.height();
-					
-			c.css('WebkitTransition', 'height ' + (.2 * speedMultiplier) + 's').addClass('no-transition');
-
-			var s = $('section').removeClass('active').filter('#' + sec).addClass('active').css('opacity', 0);
+					ph = c.height(),
+					s = $('section').removeClass('active').filter('#' + sec).addClass('active').css('opacity', 0);
 					
 			if (sec !== 'about') {
 				var ul = s.find('ul').empty();
@@ -42,6 +38,8 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 				for (var setting in Settings.settings[sec])
 					Settings.make_setting(sec, setting, Settings.settings[sec][setting], ul);
 			}
+
+			c.css('WebkitTransition', 'height ' + (.2 * speedMultiplier) + 's').addClass('no-transition');
 			
 			if (sec === 'search') $('#for-search input').trigger('search');
 						
@@ -86,11 +84,9 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 				
 				if (!self.current_value('animations')) end();
 			}, [c, nh, s, self]);
-		});
-		
-		$(document).on('click', 'a', function (e) {
+		}).on('click', 'a', function (e) {
 			e.stopImmediatePropagation();
-			
+
 			var h = this.getAttribute('href');
 			
 			if (h.charAt(0) === '#') {
@@ -104,9 +100,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 					$('#for-search input').val(_(Settings.settings.other.simpleReferrer.label)).trigger('search');
 				break;
 			}
-		});
-		
-		$(document.body).on('change', 'section select, section input[type="checkbox"]', function () {
+		}).on('change', 'section select, section input[type="checkbox"], section input[type="number"]', function () {
 			var li = $(this).parents('li'),
 					id = li.attr('id'),
 					setting = li.attr('data-setting'),
@@ -132,10 +126,8 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 			if (this.getAttribute('type') === 'checkbox' && Settings.settings[group][setting].confirm && this.checked)
 				this.checked = Settings.settings[group][setting].confirm();
 
-			Settings.set_value(group, setting, ('checked' in this) ? (Settings.settings[group][setting].opposite ? !this.checked : this.checked) : this.value);
-		});
-		
-		$(document.body).on('click', 'input[type="button"]', function () {
+			Settings.set_value(setting, (this.type === 'checkbox') ? (Settings.settings[group][setting].opposite ? !this.checked : this.checked) : this.value);
+		}).on('click', 'input[type="button"]', function () {
 			if (!self.confirm_click(this)) return false;
 			
 			switch (this.id.substr('button-'.length)) {
@@ -143,19 +135,19 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 					for (var section in Settings.settings)
 						if (section !== 'misc')
 							for (var setting in Settings.settings[section])
-								Settings.set_value(section, setting, null);
+								Settings.set_value(setting, null);
 					
 					window.location.reload();
 				break;
 				
 				case 'removeRules':
-					Settings.set_value(null, 'Rules', '{}');
-					Settings.set_value(null, 'SimpleRules', '{}');
+					Settings.set_value('Rules', '{}');
+					Settings.set_value('SimpleRules', '{}');
 					alert(_('All rules have been removed.'));
 				break;
 
 				case 'reinstallWLBL':
-					safari.self.tab.dispatchMessage('reinstallWLBL');
+					GlobalPage.dispatchMessage('reinstallWLBL');
 
 					alert(_('Whitelist and blacklist rules have been reinstalled.'), 'reinstallWLBL');
 				break;
@@ -203,11 +195,11 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 
 						if (!('settings' in js) || !('rules' in js)) throw 'Invalid backup data.';
 
-						Settings.set_value(null, 'Rules', js.rules || '{}');
-						Settings.set_value(null, 'SimpleRules', js.simpleRules || '{}');
+						Settings.set_value('Rules', js.rules || '{}');
+						Settings.set_value('SimpleRules', js.simpleRules || '{}');
 
 						for (var setting in js.settings)
-							Settings.set_value(null, setting, js.settings[setting], 1);
+							Settings.set_value(setting, js.settings[setting], 1);
 
 						alert(_('Your backup has been successfully restored.'));
 					} catch (e) {
@@ -216,15 +208,10 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 				break;
 
 				case 'convertRules':
-					var re = safari.self.tab.canLoad(beforeLoad, ['convert_rules']);
-
-					if (re === true) alert(_('Rules converted.'), 'convertRules');
-					else alert(_('Some rules could not be converted {1}', ['<textarea readonly>' + re + '</textarea>']), 'convertRules');
+					GlobalPage.dispatchMessage('convertRules');
 				break;
 			}
-		});
-		
-		$(document.body).on('search', '#search', function () {
+		}).on('search', '#search', function () {
 			$('#for-search:not(.selected)').click();
 			
 			var val = $.trim(this.value),
@@ -248,10 +235,8 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 					}
 			
 			ul.find('.donator:gt(0)').remove().end().find('.description').remove().end().find('.divider').remove();
-		});
-		
-		$(document.body).keydown(function (e) {
-			if (e.which === 16) speedMultiplier = !Settings.current_value('animations') ? 0.001 : 10;
+		}).keydown(function (e) {
+			if (e.which === 16) speedMultiplier = !Settings.current_value('animations') ? 0.001 : 20;
 		}).keyup(function (e) {
 			if (e.which === 16) speedMultiplier = !Settings.current_value('animations') ? 0.001 : 1;
 		});
@@ -277,14 +262,14 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 	},
 	_current: {},
 	current_value: function (setting) {
-		if (setting in this._current) return this._current[setting];
-		this._current[setting] = safari.self.tab.canLoad(beforeLoad, ['setting', setting]);
-		return this._current[setting];
+		return (typeof this._current[setting] !== 'undefined') ? this._current[setting] : (Settings.items && (setting in Settings.items) ? Settings.items[setting].default : null);
 	},
-	set_value: function (group, setting, v, no_reload) {
-		safari.self.tab.dispatchMessage('reloadPopover');
-		
+	set_value: function (setting, v, no_reload) {
+		GlobalPage.dispatchMessage('reloadPopover');
+
 		v = v === 'false' ? false : (v === 'true' ? true : v);
+
+		GlobalPage.dispatchMessage('setting_set', [setting, v]);
 		
 		this._current[setting] = v;
 		
@@ -296,18 +281,22 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 							$('#setting-' + set).slideUp(this.current_value('animations') ? 150 : 0.001);
 						else
 							$('#setting-' + set).slideDown(this.current_value('animations') ? 150 : 0.001);
-		
-		if (setting === 'language' && !no_reload)
-			window.location.reload();
-		else if (setting === 'largeFont')
-			$(document.body).toggleClass('large', v);
 			
-		if ($('#toolbar li.selected#for-search').length) $('#search').trigger('search');
+		if ($('#toolbar li.selected#for-search').length)
+			$('#search').trigger('search');
 		
-		safari.self.tab.canLoad(beforeLoad, ['setting_set', setting, v]);
+		if (setting === 'largeFont')
+			$(document.body).toggleClass('large', v);
+		else if (setting === 'animations')
+			speedMultiplier = 1;
+		else if (setting === 'language' && !no_reload)
+			window.location.reload();
+	},
+	trial_active: function () {
+		return (+new Date() - this._current.trialStart < 1000 * 60 * 60 * 24 * 10);
 	},
 	invalid_donation_setting: function () {
-		return (!Settings.current_value('donationVerified') && !safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'trial_active']));
+		return (!Settings.current_value('donationVerified') && !this.trial_active());
 	},
 	make_setting: function (group, setting, setting_item, sec) {
 		var sec, setting_item, set, select, li, current, label, other = 0;
@@ -319,12 +308,15 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 			$('<li class="donator" />').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
 
 		if (setting_item.description)
-			$('<li class="description" />').html(setting_item.description).appendTo(sec).toggleClass('disabled', setting_item.donator_only ? this.invalid_donation_setting() : false);
+			$('<li class="description" />').html(setting !== 'header' ? _(setting_item.description) : setting_item.description).appendTo(sec).toggleClass('disabled', setting_item.donator_only ? this.invalid_donation_setting() : false);
 
 		li = $('<li />').attr({
 			'data-setting': setting,
 			'id': 'setting-' + setting,
-		}).data('group', group).toggleClass('disabled', setting_item.donator_only ? this.invalid_donation_setting() : false).appendTo(sec);
+		}).data('group', group)
+			.toggleClass('disabled', setting_item.donator_only ? this.invalid_donation_setting() : false)
+			.toggleClass('indent', setting_item.indent === 1)
+			.appendTo(sec);
 		
 		label = $('<div />').addClass('label').html(typeof setting_item.setting === 'boolean' ? '' : (setting_item.label ? _(setting_item.label) : '')).appendTo(li);
 		set = $('<div />').addClass('setting').insertAfter(label);
@@ -344,7 +336,18 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 				'id': 'button-' + setting,
 				'value': _(setting_item.setting),
 				'disabled': (setting_item.donator_only && this.invalid_donation_setting())
-			}).appendTo(set)
+			}).appendTo(set);
+		} else if (typeof setting_item.setting === 'number' ) {
+			var inp = $('<input />').attr({
+				'type': 'number',
+				'id': 'text-' + setting,
+				'value': current,
+				'min': setting_item.min,
+				'max': setting_item.max,
+				'disabled': (setting_item.donator_only && this.invalid_donation_setting())
+			}).appendTo(set);
+
+			if (setting_item.label_after) inp.after($('<span />').addClass('label-after').html(_(setting_item.label_after)));
 		} else if (setting_item.label && setting_item.setting) {
 			select = $('<select />').attr('disabled', (setting_item.donator_only && this.invalid_donation_setting())).appendTo(set);
 			
@@ -386,7 +389,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 			li.addClass(setting_item.classes);
 			
 		if (setting_item.help)
-			$('<div class="help">?</div>').click(setting_item.help, function (event) {
+			$('<div class="help">?</div>').click(_(setting_item.help), function (event) {
 				alert(event.data, setting);
 			}).appendTo(li);
 			
@@ -400,30 +403,69 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 		
 		return li;
 	}
-};
+});
 
 Settings.toolbar_items = {
 	ui: 'User Interface',
 	predefined: 'Rules',
+	snapshots: 'Snapshots',
 	other: 'Other Features',
 	about: 'About',
-	search: '<input type="search" id="search" incremental="incremental" placeholder="' + _('Search') + '" results="10" autosave="setting_search" />'
+	search: '<input type="search" id="search" incremental="incremental" placeholder="' + 'Search' + '" results="10" autosave="setting_search" />'
 };
 
 appendScript(special_actions.alert_dialogs, true);
 
-var lang = Settings.current_value('language'),
-		load_language = (lang !== 'Automatic') ? lang : window.navigator.language;
+Events.addTabListener('message', function (event) {
+	switch (event.name) {
+		case 'allSettings':
+			for (var setting in Settings.items)
+				Settings._current[setting] = event.message[setting];
 
-if (load_language !== 'en-us' && !(load_language in Strings))
-	$('<script></script>').attr('src', 'i18n/' + load_language + '.js').appendTo(document.head);
+			settingsReady();
+		break;
+
+		case 'aboutPage':
+			var dv = event.message.displayv,
+					bi = event.message.bundleid,
+					rem = event.message.trial_remaining,
+					don = Settings.current_value('donationVerified');
+
+			rem.push('<a class="outside" href="http://javascript-blocker.toggleable.com/donation_only" target="_top">' + _('donator-only features.') + '</a>');
+
+			$('#js-displayv').html(dv);
+			$('#js-bundleid').html(bi);
+			
+			if (!don) {
+				if (event.message.trial_active)
+					$('#trial-remaining').html(_('Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>', rem));
+				else
+					$('#trial-remaining').html([
+						'<p>', _('Free trial expired', [_('JavaScript Blocker')]), '</p>',
+						'<p><a href="http://javascript-blocker.toggleable.com/donation_only" target="_top">', _('What donation?'), '</a></p>'].join(''));
+			} else
+				$('#trial-remaining').html(_('Your donation has been verified') + ' ' + _('Thanks for your support!'));
+		break;
+
+		case 'convertRules':
+			if (event.message === true) alert(_('Rules converted.'), 'convertRules');
+			else alert(_('Some rules could not be converted {1}', ['<textarea readonly>' + event.message + '</textarea>']), 'convertRules');
+		break;
+	}
+});
+
+GlobalPage.dispatchMessage('allSettings');
 
 $(function () {
 	$('#requirements').remove();
-	
 	Settings.bind_events();
+});
 
-	var section, sec, setting, setting_item, set, select, li, current;
+function settingsReady() {
+	var section, sec, setting, setting_item, set, select, li, current, load_language = Strings.getLanguage();
+
+	if (load_language !== 'en-us' && !(load_language in Strings))
+		$('<script />').attr('src', 'i18n/' + load_language + '.js').appendTo(document.head);
 	
 	for (var section in Settings.settings)
 		if (section !== 'misc')
@@ -440,32 +482,13 @@ $(function () {
 	if (window.location.hash.length > 1) $(window.location.hash).click();
 	else if (window.localStorage.tab) $('#' + window.localStorage.tab).click();
 	else $('#for-about').click();
-	
-	var dv = safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'displayv']),
-			bi = safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'bundleid']),
-			rem = safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'trial_remaining']),
-			don = Settings.current_value('donationVerified');
 
-	rem.push('<a class="outside" href="http://javascript-blocker.toggleable.com/donation_only" target="_top">' + _('donator-only features.') + '</a>');
-
-	$('#js-displayv').html(dv);
-	$('#js-bundleid').html(bi);
-	
-	if (!don) {
-		if (safari.self.tab.canLoad(beforeLoad, ['arbitrary', 'trial_active']))
-			$('#trial-remaining').html(_('Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>', rem));
-		else
-			$('#trial-remaining').html([
-				'<p>', _('Free trial expired', [_('JavaScript Blocker')]), '</p>',
-				'<p><a href="http://javascript-blocker.toggleable.com/donation_only" target="_top">', _('What donation?'), '</a></p>'].join(''));
-	} else
-		$('#trial-remaining').html(_('Your donation has been verified') + ' ' + _('Thanks for your support!'));
+	GlobalPage.dispatchMessage('aboutPage');
 		
-	$(document.body).toggleClass('large', Settings.current_value('largeFont'));
-	$(document.body).toggleClass('windows', /Win/.test(window.navigator.platform));
+	$(document.body).toggleClass('large', Settings.current_value('largeFont')).toggleClass('windows', /Win/.test(window.navigator.platform));
 	
 	document.title = _('JavaScript Blocker Settings');
-});
+};
 
 window.zero = [];
 window.zero_timeout = function (func, args) {

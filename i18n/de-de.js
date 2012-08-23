@@ -88,8 +88,8 @@ Strings['de-de'] = {
 	'Expanded': 'Erweitert',
 	'Collapse All': 'Gekürzte Ansicht',
 	'Expand All': 'Erweiterte Ansicht',
-	'Enable JavaScript Blocker': 'Aktiviere JavaScript Blocker',
-	'Disable JavaScript Blocker': 'Deaktiviere JavaScript Blocker',
+	'Enable JavaScript Blocker': 'Aktiviere',
+	'Disable JavaScript Blocker': 'Deaktiviere',
 	'Show {1} more': 'Zeige {1} mehr', // {1} = number of hidden items in main window.
 	'Help': 'Hilfe',
 	'Understood': 'Verstanden',
@@ -100,7 +100,7 @@ Strings['de-de'] = {
 	'I\'ve Donated!': 'Ich habe gespendet!',
 	'Unblocked Script': 'Unblockiertes Script',
 	'More Info': 'Mehr Informationen', 
-	'Unlock': 'Alle Funktionen freischalten', 
+	'Unlock': 'Freischalten', 
 	'Temporary rule': 'Hierfür eine temporäre Regel erstellen', 
     'Make Temporary Rules Permanent': 'Temporäre Regel in eine dauerhafte wandeln',
 	'Remove Temporary Rules': 'Temporäre Regel(n) entfernen', 
@@ -116,11 +116,16 @@ Strings['de-de'] = {
 	'Images': 'Bilder', 
 	'Embeds': 'Eingebundenes, Objekte, & Videos', 
 	'Specials': 'Andere', // Done
-	'Frame Rules': 'Frameregeln', 
-	'Script Rules': 'Scripregeln', 
-	'Embed Rules': 'Regeln für eingebundenes, Objekte, & Videos', 
-	'Image Rules': 'Bilderregeln',  
-	'Special Rules': 'Andere Regeln', // Done
+	'scripts': 'scripte', 
+	'frames': 'frames', 
+	'images': 'bilder', 
+	'embeds': 'eingebundenes, objekte, & videos', 
+	'specials': 'andere', // Done
+	'frame Rules': 'Frameregeln', 
+	'script Rules': 'Scripregeln', 
+	'embed Rules': 'Regeln für eingebundenes, Objekte, & Videos', 
+	'image Rules': 'Bilderregeln',  
+	'special Rules': 'Andere Regeln', // Done
 	'Forgot': 'iForgot', 
 	/** /BUTTONS */
 
@@ -229,4 +234,12 @@ Strings['de-de'] = {
 	'You cannot use JavaScript Blocker': 'Du kannst diese Expertenfunktion von JavaScript Blocker leider nicht benutzen, bis du eine kleine Spende geätitg hast und diese verifiziert wurde.',
 	'Either disable expert': 'Du musst die Expertenfunktionen ausschalten oder klicke nachfolgend <b>{1}</b> um deine Spende zu verifizieren.',
     /** /DONATION **/
+
+  date: {
+   	days_short: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+   	days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+   	days_full: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+   	months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  	months_full: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  }
 };

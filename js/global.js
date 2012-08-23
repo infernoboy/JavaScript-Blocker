@@ -12,9 +12,11 @@ var Template = {
 				// Simple JavaScript Templating
 				// John Resig - http://ejohn.org/ - MIT Licensed
 		
-				if(data !== false && typeof data != 'object') data = {};
+				if(data !== false && typeof data !== 'object') data = {};
 		
 				if(!/\W/.test(str)) {
+					str = 'tmpl_' + str;
+
 					if(str in this.tmpl_cache) var fn = this.tmpl_cache[str];
 					else {
 						var e;
@@ -39,21 +41,25 @@ var Template = {
 				return data ? fn(data) : fn;
 			}
 	},
-	_$ = function (s) {
+	$$ = function (s) {
 		return $(s, JB.popover);
 	},
 	_d = function () {
 		console.log.apply(console, arguments);
 		
 		if (JB.isBeta) {
-			var un = _$('.console-unread').show(),
+			var un = $$('.console-unread').css('display', 'inline-block'),
 					unc = parseInt(un.html(), 10);
 					
 			un.html(' ' + (unc + 1));
-				
-			_$('#jsconsolelogger').append('<li class="jsoutputcode unread">' + $.makeArray(arguments).join(' ') + '<div class="divider"></div></li>')
-				.find('.divider').css('visibility', 'visible').filter(':last').css('visibility', 'hidden');
 		}
+
+		var args = $.makeArray(arguments).map(function (v) {
+			return $.isPlainObject(v) ? JSON.stringify(v, null, 2) : v; 
+		});
+
+		$$('#jsconsolelogger').append('<li class="jsoutputcode unread">' + args.join(' ') + '<div class="divider"></div></li>')
+			.find('.divider').removeClass('invisible').filter(':last').addClass('invisible');
 	},
 	JB = {
 	tab: null,
@@ -71,15 +77,15 @@ var Template = {
 	speedMultiplier: 1,
 	disabled: !1,
 	frames: {},
-	displayv: '2.8.0',
-	bundleid: 89,
-	update_attention_required: 89,
+	displayv: '3.0.0',
+	bundleid: 90,
+	update_attention_required: 90,
 	beta_attention_required: 1,
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
 	longURL: 'http://api.longurl.org/v2/expand?user-agent=ToggleableJavaScriptBlocker&title=1&format=json&url=',
 	
 	set_theme: function (theme) {
-		_$('#main-large-style').attr('href', Settings.getItem('largeFont') ? 'css/main.large.css' : '');
+		$$('#main-large-style').attr('href', Settings.getItem('largeFont') ? 'css/main.large.css' : '');
 		
 		if (!this.donationVerified) {
 			if (theme !== 'default') {
@@ -87,24 +93,22 @@ var Template = {
 				this.set_theme(this.theme);
 			}
 
-			return false;
+			return;
 		}
 		
-		var t = _$('#poppy-theme-style');
+		var t = $$('#poppy-theme-style');
 		
 		if (!(new RegExp('\\.' + theme + '\\.')).test(t.attr('href'))) {
 			t.attr('href', 'css/poppy.' + theme + '.css');
-			_$('#main-theme-style').attr('href', 'css/main.' + theme + '.css');
+			$$('#main-theme-style').attr('href', 'css/main.' + theme + '.css');
 		}
 	},
 
 	donate: function () {
 		var self = this;
-		
-		this.utils.send_installid();
-		
+				
 		if (!Settings.getItem('donationVerified'))
-			new Poppy($(this.popover.body).width() / 2, 13, [
+			new Poppy($(this.popover.body).width() / 2, 0, [
 				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/240">' + this.displayv + '</a>']), '</p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
 				'<p>', _('Please, if you can'), '</p>',
@@ -113,33 +117,31 @@ var Template = {
 					'<input type="button" value="', _('Maybe Later'), '" id="no-donation" /> ',
 					'<input type="button" value="', _('I\'ve Donated!'), '" id="already-donation" /> ',
 				'</p>'].join(''), function () {
-					_$('#make-donation').click(function () {
+					$$('#make-donation').click(function () {
 						self.installedBundle = self.bundleid;
 
 						self.utils.open_url('http://javascript-blocker.toggleable.com/donate');
 					});
-					_$('#no-donation').click(function () {
+					$$('#no-donation').click(function () {
 						self.installedBundle = self.bundleid;
 						new Poppy();
 					});
-					_$('#already-donation').click(function () {
+					$$('#already-donation').click(function () {
 						self.installedBundle = self.bundleid;
-						_$('#unlock').click();
+						$$('#unlock').click();
 					});
 				}, null, null, true);
 		else
-			new Poppy($(this.popover.body).width() / 2, 13, [
+			new Poppy($(this.popover.body).width() / 2, 0, [
 				'<p>',
 					_('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']),
 				'</p>'].join(''));
 		
-		this.installedBundle = this.bundleid;
-		
-		if (this.isBeta && this.beta_attention_required) this.utils.open_url('http://javascript-blocker.toggleable.com/change-log/beta');
+		this.installedBundle = this.bundleid;		
 	},
 	load_language: function (css) {
 		function set_popover_css (self, load_language, f) {
-			if (self.popover && _$('#lang-css-' + load_language).length === 0) {
+			if (self.popover && $$('#lang-css-' + load_language).length === 0) {
 				$('<link />').appendTo(self.popover.head).attr({
 						href: 'i18n/' + load_language + '.css',
 						type: 'text/css',
@@ -185,17 +187,15 @@ var Template = {
 	 * @this {JB}
 	 */
 	_cleanup: function () {
-		var i, b, j, c, key, domain, e, new_collapsed = [], new_frames = {}, new_jsblocker = {};
-		
-		for (i = 0, b = safari.application.browserWindows.length; i < b; i++)
-			for (j = 0, c = safari.application.browserWindows[i].tabs.length; j < c; j++) {
-				if (this.frames[safari.application.browserWindows[i].tabs[j].url])
-					new_frames[safari.application.browserWindows[i].tabs[j].url] = this.frames[safari.application.browserWindows[i].tabs[j].url];
-				
-				if (this.caches.jsblocker[safari.application.browserWindows[i].tabs[j].url])
-					new_jsblocker[safari.application.browserWindows[i].tabs[j].url] = this.caches.jsblocker[safari.application.browserWindows[i].tabs[j].url];
-			}
-		
+		var i, b, j, c, key, domain, e, new_collapsed = [], new_frames = {}, new_jsblocker = {}, self = this;
+
+		Tabs.all(function (tab) {
+			if (self.frames[tab.url])
+				new_frames[tab.url] = self.frames[tab.url];
+			if (self.caches.jsblocker[tab.url])
+				new_jsblocker[tab.url] = self.caches.jsblocker[tab.url];
+		});
+
 		this.caches.jsblocker = new_jsblocker;
 		this.frames = new_frames;
 		this.anonymous.newTab = {};
@@ -204,28 +204,29 @@ var Template = {
 		this.caches.active_host = {};
 		this.caches.domain_parts = {};
 		
-		function clean_emptyruleset (domain, r) {
-			if ($.isEmptyObject(r[domain]))
-				delete r[domain];
-		}
-		
 		for (key in this.rules.data_types)
 			for (domain in this.rules.rules[key])
-				this.utils.zero_timeout(clean_emptyruleset, [domain, this.rules.rules[key]]);
+				this.utils.zero_timeout(function (domain, r) {
+					if ($.isEmptyObject(r[domain]))
+						delete r[domain];
+				}, [domain, this.rules.rules[key]]);
 		
 		this.utils.zero_timeout(function (rules) {
-			rules.save()
+			rules.save(1)
 		}, [this.rules]);
 
-		var xx = this.collapsedDomains();
-		
-		if (typeof xx === 'object')
-			for (var x = 0; x < xx.length; x++)
-				if (xx[x] === _('All Domains') || (xx[x] in this.rules.rules.script) || (xx[x] in this.rules.rules.frame) || (xx[x] in this.rules.rules.embed))
-					if (!~new_collapsed.indexOf(xx[x]))
-						new_collapsed.push(xx[x]);
+		if (!this.rules.using_snapshot) {
+			var cd = this.collapsedDomains();
 			
-		this.collapsedDomains(new_collapsed);
+			if (cd instanceof Array)
+				cd.forEach(function (d) {
+					if (d === _('All Domains') || (d in self.rules.rules.script) || (d in self.rules.rules.frame) || (d in self.rules.rules.embed) || (d in self.rules.rules.image))
+						if (!~new_collapsed.indexOf(d))
+							new_collapsed.push(d);
+				});
+
+			this.collapsedDomains(new_collapsed);
+		}
 	},
 	isBeta: 0,
  	get simpleMode() {
@@ -286,10 +287,10 @@ var Template = {
 		Settings.setItem('trialStart', v);
 	},
 	trial_active: function () {
-		return (+new Date - JB.trialStart < 1000 * 60 * 60 * 24 * 10);
+		return (+new Date() - JB.trialStart < 1000 * 60 * 60 * 24 * 10);
 	},
 	trial_remaining: function () {
-		var seconds = ((JB.trialStart + 1000 * 60 * 60 * 24 * 10) - +new Date) / 1000,
+		var seconds = ((JB.trialStart + 1000 * 60 * 60 * 24 * 10) - +new Date()) / 1000,
 				units = {
 					days: 24 * 60 * 60,
 					hours: 60 * 60,
@@ -309,7 +310,7 @@ var Template = {
 		return ret;
 	},
 	get host() {
-		return this.active_host(_$('#page-list').val());
+		return this.active_host($$('#page-list').val());
 	},
 	collapsed: function (k, v) {
 		if (typeof v !== 'undefined') Settings.setItem(k + 'IsCollapsed', v ? 1 : 0);
@@ -339,6 +340,92 @@ var Template = {
 		}
 	},
 	utils: {
+		_onces: {},
+		once: function (key, callback, thisValue) {
+			if (key in this._onces) return false;
+
+			this._onces[key] = 1;
+
+			callback.call(thisValue);
+		},
+		once_again: function (key) {
+			delete this._onces[key];
+		},
+
+		position_poppy: function (e, xplus, yplus) {
+			var offset = $(e).offset();
+
+			return {
+				left: (offset.left + $(e).outerWidth() / 2) + (xplus || 0),
+				top: offset.top + (yplus || 0)
+			};
+		},
+		bsize: function(num) {	
+			var key, power, num = parseInt(num, 10),
+					powers = ['', 'K', 'M', 'G', 'T', 'E', 'P'],
+					divisor = /Mac/.test(navigator.platform) ? 1000 : 1024;
+
+			for(key = 0; key < powers.length; key++) {
+				power = powers[key];
+				if(Math.abs(num) < divisor) break;
+				num /= divisor;
+			}
+
+			return (Math.round(num * 100) / 100) + ' ' + power + (divisor === 1024 ? 'i' : '') + (power.length ? 'B' : ('byte' + (num === 1 ? '' : 's')));
+		},
+		date: function (date, type) {
+			var h, m, s;
+			var time = '';
+
+			date = typeof date === 'number' ? new Date(date) : date;
+
+			for(var i = 0, x = type.length; i < x; i++) {
+				switch(type[i]) {
+					case '~':
+						time += type[++i] || ''; break;
+					case 'h':
+						time += (((h = date.getHours()) > 12) ? h - 12 : (h == 0) ? 12 : h); break;
+					case 'H':
+						time += date.getHours(); break;
+					case 'm':
+						time += (((m = date.getMinutes()) < 10) ? '0' + m : m); break;
+					case 's':
+						time += (((s = date.getSeconds()) < 10) ? '0' + s : s); break;
+					case 'Y':
+						time += date.getFullYear(); break;
+					case 'y':
+						time += date.getFullYear().toString().substr(2); break;
+					case 'l':
+						time += Strings[Strings.getLanguage()].date.days[date.getDay()]; break;
+					case 'L':
+						time += Strings[Strings.getLanguage()].date.days_full[date.getDay()]; break;
+					case 'f':
+						time += Strings[Strings.getLanguage()].date.months[date.getMonth()]; break;
+					case 'F':
+						time += Strings[Strings.getLanguage()].date.months_full[date.getMonth()]; break;
+					case 'd':
+						time += date.getDate(); break;
+					case 'u':
+						time += date.getTime(); break;
+					case 'c':
+						var f = date.getTime() / 100;
+						time += (f - Math.floor(f)).toString().replace(/^\d*\.|\d{13}$/, ''); break;
+					case 'P':
+						time += (date.getHours() > 12) ? 'PM' : 'AM'; break;
+					case 'p':
+						time += (date.getHours() > 12) ? 'pm' : 'pm'; break;
+					case 'o':
+					case 'O':
+						var ord = (type[i] == 'o') ? ['th', 'st','nd','rd'] : ['TH', 'ST', 'ND', 'RD'];
+						var val = date.getDate() % 100;
+						time += (ord[(val - 20) % 10] || ord[val] || ord[0]); break;
+					default:
+						time += type[i]; break;
+				}
+			}
+
+			return time;
+		},
 	/*[
 			['A', 1],
 			['B', 2],
@@ -353,29 +440,35 @@ var Template = {
 			['D', 3]
 		]*/
 		make_object: function (a) {
-			var m, i, o = {};
+			var m, i, o = {}, self = this;
 
-			for (i = 0; (m = a[i]); i++)
-				o[m[0]] = m[1] instanceof Array && m[2] || !(m[1] instanceof Array) ? m[1] : this.make_object(m[1]);
+			if (a instanceof Array)
+				a.forEach(function (m) {
+					o[m[0]] = m[1] instanceof Array && m[2] || !(m[1] instanceof Array) ? m[1] : self.make_object(m[1]);
+				});
 
 			return o;
 		},
 		floater: function (scroller, to_float, related, off) {
-			var sc = _$(scroller), self = this, fb = sc.data('floater_bound') || [];
+			var sc = $$(scroller), self = this;
+
+			if (!sc.length)
+				return this.timer.timeout('floater_' + scroller + to_float, function (self, scroller, to_float, related, off) {
+					self.floater(scroller, to_float, related, off);
+				}, 5000, [self, scroller, to_float, related, off]);
+
+			var fb = sc.data('floater_bound') || [];
 
 			if (~fb.indexOf(to_float)) return false;
 			
 			fb.push(to_float);
 			
-			sc.data('floater_bound', fb);
-			sc.data('offset', sc.offset().top);
+			sc.data('floater_bound', fb).data('offset', sc.offset().top);
 
-			sc.scroll({ scroller: sc, to_float: to_float, related: related, off: off }, function (event) {
-				if (!Settings.getItem('floaters')) return false;
-				
+			sc.scroll({ scroller: sc, to_float: to_float, related: related, off: off }, function (event) {				
 				var d = event.data,
 						off = typeof d.off === 'function' ? d.off.call(JB) : 0,
-						s = d.scroller, soff = s.data('offset') + off + 25, stop = s.scrollTop(),
+						s = d.scroller, soff = s.data('offset') + off, stop = s.scrollTop(),
 						eoff = parseInt(s.css('marginTop')),
 						every = $('*', s),
 						all = $(d.to_float, s).css({ top: 'auto', left: 'auto', opacity: 1 }).width('auto'), behind;
@@ -391,7 +484,7 @@ var Template = {
 						
 				if (!current_header.length || next_header.hasClass('floater')) return false;
 													
-				var id = 'clone-' + (current_header.attr('id') || +new Date),
+				var id = 'clone-' + (current_header.attr('id') || +new Date()),
 						current_header_clone = current_header.clone(true, true).insertBefore(current_header).attr('id', id).addClass('floater-clone'),
 						top = off,
 						related_push = 0, next_push = 0;
@@ -417,7 +510,7 @@ var Template = {
 				}
 					
 				current_header_clone.css({
-					top: top + _$('#find-bar:visible').outerHeight(true),
+					top: top + $$('#find-bar:visible').outerHeight(true),
 					zIndex: 999 - off
 				}).width(current_header.width()).addClass('floater').append('<div class="divider floater-divider"></div>');
 				
@@ -425,40 +518,30 @@ var Template = {
 			});
 		},
 		fill: function (string, args) {
-			for (var i = 0; args[i]; i++)
-				string = string.replace(new RegExp('\\{' + i + '\\}', 'g'), args[i]);
+			args.forEach(function (v, i) {
+				string = string.replace(new RegExp('\\{' + i + '\\}', 'g'), v);
+			});
 			return string;
 		},
 		_zero_timeouts: [],
-		
-		/**
-		 * Creates an immediate timeout.
-		 *
-		 * @param {function} fn The function to be executed.
-		 * @param {Array} args Arguments to be based to fn.
-		 */
 		zero_timeout: function(fn, args) {
 			this._zero_timeouts.push([fn, args]);
 			window.postMessage('zero-timeout', '*');
 		},
-		sort_object: function (o) {
+		sort_object: function (o, rev) {
 			var s = {}, k, b, a = [];
 			for (k in o) {
 				if (o.hasOwnProperty(k))
 					a.push(k);
 			}
 			a.sort();
-			for (k = 0, b = a.length; k < b; k++)
+			if (rev) a.reverse();
+			for (k = 0; a[k]; k++)
 				s[a[k]] = o[a[k]];
 			return s;
 		},
-		parse_JSON: function (s) {
-			try {
-				return JSON.parse(s);
-			} catch(e) { return false; }
-		},
 		escape_html: function (text) {
-			return text.replace(/</g, '&lt;')
+			return text.replace(/</g, '&lt;');
 		},
 		escape_regexp: function (text) {
 			if (!text || !text.length) return text;
@@ -497,17 +580,21 @@ var Template = {
 		 * @param {jQuery.Element} hide The element to be hidden/revealed when e is zoomed in or out.
 		 * @param {function} cb Callback function to call once zoom window execution is completed.
 		 */
-		zoom: function (e, hide, cb) {
+		zoom: function (e, hide, cb, start_cb, e_cb) {
 			var t = 0.5 * this.speedMultiplier, self = this, start_value, end_value, start_hide_zoom, end_hide_zoom, c;
 
-			if (e.is(':animated') || e.data('isAnimating')) return false;
-							
-			e.data('isAnimating', true).addClass('zoom-window-animating');
+			if (e.data('isAnimating') || hide.data('isAnimating')) return false;
+
+			e.data('isAnimating', true).addClass('zoom-window-animating').removeClass('zoom-window-hidden');
+
+			start_cb = start_cb || $.noop;
+			start_cb.call(JB);
 			
 			hide = hide || $('<div />');
 			cb = cb || $.noop;
+			e_cb = e_cb || $.noop;
 			
-			hide.addClass('zoom-window-animating');
+			hide.addClass('zoom-window-animating zoom-window-hidden');
 			
 			start_value = !e.hasClass('zoom-window') ? 0.3 : 1;
 			end_value = start_value === 1 ? 0.3 : 1;
@@ -519,7 +606,7 @@ var Template = {
 				e.addClass('zoom-window').css('zIndex', 999);
 				hide.data('scrollTop', hide.scrollTop());
 			} else {
-				hide.css('zIndex', 0);
+				hide.css('zIndex', 0).removeClass('zoom-window-hidden');
 				e.removeClass('zoom-window-open');
 			}
 			
@@ -544,9 +631,9 @@ var Template = {
 				WebkitTransitionDuration: t + 's, ' + (t * 0.8) + 's, ' + t + 's'
 			});
 					
-			if (start_value === 1) hide.scrollTop(hide.data('scrollTop'));
+			if (start_value === 1) hide.scrollTop(hide.data('scrollTop'));	
 			
-			this.zero_timeout(function (hide, e, end_value, start_value, end_hide_zoom, cb, t) {
+			this.zero_timeout(function (hide, e, end_value, start_value, end_hide_zoom, cb, t, e_cb) {
 				hide.css({
 					WebkitTransform: 'scale(' + end_hide_zoom + ')',
 					opacity: start_value & 1
@@ -555,24 +642,25 @@ var Template = {
 				e.css({
 					WebkitTransform: 'scale(' + (end_value & 1) + ')',
 					opacity: (end_value & 1) === 0 ? end_value * 0.5 : end_value
-				}).one('webkitTransitionEnd', { e: e, s: start_value, h: hide, c: cb }, function (event) {
+				}).one('webkitTransitionEnd', { e: e, s: start_value, h: hide, c: cb, e_c: e_cb }, function (event) {
+					this.scrollTop = 0;
+
 					var d = event.data;
-					
-					d.e.data('isAnimating', false);
-					
+										
 					if (d.s !== 1){
 						d.h.hide().css('zIndex', 0);
 						d.e.addClass('zoom-window-open');
+						d.e_c.call(JB);
 					} else {
 						d.e.hide().removeClass('zoom-window zoom-window-open');
 						d.h.css('zIndex', 999);
 						d.c.call(JB);
 					}
-					
-					d.e.removeClass('zoom-window-animating').css('webkitTransform', '');
+
+					d.e.data('isAnimating', false).removeClass('zoom-window-animating').css('webkitTransform', '');
 					d.h.removeClass('zoom-window-animating').css('webkitTransform', '');
 				});
-			}, [hide, e, end_value, start_value, end_hide_zoom, cb, t]);
+			}, [hide, e, end_value, start_value, end_hide_zoom, cb, t, e_cb]);
 		},
 		timer: {
 			timers: { intervals: {}, timeouts: {} },
@@ -604,7 +692,7 @@ var Template = {
 				return this.timers[type + 's'][name];
 			},
 			remove: function () {
-				var args = $.makeArray(arguments), type = args[0] + 's';
+				var args = $.makeArray(arguments), type = args[0] + 's', name;
 
 				if (args.length === 1) {
 					var to_remove = [];
@@ -646,14 +734,8 @@ var Template = {
 			}).join('');
 		},
 		open_url: function (url) {
-			if (!safari.application.activeBrowserWindow)
-				safari.application.openBrowserWindow().activeTab.url = url;
-			else
-				safari.application.activeBrowserWindow.openTab().url = url;
-			safari.extension.toolbarItems[0].popover.hide();
-		},
-		send_installid: function () {
-			$.get('http://lion.toggleable.com:160/jsblocker/installed.php?id=' + Settings.getItem('installID'));
+			Tabs.create({ url: url});
+			Popover.hide();
 		},
 		_attention: !1,
 		_has_attention: 0,
@@ -664,14 +746,8 @@ var Template = {
 				this.timer.remove('interval', 'toolbar_attention');
 				this.timer.timeout('toolbar_attention', function () {
 					self._has_attention = false;
-					
-					var toolbarItem;
-					
-					for (var y = 0; y < safari.extension.toolbarItems.length; y++) {
-						toolbarItem = safari.extension.toolbarItems[y];
-
-						toolbarItem.image = self.disabled ? safari.extension.baseURI + 'images/toolbar-disabled.png' : safari.extension.baseURI + 'images/toolbar.png';
-					}
+										
+					ToolbarItems.image(self.disabled ? 'images/toolbar-disabled.png' : 'images/toolbar.png');
 				}, 1100);
 				
 				return false;
@@ -681,15 +757,9 @@ var Template = {
 			
 			this.timer.interval('toolbar_attention', function () {
 				self._attention = !self._attention;
-				
-				var u = safari.extension.baseURI + 'images/', toolbarItem;
-				
-				for (var y = 0; y < safari.extension.toolbarItems.length; y++) {
-					toolbarItem = safari.extension.toolbarItems[y];
-
-					toolbarItem.image = self._attention ? u + 'toolbar-attn.png' : (self.disabled ? u + 'toolbar-disabled.png' : u + 'toolbar.png');
-					toolbarItem.badge = self._attention ? 0 : 1;
-				}
+								
+				ToolbarItems.image(self._attention ? 'images/toolbar-attn.png' : (self.disabled ? 'images/toolbar-disabled.png' : 'images/toolbar.png'));
+				ToolbarItems.badge(self._attention ? 0 : 1);
 			}, 1000);
 		}
 	},
@@ -704,7 +774,7 @@ var Template = {
 		var r = /^(https?|file|safari\-extension):\/\/([^\/]+)\//;
 		
 		try {
-			if (!url) url = safari.application.activeBrowserWindow.activeTab.url;
+			if (!url) url = this.tab.url;
 		} catch (e) { return 'ERROR'; }
 		
 		if (url === 'about:blank') return 'blank';
@@ -712,7 +782,7 @@ var Template = {
 		if (url in this.caches.active_host) return this.caches.active_host[url];
 		if (/^data/.test(url)) return (this.caches.active_host[url] = 'Data URI');
 		if (url.match(r) && url.match(r).length > 2) return (this.caches.active_host[url] = url.match(r)[2]);
-		return 'ERROR';
+		return url;
 	},
 	
 	active_protocol: function (host) {
@@ -730,7 +800,7 @@ var Template = {
 	 * @return {Array} Parts of the hostname, including itself and * (All Domains)
 	 */
 	domain_parts: function (domain) {
-		if (domain in this.caches.domain_parts) return this.caches.domain_parts[domain];
+		if (domain in this.caches.domain_parts) return this.caches.domain_parts[domain].slice(0);
 		if (domain === 'blank') return ['blank', '*'];
 
 		var ip = /^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})(:[0-9]{1,7})?$/,
@@ -740,7 +810,7 @@ var Template = {
 						
 		if (ip.test(domain)) return [domain, '*'];
 		
-		for (i = 1, b = s.length; i < b; i++) {
+		for (i = 1; i < s.length; i++) {
 			t = s[i] + '.' + t;
 			if (!~ex.indexOf(t))
 				p.push(t);
@@ -750,9 +820,12 @@ var Template = {
 		
 		this.caches.domain_parts[domain] = p.reverse();
 				
-		return this.caches.domain_parts[domain];
+		return this.domain_parts(domain);
 	},
 	rules: {
+		get quick() {
+			return Settings.getItem('quickAdd');
+		},
 		get simplified() {
 			return this.simpleMode && Settings.getItem('simplifiedRules');
 		},
@@ -768,21 +841,222 @@ var Template = {
 		
 			this._loaded = true;
 			
-			var c = Settings.getItem(this.simplified ? 'SimpleRules' : 'Rules');
+			var c = Settings.getItem(this.which);
 			
 			this._rules = c ? JSON.parse(c) : this.data_types;
 			this._rules = $.extend(this.data_types, this._rules);
 		
 			return this._rules;
 		},
-		convert: function () {
-			var from = JSON.parse(Settings.getItem('Rules')), kind, domain, rule, totest, conv, un = {}, has_unconvert = 0,
-					simbefore = this.simpleMode, rulebefore = Settings.getItem('simplifiedRules');;
+		set rules(v) {
+			this._rules = v;
+			this.save();
+		},
+		get current_rules() {
+			var c = Settings.getItem(this.which),
+					rules = c ? JSON.parse(c) : this.data_types;
+					rules = $.extend(this.data_types, rules);
+
+			return rules;
+		},
+		get which () {
+			return this.simplified ? 'SimpleRules' : 'Rules';
+		},
+		warm_caches: function () {
+			this.cache = this.data_types;
+
+			for (var kind in this.rules)
+				this.utils.zero_timeout(function (kind, rules) {
+					for (var domain in rules)
+						this.utils.zero_timeout(function (kind, domain) {
+							var warm = this.for_domain(kind, domain, true);
+							warm = undefined;
+						}.bind(this, kind, domain));
+				}.bind(this, kind, this.rules[kind]));
+		},
+		reload: function (snapshot) {
+			if (snapshot) return this.use_snapshot(snapshot, 1);
 
 			this._loaded = false;
 
 			for (var kind in this.data_types)
 				this.cache[kind] = {};
+		},
+		show_snapshots: function () {
+			var snapshots = this.snapshots.all(1),
+					ul = $$('#current-snapshots'),
+					ul_unkept = $$('#snapshots-list-unkept').empty(),
+					ul_kept = $$('#snapshots-list-kept').empty(), self = this, compared, min, max;
+
+			$$('#snapshots-info').html(_('You have {1} snapshots using {2} of storage.', [this.snapshots.count(), this.utils.bsize(this.snapshots.size())]));
+
+			for (var id in snapshots) {
+				$([
+					'<li class="', id === this.using_snapshot ? 'using' : '', snapshots[id].keep ? ' kept' : '', '">',
+						'<a class="snapshot-date" data-id="', id, '">', snapshots[id].name ? self.utils.escape_html(snapshots[id].name) : this.snapshots.date(id), '</a> ',
+						'<span class="buttons">',
+							'<input type="button" value="', self.using_snapshot === id ? _('Close Preview') : _('Open Preview'), '" class="preview-snapshot" /> ',
+						'</span>',
+						'<div class="divider"></div>',
+					'</li>'].join('')).appendTo(snapshots[id].keep ? ul_kept : ul_unkept);
+			}
+
+			ul.find('.snapshot-date').click(function (event) {
+				var using = $(this).parents('li:first').hasClass('using'),
+						me = $(this), off = me.offset(), left = event.pageX, top = off.top + 12,
+						li = me.parents('li:first'),
+						id = me.attr('data-id');
+
+				new Poppy(left, top, [
+					'<input type="button" value="', _('Name'), '" id="name-snapshot" /> ',
+					'<input type="button" value="', _('Compare'), '" id="compare-snapshot" /> ',
+					'<input type="button" value="', _(snapshots[id].keep ? 'Unkeep' : 'Keep'), '" id="keep-snapshot" /> ',
+					'<input type="button" value="', _('Delete'), '" id="delete-snapshot" />',
+				].join(''), function () {
+					$$('#name-snapshot').click(function () {
+						new Poppy(left, top, [
+							'<input type="text" id="snapshot-name" value="', self.snapshots.name(id), '" /> ',
+							'<input type="button" id="save-name" value="', _('Save'), '" class="onenter" />'
+						].join(''), function () {
+							$$('#snapshot-name').focus().keypress(function (e) {
+								if (e.which === 13 || e.which === 3) $$('#save-name').click();
+							}).siblings('#save-name').click(function () {
+								var v = $.trim($(this).siblings('#snapshot-name').val()), v = v.length ? v : null,
+										cname = self.snapshots.name(id);
+								
+								if (self.snapshots.name(id, v) === false && self.snapshots.name(id) !== v) {
+									$$('#poppy').toggleClass('slow', self.speedMultiplier > 1).addClass('shake').one('webkitAnimationEnd', function () {
+										$(this).removeClass('shake slow');
+									}).find('#snapshot-name').focus();
+								} else {
+									new Poppy();
+
+									self.utils.timer.timeout('show_snapshots', function (self, id) {
+										if (id === self.using_snapshot)
+											self.use_snapshot(id);
+
+										self.show_snapshots();
+									}, 200, [self, id]);
+								}
+							});
+						});
+					}).siblings('#compare-snapshot').click(function () {
+						new Poppy(left, top, [
+							'<p class="misc-info">', _('Show Rules'), '</p>',
+							'<input type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
+							'<input type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
+							'<input type="button" value="', _('In Both'), '" id="compare-both" data-type="both" /> ',
+						].join(''), function () {
+							$$('#poppy input').click(function () {
+								new Poppy();
+
+								var compare = self.snapshots.compare(id, self.current_rules), dir = this.getAttribute('data-type'), mes,
+										cache_id = self.snapshots.add(compare[dir], 1, 'Comparison Cache (' + +new Date() + ')');
+
+								self.use_snapshot(cache_id);
+
+								self.utils.zoom($$('#snapshots'), $$('#rules-list'), null, function () {
+									self.show();
+									self.snapshots.remove(cache_id);
+								});
+
+								if (dir === 'left') mes = 'Rules Only in Snapshot: {1}';
+								else if (dir === 'right') mes = 'Rules Not in Snapshot: {1}';
+								else mes = 'Rules in Both My Rules and Snapshot: {1}';
+
+								$$('#rules-list .snapshot-info').show().html(_(mes, [self.snapshots.name_or_date(id)]));
+							});
+						});
+					}).siblings('#keep-snapshot').click(function () {
+						if (this.value === _('Keep'))
+							self.snapshots.keep(id);
+						else {
+							if (!self.utils.confirm_click(this)) return false;
+
+							self.snapshots.unkeep(id);
+						}
+
+						self.show_snapshots();
+
+						new Poppy();
+					}).siblings('#delete-snapshot').click(function () {
+						if (!self.utils.confirm_click(this)) return false;
+
+						new Poppy();
+
+						self.snapshots.remove(id);
+
+						if (id === self.using_snapshot) self.use_snapshot(0);
+
+						li.animate({
+							top: li.height() - parseInt(li.css('marginTop')),
+							right: -li.outerWidth(),
+							opacity: 0,
+							padding: 0,
+							marginTop: -li.height()
+						}, 200 * self.speedMultiplier, function () {
+							$(this).remove();
+							
+							self.utils.timer.timeout('show_snapshots', function (self) {
+								self.show_snapshots();
+							}, 1000, [self]);
+						});
+					});
+				});
+			}).end().find('.preview-snapshot').click(function () {
+				new Poppy();
+
+				var id = $(this).parent().prev().attr('data-id');
+
+				self.use_snapshot(this.value === _('Close Preview') ? 0 : id);
+
+				self.utils.zoom($$('#snapshots'), $$('#rules-list'), null, function () {
+					self.show();
+				}, function () {
+					var parts = $$('#domain-filter').trigger('search').data('parts');
+													
+					for (var i = 0; i < parts.length; i++)
+						$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + parts[i] + '"].hidden').click();
+				});
+			});
+
+			ul_kept.find('.divider:last').addClass('invisible');
+			ul_unkept.find('.divider:last').addClass('invisible');
+		},
+		get using_snapshot() {
+			return Settings.getItem('usingSnapshot');
+		},
+		set using_snapshot(v) {
+			Settings.setItem('usingSnapshot', v);
+		},
+		use_snapshot: function (id, no_info_update) {
+			this.reload();
+
+			this.using_snapshot = 0;
+
+			if (parseInt(id, 10)) {
+				var snapshot = this.snapshots.load(id);
+
+				if (snapshot) {
+					if (!no_info_update)
+						$$('.snapshot-info').show().html(_('Snapshot Preview: {1}', [this.snapshots.name_or_date(id)]));
+					
+					this._loaded = true;
+					this.using_snapshot = id;
+					this._rules = snapshot;
+				}
+			} else if(!no_info_update)
+				$$('.snapshot-info').hide();
+
+			try {
+				Tabs.dispatchToActive('updatePopover');
+			} catch (e) {}
+		},
+		convert: function () {
+			var from = JSON.parse(Settings.getItem('Rules')), kind, domain, rule, totest, conv, un = {}, has_unconvert = 0,
+					simbefore = this.simpleMode, rulebefore = Settings.getItem('simplifiedRules');;
+
+			this.reload();
 
 			Settings.setItem('simpleMode', true);
 			Settings.setItem('simplifiedRules', true);
@@ -800,42 +1074,41 @@ var Template = {
 						} else if (rule === '.*' || rule.indexOf('^.*(All') === 0) {
 							this.add(kind, domain, '^.*$', from[kind][domain][rule][0], false, false, false);
 						} else if (rule === '^javascript:.*$') {
-							this.add(kind, domain, '^javascript:.*$', from[kind][domain][rule][0], false, false, 'javascript');
+							this.add(kind, domain, 'javascript:^javascript:.*$', from[kind][domain][rule][0], false, false);
 						}	else if (rule === '^data:.*$') {
-							this.add(kind, domain, '^data:.*$', from[kind][domain][rule][0], false, false, 'data');
+							this.add(kind, domain, 'data:^data:.*$', from[kind][domain][rule][0], false, false);
 						} else if (rule === '^about:blank$') {
-							this.add(kind, domain, 'blank', from[kind][domain][rule][0], false, false, 'about');
+							this.add(kind, domain, 'about:blank', from[kind][domain][rule][0], false, false);
 						} else if (rule.indexOf(totest = '^http:\\/\\/([^\\/]+\\.)?') === 0) {
 							conv = rule.substr(totest.length);
 							conv = '.' + conv.substr(0, conv.length - 5).replace(/\\\./g, '.');
-							this.add(kind, domain, conv, from[kind][domain][rule][0], false, false, 'http');
+							this.add(kind, domain, 'http:' + conv, from[kind][domain][rule][0], false, false);
 						} else if (rule.indexOf(totest = '^https:\\/\\/([^\\/]+\\.)?') === 0) {
 							conv = rule.substr(totest.length);
 							conv = '.' + conv.substr(0, conv.length - 5).replace(/\\\./g, '.');
-							this.add(kind, domain, conv, from[kind][domain][rule][0], false, false, 'https');
+							this.add(kind, domain, 'https:' + conv, from[kind][domain][rule][0], false, false);
 						} else if (rule.indexOf(totest = '^https?:\\/\\/([^\\/]+.)?') === 0) {
 							conv = rule.substr(totest.length);
 							conv = '.' + conv.substr(0, conv.length - 5).replace(/\\\./g, '.');
-							this.add(kind, domain, conv, from[kind][domain][rule][0], false, false, 'http');
-							this.add(kind, domain, conv, from[kind][domain][rule][0], false, false, 'https');
+							this.add(kind, domain, 'http,https:' + conv, from[kind][domain][rule][0], false, false);
 						} else if (rule.indexOf(totest = '^http:\\/\\/') === 0) {
 							conv = rule.substr(totest.length);
 							conv = conv.substr(0, conv.length - 5).replace(/\\\./g, '.');
 
 							if (~conv.indexOf('\\/'))
-								this.add(kind, domain, rule, from[kind][domain][rule][0], false, false, false);
+								this.add(kind, domain, rule, from[kind][domain][rule][0], false, false);
 							else
-								this.add(kind, domain, conv, from[kind][domain][rule][0], false, false, 'http');
+								this.add(kind, domain, 'http:' + conv, from[kind][domain][rule][0], false, false);
 						} else if (rule.indexOf(totest = '^https:\\/\\/') === 0) {
 							conv = rule.substr(totest.length);
 							conv = conv.substr(0, conv.length - 5).replace(/\\\./g, '.');
 
 							if (~conv.indexOf('\\/'))
-								this.add(kind, domain, rule, from[kind][domain][rule][0], false, false, false);
+								this.add(kind, domain, rule, from[kind][domain][rule][0], false, false);
 							else
-								this.add(kind, domain, conv, from[kind][domain][rule][0], false, false, 'https');
+								this.add(kind, domain, 'https:' + conv, from[kind][domain][rule][0], false, false);
 						} else if (rule.indexOf('^') === 0) {
-							this.add(kind, domain, rule, from[kind][domain][rule][0], false, false, false);
+							this.add(kind, domain, rule, from[kind][domain][rule][0], false, false);
 						} else {
 							has_unconvert = 1;
 							un[kind][domain][rule] = from[kind][domain][rule];
@@ -854,16 +1127,29 @@ var Template = {
 			Settings.setItem('simpleMode', simbefore);
 			Settings.setItem('simplifiedRules', rulebefore);
 
-			JB.reloaded = 0;
+			JB.reloaded = false;
 
 			return has_unconvert ? JSON.stringify(un, null, 2) : true;
 		},
-		save: function () {
-			this.utils.timer.timeout('save_rules', function (simplified, rules) {
+		save: function (no_snapshot) {
+			if (this.using_snapshot) return false;
+
+			this.utils.timer.timeout('save_rules', function (snapshots, which, self, no_snapshot) {
 				try {
-					Settings.setItem(simplified ? 'SimpleRules' : 'Rules', JSON.stringify(rules));
+					if (Settings.getItem('enableSnapshots') && Settings.getItem('autoSnapshots') && !no_snapshot && !self.using_snapshot) {
+						if (!snapshots.compare(snapshots.latest(), self.rules).equal)
+							snapshots.delayed_add(self.rules, null, 0, null, function (id, snapshot) {
+								if ($$('#snapshots:visible').length) {
+									new Poppy();
+									self.show_snapshots();
+								}
+							});
+					}
+
+					if (!self.using_snapshot)
+						Settings.setItem(which, JSON.stringify(self.rules));
 				} catch (e) { }
-			}, 1000, [this.simplified, this.rules]);
+			}, 1000, [this.snapshots, this.which, this, no_snapshot]);
 		},
 		export: function () {
 			if (!this.donationVerified) return '';
@@ -871,10 +1157,7 @@ var Template = {
 			return JSON.stringify(this.rules);
 		},
 		import: function (string) {
-			this._loaded = false;
-			
-			for (var kind in this.data_types)
-				this.cache[kind] = {};
+			this.reload();
 		
 			try {
 				var r = JSON.parse(string);
@@ -889,44 +1172,56 @@ var Template = {
 			
 				if (typeof r === 'object')
 					for (var key in r) {
-						if (typeof r[key] === 'object') break;
-					
-						try {
-							r[key] = JSON.parse(r[key]);
-						} catch(e) {
-							continue;
+						if (typeof r[key] !== 'object') {
+							try {
+								r[key] = JSON.parse(r[key]);
+							} catch(e) {
+								continue;
+							}
+						}
+
+						for (var domain in r[key]) {
+							for (var rule in r[key][domain]) {
+								if (r[key][domain][rule].length === 3 && r[key][domain][rule][2]) {
+									var nrule = r[key][domain][rule][2] + ':' + rule;
+									r[key][domain][nrule] = r[key][domain][rule];
+									r[key][domain][nrule].splice(2);
+									delete r[key][domain][rule];
+								}
+							}
 						}
 					}
 			
 				var s = JSON.stringify(r);
 
-				Settings.setItem(this.simplified ? 'SimpleRules' : 'Rules', s);
+				Settings.setItem(this.which, s);
 			
 				return true;
 			} catch (e) {
 				return false;
 			}
 		},
-		temporary_cleared: [],
-		clear_temporary: function (kind) {
-			if (~this.temporary_cleared.indexOf(kind)) return false;
+		_temporary_cleared: 0,
+		clear_temporary: function (once) {
+			if (once && this._temporary_cleared) return false;
 		
-			this.temporary_cleared.push(kind);
+			this._temporary_cleared = 1;
+
+			var kind, domain, rule;
 			
-			for (var domain in this.rules[kind]) {
-				var rules = this.for_domain(kind, domain, true), rule;
-					
-				if (domain in rules)
-					for (rule in rules[domain])
-						if (rules[domain][rule][1])
-							this.remove(kind, domain, rule, true);
-			}
+			for (kind in this.rules)
+				for (domain in this.rules[kind])
+					for (rule in this.rules[kind][domain])
+						if (this.rules[kind][domain][rule][1])
+							delete this.rules[kind][domain][rule];
+
+			this.save(1);
 		},
 		recache: function (kind, d) {
 			if (kind === 'frame') {
-				var frame_host;
+				var frame, frame_host;
 				
-				for (var frame in this.frames) {
+				for (frame in this.frames) {
 					frame_host = this.utils.active_host(frame);
 					
 					if ((new RegExp(this.utils.escape_regexp(frame_host) + '$')).test(d))
@@ -936,9 +1231,9 @@ var Template = {
 			
 			if (d === '.*')
 				this.cache[kind] = {};
-			else if (d.match(/^\..*$/)) {
+			else if (d.charAt(0) === '.') {
 				for (var c in this.cache[kind])
-					if (c.match(new RegExp('.*' + this.utils.escape_regexp(d) + '$')))
+					if ((new RegExp(this.utils.escape_regexp(d) + '$')).test(c))
 						delete this.cache[kind][c];
 			} else
 				delete this.cache[kind][d];
@@ -948,7 +1243,7 @@ var Template = {
 
 			for (e in rs[kind])
 				for (r in rs[kind][e])
-					if (rs[kind][e][r][0] === 4 || rs[kind][e][r][0] === 5)
+					if (~[4,5].indexOf(rs[kind][e][r][0]))
 						this.remove(kind, e, r);
 		
 			for (a in this.whitelist[kind])
@@ -976,46 +1271,36 @@ var Template = {
 			if (kind.indexOf('hide_') === -1)
 				if ((kind !== 'script' && !this.donationVerified) || !this.enabled(kind)) return [1, -84];
 
-			var rule_found = false, the_rule = -1, do_break = 0,
+			var rule_found = false, the_rule = -1, do_break = 0, urule,
 					host = this.active_host(message[1]),
-					proto = this.utils.active_protocol(message[2]),
+					proto = this.utils.active_protocol(message[2]), protos,
 					parts = this.utils.domain_parts(this.active_host(message[2])),
 					domains = this.for_domain(kind, host), domain, rule,
-					alwaysFrom = kind === 'script' ? Settings.getItem('alwaysBlock') : Settings.getItem('alwaysBlock' + kind) || Settings.getItem('alwaysBlock'),
+					alwaysFrom = Settings.getItem('alwaysBlock' + kind) || Settings.getItem('alwaysBlockscript'),
 					hider = ~kind.indexOf('hide_');
 			
 			domainFor:
 			for (domain in domains) {
 				ruleFor:
 				for (rule in domains[domain]) {
-					if (rule.length < 1 ||
+					if (!rule.length ||
 							(Settings.getItem('ignoreBlacklist') && domains[domain][rule][0] === 4) ||
 							(Settings.getItem('ignoreWhitelist') && domains[domain][rule][0] === 5)) continue;
 
-					if (this.simplified && rule.substr(0, 1) !== '^') {
-						if (domains[domain][rule][2] && !~domains[domain][rule][2].indexOf(proto)) continue;
-
-						if (~kind.indexOf('special') && rule === message[2])
-							do_break = 1;
-						if (rule.indexOf('.') === 0 && ~parts.indexOf(rule.substr(1)))
-							do_break = 1;
-						else if (parts[0] === rule)
-							do_break = 1;
-					} else if ((new RegExp(rule)).test(message[2]))
-						do_break = 1;
+					do_break = this.match(kind, rule, message[2]);
 
 					if (do_break) {
-						rule_found = domains[domain][rule][0] < 0 ? true : domains[domain][rule][0] % 2;
+						rule_found = domains[domain][rule][0] < 0 ? ((domains[domain][rule][0] * -1) - 5) % 2 : domains[domain][rule][0] % 2;
 						the_rule = domains[domain][rule][0];
 						break domainFor;
 					}
 				}
 			}
-							
-			if (typeof rule_found === 'number')
+
+			if (rule_found !== false)
 				return [rule_found, the_rule];
 							
-			if (alwaysFrom !== 'nowhere' && rule_found !== true) {
+			if (alwaysFrom !== 'nowhere') {
 				var sproto = this.utils.active_protocol(message[2]),
 						aproto = this.utils.active_protocol(message[1]);
 				
@@ -1029,13 +1314,16 @@ var Template = {
 							(alwaysFrom === 'domain' && page_parts[page_parts.length - 2] !== script_parts[script_parts.length - 2]) ||
 							(alwaysFrom === 'everywhere') ||
 							(aproto === 'https' && (Settings.getItem('secureOnly') && sproto !== aproto))) {
-						if (Settings.getItem('saveAutomatic') && !this.simpleMode && !hider) {
-							var script = message[2], ind = script.indexOf('?'), rr = '^' + this.utils.escape_regexp(~ind ? script.substr(0, script.indexOf('?')) : script) + '(\\?.*)?$';
+						if (Settings.getItem('saveAutomatic') && !this.simpleMode && !hider &&
+								(!PrivateBrowsing() ||
+									(PrivateBrowsing() && Settings.getItem('savePrivate')))) {
+							var rule_added = 1, script = message[2], ind = script.indexOf('?'), rr = '^' + this.utils.escape_regexp(~ind ? script.substr(0, script.indexOf('?')) : script) + '(\\?.*)?$';
 										
 							this.add(kind, host, rr, 2, true, true);
-						}
+						} else
+							var rule_added = 0;
 					
-						return [0, Settings.getItem('saveAutomatic') && !this.simpleMode && !hider ? 2 : -1];
+						return [0, rule_added ? 2 : -1];
 					}
 				}
 			}
@@ -1043,37 +1331,40 @@ var Template = {
 			return [1, -1];
 		},
 		for_domain: function (kind, domain, one) {
-			if (kind !== 'script' && !this.donationVerified) return {};
+			if (!(kind in this.rules) || (kind !== 'script' && !this.donationVerified)) return {};
 					
 			if (domain in this.cache[kind]) {
-				var temp = {};
+				var rules = {};
 			
 				if (one) {
 					if (domain in this.cache[kind][domain] && typeof this.cache[kind][domain][domain] === 'object')
-						temp[domain] = this.cache[kind][domain][domain];
+						rules[domain] = this.cache[kind][domain][domain];
 					else
-						temp[domain] = {};
+						rules[domain] = {};
 				} else
-					temp = this.cache[kind][domain];
-				
-				return temp;
+					rules = this.cache[kind][domain];
+
+				return rules;
 			}
 						
-			var parts = this.utils.domain_parts(domain), o = {}, i, b, c, r;
+			var parts = this.utils.domain_parts(domain);
 		
 			if (parts.length === 1 && domain !== '.*') return this.for_domain(kind, '.*', true);
 		
 			var x = parts.slice(0, 1),
-					y = parts.slice(1);
+					y = parts.slice(1),
+					o = {}, i, c, r;
 		
 			x.push(x[0]);
 		
 			parts = x.concat(y);
 	
-			for (i = 0, b = parts.length; i < b; i++) {
+			for (i = 0; i < parts.length; i++) {
 				c = (i > 0 ? '.' : '') + parts[i];
 				r = this.rules[kind][c];
+
 				if (r === null || r === undefined) continue;
+
 				if (c === '.*') {
 					if (!(c in this.cache[kind])) this.cache[kind][c] = { '.*': r };
 					o[c] = this.cache[kind][c][c];
@@ -1087,144 +1378,157 @@ var Template = {
 
 			return this.for_domain(kind, domain, one);
 		},
-		add: function (kind, domain, pattern, action, add_to_beginning, temporary, proto) {
-			if (~domain.indexOf('data.url')) return new Poppy();
-			if (kind !== 'script' && !this.donationVerified) return false;
-			if (pattern.length === 0) return this.remove(kind, domain, pattern, true, proto);
-						
-			this.collapsed('LastRuleWasTemporary', temporary ? 1 : 0);
+		match: function (kind, rule, url) {
+			var urule = this.with_protos(rule).rule;
+
+			if (this.simplified && urule.charAt(0) !== '^') {
+				var protos = this.with_protos(rule).protos,
+						parts = this.utils.domain_parts(this.utils.active_host(url));
+
+				if (protos && !~protos.indexOf(this.utils.active_protocol(url))) return 0;
+
+				if ((~kind.indexOf('special') && urule === url) ||
+						(urule.indexOf('.') === 0 && ~parts.indexOf(urule.substr(1))) || 
+						(parts[0] === urule))
+					return 1;
+				return 0;
+			}
+
+			return (new RegExp(urule)).test(url);
+		},
+		with_protos: function (rule) {
+			if (!this.simplified || rule.charAt(0) === '^') {
+				return {
+					rule: rule,
+					protos: false
+				};
+			}
+
+			var srule = rule.split(':'), ps;
+
+			return {
+				rule: srule.length === 1 ? srule[0] : srule.slice(1).join(':'),
+				protos: srule.length === 1 || !srule[0].length ? false : ((ps = srule[0].split(','))[0].length ? ps : false)
+			};
+		},
+		add: function (kind, domain, pattern, action, add_to_beginning, temporary) {
+			if (!pattern.length || (kind !== 'script' && !this.donationVerified) || this.using_snapshot) return false;
+
+			this.collapsed('LastRuleWasTemporary', temporary);
 		
-			var crules = this.for_domain(kind, domain, true), protos = proto ? (proto instanceof Array ? proto : [proto]) : false;
+			var rules = this.for_domain(kind, domain, true);
 
 			action = parseInt(action, 10);
 
-			if (!(domain in crules)) crules[domain] = {};
-			else if (pattern in crules[domain]) {
-				protos = crules[domain][pattern][2];
-
-				if (protos && !~protos.indexOf(proto)) protos.push(proto);
-			}
+			if (!(domain in rules)) rules[domain] = {};
 				
 			if (!add_to_beginning)
-				crules[domain][pattern] = [action, !!temporary, protos];
+				rules[domain][pattern] = [action, !!temporary];
 			else {
-				var newrules = this.utils.make_object([[domain, [[pattern, [action, !!temporary, protos], 1]]]]), e;
+				var new_rules = this.utils.make_object([[domain, [[pattern, [action, !!temporary], 1]]]]), e;
 			
-				if (domain in crules)
-					for (e in crules[domain])
+				if (domain in rules)
+					for (e in rules[domain])
 						if (e !== pattern)
-							newrules[domain][e] = crules[domain][e];
+							new_rules[domain][e] = rules[domain][e];
 			
-				crules = newrules;
+				rules = new_rules;
 			}
 		
 			this.recache(kind, domain);
 
-			this.rules[kind][domain] = crules[domain];
+			this.rules[kind][domain] = rules[domain];
 		
 			this.save();
 		},
-		remove: function (kind, domain, rule, delete_automatic, proto) {
-			if (kind !== 'script' && !this.donationVerified) return false;
+		remove: function (kind, domain, rule, delete_automatic) {
+			if ((kind !== 'script' && !this.donationVerified) || this.using_snapshot) return false;
 			
-			var crules = this.for_domain(kind, domain), key;
-			if (!(domain in crules)) return false;
-			if (proto && crules[domain][rule][2] !== proto) return false;
+			var rules = this.for_domain(kind, domain), key;
+
+			if (!(domain in rules)) return false;
 			
 			this.recache(kind, domain);
 
 			try {
-				if (!delete_automatic && crules[domain][rule][0] > 1 && crules[domain][rule][0] < 4) {
-					crules[domain][rule][0] *= -1;
-					crules[domain][rule][1] = false;
+				if (!delete_automatic && rules[domain][rule][0] > 1 && rules[domain][rule][0] < 4) {
+					this.rules[kind][domain][rule][0] *= -1;
+					this.rules[kind][domain][rule][1] = false;
 				} else
-					delete crules[domain][rule];
+					delete this.rules[kind][domain][rule];
 			} catch(e) { }
 
-			if ($.isEmptyObject(crules[domain]))
+			if ($.isEmptyObject(this.rules[kind][domain]))
 				delete this.rules[kind][domain];
-			else
-				this.rules[kind][domain] = crules[domain];
 			
 			this.save();
 		},
-	
-		/**
-		 * Retrieves a list of or removes any rule matching a given url.
-		 *
-		 * @param {string} domain Hostname to check against
-		 * @param {string} url The url the rules must match
-		 * @param {Boolean} confirmed Wether or not actually remove the rules or just return a list
-		 * @param {number} block_allow The action the rule must be to match
-		 * @param {Boolean} allow_disabled Wether or not to return/delete disabled rules
-		 */
-		remove_matching_URL: function (kind, domain, urls, confirmed, block_allow, allow_disabled) {
+		remove_matches: function (kind, matches) {
+			var domain, i, rule;
+
+			for (domain in matches) {
+				this.recache(kind, domain);
+
+				for (i = 0; matches[domain][i]; i++) {
+					rule = matches[domain][i];
+
+					if ((rule[1][0] > 1 && rule[1][0] < 4) || rule[1][0] < 0) {
+						this.rules[kind][domain][rule[0]][0] *= -1;
+						this.rules[kind][domain][rule[0]][1] = rule[1][0] >= 1;
+					} else if (rule[1][0] > -1)
+						this.remove(kind, domain, rule[0]);
+				}
+			}
+
+			this.save();
+		},
+		matching_URLs: function (kind, domain, urls, block_allow, show_wlbl) {
 			if (kind !== 'script' && !this.donationVerified) return false;
 			
-			var crules = this.for_domain(kind, domain), to_delete = {}, being_deleted = {}, sub, rule, url, rtype, temp;
+			var rules = this.for_domain(kind, domain), matches = {}, match_tracker = {}, domain, rule, rtype;
 		
-			for (sub in crules) {
-				to_delete[sub] = [];
-				being_deleted[sub] = [];
+			for (domain in rules) {
+				matches[domain] = [];
+				match_tracker[domain] = [];
 
-				for (rule in crules[sub]) {
-					rtype = crules[sub][rule][0];
-					temp = crules[sub][rule][1];
-				
-					if (((!!(rtype % 2) !== block_allow) || (!allow_disabled && rtype < 0))) continue;
-				
-					for (var i = 0; i < urls.length; i++) {
-						url = urls[i];
-		
-						if ((new RegExp(rule)).test(url)) {
-							if (confirmed) {
-								delete this.cache[kind][sub];
-											
-								if (!(rule in crules[sub])) continue;
-						
-								if (rtype > 1 && rtype < 4) {
-									crules[sub][rule][0] *= -1;
-									crules[sub][rule][1] = false;
-								} else if (rtype > -1)
-									delete crules[sub][rule];
-							} else {
-								if (~being_deleted[sub].indexOf(rule))
-									continue;
-								else
-									being_deleted[sub].push(rule);
-							
-								to_delete[sub].push([rule, crules[sub][rule]]);
-							}
+				for (rule in rules[domain]) {
+					rtype = rules[domain][rule][0];
+					rtype = rtype < 0 ? (rtype - 5) * -1 : rtype;
+
+					if ((!!(rtype % 2) !== block_allow) ||
+							(!show_wlbl && (rtype === 4 || rtype === 5))) continue;
+
+					for (var i = 0; i < urls.length; i++) {		
+						if (this.match(kind, rule, urls[i]) && !~match_tracker[domain].indexOf(rule)) {
+							match_tracker[domain].push(rule);
+							matches[domain].push([rule, rules[domain][rule]]);
 						}
 					}
 				}
 
-				if (!confirmed) {
-					if (!to_delete[sub].length) delete to_delete[sub];
-				} else {
-			 		this.rules[kind][sub] = crules[sub];
-				}
+				if (!matches[domain].length) delete matches[domain];
 			}
-				
-			return confirmed ? 1 : to_delete;
+
+			return matches;
 		},
 		remove_domain: function (kind, domain) {
-			delete this.cache[kind][domain];
+			this.recache(kind, domain);
 			delete this.rules[kind][domain];
 			this.save();
 		},
-
-		make_message: function (kind, rule, rtype, temp, proto) {
+		make_message: function (kind, rule, rtype, temp) {
 			var um = ~kind.indexOf('hide_') ? 'Hide' : (rtype % 2 ? 'Allow' : 'Block'),
 					um = temp ? um.toLowerCase() : um,
 					message = [temp ? _('Temporarily') : '', _(um)],
-					ukind = ~kind.indexOf('hide_') ? kind.substr(5) : kind;
+					ukind = ~kind.indexOf('hide_') ? kind.substr(5) : kind,
+					proto = this.simplified ? this.with_protos(rule).protos : false,
+					rule = this.with_protos(rule).rule;
 
 			if (ukind === 'special') {
 				if (rule === '^.*$') message.push('all others')
 				else {
-					if (rule.indexOf('^') === 0) message.push('others matching');
-					message.push('<b>' + (rule.indexOf('^') === 0 ? rule : _(rule).toLowerCase()) + '</b>');
+					if (rule.charAt(0) === '^') message.push('others matching');
+					message.push('<b>' + (rule.charAt(0) === '^' ? rule : _(rule).toLowerCase()) + '</b>');
 				}
 			} else {
 				if (proto) {
@@ -1241,7 +1545,7 @@ var Template = {
 				} else
 					var local_p = proto;
 
-				if (local_p) message.push(local_p);
+				if (local_p && rule.charAt(0) !== '^') message.push(local_p);
 
 				var um = rtype % 2 ? 'Allow' : 'Block';
 				um = temp ? um.toLowerCase() : um;
@@ -1251,12 +1555,113 @@ var Template = {
 				message.push(_(ukind + 's'));
 
 				if (!~['^data:.*$', '^javascript:.*$', '^.*$'].indexOf(rule)) {
-					message.push(rule.indexOf('.') === 0 ? 'within' : (rule.indexOf('^') === 0 ? 'matching' : 'from'));
-					message.push('<b>' + (rule.indexOf('.') === 0 ? rule.substr(1) : rule) + '</b>');
+					message.push(rule.charAt(0) === '.' ? 'within' : (rule.charAt(0) === '^' ? 'matching' : 'from'));
+					message.push('<b>' + (rule.charAt(0) === '.' ? rule.substr(1) : rule) + '</b>');
 				}
 			}
 
 			return message;
+		},
+		show: function () {
+			var self = this;
+
+			this.busy = 1;
+
+			$$('#filter-state-all').click();
+			$$('#edit-domains').removeClass('edit-mode');
+
+			if (this.using_snapshot)
+				$$('.snapshot-info').show().html(_('Snapshot Preview: {1}', [this.snapshots.name_or_date(this.using_snapshot)]));
+
+			for (var kind in this.data_types) {
+				if (!$$('#head-' + kind + '-rules').length)
+					$$('#rule-container').append(Template.create('rule_wrapper', {
+						kind: kind,
+						local: _(kind + ' Rules')
+					}));
+				
+				var head = $$('#head-' + kind + '-rules'), wrap = $$('#rules-list-' + kind + 's').parent();
+				
+				if (!this.enabled(kind)) {
+					head.hide();
+					wrap.hide();
+				} else {
+					head.show();
+					wrap.show();
+				}
+
+				var ul = $$('#rules-list #data ul#rules-list-' + kind + 's').empty().css({ marginTop: '-3px', marginBottom: '6px', opacity: 1 });
+				
+				if (kind in this.rules) {
+					var sorted = this.utils.sort_object(this.rules[kind]);
+
+					ul.css({ marginTop: '-3px', marginBottom: '6px', opacity: 1 });
+
+					for (var domain in sorted)
+						ul.append($('> li', this.view(kind, domain, undefined, null, 1)))
+				}
+			}
+			
+			function remove_domain (event) {
+				event.stopPropagation();
+				
+				var li = $(this.parentNode), d = li.data('domain');
+				
+				if (!self.utils.confirm_click(this) || li.is(':animated')) return false;
+																	
+				self.remove_domain(li.data('kind'), d);
+				
+				li.animate({
+					right: -li.outerWidth(),
+					padding: 0,
+					top: li.height() - parseInt(li.css('marginTop'), 10),
+					marginTop: -li.outerHeight(true),
+					marginBottom: 0,
+					opacity: 0
+				}, 200 * self.speedMultiplier, function () {
+					$(this).next().remove();
+					$(this).remove()
+					$$('#domain-filter').trigger('search');
+				});
+			}
+
+			function recover_domain(event) {
+				event.stopPropagation();
+
+				var li = $(this.parentNode), kind = li.data('kind'), domain = li.data('domain'),
+						current_rules = self.current_rules, off = self.utils.position_poppy(this, 0, 12),
+						left = off.left, top = off.top;
+
+				new Poppy(left, top, [
+					'<p class="misc-info">', _('Recover')	, '</p>',
+					'<input type="button" id="recover-domain-merge" value="', _('Merge'), '" /> ',
+					'<input type="button" id="recover-domain-replace" value="', _('Replace'), '" />'].join(''), function () {
+						$$('#recover-domain-merge').click(function () {
+							if (!(domain in current_rules[kind]))
+								current_rules[kind][domain] = self.rules[kind][domain];
+							else
+								for (var rule in self.rules[kind][domain])
+									current_rules[kind][domain][rule] = self.rules[kind][domain][rule];
+
+							Settings.setItem(self.which, JSON.stringify(current_rules));
+
+							new Poppy(left, top, _('Domain merged with current rule set.'));
+						}).siblings('#recover-domain-replace').click(function () {
+							current_rules[kind][domain] = self.rules[kind][domain];
+							Settings.setItem(self.which, JSON.stringify(current_rules));
+
+							new Poppy(left, top, _('Domain replaced in current rule set.'));
+						});
+				});
+			}
+			
+			$$('.rules-wrapper .domain-name')
+				.prepend('<div class="divider"></div><input type="button" value="' + (this.using_snapshot ? _('Recover') : _('Remove')) + '" />')
+				.find('input').click(this.using_snapshot ? recover_domain : remove_domain);
+
+			$$('.filter-bar li.selected').click();
+		
+			this.busy = 0;
 		},
 	
 		/**
@@ -1266,11 +1671,11 @@ var Template = {
 		 * @param {string|Boolean} url A url the rule must match in order to be displayed
 		 * @param {Boolean} no_dbl_click Wether or not to enable double clicking on a rule
 		 */
-		view: function (kind, domain, url, no_dbl_click, obey_wlbl) {
+		view: function (kind, domain, url, no_dbl_click, obey_wlbl, match_rtype) {
 			var self = this, allowed = this.for_domain(kind, domain, true),
 					ul = $('<ul class="rules-wrapper"></ul>'), newul,
-					rules, rule, did_match = !1, rtype, temp, proto;
-			
+					rules, rule, urule, did_match = !1, rtype, artype, temp, proto;
+
 			if (kind !== 'script' && !this.donationVerified && !~kind.indexOf('hide_')) return ul;
 			
 			if (domain in allowed) {
@@ -1281,52 +1686,52 @@ var Template = {
 							domain_name = (domain.charAt(0) === '.' && domain !== '.*' ? domain : (domain === '.*' ? _('All Domains') : domain));
 				
 					newul = ul.append('<li class="domain-name"><span>' + self.utils.escape_html(domain_name) + '</span></li><li><ul></ul></li>')
-							.find('.domain-name:last').data('domain', domain).data('kind', kind).attr('data-value', domain === '.*' ? _('All Domains') : domain)
+							.find('.domain-name:last').data({ domain: domain, kind: kind }).attr('data-value', domain === '.*' ? _('All Domains') : domain)
 							.attr('id', this.utils.id()).end().find('li:last ul');
 					rules = 0;
 				
 					for (rule in allowed) {
 						rtype = allowed[rule][0];
+						artype = rtype < 0 ? (rtype - 5) * -1 : rtype;
 						temp = allowed[rule][1];
-						proto = allowed[rule][2];
-					
-						if (typeof url === 'object')
-							for (var i = 0; i < url.length; i++) {
-								did_match = (new RegExp(rule)).test(url[i]);
-						
-								if (did_match) break;
-							}
 
-						if ((url && (rtype < 0 || !did_match)) ||
+						if (typeof match_rtype === 'number' && (artype % 2) !== match_rtype) continue;
+
+						if (url instanceof Array)
+							for (var i = 0; url[i]; i++)						
+								if ((did_match = this.match(kind, rule, url[i])))
+									break;
+
+						if ((url && !did_match) ||
 								(obey_wlbl && (!Settings.getItem('showWLBLRules') && (rtype === 4 || rtype === 5))) || 
 								(Settings.getItem('ignoreBlacklist') && rtype === 4) ||
 								(Settings.getItem('ignoreWhitelist') && rtype === 5)) continue;
+						
 						rules++;
 
-						var message = this.simplified ? this.make_message(kind, rule, rtype, temp, proto) : [];
-
-						newul.append([
-								'<li>',
-									this.simplified ? '<div class="bubble bubble-' + (~kind.indexOf('hide_') ? 2 : rtype % 2) + ' ' + (temp ? 'temporary' : '') + '"></div>' : '',
-									'<span class="rule type-', rtype, temp ? ' temporary' : '', '">',
-										this.simplified ? message.join(' ') : rule,
-									'</span> ',
-									'<input type="button" value="', (rtype < 0 ?
-										_('Restore') : (rtype === 2 ? _('Disable') : _('Delete'))) + '" />',
-									'<div class="divider"></div>',
-								'</li>'].join(''))
-								.find('li:last').data('rule', rule).data('domain', domain).data('type', rtype).data('kind', kind).data('proto', proto);
+						newul.append(Template.create('rule_item', {
+							rtype: rtype,
+							text: this.simplified ? this.make_message(kind, rule, rtype, temp).join(' ') : rule,
+							temp: temp,
+							button: (this.using_snapshot ? _('Recover') : (rtype < 0 ? _('Restore') : (rtype === 2 ? _('Disable') : _('Delete'))))
+						})).find('li:last').data({
+							rule: rule,
+							domain: domain,
+							type: rtype,
+							kind: kind,
+							temp: temp
+						});
 					}
 				
-					$('.divider:last', newul).css('visibility', 'hidden');
+					$('.divider:last', newul).addClass('invisible');
 
-					if (rules === 0) return $('<ul class="rules-wrapper"></ul>');
+					if (!rules) return $('<ul class="rules-wrapper"></ul>');
 						
 					if (j && ~j.indexOf(domain_name))
 						newul.parent().prev().addClass('hidden');
 				}
 							
-				if (no_dbl_click) $('li span', ul).addClass('nodbl');
+				$('li span', ul).toggleClass('nodbl', no_dbl_click === true);
 			}
 	
 			return ul;
@@ -1346,20 +1751,25 @@ var Template = {
 			return new Poppy(left, top + 12, _('Donation Required'));
 		
 		if (~kind.indexOf('special'))
-			a.push(this.utils.fill(opt, [one_script[0], hostname]));
-		else if (hostname === 'blank')
-			a.push(this.utils.fill(opt, ['blank', 'blank']));
-		else if (hostname === 'Data URI')
-			a.push(this.utils.fill(opt, ['^data:.*$', 'Data URI']));
-		else if (hostname === 'JavaScript Protocol')
-			a.push(this.utils.fill(opt, ['^javascript:.*$', 'JavaScript Protocol']));
-		else
-			for (var x = 0; x < parts.length - 1; x++)
-				if (this.rules.simplified)
-					a.push(this.utils.fill(opt, [(x > 0 ? '.' : '') + parts[x], (x > 0 ? '.' : '') + parts[x]]));
-				else
-					a.push(this.utils.fill(opt, ['^' + proto + ':\\/\\/' + (x === 0 ? self.utils.escape_regexp(parts[x]) :
-						'([^\\/]+\\.)?' + self.utils.escape_regexp(parts[x])) + '\\/.*$', (x > 0 ? '.' : '') + parts[x]]));
+			a.push(this.utils.fill(opt, [(!this.simpleMode ? '^' : '') + one_script[0] + (!this.simpleMode ? '$' : ''), hostname]));
+		else {
+			switch (hostname) {
+				case 'blank':
+					a.push(this.utils.fill(opt, ['blank', 'blank'])); break;
+				case 'Data URI':
+					a.push(this.utils.fill(opt, ['^data:.*$', 'Data URI'])); break;
+				case 'JavaScript Protocol':
+					a.push(this.utils.fill(opt, ['^javascript:.*$', 'JavaScript Protocol'])); break;
+				default:
+					for (var x = 0; x < parts.length - 1; x++)
+						if (this.rules.simplified)
+							a.push(this.utils.fill(opt, [proto + ':' + (x > 0 ? '.' : '') + parts[x], (x > 0 ? '.' : '') + parts[x]]));
+						else
+							a.push(this.utils.fill(opt, ['^' + proto + ':\\/\\/' + (x === 0 ? self.utils.escape_regexp(parts[x]) :
+								'([^\\/]+\\.)?' + self.utils.escape_regexp(parts[x])) + '\\/.*$', (x > 0 ? '.' : '') + parts[x]]));
+				break;
+			}
+		}
 
 		if (return_a) return a;
 
@@ -1375,60 +1785,59 @@ var Template = {
 					'<label for="domain-script-temporary">&thinsp;', _('Temporary rule'), '</label> ',
 				'</p>',
 				'<p>',
-					Template.create('tmpl_domain_picker', { page_parts: page_parts }),
+					Template.create('domain_picker', { page_parts: page_parts }),
 				'</p>',
 				'<p>',
 					'<select id="which-type" class="', allow ? 'allowed' : 'blocked', '-color">', cs.join(''), '</select> ',
 					'<select id="domain-script" class="', proto, ' kind-', kind, a.length === 1 ? ' single' : '', '">', a.join(''), '</select> ',
 					'<input id="domain-script-continue" type="button" value="', _('Save'), '" />',
 				'</p>'].join(''), function () {
-					_$('#domain-script-continue').click(function () {
-						var	h = _$('#domain-picker').val(),
-								temp = _$('#domain-script-temporary').is(':checked'),
-								hider = _$('#which-type').val() === '42';
+					$$('#domain-script-continue').click(function () {
+						var	h = $$('#domain-picker').val(),
+								temp = $$('#domain-script-temporary').is(':checked'),
+								hider = $$('#which-type').val() === '42';
 						
-						self.rules.add((hider ? 'hide_' : '') + kind, h, _$('#domain-script').val(), hider ? 42 : (allow ? 1 : 0), true, temp, proto);
+						self.rules.add((hider ? 'hide_' : '') + kind, h, $$('#domain-script').val(), hider ? 42 : (allow ? 1 : 0), true, temp, proto);
 							
-						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+						Tabs.dispatchToActive('reload');
 
-						_$('#page-list')[0].selectedIndex = 0;
+						$$('#page-list')[0].selectedIndex = 0;
 					}).siblings('#which-type').change(function () {
 						$(this).toggleClass((allow ? 'allowed' : 'blocked') + '-color', this.value !== '42');
 					});
 		});
 	},
+	clear_ui: function () {
+		$$('#toggle-hidden').addClass('disabled');
+		$$('#main .urls-inner').empty();
+		$$('#page-list').attr('title', null).removeData().find('optgroup').empty();
+		$$('.column > .info-container label ~ span').text(0).next().hide();
+	},
 	bind_events: function(some, host) {
+		if (!this.popover) return;
+
 		var add_rule, remove_rule, self = this;
-		
-		if (Settings.getItem('showUnblocked'))
-			_$('#unblocked-script-urls').show().prev().show();
-		else
-			_$('#unblocked-script-urls').hide().prev().hide();
-			
-		var ver = Settings.getItem('donationVerified');
-		
-		_$('#unlock-p').toggleClass('hidden', (ver === 1 || (typeof ver === 'string' && ver.length)));
 		
 		function url_display (e) {
 			var me = $(this), t = $(this).siblings('span:first'), pa = t.parent(), off = t.offset(), kind = pa.data('kind'),
-					kindP = kind.charAt(0).toUpperCase() + kind.substr(1), left = Math.floor(me.offset().left + me.outerWidth() / 2);
+					left = Math.floor(me.offset().left + me.outerWidth() / 2);
 		
 			function codeify(data) {
 				function do_highlight (data, no_zoom) {
-					_$('#misc-content pre').remove();
+					$$('#misc-content pre').remove();
 					
-					$('<pre></pre>').append('<code class="javascript"></code>').find('code').text(data).end().appendTo(_$('#misc-content'));
-					if (!no_zoom) self.utils.zoom(_$('#misc').find('.misc-header').text(t.text()).end(), _$('#main'));
-					var p = _$('#misc-content pre code');
+					$('<pre />').append('<code class="javascript"></code>').find('code').text(data).end().appendTo($$('#misc-content'));
+					if (!no_zoom) self.utils.zoom($$('#misc').find('.misc-header').text(t.text()).end(), $$('#main'));
+					var p = $$('#misc-content pre code');
 					p.data('unhighlighted', p.html());
 					self.hljs.highlightBlock(p[0]);
 				}
 				
-				_$('#beautify-script').remove();
+				$$('#beautify-script').remove();
 				
 				if (kind === 'script')
 					$('<input type="button" value="' + _('Beautify Script') + '" id="beautify-script" />')
-							.appendTo(_$('#misc .info-container')).click(function () {
+							.appendTo($$('#misc .info-container')).click(function () {
 								data = js_beautify(data, {
 									indent_size: 2
 								});
@@ -1455,40 +1864,34 @@ var Template = {
 			if (kind === 'special') {
 				var wh = t.parents('.urls-wrapper').is('#blocked-script-urls') ? 0 : 1,
 						sp = t.parent().data('script')[0];
-				new Poppy(left, off.top + 10, _(sp+ ':' + wh, [self.special_enabled(sp)]));
-			} else if (self.simpleMode && (!pa.hasClass('by-rule') || pa.hasClass('unblockable')))
+				new Poppy(left, off.top + 10, _(sp + ':' + wh, [self.special_enabled(sp)]));
+			} else if (self.simpleMode && (!pa.hasClass('by-rule') || pa.hasClass('unblockable'))) {
 				script_info();
-			else 
+			} else 
 				new Poppy(left, off.top + 10, [
 					'<input type="button" value="', _('More Info'), '" id="script-info" /> ',
-					self.simpleMode || kind === 'embed' ? '' : '<input type="button" value="' + _('View ' + kindP + ' Source') + '" id="view-script" /> ',
+					self.simpleMode || kind === 'embed' ? '' : '<input type="button" value="' + _('View ' + kind + ' Source') + '" id="view-script" /> ',
 					pa.hasClass('by-rule') && !pa.hasClass('unblockable') ? '<input type="button" value="' + _('Show Matched Rules') + '" id="matched-rules" />' : ''].join(''), function () {
-						_$('#poppy #script-info').click(script_info);
-						_$('#poppy #matched-rules').click(function () {
-							var m = !me.parents('div').attr('id').match(/blocked/), rs = [],
-									to_delete = self.rules.remove_matching_URL(pa.data('kind'), self.host, pa.data('script'), false, m), d,
-									rs = [],
+						$$('#poppy').find('#script-info').click(script_info).end().find('#matched-rules').click(function () {
+							var block_allow = !me.parents('div').attr('id').match(/blocked/),
+									matches = self.rules.matching_URLs(pa.data('kind'), self.host, pa.data('script'), block_allow, true), d,
 									con = $('<div />'),
 									wrapper = $('<ul class="rules-wrapper" />').appendTo(con);
 							
 							con.prepend('<p class="misc-info">' + _('Matched ' + me.parents('.main-wrapper').attr('id').substr(14) + ' Rules') + '</p>');
 
-							for (d in to_delete) {
+							for (d in matches)
 								wrapper.append(self.rules.view(pa.data('kind'), d, pa.data('script'), true).find('> li').find('input').remove().end());
-
-								rs.push(to_delete[d][0]);
-							}
 
 							$('li.domain-name', wrapper).removeClass('hidden').addClass('no-disclosure');
 
 							new Poppy(left, off.top + 10, con);
-						});
-						_$('#poppy #view-script').click(function () {
+						}).end().find('#view-script').click(function () {
 							if (kind === 'image') {
 								new Poppy();
-								_$('#beautify-script').remove();
-								_$('#misc-content').html('<img src="' + t.html() + '" />');
-								self.utils.zoom(_$('#misc').find('.misc-header').text(t.text()).end(), _$('#main'));
+								$$('#beautify-script').remove();
+								$$('#misc-content').html('<img src="' + t.html() + '" />');
+								self.utils.zoom($$('#misc').find('.misc-header').text(t.text()).end(), $$('#main'));
 								return false;
 							}
 							
@@ -1524,22 +1927,37 @@ var Template = {
 					});
 		}
 		
-		$(this.popover).on('click', 'ul.rules-wrapper li input', function () {
-			if (!self.utils.confirm_click(this)) return false;
-	
+		$(this.popover).on('click', 'ul.rules-wrapper li input', function () {	
 			var $this = $(this), li = $this.parent(), parent = li.parent(), span = $('span.rule', li),
-					is_automatic = $('span.rule.type-2, span.rule.type--2', li).length;
+					is_automatic = $('span.rule.type-2, span.rule.type--2', li).length, data = $.data(li[0]);
 			
+			if (this.value === _('Recover')) {
+				var off = self.utils.position_poppy(this, 0, 12), left = off.left, top = off.top,
+						current_rules = self.rules.current_rules, current = current_rules[data.kind];
+
+				if (!(data.domain in current)) current[data.domain] = {};
+
+				current[data.domain][data.rule] = [data.type, data.temp];
+
+				Settings.setItem(self.rules.which, JSON.stringify(current_rules));
+
+				return new Poppy(left, top, _('Rule added to current rule set.'));
+			}
+
+			if (!self.utils.confirm_click(this)) return false;
+
 			if (this.value === _('Restore')) {
 				self.rules.add(li.data('kind'), li.data('domain'), li.data('rule'), li.data('type') * -1, false, true);
 				this.value = _('Disable');
-				span.addClass(span[0].className.substr(span[0].className.indexOf('type')).replace('--', '-')).removeClass('type--2').addClass('temporary');
+				span.addClass(span[0].className.substr(span[0].className.indexOf('type')).replace('--', '-'))
+					.removeClass('type--2').addClass('temporary').siblings('.bubble').addClass('temporary');;
 			} else {
 				self.rules.remove(li.data('kind'), li.data('domain'), li.data('rule'));
 				
 				if (is_automatic) {
 					this.value = _('Restore');
-					span.addClass(span[0].className.substr(span[0].className.indexOf('type')).replace('-', '--')).removeClass('type-2 temporary');
+					span.addClass(span[0].className.substr(span[0].className.indexOf('type')).replace('-', '--'))
+						.removeClass('type-2 temporary').siblings('.bubble').removeClass('temporary');
 				}
 			}
 			
@@ -1553,27 +1971,27 @@ var Template = {
 				}, 200 * self.speedMultiplier, function () {
 					$(this).remove();
 					
-					$('.divider:last', parent).css('visibility', 'hidden');
+					$('.divider:last', parent).addClass('invisible');
 					
 					if ($('li', parent).length === 0) {
 						parent.parent().prev().remove();
 						parent.parent().remove();
 					}
 					
-					_$('#domain-filter').trigger('search');
+					$$('#domain-filter').trigger('search');
 				});
 			}
-		});
-		
-		$(this.popover).on('click', 'ul.rules-wrapper li:not(.domain-name) span:not(.nodbl).rule', function (e) {
+		}).on('click', 'ul.rules-wrapper li:not(.domain-name) span:not(.nodbl).rule', function (e) {
 			var t = $(this), off = t.offset(), domain = t.parent().data('domain'),
 					dv = self.utils.escape_html(domain), rule = t.parent().data('rule');
+
+			if (self.rules.using_snapshot) return new Poppy(e.pageX, off.top + 12, _('Snapshot in use'));
 			
 			new Poppy(e.pageX, off.top + 12, [t.hasClass('type-4') || t.hasClass('type-5') ?
 					_('Predefined rules cannot be edited.') :
 					'<input type="button" value="' + _('Edit Rule') + '" id="rule-edit" /> ',
 					'<button id="rule-new">' + _('New Rule') + '</button>'].join(''), function () {
-				_$('#poppy #rule-edit, #poppy #rule-new').filter('#rule-new')
+				$$('#poppy #rule-edit, #poppy #rule-new').filter('#rule-new')
 						.html(_('New rule for {1}', [(domain === '.*' ? _('All Domains') : dv)])).end().click(function () {
 					var is_new = this.id === 'rule-new',
 						hider = ~t.parent().data('kind').indexOf('hide_'),
@@ -1584,13 +2002,12 @@ var Template = {
 
 					var padd = self.poppies.add_rule.call({
 							url: u,
-							proto: !is_new ? t.parent().data('proto') : '',
 							domain: domain,
 							e: t,
 							hider: hider,
 							li: t.parent(),
 							is_new: is_new,
-							header: _((is_new ? 'Adding' : 'Editing') + ' a ' + t.parent().data('kind') + ' Rule For {1}', [Template.create('tmpl_domain_picker', {
+							header: _((is_new ? 'Adding' : 'Editing') + ' a ' + t.parent().data('kind') + ' Rule For {1}', [Template.create('domain_picker', {
 								page_parts: pts,
 								no_label: true,
 								show_other: true
@@ -1599,8 +2016,8 @@ var Template = {
 
 					var crulelevel = parseInt(t[0].className.split(' ')[1].substr(5));
 					
-					padd.callback2 = function () {
-						_$('#domain-picker').change(function () {
+					padd.onshowend = function () {
+						$$('#domain-picker').change(function () {
 							if (this.value === 'custom.other') {
 								var w = $(this).width(),
 									a = $('<input />').attr({
@@ -1617,16 +2034,17 @@ var Template = {
 						});
 
 						if (hider)
-							_$('#select-type-hide').click();
+							$$('#select-type-hide').click();
 						else if (crulelevel === 1)
-							_$('#select-type-allow').click();
+							$$('#select-type-allow').click();
 					 	else
-							_$('#select-type-block').click();
+							$$('#select-type-block').click();
 					};
 					padd.save_orig = padd.save;
 					padd.save = function () {
-						var kind = padd.me.li.data('kind'), v, ed = $.trim(_$('#domain-picker').val()),
-								temp = _$('#rule-temporary').is(':checked'), proto = _$('#rule-proto-input').val(), proto = proto ? proto.toLowerCase() : proto;
+						var kind = padd.me.li.data('kind'), v, ed = $.trim($$('#domain-picker').val()),
+								temp = $$('#rule-temporary').is(':checked'), proto = $$('#rule-proto-input').val(), proto = proto && proto.length ? proto.toLowerCase() : false,
+								nrule = $.trim(this.val()), nrule = proto && nrule.length ? proto + ':' + nrule : nrule;
 
 						if (!ed.length) ed = padd.me.domain;
 						else if (ed.toLowerCase() === _('All Domains').toLowerCase()) ed = '.*';
@@ -1637,40 +2055,35 @@ var Template = {
 
 						if ((is_new || (!is_new && padd.me.domain !== ed)) && v === 0) return new Poppy();
 
-						if (!$.trim(this.val()).length) {
+						if (!$.trim(nrule).length) {
 							t.html('<i>' + _('Rule removed.') + '</i>');
 							return new Poppy();
 						}
 
 						if (!is_new && padd.me.domain === ed) {
-							t.text(this.val()).removeClass('type-0 type-1 type-2 type--2 type-4 type-5 type-6 type-7 temporary').addClass('type-' + v).toggleClass('temporary', temp)
-									.siblings('input').val(_('Delete')).parent().data('rule', this.val()).data('type', v).data('proto', proto);
-
-							if (padd.main.rules.simplified) {
-								var message = padd.main.rules.make_message(kind, this.val(), v, temp, proto ? proto.split(/, ?/) : false);
-								t.html(message.join(' ')).prev()
+							t[padd.main.rules.simplified ? 'html' : 'text'](padd.main.rules.simplified ? padd.main.rules.make_message(kind, nrule, v, temp).join(' ') : nrule).removeClass('type-0 type-1 type-2 type--2 type-4 type-5 type-6 type-7 temporary').addClass('type-' + v).toggleClass('temporary', temp)
+									.prev()
 									.removeClass('bubble-0 bubble-1 bubble-2')
-									.addClass('bubble-' + (~kind.indexOf('hide_') ? 2 : v % 2))
-									.toggleClass('temporary', temp);
-							}
+									.addClass('bubble-' + v)
+									.toggleClass('temporary', temp)
+									.siblings('input').val(_('Delete')).parent().data({ rule: nrule, type: v} );
+
 							new Poppy(e.pageX, off.top + 12, '<p>' + _('Rule succesfully edited.') + '</p>', $.noop, $.noop, 0.2);
 						} else if (!is_new && padd.me.domain !== ed) {
-							new Poppy(e.pageX, off.top + 12,
-									'<p>' + _('Rule succesfully moved to {1}', [self.utils.escape_html(ed === '.*' ? _('All Domains') : ed)]) + '</p>' +
-									'<p>' + _('Changes will appear when you reload the rules list.') + '</p>');
+							new Poppy(e.pageX, off.top + 12, [
+									'<p>', _('Rule succesfully moved to {1}', [self.utils.escape_html(ed === '.*' ? _('All Domains') : ed)]), '</p>',
+									'<p>', _('Changes will appear when you reload the rules list.'), '</p>'].join(''));
 						} else {
-							new Poppy(e.pageX, off.top + 12,
-									'<p>' + _('Rule succesfully added for {1}', [self.utils.escape_html(ed === '.*' ? _('All Domains') : ed)]) + '</p>' +
-									'<p>' + _('Changes will appear when you reload the rules list.') + '</p>');
+							new Poppy(e.pageX, off.top + 12, [
+									'<p>', _('Rule succesfully added for {1}', [self.utils.escape_html(ed === '.*' ? _('All Domains') : ed)]), '</p>',
+									'<p>', _('Changes will appear when you reload the rules list.'), '</p>'].join(''));
 						}
 					};
 					new Poppy(e.pageX, off.top + 12, padd);
 				});
 			});
-		});
-		
-		$(this.popover).on('click', 'ul .domain-name', function () {
-			if (this.className.match(/no\-disclosure/)) return false;
+		}).on('click', 'ul .domain-name', function () {
+			if (this.className.match(/no\-disclosure/)) return;
 			
 			var me = $(this), d = me.data('domain'), t = me.next(), x;
 			
@@ -1684,7 +2097,7 @@ var Template = {
 				
 			var ul = $('ul', t);
 			
-			if (ul.is(':animated')) return false;
+			if (ul.is(':animated')) return;
 			
 			me.toggleClass('hidden');
 			x.toggleClass('hidden');
@@ -1696,7 +2109,7 @@ var Template = {
 			
 			var c = self.collapsedDomains(),
 					dex = c.indexOf(d),
-					rulesList = _$('#rules-list'),
+					rulesList = $$('#rules-list'),
 					hid = !me.hasClass('hidden'),
 					o = t.outerHeight(true),
 					h = t.height(),
@@ -1727,7 +2140,7 @@ var Template = {
 						
 			if (!this.className.match(/hidden/)) {
 				var offset = t.offset(),
-					bottomView = offset.top + h - _$('header').height();
+					bottomView = offset.top + h - $$('header').height();
 				
 				if (bottomView > rulesList.height())
 					rulesList.animate({
@@ -1736,20 +2149,115 @@ var Template = {
 			}
 		});
 
-		$(this.popover).on('click', '#allowed-script-urls ul li span', function (e) {
-			if (self.disabled) return false;
-			
-			var butt = this,
-				li = $(this).parent(),
-				off = $(this).offset(),
-				left = e.pageX,
-				url = li.data('url'),
-				script = li.data('script');
+		var alblspan = '#allowed-script-urls ul li:not(.show-me-more) span, #blocked-script-urls ul li:not(.show-me-more) span';
 
-			if (li.hasClass('unblockable')) return new Poppy(left, off.top + 12, _('Unblockable ' + li.data('kind')));
-		
-			if (self.simpleMode || ~li.data('kind').indexOf('special')) return self.add_rule_host($(butt), script, e.pageX, off.top, !$(this).parents('#allowed-script-urls').length);
-			else if (!self.donationVerified) return false;
+		$(this.popover).on('mousedown', alblspan, function (e) {
+			var span = $(this);
+
+			span.removeClass('triggered').data('quick_add_ignore_timeout', setTimeout(function (span, e) {
+				$$('#main li.pending').removeClass('pending').removeData('pending_index').each(function () {
+					$('span', this).text($(this).data('url'));
+				}).find('.info-link').text('?');
+
+				var li = span.parents('li:first');
+
+				if (li.hasClass('unblockable') || self.rules.using_snapshot) return;
+
+				li.find('.info-link').text('?').end()
+					.addClass('ignore-quick-add').end()
+					.trigger('click', e).text(li.data('url'));
+
+				span.addClass('triggered');
+			}, 300, span, e));
+		}).on('mouseout', alblspan, function (e) {
+			clearTimeout($(this).data('quick_add_ignore_timeout'));
+		}).on('click', alblspan, function (e, t) {
+			if (self.disabled) return false;
+
+			e = t || e;
+			
+			var span = $(this),
+					blocked = !$(this).parents('.urls-wrapper').is('#blocked-script-urls'),
+					li = $(this).parent(),
+					lid = $.data(li[0]),
+					off = $(this).offset(),
+					left = e.pageX,
+					url = lid.url,
+					script = lid.script;
+
+			clearTimeout($(this).data('quick_add_ignore_timeout'));
+
+			if (span.hasClass('triggered')) return span.removeClass('triggered');
+			if (self.rules.using_snapshot) return new Poppy(left, off.top + 12, _('Snapshot in use'));
+			if (li.hasClass('unblockable')) return new Poppy(left, off.top + 12, _('Unblockable ' + lid.kind));
+
+			if (self.rules.quick && !li.hasClass('ignore-quick-add')) {
+				var $this = span, parts = self.utils.domain_parts(self.simpleMode ? url : self.utils.active_host(url)),
+						pi = 0, to_do = null, to_do_clean, special = ~lid.kind.indexOf('special'), span = $('> span', li),
+						host_parts = self.utils.domain_parts(self.host), use_host = self.host;
+
+				switch (Settings.getItem('quickAddType')) {
+					case '0':
+						use_host = host_parts[0]; break;
+					case '1':
+						use_host = (host_parts.length > 2 ? '.' : '') + host_parts[host_parts.length - 2]; break;
+					case '2':
+						use_host = '.*'; break;
+				}
+
+				parts.splice(-1);
+				span.text(url);
+
+				if (span.hasClass('safari-extension')) parts = [parts[0]];
+
+				if (li.hasClass('pending')) {
+					if (self.simpleMode && !special) {
+						pi = lid.pending_index + 1;
+
+						if (pi < parts.length) {
+							li.data('pending_index', pi);
+
+							to_do = parts[pi];
+						}
+					}
+				} else
+					to_do = special || !self.simpleMode ? script[0] : parts[0];
+
+				if (to_do) {
+					to_do_clean = self.utils.escape_regexp(to_do);
+
+					var rule = self.simpleMode ? ((pi > 0 ? '.' : '') + to_do) : '^' + to_do_clean + (!special ? '(\\?.*)?$' : '$');
+					rule = self.rules.simplified && !special ? (lid.protocol || '') + ':' + rule : rule;
+
+					li.addClass('pending')
+						.data('pending_index', pi)
+						.data('pending_data', rule)
+						.find('.info-link').text('+');
+
+					span.html(url.replace(new RegExp((pi > 0 ? '\\.' : '') + (special ? url : to_do_clean) + '$'), '<mark class="quick-add">' + (pi > 0 ? '.' : '') + (special ? url : to_do) + '</mark>'));
+				} else
+					li.removeClass('pending').removeData('pending_index').find('.info-link').text('?');
+
+				self.utils.timer.timeout('quick_add', function (self, host) {
+					var lis = $$('#main li.pending');
+
+					lis.each(function () {
+						var li = $(this), lid = $.data(li[0]), rtype = li.parents('.urls-wrapper').is('#blocked-script-urls');
+
+						self.rules.add(lid.kind, host, lid.pending_data, rtype ? 1 : 0, true, Settings.getItem('quickAddTemporary'));
+
+						self.utils.timer.timeout('quick_add_reload', function (lis) {
+							lis.addClass('allow-update');
+							$$('#page-list')[0].selectedIndex = 0;
+							Tabs.dispatchToActive('reload');
+						}, 200, [lis]);
+					});
+				}, 1200, [self, use_host]);
+
+				return;
+			}
+
+			li.removeClass('ignore-quick-add');
 			
 			var page_parts = self.utils.domain_parts(self.host), n,
 					padd = self.poppies.add_rule.call({
@@ -1758,26 +2266,32 @@ var Template = {
 						li: $(this).parent(),
 						domain: self.host,
 						is_new: 1,
-						header: _('Adding a Rule For {1}', [Template.create('tmpl_domain_picker', { page_parts: page_parts, no_label: true })])
+						header: _('Adding a Rule For {1}', [Template.create('domain_picker', { page_parts: page_parts, no_label: true })])
 				}, self),
-				auto_test = self.rules.remove_matching_URL(li.data('kind'), self.host, script, false, true, true);
-					
-			if (!$.isEmptyObject(auto_test)) {
-				var d, rs = [], ds = [], i;
-				for (d in auto_test) {
-					for (i = 0; i < auto_test[d].length; i++) {
-						if (auto_test[d][i][1][0] < 0 || ((auto_test[d][i][1][0] === 0 || auto_test[d][i][1][0] === 1))) {
-							rs.push(auto_test[d][i][0]);
-							ds.push(auto_test[d][i]);
-						}
-					}
-				}
+				matches = self.rules.matching_URLs(li.data('kind'), self.host, script, blocked);
+
+			padd.onshowend = function () {
+				$$('#select-type-' + (blocked ? 'block' : 'allow')).click();
+			};
+
+			if (!$.isEmptyObject(matches)) {
+				var d, rs = [], ds = [], i, rtype;
+
+				for (d in matches)
+					matches[d].forEach(function (match) {
+						rtype = match[1][0];
+
+						if (!Settings.getItem('showWLBLRules') && (rtype === 4 || rtype === 5)) return;
+
+						rs.push(rtype);
+						ds.push([d, match]);
+					});
 				
 				if (rs.length) {
 					var has_automatic_rule = false, has_standard_rule = false;
 					
 					for (var x = 0; x < ds.length; x++) {
-						if (ds[x][1][0] < 0) {
+						if (ds[x][1][1][0] < 0 || ds[x][1][1][0] === 2 || ds[x][1][1][0] === 3) {
 							has_automatic_rule = true;
 							if (has_standard_rule) break;
 						} else {
@@ -1786,172 +2300,87 @@ var Template = {
 						}
 					}
 					
-					var para, button;
+					var para, button, restore_disable = blocked ? 'restore' : 'disable';
 					
 					if (has_automatic_rule && has_standard_rule) {
-						para = _('Would you like to restore/delete them, or add a new one?');
+						para = _('Would you like to ' + restore_disable + '/delete them, or add a new one?');
 						button = _('Restore/Delete Rules');
 					} else if (has_standard_rule) {
 						para = _('Would you like to delete ' + (rs.length === 1 ? 'it' : 'them') + ', or add a new one?');
 						button = _('Delete Rule' + (rs.length === 1 ? '' : 's'));
 					} else if (has_automatic_rule) {
-						para = _('Would you like to restore ' + (rs.length === 1 ? 'it' : 'them') + ', or add a new one?');
-						button = _('Restore Rule' + (rs.length === 1 ? '' : 's'));
+						para = _('Would you like to ' + restore_disable + ' ' + (rs.length === 1 ? 'it' : 'them') + ', or add a new one?');
+						button = _(restore_disable + ' Rule' + (rs.length === 1 ? '' : 's'));
 					} else {
 						para = 'If you\'re reading this, something went horribly wrong.';
 						button = 'Hmph!';
 					}
-										
+
+					var wrapper = $('<div><ul class="rules-wrapper"></ul></div>');
+
+					for (d in matches)
+						$('.rules-wrapper', wrapper).append(self.rules.view(li.data('kind'), d, script, true, true, blocked ? 1 : 0).find('> li').find('input').remove().end());
+
+					$('li.domain-name', wrapper).removeClass('hidden').addClass('no-disclosure');
+
 					new Poppy(left, off.top + 12, [
-						'<p>', _('The following rule' + (rs.length === 1 ? ' is ' : 's are ') + ('allowing this item:')), '</p>',
-						'<ul class="rules-wrapper">',
-							'<li class="domain-name no-disclosure">', self.host, '</li>',
-							'<li>',
-								'<ul>',
-									'<li><span class="rule">',
-										rs.join('</span><div class="divider"></div></li><li><span class="rule">'),
-									'</span><div class="divider" style="visibility:hidden;"></div></li>',
-								'</ul>',
-							'</li>',
-						'</ul>',
+						'<p>', _('The following rule' + (rs.length === 1 ? ' is ' : 's are ') + (!blocked ? 'blocking' : 'allowing') + (' this item:')), '</p>',
+						wrapper.html(),
 						'<p>', para, '</p>',
 						'<div class="inputs">',
 							'<input type="button" value="', _('New Rule'), '" id="auto-new" /> ',
 							'<input type="button" value="', button, '" id="auto-restore" />',
 						'</div>'].join(''), function () {
-							_$('#poppy ul span.rule').each(function (i) {
-								this.className += ' type-' + ds[i][1][0];
-							});
-							
-							_$('#poppy #auto-new').click(function () {
+							$$('#poppy #auto-new').click(function () {
+								if (self.simpleMode || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
+								else if (!self.donationVerified) return false;
+
 								new Poppy(left, off.top + 12, padd);
 							}).siblings('#auto-restore').click(function () {
-								for (var b = 0; b < ds.length; b++) {
-									if (ds[b][1][0] < 0)
-										self.rules.add(li.data('kind'), self.host, ds[b][0], ds[b][1][0] * -1, false, true);
-									else
-										self.rules.remove(li.data('kind'), self.host, ds[b][0], true);
-								}
+								self.rules.remove_matches(li.data('kind'), matches);
+								Tabs.dispatchToActive('reload');
 
 								new Poppy();
-								safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
 							});
 						});
 					
 					return false;
 				}
 			}
-			
-			new Poppy(left, off.top + 12, padd);
-		});
-		
-		$(this.popover).on('click', '#allowed-script-urls ul li .info-link',  url_display);
 
-		$(this.popover).on('click', '#blocked-script-urls ul li span', function (e, seven) {
-			if (self.disabled) return false;
-
-			if (seven) e.pageX = seven;
-
-			var me = $(this),
-					li = me.parent(),
-					m = !me.parents('div').attr('id').match(/blocked/),
-					off = me.offset(),
-					left = e.pageX,
-					url = li.data('script');
-
-			if (li.hasClass('unblockable')) return new Poppy(left, off.top + 12, _('Unblockable ' + li.data('kind')));
-			
-			if (self.simpleMode || ~li.data('kind').indexOf('special')) return self.add_rule_host(me, url, e.pageX, off.top, !$(this).parents('#allowed-script-urls').length);
+			if (self.simpleMode || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
 			else if (!self.donationVerified) return false;
 			
-			var to_delete = self.rules.remove_matching_URL(li.data('kind'), self.host, url, false, m),
-					d,
-					rs = [],
-					vs = $([
-							'<div>',
-								'<p>', _('The following rule(s) would be deleted or disabled:'), '</p>',
-								'<ul class="rules-wrapper"></ul>',
-								'<p>', self.simpleMode ? '' : _('This may inadvertently affect other scripts.'), '</p>',
-								'<p>', self.simpleMode ? '' : _('You can also create a new rule to affect just this one.'), '</p>',
-								'<div class="inputs">',
-									'<input type="button" value="', _('New Rule'), '" id="new-rule" /> ',
-									'<input type="button" value="', _('Continue'), '" id="delete-continue" />',
-								'</div>',
-							'</div>'].join('')),
-					wrapper = vs.find('ul.rules-wrapper');
-			
-			for (d in to_delete) {
-				wrapper.append(self.rules.view(li.data('kind'), d, url, true).find('> li').find('input').remove().end());
-
-				rs.push(to_delete[d][0]);
-			}
-			
-			$('li.domain-name', vs).removeClass('hidden').addClass('no-disclosure');
-			
-			var newHigh = function () {
-				var url = me.parent().data('script')[0],
-						page_parts = self.utils.domain_parts(self.host),
-						padd = self.poppies.add_rule.call({
-							url: '^' + self.utils.escape_regexp(url) + '$',
-							li: me.parent(),
-							domain: self.host,
-							is_new: 1,
-							header: _('Adding a Rule For {1}', [Template.create('tmpl_domain_picker', { page_parts: page_parts, no_label: true })])
-						}, self);
-				
-				padd.callback2 = function () {
-					_$('#select-type-allow').click();
-				};
-				
-				new Poppy(left, off.top + 12, padd);
-			};
-			
-			if (rs.length === 0) {
-				new Poppy();
-				newHigh();
-			} else
-				new Poppy(left, off.top + 12, vs, function () {
-					_$('#poppy #delete-continue').click(function () {
-						self.rules.remove_matching_URL(li.data('kind'), self.host, url, true, m);
-						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
-						_$('#page-list')[0].selectedIndex = 0;
-						new Poppy();
-					}).siblings('#new-rule').click(newHigh);
-				});
-		});
-		
-		$(this.popover).on('click', '#blocked-script-urls ul li .info-link', url_display);
-	
-		$(this.popover).on('click', '#unblocked-script-urls ul li span', function() {
+			new Poppy(left, off.top + 12, padd);
+		}).on('click', '#allowed-script-urls ul li .info-link, #blocked-script-urls ul li .info-link', url_display)
+			.on('click', '#unblocked-script-urls ul li span', function() {
 			var t = $(this).text();
 			
 			function do_highlight (t, no_zoom) {
-				_$('#misc-content pre').remove();
+				$$('#misc-content pre').remove();
 				
 				$('<pre></pre>').append('<code class="javascript"></code>').find('code')
-						.text(t).end().appendTo(_$('#misc-content'));
-				if (!no_zoom) self.utils.zoom(_$('#misc').find('.misc-header').html(_('Unblocked Script')).end(), _$('#main'));
-				var p = _$('#misc-content pre code');
+						.text(t).end().appendTo($$('#misc-content'));
+				if (!no_zoom) self.utils.zoom($$('#misc').find('.misc-header').html(_('Unblocked Script')).end(), $$('#main'));
+				var p = $$('#misc-content pre code');
 				p.data('unhighlighted', p.html());
 				self.hljs.highlightBlock(p[0]);
 			}
 			
-			_$('#misc .info-container #beautify-script').remove();
+			$$('#misc .info-container #beautify-script').remove();
 			
 			$('<input type="button" value="' + _('Beautify Script') + '" id="beautify-script" />')
-					.appendTo(_$('#misc .info-container')).click(function () {
-						t = js_beautify(t, {
+					.appendTo($$('#misc .info-container')).click(function () {						
+						do_highlight(js_beautify(t, {
 							indent_size: 2
-						});
-						
-						do_highlight(t, true);
+						}), true);
 					});
 			
 			do_highlight(t);
 		});
 		
 		var toggle_find_bar = function (show_only) {
-			var f = _$('#find-bar'),
+			var f = $$('#find-bar'),
 					v = f.is(':visible');
 			
 			if (v && show_only) return false;
@@ -1961,7 +2390,7 @@ var Template = {
 					m = (f.slideToggle(200 * self.speedMultiplier).toggleClass('visible').hasClass('visible')) ? '-' : '+',
 					mM = m === '-' ? '+' : '-';
 			
-			_$('#main, #rules-list, #misc, #setup').animate({
+			$$('#main, #rules-list, #misc, #setup').animate({
 				height: m + '=' + h,
 				marginTop: mM + '=' + h
 			}, {
@@ -1979,38 +2408,35 @@ var Template = {
 		
 		$(this.popover.body).keydown(function (e) {
 			if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 20;
-			else if ((e.which === 93 || e.which === 91) ||
-					(window.navigator.platform.match(/Win/) && e.which === 17)) {
-						self.commandKey = true;
-						self.utils.timer.timeout('no_commandkey', function (self) {
-							self.commandKey = false;
-						}, 1000, [self]);
-					}
-			else if (e.which === 70 && self.commandKey) {
+			else if ((e.which === 93 || e.which === 91) || (window.navigator.platform.match(/Win/) && e.which === 17)) {
+				self.commandKey = true;
+				self.utils.timer.timeout('no_commandkey', function (self) {
+					self.commandKey = false;
+				}, 1000, [self]);
+			} else if (e.which === 70 && self.commandKey) {
 				e.preventDefault();
 				
 				setTimeout(function (self) {
-					var b = _$('#find-bar #find-bar-search').focus().trigger('search');
+					var b = $$('#find-bar-search').focus().trigger('search');
 					b[0].selectionStart = 0;
 					b[0].selectionEnd = b[0].value.length;
 				}, 10, self);
 				
 				if (toggle_find_bar(true)) return false;
-			} else if (e.which === 27 && _$('#find-bar #find-bar-search').is(':focus')) {
+			} else if (e.which === 27 && $$('#find-bar-search').is(':focus')) {
 				e.preventDefault();
-				_$('#find-bar #find-bar-done').click();
+				$$('#find-bar-done').click();
 			}
 		}).keyup(function (e) {
 			if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 1;
-			else if ((e.which === 93 || e.which === 91) ||
-					(window.navigator.platform.match(/Win/) && e.which === 17)) self.commandKey = false;
+			else if ((e.which === 93 || e.which === 91) || (window.navigator.platform.match(/Win/) && e.which === 17)) self.commandKey = false;
 		});
 		
-		_$('#find-bar #find-bar-done').click(function() {
+		$$('#find-bar-done').click(function() {
 			toggle_find_bar();
 			
 			self.utils.timer.timeout('hide_results', function () {
-				var b = _$('#find-bar-search'),
+				var b = $$('#find-bar-search'),
 						s = b.val();
 					
 				b.val('').trigger('search');
@@ -2026,9 +2452,9 @@ var Template = {
 					matches = 0,
 					removedEm = false;
 						
-			_$('.find-scroll').remove();
+			$$('.find-scroll').remove();
 			
-			_$('#main, #rules-list, #misc, #setup').find('*').each(function () {
+			$$('#main, #rules-list, #misc, #setup, #snapshots').find('*').each(function () {
 				self.utils.zero_timeout(function (e) {
 					if (e.data('orig_html'))
 						e.html(e.data('orig_html')).removeData('orig_html');
@@ -2036,21 +2462,21 @@ var Template = {
 			});
 					
 			if (s.length === 0) {
-				_$('#find-bar-matches').html('');
+				$$('#find-bar-matches').html('');
 				return false;
 			}
 			
 			self.busy = 1;
 			self.finding = true;
 			
-			var visible = _$('#main, #rules-list, #misc, #setup').filter(':visible'),
-					offset = _$('header:first').outerHeight() + _$('#find-bar').outerHeight(),
+			var visible = $$('#main, #rules-list, #misc, #setup, #snapshots').filter(':visible'),
+					offset = $$('header:first').outerHeight() + $$('#find-bar').outerHeight(),
 					end_find = function (self, visible) {
 						self.busy = 0;
 						self.finding = false;
-					}
-			
-			var js = visible.find('code.javascript:visible'), x;
+					},
+					js = visible.find('code.javascript:visible'), x;
+
 			if (js.length && !js.hasClass('unhighlighted')) {
 				var cloned, parent;
 				// This is an ugly work aroundaround for js.html(js.data('unhighlighted'));
@@ -2110,21 +2536,26 @@ var Template = {
 			});
 			
 			self.utils.zero_timeout(function (self) {
-				_$('#find-bar-matches').html(_('{1} matches', [matches]));
+				$$('#find-bar-matches').html(_('{1} matches', [matches]));
 				
 				if (matches > 499)
 					self.utils.zero_timeout(function (self) {
 						self.utils.timer.timeout('over_fivehundred', function (self) {
-							_$('.find-scroll').remove();
+							$$('.find-scroll').remove();
 						}, 50, [self]);
 					}, [self]);
 			}, [self]);
 		});
 	
-		_$('#block-domain, #allow-domain').click(function () {
-			var page_parts = self.utils.domain_parts(self.host), n, off = $(this).offset(),
-					me = this, kinds = [], block = this.id === 'block-domain', left = off.left + $(me).outerWidth() / 2, top = off.top + 8,
-					all_poppy = function () {
+		$$('#block-domain, #allow-domain').click(function () {
+
+			var page_parts = self.utils.domain_parts(self.host), n, off = self.utils.position_poppy(this, 0, 10),
+					me = this, kinds = [], block = this.id === 'block-domain',
+					left = off.left, top = off.top;
+
+			if (self.rules.using_snapshot) return new Poppy(left, top, _('Snapshot in use'));
+
+			var all_poppy = function () {
 						new Poppy(left, top, [
 							'<p class="misc-info">',
 								_('{1} All', [[
@@ -2141,16 +2572,16 @@ var Template = {
 								'<label for="domain-script-temporary">&nbsp;', _('Make these temporary rules'), '</label> ',
 							'</p>',
 							'<p>',
-								Template.create('tmpl_domain_picker', { page_parts: page_parts, no_all: true }),
+								Template.create('domain_picker', { page_parts: page_parts }),
 								' <input id="domain-script-continue" type="button" value="', _('Save'), '" />',
 							'</p>'].join(''), function () {
-							_$('#which-type').change(function () {
+							$$('#which-type').change(function () {
 								$(this).toggleClass((!block ? 'allowed' : 'blocked') + '-color', this.value !== '42');
 							});
 
-							_$('#domain-script-continue').click(function () {
-								var h = _$('#domain-picker').val(), kind,
-										block_kind = _$('.ba-kind:checked').map(function () {
+							$$('#domain-script-continue').click(function () {
+								var h = $$('#domain-picker').val(), kind,
+										block_kind = $$('.ba-kind:checked').map(function () {
 											return this.id.substr(8);
 										});
 								
@@ -2161,15 +2592,15 @@ var Template = {
 								for (var i = 0; i < block_kind.length; i++) {
 									self.collapsed(block_kind[i] + 'Unchecked', 0)
 
-									var key = (_$('#which-type').val() === '42' ? 'hide_' : '') + block_kind[i], ki = key.charAt(0).toUpperCase() + key.substr(1) + 's';
+									var key = ($$('#which-type').val() === '42' ? 'hide_' : '') + block_kind[i];
 
 									self.rules.remove(key, h, '^.*$');
-									self.rules.add(key, h, '^.*$', _$('#which-type').val(), true, _$('#domain-script-temporary').is(':checked'));
+									self.rules.add(key, h, '^.*$', $$('#which-type').val(), true, $$('#domain-script-temporary').is(':checked'));
 								}
 								
-								safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+								Tabs.dispatchToActive('reload');
 
-								_$('#page-list')[0].selectedIndex = 0;
+								$$('#page-list')[0].selectedIndex = 0;
 							});
 						});	
 					}
@@ -2177,11 +2608,9 @@ var Template = {
 			if (self.donationVerified)
 				for (var kind in self.rules.data_types) {
 					if (!Settings.getItem('enable' + kind) || ~kind.indexOf('hide_')) continue;
-				
-					var ki = kind.charAt(0).toUpperCase() + kind.substr(1) + 's';
-			
+							
 					kinds.push(['<input class="ba-kind" id="ba-kind-', kind, '" type="checkbox" ', (!self.collapsed(kind + 'Unchecked') ? 'checked' : ''), ' />',
-							'<label for="ba-kind-', kind, '">&nbsp;', _(ki), '</label>'].join(''));
+							'<label for="ba-kind-', kind, '">&nbsp;', _(kind.charAt(0).toUpperCase() + kind.substr(1) + 's'), '</label>'].join(''));
 				}
 
 			var at_least_one = 0, ob = $(me).parents('.column').find('.urls-inner').children();
@@ -2199,7 +2628,9 @@ var Template = {
 				'<input type="button" id="do-some" value="', _('Some'), '" /> ',
 				'<input type="button" id="do-all" value="', _('All'), '" /> ',
 			].join(''), function () {
-				_$('#do-all').click(all_poppy).siblings('#do-some').click({ pp: page_parts },function (e) {
+				$$('#do-all').click(all_poppy).siblings('#do-some').click({ pp: page_parts },function (e) {
+					if (ob.parent().hasClass('some-list')) return false;
+
 					var c = $([
 						'<div class="some-helper">',
 							'<p>',
@@ -2207,7 +2638,7 @@ var Template = {
 								'<label for="domain-script-temporary-', !block ? 1 : 0, '">', _('Make these temporary rules'), '</label>',
 							'</p>',
 							'<p>',
-								Template.create('tmpl_domain_picker', { page_parts: e.data.pp, id: !block ? 1 : 0 }),
+								Template.create('domain_picker', { page_parts: e.data.pp, id: !block ? 1 : 0 }),
 							'</p>',
 							'<p>',
 								_('{1} selected items', [[
@@ -2223,7 +2654,7 @@ var Template = {
 
 					parent.addClass('some-list');
 
-					_$((block ? '.allowed' : '.blocked') + '-label.hidden').click();
+					$$((block ? '.allowed' : '.blocked') + '-label.hidden').click();
 
 					for (var i = 0; ob[i]; i++) {
 						if (i % 2) continue;
@@ -2239,7 +2670,7 @@ var Template = {
 								continue;
 							}
 
-							var data = jQuery.data(li), proto = self.utils.active_protocol(data.script[0]),
+							var data = $.data(li), proto = self.utils.active_protocol(data.script[0]),
 									page_parts = data.kind === 'special' ? [data.url] : self.utils.domain_parts(data.url),
 									opts = self.add_rule_host($(li).find('*:first'), null, null, null, null, true), op = $(opts),
 									cl = $(li).clone(true).addClass('some-thing'), $li = $(li);
@@ -2265,15 +2696,11 @@ var Template = {
 					parent.prepend(c).parent().prev().slideUp(200 * self.speedMultiplier);
 					c.slideDown(200 * self.speedMultiplier);
 
-					$('.which-type', parent).change(function () {
+					parent.find('.which-type').change(function () {
 						$(this).toggleClass((block ? 'blocked' : 'allowed') + '-color', this.value !== '42');
-					});
-
-					$('select', parent).mousedown(function () {
+					}).end().find('select').mousedown(function () {
 						$(this).prev().attr('checked', 'checked');
-					});
-
-					$('.save-some', parent).click(function () {
+					}).end().find('.save-some').click(function () {
 						var som = $('.main-wrapper li', parent), item;
 
 						for (var c = 0; som[c]; c++) {
@@ -2286,48 +2713,55 @@ var Template = {
 							self.rules.add(kind, $('.domain-picker', parent).val(), rule, $('.which-type', parent).val(), true, $('.domain-script-temporary', parent).is(':checked'));
 						}
 
-						_$('.some-list').removeClass('some-list');
+						$$('.some-list').removeClass('some-list');
 
 						this.disabled = 1;
 
-						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+						Tabs.dispatchToActive('reload');
 
-						_$('#page-list')[0].selectedIndex = 0;
-					});
+						$$('#page-list')[0].selectedIndex = 0;
+					})
 				});
 			});
 		});
 		
-		_$('#disable').click(function () {
-			if (!self.methodAllowed || (!self.disabled && !self.utils.confirm_click(this))) return false;
+		$$('#disable').click(function () {
+			if (!self.methodAllowed) return false;
 		
 			self.disabled = !self.disabled;
 			
-			_$('body').toggleClass('disabled', self.disabled);
-			
-			this.value = _((self.disabled ? 'Enable' : 'Disable') + ' JavaScript Blocker');
-			safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
+			$$('body').toggleClass('disabled', self.disabled);
+
+			if (self.disabled)
+				self.clear_ui();
+
+			this.innerHTML = _((self.disabled ? 'Enable' : 'Disable') + ' JavaScript Blocker');
+
+			Tabs.dispatchToActive('reload');
 		});
 
-		_$('#toggle-hidden').click(function (e) {
-			if (_$('.some-list').length) return;
+		$$('#toggle-hidden').click(function (e) {
+			if ($$('.some-list').length) return;
 
-			var hid = _$('#main .urls-wrapper li.hidden-by-rule'),
-					visi = hid.toggleClass('show-for-now').hasClass('show-for-now');
+			var hid = $$('#main .urls-wrapper li.hidden-by-rule'),
+					visi = hid.toggleClass('show-for-now').hasClass('show-for-now'),
+					pos = self.utils.position_poppy(this, 0, 8);
 
-			this.value = _((visi ? 'Hide' : 'Show') + ' Hidden')
+			$(this).toggleClass('hidden-visible', visi);
+			
+			if (!hid.length) return new Poppy(pos.left, pos.top, _('Nothing is hidden'));
 
-			if (!hid.length) return new Poppy(e.pageX, $(this).offset().top + 12, _('Nothing is hidden'));
+			$$('#main .show-me-more .show-more').click();
 
-			_$('#main .main-wrapper').each(function () {
+			$$('#main .main-wrapper').each(function () {
 				var all = $('li', this), some = $('li.hidden-by-rule', this);
 
-				all.find('.divider').css('visibility', 'visible');
+				all.find('.divider').removeClass('invisible');
 
 				if (visi)
-					all.filter(':not(.show-more-hidden):last').find('.divider').css('visibility', 'hidden');
+					all.filter(':last').find('.divider').addClass('invisible');
 				else
-					all.filter(':not(.hidden-by-rule,.show-more-hidden):last').find('.divider').css('visibility', 'hidden');
+					all.filter(':not(.hidden-by-rule):last').find('.divider').addClass('invisible');
 
 				if (all.length === some.length && some.length)
 					if (visi)
@@ -2337,12 +2771,12 @@ var Template = {
 			});
 		});
 		
-		_$('#view-rules').click(function (e) {
+		$$('#view-rules').click(function (e) {
 			if (!self.methodAllowed) return false;
 			
-			var offset = $(this).offset(),
-				left = offset.left + $(this).outerWidth() / 2,
-				top = offset.top + 12;
+			var offset = self.utils.position_poppy(this, 0, 8),
+					left = offset.left,
+					top = offset.top;
 			
 			new Poppy(left, top, [
 				'<p class="misc-info">', _('Active Temporary Rules'), '</p>',
@@ -2352,121 +2786,57 @@ var Template = {
 				'<div class="divider" style="margin:7px 0 6px;"></div>',
 				'<input type="button" value="', _('Show All'), '" id="view-all" /> ',
 				'<input type="button" value="', _('Show Active'), '" id="view-domain" /> ',
-				self.donationVerified ? ['<input type="button" value="', _('Backup'), '" id="rules-backup" />'].join('') : ''].join(''), function () {
-				_$('#view-domain').click(function () {
+				self.donationVerified ? ['<input type="button" value="', _('Backup'), '" id="rules-backup" />'].join('') : '',,
+				self.rules.using_snapshot ? [
+					' <input type="button" value="', _('Snapshot'), '" id="current-snapshot" />'].join('') : ''
+				].join(''), function () {
+				$$('#current-snapshot').click(function () {
+					var pop = self.poppies.current_snapshot();
+					pop.onshowend = function () {
+						$$('#snapshots-show').unbind('click').click(function () {
+							new Poppy();
+
+							self.utils.zoom($$('#snapshots'), $$('#main'));
+
+							self.rules.show_snapshots();
+						});
+					};
+					new Poppy(left, top, pop);
+				});
+
+				$$('#view-domain').click(function () {
 					this.disabled = 1;
 					
-					self.busy = 1;
-					
-					var parts = self.domain_parts(self.host),
-							x = parts.slice(0, 1),
-							y = parts.slice(1);
-
-					x.push(x[0]);
-
-					parts = x.concat(y);
-					parts = parts.slice(0, -1);
-						
-					_$('#view-all').click();
-					
-					_$('#domain-filter').val('^' + parts.join('$|^.') + '$|^' + _('All Domains') + '$').data('parts', parts);
+					$$('#show-active-rules, #view-all').removeClass('using').click();
 				}).siblings('#view-all').click(function (event) {
 					if (this.disabled) return false;
 
-					_$('#filter-state-all').click();
-
 					this.disabled = 1;
 					
 					self.busy = 1;
-					
-					_$('#edit-domains').removeClass('edit-mode').html(_('Edit'));
-					
-					var domain, i = 0, filter = _$('#domain-filter'), rs = [];
-					
+															
 					if ('srcElement' in event)
-						filter.val('').data('parts', []);
-					
-					function appendrules (ul, domain, self, type) {
-						ul.append($('> li', self.rules.view(type, domain, undefined, null, 1)));
-						
-						self.utils.zero_timeout(function (self) {
-							self.utils.timer.timeout('filter_bar_click', function (self) {
-								_$('.filter-bar li.selected').click();
-							}, 10, [self]);
-						}, [self]);
-					}
-					
-					for (var key in self.rules.data_types) {
-						if (!_$('#head-' + key + '-rules').length)
-							_$('#rule-container').append(Template.create('tmpl_rule_wrapper', {
-								kind: key,
-								local: _(key.charAt(0).toUpperCase() + key.substr(1) + ' Rules')
-							}));
-						
-						var head = _$('#head-' + key + '-rules'), wrap = _$('#rules-list-' + key + 's').parent();
-						
-						if (!self.enabled(key)) {
-							head.hide();
-							wrap.hide();
-						} else {
-							head.show();
-							wrap.show();
-						}
-						
-						var s = self.utils.sort_object(self.rules.rules[key]),
-								ul = _$('#rules-list #data ul#rules-list-' + key + 's').empty().css({ marginTop: '-3px', marginBottom: '6px', opacity: 1 });
+						$$('#domain-filter').val('').data('parts', []);
 
-						for (domain in s)
-							self.utils.zero_timeout(appendrules, [ul, domain, self, key]);
-					}
-					
-					function remove_domain (event) {
-						event.stopPropagation();
-						
-						var li = $(this.parentNode), d = li.data('domain');
-						
-						if (!self.utils.confirm_click(this) || li.is(':animated')) return false;
-																			
-						self.rules.remove_domain(li.data('kind'), d);
-						
-						li.animate({
-							right: -li.outerWidth(),
-							padding: 0,
-							top: li.height() - parseInt(li.css('marginTop'), 10),
-							marginTop: -li.outerHeight(true),
-							marginBottom: 0,
-							opacity: 0
-						}, 200 * self.speedMultiplier, function () {
-							$(this).next().remove();
-							$(this).remove()
-							_$('#domain-filter').trigger('search');
-						});
-						
-					}
-						
-					self.utils.zero_timeout(function (ul) {
-						_$('.rules-wrapper .domain-name').prepend('<div class="divider"></div><input type="button" value="' + _('Remove') + '" />')
-								.find('input').click(remove_domain);
-					}, [ul]);
-					
+					new Poppy();
+
+					self.rules.show();
+
 					self.utils.zero_timeout(function (self) {
-						self.utils.zero_timeout(function (self) {
-							self.busy = 0;
-							var l = _$('#rules-list');
-							if (!l.is(':visible')) {
-								new Poppy();
-								self.utils.zoom(l, _$('#main'));
+						self.utils.zoom($$('#rules-list'), $$('#main'), null, null, function () {
+							var parts = $$('#domain-filter').trigger('search').data('parts');
 								
-								self.utils.zero_timeout(function (self) {
-									var parts = _$('#domain-filter').trigger('search').data('parts');
-																	
-									for (var i = 0; i < parts.length; i++)
-										_$('.domain-name[data-value="' + (i > 0 ? '.' : '') + parts[i] + '"].hidden').click();
-								}, [self]);
-							}
-						}, [self]);
+							parts.forEach(function (part, i) {
+								$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + part + '"].hidden').click();
+							});
+						});		
 					}, [self]);
 				}).siblings('#rules-make-perm, #rules-remove-temp').click(function () {
+					if (self.rules.using_snapshot) {
+						var off = self.utils.position_poppy(this, 0, 12);
+						return new Poppy(off.left, off.top, _('Snapshot in use'), null, null, null, null, true);
+					}
+
 					for (var key in self.rules.data_types) {
 						var rules = self.rules.for_domain(key, self.host), domain, rule, make_perm = this.id === 'rules-make-perm';
 
@@ -2481,65 +2851,43 @@ var Template = {
 					}
 					
 					if (this.id === 'rules-remove-temp') {
-						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
-						_$('#page-list')[0].selectedIndex = 0;
+						Tabs.dispatchToActive('reload');
+						$$('#page-list')[0].selectedIndex = 0;
 					} else
 						new Poppy();
 				}).siblings('#rules-show-temp').click(function () {
-					_$('#view-domain').click();
-					_$('#filter-temporary').click();
+					$$('#view-domain').click();
+					$$('#filter-temporary').click();
 				}).siblings('#rules-backup').click(function () {
-					new Poppy(left, top, [
-						'<p class="misc-info">', _('Backup'), '</p>',
-						'<input type="button" value="', _('Export'), '" id="backup-e"> ',
-						'<input type="button" value="', _('Import'), '" id="backup-i">'].join(''), function () {
-							_$('#backup-e').click(function () {
-								new Poppy(left, top, [
-									'<textarea id="backup-export" readonly="readonly">' + self.rules.export() + '</textarea>',
-									'<p>', _('Copy above'), '</p>'].join(''), function () {
-									var t = _$('#poppy textarea');
-									t[0].selectionStart = 0;
-									t[0].selectionEnd = t.val().length;
-								});
-							}).siblings('#backup-i').click(function () {
-								new Poppy(left, top, [
-									'<textarea id="backup-import"></textarea>',
-									'<p>', _('Paste your backup'), '</p>',
-									'<dlv class="inputs">',
-										'<input type="button" value="', _('Restore'), '" id="backup-restore" />',
-									'</dlv>'].join(''), function () {
-									_$('#backup-import').focus();
-									_$('#backup-restore').click(function () {
-										if (!self.rules.import(_$('#backup-import').val()))
-											new Poppy(left, top, _('Error importing'));
-										else {
-											new Poppy();
-											safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('reload');
-										}
-									});
-								});
-							});
-					});
+					new Poppy(left, top, self.poppies.backup.call({
+							left: left,
+							top: top
+					}));
 				});
 			});
 		});
 
-		_$('#rules-list-back').click(function () {
-			if (_$('#rules-list').hasClass('zoom-window-open'))
-				self.utils.zoom(_$('#rules-list'), _$('#main'), function () {
-					_$('#rules-list #data ul.rules-wrapper').empty();
+		$$('#rules-list-back').click(function () {
+			var r = $$('#rules-list:not(.zoom-window-animating)');
+
+			if (r.length)
+				self.utils.zoom(r.addClass('zoom-window-open zoom-window'), $$('#main'), function () {
+					$$('#rules-list #data ul.rules-wrapper').empty();
+					$$('#rules-list').find('.snapshot-info').hide();
+				}, function () {
+					if (self.rules.using_snapshot && !self.rules.snapshots.exist(self.rules.using_snapshot))
+						self.rules.use_snapshot(0);
 				});
 		});
 		
-		_$('#misc-close').click(function() {
-			if (_$('#misc').hasClass('zoom-window-open'))
-				self.utils.zoom(_$('#misc'), _$('#main'), function () {
-					_$('#misc-content, p.misc-header').html('');
-				});
+		$$('#misc-close').click(function() {
+			self.utils.zoom($$('#misc'), $$('.zoom-window-hidden:first'), function () {
+				$$('#misc-content, p.misc-header').html('');
+			});
 		});
 		
-		_$('.allowed-label, .blocked-label, .unblocked-label').click(function () {
-			var $this = $(this), which = this.className.substr(0, this.className.indexOf('-')), e = _$('#' + which + '-script-urls .urls-inner');
+		$$('.allowed-label, .blocked-label, .unblocked-label').click(function () {
+			var $this = $(this), which = this.className.substr(0, this.className.indexOf('-')), e = $$('#' + which + '-script-urls .urls-inner');
 			
 			if (e.is(':animated')) return false;
 
@@ -2550,16 +2898,8 @@ var Template = {
 								
 				e.show().css('marginTop', -e.height()).animate({
 					marginTop: 0
-				}, {
-					duration: 200 * self.speedMultiplier,
-					complete: function () {
-						$('.kind-header', e).addClass('visible');
-					},
-					step: function () {
-						self.utils.zero_timeout(function () {
-							_$('#main').trigger('scroll');
-						});
-					}
+				}, 200 * self.speedMultiplier, function () {
+					$('.kind-header', e).addClass('visible');
 				}).removeClass('was-hidden');
 			} else {
 				self.collapsed(which, 1);
@@ -2569,74 +2909,108 @@ var Template = {
 								
 				e.css('marginTop', 0).animate({
 					marginTop: -e.height()
-				}, {
-					duration: 200 * self.speedMultiplier,
-					complete: function () {
-						e.hide();
-					},
-					step: function () {
-						self.utils.zero_timeout(function () {
-							_$('#main').trigger('scroll');
-						});
-					}
+				}, 200 * self.speedMultiplier, function () {
+					e.hide();
 				}).addClass('was-hidden');
 			}
-						
-			if ($(this).parent().hasClass('floater')) $(this).parent().next().find('label').toggleClass('hidden');
-			
+							
 			self.utils.timer.timeout('label_search', function (self) {
-				_$('#find-bar-search:visible').trigger('search');
+				$$('#find-bar-search:visible').trigger('search');
 			}, 400 * self.speedMultiplier, [self]);
 		});
 		
-		_$('#collapse-all, #expand-all').click(function () {
+		$$('#collapse-all, #expand-all').click(function () {
 			self.busy = 1;
 						
-			var is_collapse = this.id === 'collapse-all', d = _$('#rules-list .domain-name:visible');
+			var all = this.id === 'collapse-all';
 			
-			if (!is_collapse && _$('#edit-domains').hasClass('edit-mode')) return self.busy = 0;
+			if (!all && $$('#edit-domains.edit-mode').length) return self.busy = 0;
+		
+			$$('#rules-list .domain-name:visible').toggleClass('hidden', all);
 			
-			if (is_collapse) d = d.not('.hidden');
-			else d = d.filter('.hidden');
-			
-			d.toggleClass('hidden');
-			
-			self.collapsedDomains($.map(_$('#rules-list .domain-name'), function (e) {
-				return e.className.match(/hidden/) ? $('span', e).html() : null;
+			self.collapsedDomains($.map($$('#rules-list .domain-name'), function (e) {
+				var d = $.data(e).domain, d = d === '.*' ? _('All Domains') : d;
+				return ~e.className.indexOf('hidden') ? d : null;
 			}));
-			
-			if (is_collapse) _$('#rules-filter-bar li#filter-collapsed').click();
-			else _$('#rules-filter-bar li#filter-expanded').click();
 			
 			self.busy = 0;
 		});
+
+		$$('#show-active-rules').click(function () {
+			var parts = self.domain_parts(self.host),
+					x = parts.slice(0, 1),
+					y = parts.slice(1);
+
+			x.push(x[0]);
+
+			parts = x.concat(y);
+			parts = parts.slice(0, -1);
+
+			var active = ~this.className.indexOf('using') ? '' : '^' + parts.join('$|^.') + '$|^' + _('All Domains') + '$';
+						
+			$$('#domain-filter').val(active).data('parts', parts).data('active', active.length ? active : null).trigger('search');
+		});
 		
-		_$('#edit-domains').click(function () {
+		$$('#edit-domains').click(function () {
 			$(this).toggleClass('edit-mode');
-			
-			this.innerHTML = this.className.match(/edit\-mode/) ? _('Done Editing') : _('Edit');
-			
-			var ul = _$('.rules-wrapper');
+						
+			var ul = $$('.rules-wrapper');
 			
 			$('.domain-name', ul).toggleClass('no-disclosure').toggleClass('editing')
 			
-			_$('#rules-list .rules-wrapper').each(function () {
-				$('.domain-name:visible .divider', this).css('visibility', 'visible').filter(':visible:first').css('visibility', 'hidden');
+			$$('#rules-list .rules-wrapper').each(function () {
+				$('.domain-name:visible .divider', this).removeClass('invisible').filter(':visible:first').addClass('invisible');
 			});
-		}).siblings('#reinstall-pre').click(function () {
-			var off = $(this).offset();
+		});
 
-			self.busy = 1;
+		$$('#time-machine').click(function () {
+			var off = self.utils.position_poppy(this, 2, 12);
+
+			if (!Settings.getItem('enableSnapshots')) return new Poppy(off.left, off.top, _('Snapshots disabled'));
+
+			if (self.rules.using_snapshot && !~this.className.indexOf('force-open')) {
+
+				new Poppy(off.left, off.top, self.poppies.current_snapshot(!self.rules.snapshots.exist(self.rules.using_snapshot)));
+
+				return;
+			}
+
+			$(this).removeClass('force-open');
+
+			self.utils.zoom($$('#snapshots'), $$('#rules-list'));
+
+			self.rules.show_snapshots();
+		});
+
+		$$('#close-snapshots').click(function () {
+			var go_to = $$('.zoom-window-hidden:last').addClass('zoom-window-open zoom-window');
+		
+			$$('#rules-list').find('.snapshot-info').hide();
 			
-			for (var key in self.rules.data_types)
-				self.rules.reinstall_predefined(key);
+			self.utils.zoom($$('#snapshots'), go_to, null, function () {
+				if (self.rules.using_snapshot && !self.rules.snapshots.exist(self.rules.using_snapshot))
+					self.rules.use_snapshot(0);
+				if (go_to.is('#rules-list'))
+					self.rules.show();
+			});
+		});
 
-			new Poppy(off.left + $(this).width() / 2, off.top + 8, '<p>' + _('Whitelist and blacklist rules have been reinstalled.') + '</p>');
+		$$('#create-snapshot').click(function () {
+			var off = self.utils.position_poppy(this, 0, 12);
 
-			self.busy = 0;
+			self.rules.snapshots.add(self.rules.rules, 1, 0);
+
+			if ($$('#snapshots:visible').length)
+				self.utils.timer.timeout('show_snapshots', function (rules) {
+					rules.show_snapshots();
+				}, 1000, [self.rules]);
+
+			new Poppy(off.left, off.top, _('Snapshot created.'));
 		});
 		
-		_$('#make-temp-perm').click(function () {
+		$$('#make-temp-perm').click(function () {
+			if (self.rules.using_snapshot) return;
+
 			var off = $(this).offset();
 						
 			for (var key in self.rules.data_types)
@@ -2649,14 +3023,16 @@ var Template = {
 								self.rules.add(key, domain, rule, rules[domain][rule][0], false, false);
 				}
 			
-			_$('.rules-wrapper').find('span.temporary').removeClass('temporary');
+			$$('.rules-wrapper').find('span.temporary, .bubble.temporary').removeClass('temporary');
 
-			_$('#filter-type-state li.selected').click();
+			$$('#filter-type-state li.selected').click();
 			
-			new Poppy(off.left + $(this).width() / 2, off.top + 8, '<p>' + _('All temporary rules are now permanent.') + '</p>');
+			new Poppy(2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('All temporary rules are now permanent.') + '</p>');
 		});
 		
-		_$('#remove-all-temp').click(function () {
+		$$('#remove-all-temp').click(function () {
+			if (self.rules.using_snapshot) return;
+
 			var off = $(this).offset();
 						
 			for (var key in self.rules.data_types)
@@ -2669,35 +3045,49 @@ var Template = {
 								self.rules.remove(key, domain, rule, true);
 				}
 			
-			var l = _$('.rules-wrapper');
+			var l = $$('.rules-wrapper');
 			
 			if (l.is(':visible'))
 				l.find('span.temporary').removeClass('temporary type-2').addClass('type-1').siblings('input').click().click();
 
-			_$('#filter-type-state li.selected').click();
+			$$('#filter-type-state li.selected').click();
 			
-			new Poppy(off.left + $(this).width() / 2, off.top + 8, '<p>' + _('All temporary rules have been removed.') + '</p>');
+			new Poppy(-2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('All temporary rules have been removed.') + '</p>');
+		});
+
+		$$('#reinstall-pre').click(function () {
+			if (self.rules.using_snapshot) return;
+
+			var off = $(this).offset(), key;
+
+			self.busy = 1;
+			
+			for (key in self.rules.data_types)
+				self.rules.reinstall_predefined(key);
+
+			new Poppy(2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('Whitelist and blacklist rules have been reinstalled.') + '</p>');
+
+			self.busy = 0;
 		});
 		
 		var counter = function (self) {
-			var d = _$('#rules-list .domain-name:visible').length,
-				r = _$('#rules-list .domain-name:visible + li > ul li span.rule:not(.hidden)').length;
+			var d = $$('#rules-list .domain-name:visible').length,
+					r = $$('#rules-list .domain-name:visible + li > ul li span.rule:not(.hidden)').length;
 						
-			_$('#rules-list .misc-info').html(
+			$$('#rules-list #rule-counter').html(
 					_('{1} domain' + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
 			).removeData('orig_html');
 		}
 		
-		_$('#domain-filter').bind('search', function () {
-			var d = _$('.domain-name:not(.filter-hidden) span'), v;
+		$$('#domain-filter').bind('search', function () {
+			$$('#show-active-rules').toggleClass('using', $(this).data('active') === this.value);
+
+			var d = $$('.domain-name:not(.filter-hidden) span'), v;
 
 			switch (this.value) {
-				case 'reset-all-settings':
-					var t = self.trialStart;
-					safari.extension.settings.clear();
-					self.trialStart = t;
-					safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
-					return false;
+				case 'mimic-upgrade-89':
+					self.installedBundle = 89;
+					self.reloaded = false;
 				break;
 			}
 			
@@ -2712,7 +3102,7 @@ var Template = {
 			});
 			
 			for (var key in self.rules.data_types) {
-				var head = _$('#head-' + key + '-rules').show(), rs = _$('#rules-list-' + key + 's'), wrap = rs.parent().show(),
+				var head = $$('#head-' + key + '-rules').show(), rs = $$('#rules-list-' + key + 's'), wrap = rs.parent().show(),
 						a = self.collapsed(rs.attr('id'));
 				
 				if (a) head.find('a').html(_('Show'));
@@ -2725,23 +3115,23 @@ var Template = {
 				rs.css({ opacity: a ? 0 : 1, marginBottom: a ? 0 : '6px', marginTop: a ? -(rs.outerHeight() * 2) : -3 }).toggleClass('visible', !a);
 			}
 			
-			var d = _$('#rules-list .domain-name:visible').length,
-				r = _$('#rules-list .domain-name:visible + li > ul li span.rule:not(.hidden)').length;
+			var d = $$('#rules-list .domain-name:visible').length,
+				r = $$('#rules-list .domain-name:visible + li > ul li span.rule:not(.hidden)').length;
 						
 			counter(self);
 			
-			_$('#rules-list .rules-wrapper').each(function () {
-				$('.domain-name:visible .divider', this).css('visibility', 'visible').filter(':visible:first').css('visibility', 'hidden');
+			$$('#rules-list .rules-wrapper').each(function () {
+				$('.domain-name:visible .divider', this).removeClass('invisible').filter(':visible:first').addClass('invisible');
 			});
 		});
 		
-		_$('#rules-filter-bar #filter-type-collapse li').not('.label').click(function () {
+		$$('#filter-type-collapse li').not('.label').click(function () {
 			self.busy = 1;
 			
 			$(this).siblings('li').removeClass('selected').end().addClass('selected');
 			
 			self.utils.zero_timeout(function (self, that) {
-				var x = _$('#rules-list .domain-name');
+				var x = $$('#rules-list .domain-name');
 				
 				x.filter('.filter-hidden').removeClass('filter-hidden');
 				
@@ -2755,21 +3145,21 @@ var Template = {
 				self.utils.zero_timeout(function (self) {
 					self.busy = 0;
 
-					_$('#rules-list .rules-header').each(function () {
+					$$('#rules-list .rules-header').each(function () {
 						var kind = this.id.substring(5, this.id.indexOf('-', 5));
 
-						if (!_$('#rules-list-' + kind + 's .domain-name:visible').length) $(this).hide();
+						if (!$$('#rules-list-' + kind + 's .domain-name:visible').length) $(this).hide();
 						else $(this).show();
 					});
 
-					_$('#domain-filter').trigger('search');
+					$$('#domain-filter').trigger('search');
 
 					self.utils.zero_timeout(counter, [self]);
 				}, [self]);
 			}, [self, this]);
 		});
 		
-		_$('#rules-filter-bar #filter-type-state li:not(.filter-divider)').not('.label').click(function () {
+		$$('#filter-type-state li:not(.filter-divider)').not('.label').click(function () {
 			self.busy = 1;
 			
 			var that = this;
@@ -2777,51 +3167,51 @@ var Template = {
 			$(this).siblings('li').removeClass('selected').end().addClass('selected');
 			
 			var fix_dividers = function (self, that) {
-				_$('#rules-list .rules-wrapper').each(function () {
-					var d = $('ul li .divider', this).css('visibility', 'visible').parent().parent();
+				$$('#rules-list .rules-wrapper').each(function () {
+					var d = $('ul li .divider', this).removeClass('invisible').parent().parent();
 
 					if (that.id === 'filter-state-all')
-						d.find('.divider:last').css('visibility', 'hidden');
+						d.find('.divider:last').addClass('invisible');
 					else
-						d.find('li:not(.none) .divider:last').css('visibility', 'hidden');
+						d.find('li:not(.none) .divider:last').addClass('invisible');
 				});
 			}
 			
 			switch (this.id) {
 				case 'filter-state-all':
-					_$('.rule').removeClass('hidden').parent().removeClass('none');
+					$$('.rule').removeClass('hidden').parent().removeClass('none');
 					fix_dividers(self, that);
 					break;
 				case 'filter-enabled':
 					self.utils.zero_timeout(function (self) {
-						_$('.rule').removeClass('hidden').not('.rule.type--2').parent().removeClass('none');
+						$$('.rule').removeClass('hidden').not('.rule.type--2').parent().removeClass('none');
 					}, [self]);
 					self.utils.zero_timeout(function (self, fix_dividers) {
-						_$('.rule.type--2').addClass('hidden').parent().addClass('none');
+						$$('.rule.type--2').addClass('hidden').parent().addClass('none');
 						fix_dividers(self, that);
 					}, [self, fix_dividers]);
 					break;
 				case 'filter-disabled':
 					self.utils.zero_timeout(function (self) {
-						_$('.rule').removeClass('hidden').parent().removeClass('none');
+						$$('.rule').removeClass('hidden').parent().removeClass('none');
 					}, [self]);
 					self.utils.zero_timeout(function (self, fix_dividers) {
-						_$('.rule').not('.type--2').addClass('hidden').parent().addClass('none');
+						$$('.rule').not('.type--2').addClass('hidden').parent().addClass('none');
 						fix_dividers(self, that);
 					}, [self, fix_dividers]); 
 					break;
 				case 'filter-temporary':
 					self.utils.zero_timeout(function (self) {
-						_$('.rule').removeClass('hidden').parent().removeClass('none');
+						$$('.rule').removeClass('hidden').parent().removeClass('none');
 					}, [self]);
 					self.utils.zero_timeout(function (self, fix_dividers) {
-						_$('.rule').not('.temporary').addClass('hidden').parent().addClass('none');
+						$$('.rule').not('.temporary').addClass('hidden').parent().addClass('none');
 						fix_dividers(self, that);
 					}, [self, fix_dividers]);
 					break;
 			}
 			
-			_$('li.domain-name').next().each(function () {
+			$$('li.domain-name').next().each(function () {
 				self.utils.zero_timeout(function (t) {
 					$(t).prev().toggleClass('state-hidden', $('ul li.none', t).length === $('ul li', t).length);
 				}, [this]);
@@ -2830,14 +3220,14 @@ var Template = {
 			self.utils.zero_timeout(function (self) {
 				self.busy = 0;
 				
-				_$('#rules-list .rules-header').each(function () {
+				$$('#rules-list .rules-header').each(function () {
 					var kind = this.id.substring(5, this.id.indexOf('-', 5));
 
-					if (!_$('#rules-list-' + kind + 's .domain-name:visible').length) $(this).hide();
+					if (!$$('#rules-list-' + kind + 's .domain-name:visible').length) $(this).hide();
 					else $(this).show();
 				});
 				
-				_$('#domain-filter').trigger('search');
+				$$('#domain-filter').trigger('search');
 				
 				self.utils.zero_timeout(counter, [self]);
 			}, [self]);
@@ -2848,28 +3238,27 @@ var Template = {
 			self.utils.open_url(this.href);
 		});
 		
-		_$('#unlock').click(function () {
-			var o = $(this).offset(), l = o.left + $(this).outerWidth() / 2, t = o.top + 12;
+		$$('#unlock').click(function () {
+			var off = self.utils.position_poppy(this, 1, 8);
 			
-			if (self.donationVerified && !self.trial_active()) return new Poppy(l, t, _('All features are already unlocked.'));
+			if (self.donationVerified && !self.trial_active()) return new Poppy(off.left, off.top, _('All features are already unlocked.'));
 			
-			var pop = self.poppies.verify_donation.call([l, t, 0], self);
+			var pop = self.poppies.verify_donation.call([off.left, off.top, 0], self);
 			
-			new Poppy(l, t, pop);
+			new Poppy(off.left, off.top, pop);
 		});
 		
-		_$('#js-help').click(function () {
-			if (self.isBeta)
-				self.utils.open_url('http://javascript-blocker.toggleable.com/change-log/beta');
-			else
-				self.utils.open_url('http://javascript-blocker.toggleable.com/help');
+		$$('#js-help').click(function () {
+			self.utils.open_url('http://javascript-blocker.toggleable.com/help');
 		}).siblings('#js-settings').click(function () {
-			safari.extension.toolbarItems[0].popover.hide();
+			Popover.hide();
 
-			if (safari.application.activeBrowserWindow.activeTab)
-				safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('openSettings', safari.extension.baseURI + 'settings.html');
-			else
-				self.utils.open_url(safari.extension.baseURI + 'settings.html');
+			Tabs.active(function (tab) {
+				if (tab.length)
+					Tabs.dispatchToActive('openSettings', ExtensionURL('settings.html'));
+				else
+					self.utils.open_url(ExtensionURL('settings.html'));
+			});
 		});
 
 		$(this.popover).on('click', '.toggle-rules', function () {
@@ -2898,15 +3287,13 @@ var Template = {
 				
 					$(this).toggleClass('visible', !a);
 					
-					_$('#rules-list').trigger('scroll');
+					$$('#rules-list').trigger('scroll');
 				},
 				step: function (now) {
-					_$('#rules-list').trigger('scroll');
+					$$('#rules-list').trigger('scroll');
 				}
 			});
-		});
-		
-		$(this.popover).on('click', 'a.toggle-main', function (event) {
+		}).on('click', 'a.toggle-main', function (event) {
 			var me = $(this),
 					head = me.parent(),
 					pos = me.hasClass('floater') ? me.next().attr('id') : this.id,
@@ -2932,33 +3319,43 @@ var Template = {
 
 			e.css({ opacity: 1, marginTop: !a ? -o : 0 }).animate({
 				marginTop: a ? -oT : 0
-			}, {
-				duration: 200 * self.speedMultiplier,
-				complete: function () {
-					this.style.opacity = a ? 0 : 1;
-					this.style.marginTop = a ? -(oT * 2) + 'px' : 0;
-				
-					$(this).parent().prev().toggleClass('collapsed', a).css('opacity', 1);
-					
-					_$('#main').trigger('scroll');
-				},
-				step: function () {
-					_$('#main').trigger('scroll');
-				}
+			}, 200 * self.speedMultiplier, function () {
+				this.style.opacity = a ? 0 : 1;
+				this.style.marginTop = a ? -(oT * 2) + 'px' : 0;
+			
+				$(this).parent().prev().toggleClass('collapsed', a).css('opacity', 1);
+			});
+		}).on('click', 'a.toggle-snapshots', function () {
+			var e = $(this).parent().parent().next().find('ul'),
+					a = e.css('opacity') === '1',
+					o = e.outerHeight(), oT = e.outerHeight(true);
+										
+			if (e.is(':animated')) return false;
+										
+			this.innerHTML = a ? _('Show') : _('Hide');
+								
+			e.css({ opacity: 1, marginTop: !a ? -o : -3 }).animate({
+				marginTop: a ? -oT : -3,
+				marginBottom: a ? 0 : '6px'
+			}, 200 * self.speedMultiplier, function () {
+				this.style.opacity = a ? 0 : 1;
+				this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
 			});
 		});
 		
-		_$('#page-lists-label').dblclick(function () {
+		$$('#page-lists-label').dblclick(function () {
 			var l = $.extend({}, window.localStorage);
 			delete l.Rules;
 			delete l.CollapsedDomains;
 			
-			var e = $.extend({}, safari.extension.settings);
+			var e = $.extend({}, SettingStore.all());
 			delete e.Rules;
+			delete e.SimpleRules;
 			delete e.CollapsedDomains;
+			delete e.Snapshots;
 			e.donationVerified = !!e.donationVerified;
 			
-			new Poppy($(self.popover.body).width() / 2, 13, [
+			new Poppy($(self.popover.body).width() / 2, 0, [
 				'<p>This data contains a copy of your settings and current webpage. It does NOT reveal your rules.</p>',
 				'<textarea id="debug-info" readonly>',
 					'Version', "\n", self.displayv, '-', self.bundleid, "\n\n",
@@ -2969,17 +3366,17 @@ var Template = {
 					'User Agent', "\n", window.navigator.userAgent, "\n\n",
 					'window.localStorage', "\n", JSON.stringify(l), "\n\n", 
 					'Settings', "\n", JSON.stringify(e), "\n\n",
-					'Webpage', "\n", safari.application.activeBrowserWindow.activeTab.url,
+					'Webpage', "\n", self.tab.url,
 				'</textarea>'
 			].join(''), function () {
-				var t = _$('#debug-info')[0];
+				var t = $$('#debug-info')[0];
 				t.selectionStart = 0;
 				t.selectionEnd = t.innerHTML.length;
 			});
 		});
 		
-		_$('#next-frame, #previous-frame').click(function () {
-			var page = _$('#page-list'), index = page[0].selectedIndex, max = $('option', page).length - 1;
+		$$('#next-frame, #previous-frame').click(function () {
+			var page = $$('#page-list'), index = page[0].selectedIndex, max = $('option', page).length - 1;
 			
 			if (this.id === 'next-frame') {
 				if (index < max)
@@ -2992,53 +3389,49 @@ var Template = {
 			page.trigger('change');
 		});
 				
-		if (this.isBeta) {
-			_$('header.main-header').dblclick(function () {
-				new Poppy($(self.popover.body).width() / 2, 13, [
-					'<ul id="jsoutput"></ul>',
-					'<input id="clear-console" value="Clear" type="button" /> ',
-					'<input id="mimic-upgrade" value="Mimic Upgrade From 85" type="button" />'
-				].join(''), function () {
-					var l = _$('#jsconsolelogger'), ol = _$('#jsoutput').html(l.hide().html());
-					
-					l.find('.unread').removeClass('unread');
-					
-					_$('.console-unread').html(' 0').hide();
-					
-					_$('#poppy-content').scrollTop(9999999999999);
-					
-					_$('#clear-console').click(function () {
-						$('li:not(#console-header)', l).remove();
-						_$('header.main-header').trigger('dblclick');
-					}).siblings('#mimic-upgrade').click(function () {
-						JB.installedBundle = 85;
-						safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
-					});
+		$$('#jsblocker-name').dblclick(function () {
+			var off = self.utils.position_poppy(this, 9, 8);
+
+			new Poppy(off.left, off.top, [
+				'<ul id="jsoutput"></ul>',
+				'<div class="inputs"><input id="clear-console" value="Clear" type="button" /></div>'
+			].join(''), function () {
+				var l = $$('#jsconsolelogger'), ol = $$('#jsoutput').html(l.hide().html());
+				
+				l.find('.unread').removeClass('unread');
+				
+				$$('.console-unread').html(' 0').hide();
+				
+				$$('#poppy-content').scrollTop(9999999999999);
+				
+				$$('#clear-console').click(function () {
+					$('li:not(#console-header)', l).remove();
+					$$('#jsblocker-name').trigger('dblclick');
 				});
 			});
-		}
+		});
 	},
 	
-	/**
-	 * Creates the list of rules in the main window
-	 *
-	 * @param {string} text One of: blocked, allowed, or unblocked.
-	 * @param {string} button Text to appear on the button to create or delete a rule
-	 * @param {Object} jsblocker Information about scripts allowed, blocked, or unblocked and frames.
-	 */
 	make_list: function (text, button, jsblocker) {
-		var self = this, el = _$('#' + text + '-script-urls .urls-inner'), use_url, test_url, protocol, poopy,
-				shost_list = {}, lab = _$('#' + text + '-scripts-count'), cn = 0, key;
+		var self = this, el = $$('#' + text + '-script-urls .urls-inner').empty(), use_url, test_url, protocol, poopy,
+				shost_list = {}, lab = $$('#' + text + '-scripts-count'), cn = 0, key;
 
 		for (key in this.rules.data_types)
-			shost_list[key] = { 'http': {}, 'https': {}, 'file': {}, 'safari-extension': {}, 'data': {}, 'javascript': {}, 'about': {} };
+			shost_list[key] = {};
 			
 		function append_url(index, kind, ul, use_url, script, type, button, protocol, unblockable) {
-			return ul.append('<li>' + (text !== 'unblocked' ? '<div class="info-link">?</div>' : '') + '<span></span> <small></small><div class="divider"></div></li>').find('li:last')
-					.attr('id', text.toLowerCase() + '-' + kind + '-' + index)
-					.data('url', use_url).data('script', [script]).data('kind', kind).addClass('visible kind-' + kind)
-					.toggleClass('by-rule', type > -1).toggleClass('rule-type-' + type, type > -1).toggleClass('unblockable', kind !== 'special' && unblockable && text !== 'unblocked').find('span')
-					.text(use_url).addClass(protocol).parent();
+			return ul.append('<li>' + (text !== 'unblocked' ? '<div class="info-link">?</div>' : '') + '<span></span> <small></small><div class="divider"></div></li>')
+					.find('li:last').attr('id', text.toLowerCase() + '-' + kind + '-' + index)
+					.data({
+						url: use_url,
+						script: [script],
+						kind: kind,
+						protocol: protocol
+					}).addClass('visible kind-' + kind)
+					.toggleClass('by-rule', typeof type !== 'string' && type !== -1)
+					.toggleClass('rule-type-' + type, type > -1)
+					.toggleClass('unblockable', kind !== 'special' && unblockable && text !== 'unblocked')
+					.find('span').text(use_url).addClass(protocol).parent();
 		}
 		
 		function add_item(index, kind, the_item) {
@@ -3052,8 +3445,9 @@ var Template = {
 
 			if (text !== 'unblocked' && self.simpleMode) {
 				use_url = self.utils.active_host(item);
-
 				test_url = use_url + the_item[1];
+
+				if (!(protocol in shost_list[kind])) shost_list[kind][protocol] = {};
 									
 				if (!(test_url in shost_list[kind][protocol])) {
 					li = append_url(index, kind, ul, use_url, item, the_item[1], button, protocol, the_item[2]);
@@ -3078,13 +3472,13 @@ var Template = {
 		for (var key in this.rules.data_types) {
 			if (!this.enabled(key) || ~key.indexOf('hide_')) continue;
 			
-			var ki = _(key.charAt(0).toUpperCase() + key.substr(1) + 's'),
+			var ki = _(key + 's'),
 					do_hide = this.collapsed('toggle-' + key + '-' + text + '-items'),
-					ul = _$('#' + text + '-items-' + key),
+					ul = $$('#' + text + '-items-' + key),
 					li, ccheck, show_me = $('<div />');
 			
 			if (!ul.length)
-				ul = $(Template.create('tmpl_main_wrapper', {
+				ul = $(Template.create('main_wrapper', {
 					local: ki,
 					which: text,
 					kind: key
@@ -3117,7 +3511,10 @@ var Template = {
 					if (text !== 'unblocked' && !~key.indexOf('hide_')) {
 						var al = self.rules.allowed('hide_' + key, ['hide_' + key, jsblocker.href, key === 'special' ? jitem : jitem[0], false]);
 
-						if (al[1] === 42) li.addClass('hidden-by-rule');
+						if (al[1] === 42) {
+							li.addClass('hidden-by-rule');
+							$$('#toggle-hidden').removeClass('disabled');
+						}
 					}
 
 					ccheck = $('li:not(.show-me-more,.hidden-by-rule).kind-' + key, ul).length;
@@ -3148,7 +3545,7 @@ var Template = {
 			$('li .divider:last', ul).css('visibility', 'hidden');
 
 			if ($('li:last', ul).is('.hidden-by-rule'))
-				$('li:not(.hidden-by-rule):last .divider', ul).css('visibility', 'hidden');
+				$('li:not(.hidden-by-rule):last .divider', ul).addClass('invisible');
 		
 			if (this.simpleMode && Settings.getItem('showPerHost')) {
 				ul.addClass('show-per-host');
@@ -3170,7 +3567,7 @@ var Template = {
 							'</li>',
 							'<li><span><a href="javascript:void(0)">'].join('')), '</a></span></li>',
 						'</ul>'].join(''), function () {
-							_$('#poppy a').click(function (e) {
+							$$('#poppy a').click(function (e) {
 								e.preventDefault();
 								self.utils.open_url($('<div />').html(this.innerHTML).text());
 							}).parent().scrollLeft(88888);
@@ -3182,11 +3579,11 @@ var Template = {
 				$(this).parent().parent().nextUntil('.kind-header').filter('.show-more-hidden:not(.hidden-by-rule)')
 						.show().removeClass('show-more-hidden').end().end()
 						.remove()
-				_$('#find-bar-search:visible').trigger('search');
+				$$('#find-bar-search:visible').trigger('search');
 			});
 		
 			if (self.collapsed(text)) {
-				_$('.' + text + '-label:not(.hidden)').click();
+				$$('.' + text + '-label:not(.hidden)').click();
 				$('.kind-header', ul).removeClass('visible');
 			}
 		}
@@ -3194,34 +3591,34 @@ var Template = {
 	do_update_popover: function (event, index, badge_only) {
 		if (!this.trial_active() && !this.donationVerified && !badge_only && this.trialStart > -1)
 			return this.utils.timer.timeout('trial_expired', function (self) {
-				new Poppy($(self.popover.body).width() / 2, 13, [
+				new Poppy($(self.popover.body).width() / 2, 0, [
 					'<p>', _('Free trial expired', ['JavaScript Blocker']), '</p>',
 					'<p><input type="button" id="click-understood" value="', _('Understood'), '" /></p>'
 				].join(''), function () {
-					_$('#click-understood').click(function () {
+					$$('#click-understood').click(function () {
 						self.trialStart = -1;
 						new Poppy();
-						safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
+						Popover.window().location.reload();
 					});
 				}, null, null, true);
 			}, 1000, [this]);
 		
-		if (!this.methodAllowed) return false;
-		
-		if ((_$('#poppy').is(':visible') || _$('.some-list').length) && this.popover_visible()) return this.utils.timer.timeout('do_update_popover', function (self, event, index, badge_only) {
+		if (!this.methodAllowed || this.disabled) return false;
+
+		if (($$('#poppy').is(':visible') || $$('.some-list').length || $$('li.pending:not(.allow-update)').length) && Popover.visible()) return this.utils.timer.timeout('do_update_popover', function (self, event, index, badge_only) {
 			self.do_update_popover(event, index, badge_only);
 		}, 1500, [this, event, index, badge_only]);
 
-		_$('.some-helper').remove();
-		_$('.column .info-container').show();
-		_$('#toggle-hidden').val(_('Show Hidden'));
+		$$('.some-helper').remove();
+		$$('.column .info-container').show();
+		$$('#toggle-hidden').addClass('disabled').removeClass('hidden-visible');
 		
 		this.busy = 1;
 
-		if (safari.application.activeBrowserWindow.activeTab.url === event.message.href) {
-			_$('#main:visible').trigger('scroll').scrollTop(0);
+		if (this.tab.url === event.message.href) {
+			$$('#main:visible').scrollTop(0);
 			
-			var page_list = _$('#page-list'), frame_count = { blocked: 0, allowed: 0 }, frame,
+			var page_list = $$('#page-list'), frame_count = { blocked: 0, allowed: 0 }, frame,
 					count = { blocked: 0, allowed: 0, unblocked: 0 }, self = this, jsblocker = event.message, toolbarItem = null,
 					frames_blocked_item_count = 0, frames_allowed_item_count = 0;
 					
@@ -3269,34 +3666,31 @@ var Template = {
 			}
 			
 			var toolbarDisplay = Settings.getItem('toolbarDisplay');
+
+			ToolbarItems.image(this.disabled ? 'images/toolbar-disabled.png' : 'images/toolbar.png');
 			
-			for (var y = 0; y < safari.extension.toolbarItems.length; y++) {
-				toolbarItem = safari.extension.toolbarItems[y];
-
-				toolbarItem.image = this.disabled ? safari.extension.baseURI + 'images/toolbar-disabled.png' : safari.extension.baseURI + 'images/toolbar.png';
-
-				if (!self.simpleMode)
-					toolbarItem.badge = Settings.getItem('toolbarDisplay') === 'allowed' ?
-							count.allowed + frame_count.allowed :
-							(Settings.getItem('toolbarDisplay') === 'blocked' ? count.blocked + frame_count.blocked : 0);
-				else {
-					var allowed_items = 0, blocked_items = 0;
+			if (!self.simpleMode)
+				ToolbarItems.badge(Settings.getItem('toolbarDisplay') === 'allowed' ?
+						count.allowed + frame_count.allowed :
+						(Settings.getItem('toolbarDisplay') === 'blocked' ? count.blocked + frame_count.blocked : 0));
+			else {
+				var allowed_items = 0, blocked_items = 0;
 					
-					for (var kind in jsblocker.allowed) {
-						if (kind === 'special' || !this.enabled(kind)) continue;
-											
-						allowed_items += jsblocker.allowed[kind].unique.length;
-						blocked_items += jsblocker.blocked[kind].unique.length;
-					}
-																
-					toolbarItem.badge = Settings.getItem('toolbarDisplay') === 'allowed' ?
-							allowed_items + frames_allowed_item_count :
-							(Settings.getItem('toolbarDisplay') === 'blocked' ? blocked_items + frames_blocked_item_count : 0);
+				for (var kind in jsblocker.allowed) {
+					if (kind === 'special' || !this.enabled(kind)) continue;
+										
+					allowed_items += jsblocker.allowed[kind].unique.length;
+					blocked_items += jsblocker.blocked[kind].unique.length;
 				}
+															
+				ToolbarItems.badge(Settings.getItem('toolbarDisplay') === 'allowed' ?
+						allowed_items + frames_allowed_item_count :
+						(Settings.getItem('toolbarDisplay') === 'blocked' ? blocked_items + frames_blocked_item_count : 0));
 			}
 			
 			if (!badge_only) {				
-				_$('#previous-frame, #next-frame, #frame-switcher .divider').removeClass('disabled').filter('#previous-frame').find('.text').html(_('Main page'));
+				$$('#previous-frame, #next-frame, #frame-switcher .divider').removeClass('disabled').filter('#previous-frame').find('.text').html(_('Main page'));
+				$$('#block-domain, #allow-domain').show();
 				
 				var max = $('option', page_list).length - 1;
 			
@@ -3304,30 +3698,22 @@ var Template = {
 					page_list[0].selectedIndex = index;
 					
 					if (index === 0)
-						_$('#previous-frame').addClass('disabled');
+						$$('#previous-frame').addClass('disabled');
 					else if (index > 1)
-						_$('#previous-frame .text').html(_('Prev. frame'));
-						
-					if (index === max)
-						_$('#next-frame').addClass('disabled');
-					
+						$$('#previous-frame .text').html(_('Prev. frame'));
+											
 					jsblocker = this.frames[jsblocker.href][page_list.val()];
 				} else
-					_$('#previous-frame').addClass('disabled');
+					$$('#previous-frame').addClass('disabled');
 				
-				if (max === 0)
-					_$('#next-frame').addClass('disabled');
-					
-				if (_$('#next-frame.disabled, #previous-frame.disabled').length === 2)
-					_$('#frame-switcher .divider').addClass('disabled');
+				$$('#next-frame').toggleClass('disabled', max === 0 || index === max);					
+				$$('#frame-switcher .divider').toggleClass('disabled', $$('#next-frame.disabled, #previous-frame.disabled').length === 2);
 				
-				page_list.attr('title', page_list.val()).unbind('change').change(function () {
+				page_list.attr('title', page_list.val()).unbind('change').one('change', function () {
 					new Poppy();
-					_$('.some-list').removeClass('some-list');
+					$$('.some-list').removeClass('some-list');
 					self.do_update_popover(event, this.selectedIndex);
 				});
-
-				_$('#main ul').empty();
 
 				this.make_list('blocked', _('Allow'), jsblocker);
 				this.make_list('allowed', _('Block'), jsblocker);
@@ -3340,48 +3726,31 @@ var Template = {
 		this.busy = 0;
 	},
 	setting_changed: function (event) {
+		if (event.key === 'simpleMode' || event.key === 'simplifiedRules') {
+			this.utils.zero_timeout(function (rules) {
+				rules.snapshots = new Snapshots(rules.which, Settings.getItem('enableSnapshots') ? Settings.getItem('snapshotsLimit') : 0);
+			}, [this.rules]);
+
+			this.rules.use_snapshot(0);
+		}
+
 		if (event.key === 'openSettings' && event.newValue) {
 			Settings.setItem('openSettings', false);
-			this.utils.open_url(safari.extension.baseURI + 'settings.html');
-		} else if (event.key === 'language' || event.key === 'theme') {
+			this.utils.open_url(ExtensionURL('settings.html'));
+		} else if (event.key === 'language' || event.key === 'theme')
 			this.reloaded = false;
-
-			if (event.key === 'theme' && event.newValue !== 'default' && !this.donationVerified)
-				Settings.setItem('theme', 'default');
-		} else if (~event.key.indexOf('alwaysBlock')) {
-			var wd, i, b, bd, e, c, key, domain;
-
-			var delete_automaticrules = function (self, key, domain) {
-				var rs, r;
-	
-				rs = self.rules.for_domain(key, domain, true);
-
-				if (key in rs) {
-					for (r in rs[domain]) {
-						if (rs[domain][r][0] === 2)
-							self.rules.remove(key, domain, r, true);
-					}
-				}
-			}
-
-			for (key in this.rules.data_types) {
-				for (domain in this.rules.rules[key])
-					this.utils.zero_timeout(delete_automaticrules, [this, key, domain]);
-
-				this.rules.reinstall_predefined(key);
-			}
-		}	else if (event.key === 'simpleMode' && !event.newValue && !this.donationVerified) {
+		else if (event.key === 'theme' && event.newValue !== 'default' && !this.donationVerified)
+			Settings.setItem('theme', 'default');
+		else if (event.key === 'simpleMode' && !event.newValue && !this.donationVerified)
 			Settings.setItem('simpleMode', true);
-		} else if (event.key === 'blockReferrer' && event.newValue && !this.donationVerified) {
+		else if (event.key === 'blockReferrer' && event.newValue && !this.donationVerified)
 			Settings.setItem('blockReferrer', false);
-		} else if (event.key === 'floaters' && !event.newValue) {
-			_$('.floater').next().css({ top: 'auto', left: 'auto', opacity: 1 }).width('auto').prev().remove();
-		} else if (event.key === 'simplifiedRules') {
-			this.rules._loaded = 0;
-
-			for (var kind in this.rules.data_types)
-				this.rules.cache[kind] = {};
-		}
+		else if (event.key === 'simplifiedRules')
+			this.rules.reload();
+		else if (event.key === 'snapshotsLimit' && event.newValue > 999)
+			Settings.setItem('snapshotsLimit', 999);
+		else if (event.key === 'snapshotsLimit' && event.newValue < 1)
+			Settings.setItem('snapshotsLimit', 1);
 	},
 	anonymous: {
 		pages: {},
@@ -3426,10 +3795,6 @@ var Template = {
 	handle_message: function (event) {
 		theSwitch:
 		switch (event.name) {
-			case 'closeSettings':
-				safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('closeSettings');
-			break;
-
 			case 'canLoad':
 				if (event.message === 'parentURL') {
 					event.message = event.target.url;
@@ -3447,37 +3812,8 @@ var Template = {
 								event.message = null;
 						break theSwitch;
 						
-						case 'trial':
-							event.message = this.trial_remaining();
-						break theSwitch;
-						
 						case 'setting':
 							event.message = Settings.getItem(event.message[1]);
-						break theSwitch;
-				
-						case 'setting_set':
-							var dl = ['donationVerified', 'trialStart', 'installID', 'installedBundle', 'enablespecial', 'setupDone'],
-									swith = Settings.getItem('simplifiedRules'),
-									ssimple = this.simpleMode;
-
-							this.simpleMode = true;
-							
-							if (event.message[2] === null)
-								safari.extension.settings.removeItem(event.message[1]);
-							else if (event.message[1] === 'Rules') {
-								Settings.setItem('simplifiedRules', false);
-								this.rules.import(event.message[2]);
-							} else if (event.message[1] === 'SimpleRules') {
-								Settings.setItem('simplifiedRules', true);
-								this.rules.import(event.message[2]);
-							} else if (!~dl.indexOf(event.message[1]))
-								Settings.setItem(event.message[1], event.message[2]);
-
-							Settings.setItem('simplifiedRules', event.message[1] === 'simplifiedRules' ? event.message[2] : swith);
-
-							this.simpleMode = event.message[1] === 'simpleMode' ? event.message[2] : ssimple;
-
-							event.message = 1;
 						break theSwitch;
 						
 						case 'special':
@@ -3500,13 +3836,12 @@ var Template = {
 							event.message = _(event.message[1], event.message[2]);
 						break theSwitch;
 
-						case 'convert_rules':
-							event.message = this.rules.convert();
+						case 'disabled':
+							event.message = this.disabled;
 						break theSwitch;
 					}
 				
-				if (this.disabled ||
-					(event.message[0] !== 'script' && !this.donationVerified)) {
+				if (this.disabled || (event.message[0] !== 'script' && !this.donationVerified)) {
 					event.message = [1, -84];
 					break theSwitch;
 				} else if (this.installedBundle < this.update_attention_required || !this.methodAllowed) {
@@ -3517,17 +3852,61 @@ var Template = {
 				event.message = this.rules.allowed(event.message[0], event.message);
 			break;
 
+			case 'convertRules':
+				Tabs.dispatchToActive('convertRules', this.rules.convert());
+			break;
+
+			case 'closeSettings':
+				Tabs.dispatchToActive('closeSettings');
+			break;
+
+			case 'allSettings':
+				Tabs.dispatchToActive('allSettings', SettingStore.all())
+			break;
+
+			case 'aboutPage':
+				Tabs.dispatchToActive('aboutPage', {
+					displayv: this.displayv,
+					trial_active: this.trial_active(),
+					trial_remaining: this.trial_remaining(),
+					bundleid: this.bundleid
+				});
+			break;
+
+			case 'setting_set':
+				var dl = ['donationVerified', 'trialStart', 'installID', 'installedBundle', 'enablespecial', 'setupDone'],
+						swith = Settings.getItem('simplifiedRules'),
+						ssimple = this.simpleMode;
+
+				this.simpleMode = true;
+				
+				if (event.message[1] === null)
+					SettingsStore.removeItem(event.message[0]);
+				else if (event.message[0] === 'Rules') {
+					Settings.setItem('simplifiedRules', false);
+					this.rules.import(event.message[1]);
+				} else if (event.message[0] === 'SimpleRules') {
+					Settings.setItem('simplifiedRules', true);
+					this.rules.import(event.message[1]);
+				} else if (!~dl.indexOf(event.message[0]))
+					Settings.setItem(event.message[0], event.message[1]);
+
+				Settings.setItem('simplifiedRules', event.message[0] === 'simplifiedRules' ? event.message[1] : swith);
+
+				this.simpleMode = event.message[0] === 'simpleMode' ? event.message[1] : ssimple;
+			break;
+
 			case 'updatePopover':
-				if (event.target != safari.application.activeBrowserWindow.activeTab ||
-						(this.popover_visible() && _$('#page-list')[0].selectedIndex > 0)) break;
+				if (event.target != this.tab ||
+						(Popover.visible() && $$('#page-list')[0].selectedIndex > 0)) break;
 					
 				this.utils.timer.timeout('update_popover', function (event, self) {
-					self.do_update_popover(event, undefined, !self.popover_visible());
+					self.do_update_popover(event, undefined, !Popover.visible());
 				}, 10, [event, this]);
 			break;
 			
 			case 'updateReady':
-				if (event.target != safari.application.activeBrowserWindow.activeTab) break;
+				if (event.target != this.tab) break;
 					
 				this.utils.timer.remove('timeout', 'update_failure');
 			break;
@@ -3545,7 +3924,7 @@ var Template = {
 				this.frames[event.target.url][event.message[0]] = event.message[1];
 			
 				try {
-					safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover', event.message);
+					Tabs.dispatchToActive('updatePopover', event.message);
 				} catch(e) {}
 			break;
 
@@ -3614,8 +3993,10 @@ var Template = {
 					this.caches.redirects[event.url].allowSecond = 0;
 				else
 					do_test(event.url, this.caches.redirects[event.url].title, this.caches.redirects[event.url]['long-url']);
-			} else if (!this._redirectors[host].regex.length ||
-				(this._redirectors[host].regex && (new RegExp(this._redirectors[host].regex)).test(event.url))) {
+			} else if (
+					!this._redirectors[host].regex.length ||
+					(this._redirectors[host].regex && (new RegExp(this._redirectors[host].regex)).test(event.url))
+				) {
 				$.ajax({
 					async: false,
 					url: this.longURL + encodeURI(url),
@@ -3636,22 +4017,26 @@ var Template = {
 		return re;
 	},
 	open_popover: function (event) {
-		var self = this, s = _$('#setup');
+		var self = this, s = $$('#setup');
 
 		if (event && ('type' in event) && event.type == 'popover') {
 			/**
 			 * Fixes issues with mouse hover events not working
 			 */
 			if (!this.reloaded) {
-				this.reloaded = true;
-				this.load_language(false);
+				this.rules.use_snapshot(0);
+
+				if (this.popover) {
+					this.reloaded = true;
+					this.load_language(false);
 					
-				safari.extension.toolbarItems[0].popover.contentWindow.location.reload();
+					Popover.window().location.reload();
+				}
 				
 				return false;
 			}
 
-			_$('#find-bar-done:visible').click();
+			$$('#find-bar-done:visible').click();
 
 			new Poppy();
 		} else if (!event || (event && ('type' in event) && ~['beforeNavigate', 'close'].indexOf(event.type))) {
@@ -3671,137 +4056,190 @@ var Template = {
 			}, 100, this, event);
 			
 			try {
-				if (event.target === safari.application.activeBrowserWindow.activeTab && event.type === 'beforeNavigate') {
-					for (var y = 0; y < safari.extension.toolbarItems.length; y++)
-						safari.extension.toolbarItems[y].badge = 0;
+				if (event.target === this.tab && event.type === 'beforeNavigate') {
+					ToolbarItems.badge(0);
 				}
 			} catch (e) {}
-		}
-		
-		if (!this.setupDone) {
-			this.collapsed('allowed-script-urls-image', 1);
-			for (var key in this.rules.data_types)
-				this.rules.reinstall_predefined(key);
-			this.setupDone = 1;				
-			this.installedBundle = self.bundleid;
-			_$('#js-settings').click();
 		}
 		
 		this.utils.timer.timeout('updater', function (self) {
 			self.updater();
 		}, 500, [this]);
 		
-		if (s.hasClass('zoom-window-open'))
-			this.utils.zoom(s, _$('#main'));
-		
 		try {
 			if (event.type === 'popover') {
-				_$('#page-list')[0].selectedIndex = 0;
-				_$('.whoop').scrollTop(0);
-				_$('.some-list').removeClass('some-list');
+				$$('#page-list')[0].selectedIndex = 0;
+				$$('.whoop').scrollTop(0);
+				$$('.some-list, .pending').removeClass('some-list pending');
 
-				var url = safari.application.activeBrowserWindow.activeTab.url || '';
+				var url = this.tab.url || '';
 				
 				if (!this.methodAllowed) {
 					Settings.setItem('simpleMode', true);
 
 					setTimeout(function (self) {
-						new Poppy($(self.popover.body).width() / 2, 13, [
+						new Poppy($(self.popover.body).width() / 2, 0, [
 							'<p>', _('You cannot use JavaScript Blocker'), '</p>'].join(''));
 					}, 2000, self);
 				} else {
-					if (this.installedBundle === this.bundleid) {
+					if (this.installedBundle === this.bundleid && !this.disabled) {
 						this.utils.timer.timeout('update_failure', function () {
-							for (var y = 0; y < safari.extension.toolbarItems.length; y++)
-								safari.extension.toolbarItems[y].badge = 0;
+								ToolbarItems.badge(0);
 
 								setTimeout(function (self, url) {
-									new Poppy($(self.popover.body).width() / 2, 13, [
-										'<p>', _('Update Failure'), '</p>'].join(''), null, null, null, !(url in self.caches.jsblocker));
-								
+									var message;
+
+									if (url === 'https://extensions.apple.com/')
+										message = ['<p>', _('Safari extensions website'), '</p>'];
+									else
+										message = ['<p>', _('Update Failure'), '</p>'];
+
+									new Poppy($(self.popover.body).width() / 2, 0, message.join(''));
+
 									if (url in self.caches.jsblocker)
-										self.do_update_popover({ message: self.caches.jsblocker[url] });
+											self.do_update_popover({ message: self.caches.jsblocker[url] });
+									else
+										self.clear_ui();
 								}, 300, self, url);
 						}, 1000);
 					
-						safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopover');
+						Tabs.dispatchToActive('updatePopover');
 					}
 				}
 			}
 		} catch(e) { }
 	},
-	popover_visible: function () {
-		for (var y = 0; y < safari.extension.toolbarItems.length; y++)
-			if (safari.extension.toolbarItems[y].popover.visible) return true;
-		return false;
-	},
 	validate: function (event) {
 		var self = this;
-		
-		if (this.trialStart === 0)
-			this.trialStart = +new Date;
+
+		Tabs.active(function (tab) {
+			if (self.tab !== tab[0]) {
+				self.tab = tab.length ? tab[0] : {};
+				Tabs.dispatchToActive('updatePopoverNow');
+			}
+		});
+
+		this.utils.once('load', function () {
+			this.rules.warm_caches();
+			this.rules.snapshots = new Snapshots(this.rules.which, Settings.getItem('enableSnapshots') ? Settings.getItem('snapshotsLimit') : 0);
+
+			if (!this.setupDone) {
+				this.collapsed('allowed-script-urls-image', 1);
+
+				for (var key in this.rules.data_types)
+					this.rules.reinstall_predefined(key);
+
+				this.setupDone = 1;				
+				this.installedBundle = self.bundleid;
+
+				this.utils.open_url(ExtensionURL('settings.html'))
+
+				if (this.trialStart === 0)
+					this.trialStart = +new Date();
+
+				if (Settings.getItem('enableSnapshots'))
+					this.rules.snapshots.add(this.rules.rules);
+			}
+			
+			if (this.rules.using_snapshot) this.rules.use_snapshot(this.rules.using_snapshot);
+
+			this.rules.clear_temporary(1);
+
+			this.utils.timer.interval('cleanup', this._cleanup.bind(this), 1000 * 60 * 3);
+
+			if (!Settings.getItem('installID'))
+					Settings.setItem('installID', this.utils.id() + '~' + this.displayv);
+
+			var pop = Popover.window();
+
+			if (pop) {
+				this.popover = pop.document;
+				this.set_theme(this.theme);
+				this.utils.floater('#rules-list', '.rules-header:visible');
+
+				if (SAFARI) {
+					Popover.object().width = this.simpleMode ? 460 : 560;
+					Popover.object().height = this.simpleMode ? 350 : 400;
+				}
+
+				$(this.popover.body)
+					.toggleClass('simple', this.simpleMode)
+					.toggleClass('simplified', this.rules.simplified)
+					.toggleClass('highlight-matched', Settings.getItem('highlight'));
+
+				if (Settings.getItem('showUnblocked'))
+					$$('#unblocked-script-urls').show().prev().show();
+				else
+					$$('#unblocked-script-urls').hide().prev().hide();
 					
-		try {
-			if (this.tab === null || this.tab !== safari.application.activeBrowserWindow.activeTab) {
-				this.tab = safari.application.activeBrowserWindow.activeTab;
-				safari.application.activeBrowserWindow.activeTab.page.dispatchMessage('updatePopoverNow');
-			}
-		} catch (e) {}
-		
-		if (!('cache' in this.rules)) this.rules.cache = this.rules.data_types;
-		
-		if (!Settings.getItem('installID'))
-			Settings.setItem('installID', this.utils.id() + '~' + this.displayv);
-			
+				var ver = Settings.getItem('donationVerified');
+				ver = (ver === 1 || (typeof ver === 'string' && ver.length));
+
+				$$('#unlock').toggleClass('hidden', ver);
+				$$('#disable').toggleClass('divider', !ver);
+				$$('#console-access').css('display', this.isBeta ? 'block' : 'none');
+			} else
+				this.utils.once_again('load');
+		}, this);
+
 		this.speedMultiplier = this.useAnimations ? 1 : 0.001;
-		
-		if (!('cleanup' in this.utils.timer.timers.intervals))
-			this.utils.timer.interval('cleanup', $.proxy(this._cleanup, this), 1000 * 60 * 3);
-			
-		try {
-			this.popover = safari.extension.toolbarItems[0].popover.contentWindow.document;
-			
-			if (this.installedBundle < this.update_attention_required) this.utils.attention(1);
-			
-			this.set_theme(this.theme);
-			
-/*			if (Settings.getItem('floaters')) {
-				JB.utils.floater('#rules-list', '.rules-header:visible');
-			
-				JB.utils.floater('#rules-list', '.rules-wrapper.visible li.domain-name:visible:not(.hidden,.editing,.header-hidden)', function (every) {
-					return every.filter('li:visible:first').next().find('ul');
-				}, function () {
-					return _$('#rules-list .rules-header.floater').outerHeight(true);
-				});
-			}
-*/			
-			for (var kind in this.rules.data_types)
-				this.rules.clear_temporary(kind);
-			
-			safari.extension.toolbarItems[0].popover.width = this.simpleMode ? 460 : 560;
-			safari.extension.toolbarItems[0].popover.height = this.simpleMode ? 350 : 400;
-			
-			$(this.popover.body)
-				.toggleClass('simple', this.simpleMode)
-				.toggleClass('simplified', this.rules.simplified)
-				.toggleClass('highlight-matched', Settings.getItem('highlight'));
 
-			if (this.simpleMode) {
-				_$('#block-domain').val(_('Block…'));
-				_$('#allow-domain').val(_('Allow…'));
-			}
+		if (this.installedBundle < this.update_attention_required) this.utils.attention(1);
+		if (this.disabled) ToolbarItems.image('images/toolbar-disabled.png');
+
+		if (event && event.target) {
+			Tabs.active(function (tab) {
+				event.target.disabled = (!tab.length || !tab[0].page);
 				
-			event.target.disabled = !event.target.browserWindow.activeTab.url;
-
-			if (event.target.disabled)
-				event.target.badge = 0;
-			else if (!this.methodAllowed)
-				event.target.badge = 999;
-		} catch(e) { }
+				if (event.target.disabled) {
+					ToolbarItems.badge(0);
+					Popover.hide();
+				} else if (!self.methodAllowed)
+					ToolbarItems.badge(999);
+			});
+		}
 	}
 };
 
 JB.rules.__proto__ = JB;
 JB.utils.__proto__ = JB;
+
+window.receiveMessage = function (target, message, data) {
+	JB.handle_message({
+		type: message,
+		message: message,
+		target: target
+	});
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+	JB.load_language();
+	JB.validate();
+});
+
+window.addEventListener('message', function (event) {
+	if (event.data === 'zero-timeout') {
+		event.stopPropagation();
+
+		if (JB.utils._zero_timeouts.length) {
+			var o = JB.utils._zero_timeouts.shift();
+
+			if (typeof o[0] === 'function')
+				o[0].apply(JB, o[1]);
+		}
+	}
+});
+
+window.onerror = function (d, p, l, c) {
+	_d(d + ', ' + p + ', ' + l);
+};
+
+Events.addApplicationListener('close', JB.open_popover, JB);
+Events.addApplicationListener('beforeNavigate', JB.open_popover, JB);
+Events.addApplicationListener('beforeNavigate', JB.anonymize, JB);
+Events.addApplicationListener('popover', JB.open_popover, JB);
+Events.addApplicationListener('validate', JB.validate, JB);
+Events.addApplicationListener('message', JB.handle_message, JB);
+Events.addSettingsListener(JB.setting_changed, JB);
 
 var JavaScriptBlocker = JB;

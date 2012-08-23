@@ -2,7 +2,7 @@
 
 var Settings = Settings || {};
 
-Settings._alwaysBlockHelp = _('alwaysBlock help');
+Settings._alwaysBlockHelp = 'alwaysBlock help';
 Settings._alwaysBlock = [['domain', 'Different hostnames'], ['topLevel', 'Different hosts &amp; subdomains'], ['nowhere', 'Nowhere'], ['everywhere', 'Anywhere']];
 Settings.settings = {
 	misc: {
@@ -38,6 +38,15 @@ Settings.settings = {
 		},
 		trialStart: {
 			default: 0
+		},
+		allowDisablingSimplifiedRules: {
+			default: 0
+		},
+		Snapshots: {
+			default: '{}'
+		},
+		usingSnapshot: {
+			default: 0
 		}
 	},
 	ui: {
@@ -46,47 +55,61 @@ Settings.settings = {
 			setting: true,
 			default: true
 		},
-	/*	floaters: {
-			label: 'Use floating headers',
-			setting: true,
-			default: true
-		},*/
 		largeFont: {
 			label: 'Use a large font',
-			setting: false,
+			setting: true,
 			default: false
 		},
 		simplifiedRules: {
 			label: 'Use simplified rules',
-			setting: false,
-			if_setting: ['simpleMode', true],
-			help: _('simplifiedRules help'),
+			setting: true,
+			if_setting: ['allowDisablingSimplifiedRules', true],
+			help: 'simplifiedRules help',
 			default: true
 		},
 		highlight: {
 			label: 'Highlight items that matched a rule',
-			setting: false,
+			setting: true,
 			default: true,
-			help: _('highlight help')
-		},
-		showPerHost: {
-			label: 'Show the number of items blocked or allowed for each host',
-			setting: false,
-			if_setting: ['simpleMode', true],
-			help: _('showPerHost help'),
-			default: false
+			help: 'highlight help'
 		},
 		showUnblocked: {
 			label: 'Show scripts that can\'t be blocked',
-			setting: false,
-			help: _('showUnblocked help'),
+			setting: true,
+			help: 'showUnblocked help',
 			default: false
 		},
 		showWLBLRules: {
 			label: 'Show whitelist and blacklist rules in the rule list',
 			setting: true,
-			default: true,
+			default: true
+		},
+		showPerHost: {
+			label: 'Show the number of items blocked or allowed for each host',
+			setting: true,
+			if_setting: ['simpleMode', true],
+			help: 'showPerHost help',
+			default: false,
 			divider: 1
+		},
+		quickAdd: {
+			label: 'Enable Quick Add—lets you add rules with a single click',
+			default: false,
+			setting: true,
+			help: 'quickAdd help'
+		},
+		quickAddTemporary: {
+			label: 'Quick-add rules are temporary',
+			default: false,
+			setting: true,
+			if_setting: ['quickAdd', true]
+		},
+		quickAddType: {
+			label: 'Create Quick Add rules for:',
+			default: '1',
+			setting: [[0, 'Same hostname as page host'], [1, 'Least domain of page host'], [2, 'All Domains']],
+			divider: 1,
+			if_setting: ['quickAdd', true]
 		},
 		language: {
 			label: 'Language:',
@@ -106,57 +129,66 @@ Settings.settings = {
 		},
 		theme: {
 			label: 'Theme:',
-			setting: [['default', 'Default'], ['metal', 'Textured Metal'], ['lion', 'OS X Lion'], ['linen', 'Blue Linen'], ['twilight', 'Twilight (Incomplete)']],
+			setting: [['default', 'Default'], ['metal', 'Textured Metal'], ['lion', 'OS X Lion'], ['linen', 'Blue Linen']],
 			donator: 1,
-			divider: 1,
 			default: 'default',
-			donator_only: 1
+			donator_only: 1,
+			divider: 1
 		},
 		simpleMode: {
 			label: 'Enable expert features to block individual items instead of full hosts',
-			setting: false,
+			setting: true,
 			opposite: 1,
 			default: true,
+			help: 'simpleMode help',
 			donator_only: 1
 		}
 	},
 	predefined: {
 		ignoreWhitelist: {
 			label: 'Ignore whitelist rules',
-			setting: false,
+			setting: true,
 			default: false
 		},
 		ignoreBlacklist: {
 			label: 'Ignore blacklist rules',
-			setting: false,
+			setting: true,
 			default: false
 		},
 		saveAutomatic: {
 			label: 'Create temporary rules for automatic actions',
-			setting: false,
+			setting: true,
 			if_setting: ['simpleMode', false],
 			default: true,
 			donator_only: 1
 		},
+		savePrivate: {
+			label: '…even if Private Browsing is enabled',
+			setting: true,
+			if_setting: ['simpleMode', false],
+			default: false,
+			donator_only: 1,
+			indent: 1
+		},
 		secureOnly: {
 			label: 'Resources on secure sites must also be secure',
-			setting: false,
+			setting: true,
 			default: false
 		},
 		allowExtensions: {
 			label: 'Automatically allow resources from other extensions',
 			setting: true,
-			divider: 1,
-			default: true
+			default: true,
+			divider: 1
 		},
 		enablescript: {
 			label: 'Enable script blocker',
 			setting: true,
 			default: true
 		},
-		alwaysBlock: {
+		alwaysBlockscript: {
 			label: 'Automatically block scripts from:',
-			setting: Settings._alwaysBlock,
+			setting: Settings._alwaysBlock.slice(0),
 			divider: 1,
 			if_setting: ['enablescript', true],
 			help: Settings._alwaysBlockHelp,
@@ -164,7 +196,7 @@ Settings.settings = {
 		},
 		enableframe: {
 			label: 'Enable frame blocker',
-			setting: false,
+			setting: true,
 			donator: 1,
 			default: true,
 			donator_only: 1
@@ -178,7 +210,7 @@ Settings.settings = {
 		},
 		alwaysBlockframe: {
 			label: 'Automatically block frames from:',
-			setting: Settings._alwaysBlock,
+			setting: Settings._alwaysBlock.slice(0),
 			divider: 1,
 			if_setting: ['enableframe', true],
 			help: Settings._alwaysBlockHelp,
@@ -187,7 +219,7 @@ Settings.settings = {
 		},
 		enableembed: {
 			label: 'Enable embed and object blocker',
-			setting: false,
+			setting: true,
 			default: false,
 			donator_only: 1
 		},
@@ -200,7 +232,7 @@ Settings.settings = {
 		},
 		alwaysBlockembed: {
 			label: 'Automatically block embeds and objects from:',
-			setting: Settings._alwaysBlock,
+			setting: Settings._alwaysBlock.slice(0),
 			divider: 1,
 			if_setting: ['enableembed', true],
 			help: Settings._alwaysBlockHelp,
@@ -209,7 +241,7 @@ Settings.settings = {
 		},
 		enablevideo: {
 			label: 'Enable video blocker',
-			setting: false,
+			setting: true,
 			default: false,
 			donator_only: 1
 		},
@@ -222,7 +254,7 @@ Settings.settings = {
 		},
 		alwaysBlockvideo: {
 			label: 'Automatically block videos from:',
-			setting: Settings._alwaysBlock,
+			setting: Settings._alwaysBlock.slice(0),
 			divider: 1,
 			if_setting: ['enablevideo', true],
 			help: Settings._alwaysBlockHelp,
@@ -231,8 +263,8 @@ Settings.settings = {
 		},
 		enableimage: {
 			label: 'Enable DOM image blocker',
-			setting: false,
-			help: _('enableimage help'),
+			setting: true,
+			help: 'enableimage help',
 			default: false,
 			donator_only: 1
 		},
@@ -245,23 +277,50 @@ Settings.settings = {
 		},
 		alwaysBlockimage: {
 			label: 'Automatically block images from:',
-			setting: Settings._alwaysBlock,
+			setting: Settings._alwaysBlock.slice(0),
 			if_setting: ['enableimage', true],
 			help: Settings._alwaysBlockHelp,
 			default: 'nowhere',
 			donator_only: 1
 		}
 	},
+	snapshots: {
+		enableSnapshots: {
+			default: true,
+			setting: true,
+			label: 'Enable rule snapshots',
+			donator_only: 1,
+			donator: 1,
+			description: 'Snapshots description'
+		},
+		autoSnapshots: {
+			default: true,
+			setting: true,
+			label: 'Create a snapshot when rules are modified',
+			donator_only: 1,
+			if_setting: ['enableSnapshots', true]
+		},
+		snapshotsLimit: {
+			default: 15,
+			setting: 1,
+			label: 'Store only',
+			label_after: 'unkept snapshots',
+			donator_only: 1,
+			min: 1,
+			max: 999,
+			if_setting: ['enableSnapshots', true]
+		},
+	},
 	other: {
 		simpleReferrer: {
 			label: 'Prevent links on webpages from sending referrer information',
-			setting: false,
-			help: _('simpleReferrer help'),
+			setting: true,
+			help: 'simpleReferrer help',
 			default: false
 		},
 		confirmShortURL: {
 			label: 'Confirm short URL redirects before they occur',
-			setting: false,
+			setting: true,
 			default: false,
 			divider: 1,
 			confirm: function () {
@@ -282,42 +341,42 @@ Settings.settings = {
 		},
 		blockReferrer: {
 			label: 'EXPERIMENTAL: Enable full referrer blocking',
-			setting: false,
+			setting: true,
 			donator: 1,
 			divider: 1,
 			default: false,
 			donator_only: 1,
-			help: _('blockReferrer help')
+			help: 'blockReferrer help'
 		},
 		enable_special_alert_dialogs: {
 			label: 'Display alert() messages within the webpage instead of a popup dialog',
-			setting: false,
-			description: _('Once any of these features are active, they can be disabled on a per-domain basis. They will appear in the main window under <b>OTHER</b> and will not count towards the amount of blocked/allowed resources.'),
+			setting: true,
+			description: 'Once any of these features are active, they can be disabled on a per-domain basis. They will appear in the main window under <b>OTHER</b> and will not count towards the amount of blocked/allowed resources.',
 			default: false,
 			donator_only: 1
 		},
 		enable_special_confirm_dialogs: {
 			label: 'Disable confirm() popup dialogs and confirm actions automatically',
-			setting: false,
+			setting: true,
 			default: false,
 			donator_only: 1
 		},
 		enable_special_contextmenu_overrides: {
 			label: 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items',
-			setting: false,
-			help: _('contextmenu_overrides help'),
+			setting: true,
+			help: 'contextmenu_overrides help',
 			default: false,
 			donator_only: 1
 		},
 		enable_special_window_resize: {
 			label: 'Prevent webpages from resizing the window and creating new windows with a custom size',
-			setting: false,
+			setting: true,
 			default: false,
 			donator_only: 1
 		},
 		enable_special_autocomplete_disabler: {
 			label: 'Prevent webpages from disabling autocomplete',
-			setting: false,
+			setting: true,
 			default: false,
 			donator_only: 1
 		},
@@ -355,7 +414,7 @@ Settings.settings = {
 		reinstallWLBL: {
 			label: 'Reinstall whitelist and blacklist rules:',
 			setting: 'Reinstall',
-			description: _('These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.')
+			description: 'These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.'
 		},
 		resetSettings: {
 			label: 'Reset all settings to their default values:',
@@ -369,14 +428,15 @@ Settings.settings = {
 			label: 'Convert non-simplified rules:',
 			setting: 'Convert Rules',
 			divider: 1,
-			help: _('convertRules help')
+			help: 'convertRules help',
+			if_setting: ['allowDisablingSimplifiedRules', true]
 		},
 		createBackup: {
 			label: 'Create a full backup:',
 			setting: 'Create Backup',
 			donator: 1,
 			donator_only: 1,
-			description: _('Full backup description')
+			description: 'Full backup description'
 		},
 		importBackup: {
 			label: 'Import a full backup:',
@@ -406,11 +466,16 @@ for (var section in Settings.settings) {
 }
 
 Settings.getItem = function (setting) {
-	var tes = safari.extension.settings ? safari.extension.settings.getItem(setting) : Settings.current_value(setting);
+	var tes = SettingStore.available() ? SettingStore.getItem(setting) : Settings.current_value(setting);
 	return tes === null ? (Settings.items[setting] ? Settings.items[setting].default : false) : tes;
 };
 
 Settings.setItem = function (setting, v) {
-	if (!safari.extension.settings) return null;
-	safari.extension.settings.setItem(setting, v);
-}
+	if (!SettingStore.available()) return;
+	SettingStore.setItem(setting, v);
+};
+
+Settings.removeItem = function (setting, v) {
+	if (!SettingStore.available()) return;
+	SettingStore.removeItem(setting);
+};
