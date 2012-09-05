@@ -9,7 +9,7 @@
 var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
 		random = +new Date(),
 		blank = window.location.href === 'about:blank',
-		allowedToLoad = 'al-' + Math.random() * 10000000000000000,
+		allowedToLoad = 'al' + Math.random() * 1000000000000000000,
 		parentURL = (window !== window.top && blank) ? (safari.self.tab.canLoad(beforeLoad, 'parentURL') + '&about:blank:' + random) : false,
 		disabled = safari.self.tab.canLoad(beforeLoad, ['disabled']);
 
@@ -45,7 +45,7 @@ function setCSSs(e, p, not_important) {
 }
 
 function fitFont(e, f) {
-	var fs = 19, maxH = e.offsetHeight, maxW = e.offsetWidth - 10, text = e.querySelector('.jsblocker-node'),
+	var fs = 22, maxH = e.offsetHeight, maxW = e.offsetWidth - 10, text = e.querySelector('.jsblocker-node'),
 			text2 = e.querySelector('.jsblocker-node-two'), wr = e.querySelector('.jsblocker-node-wrap'), tH, tW;
 	
 	text.style.setProperty('opacity', '0.5', 'important')
@@ -131,15 +131,16 @@ function createPlaceholder(e, host, url) {
 	fitFont(pl);
 
 	pl.addEventListener('click', function (ev) {
-		ev.preventDefault();
-		ev.stopImmediatePropagation();
-		e[allowedToLoad] = true;
-		pl.parentNode.replaceChild(e, pl);
+		if (!ev.isTrigger) {
+			ev.preventDefault();
+			ev.stopImmediatePropagation();
+			e[allowedToLoad] = true;
+			pl.parentNode.replaceChild(e, pl);
+		}
 	});
 }
 
 var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
-		known = ['SCRIPT', 'FRAME', 'IFRAME', 'EMBED', 'OBJECT', 'VIDEO', 'IMG'],
 		alwaysAllow = [],
 		kinds = {
 			special: ['special']
@@ -161,9 +162,9 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 
 kinds.SCRIPT = ['script', ph];
 kinds.FRAME = ['frame', ph];
-kinds.IFRAME = kinds.FRAME;
+kinds.IFRAME = ['frame', ph];
 kinds.EMBED = ['embed', ph];
-kinds.OBJECT = kinds.EMBED;
+kinds.OBJECT = ['embed', ph];
 kinds.VIDEO = ['video', ph];
 kinds.IMG = ['image', ph];
 
@@ -221,15 +222,16 @@ function getAbsoluteURL(url) {
 }
 
 function canLoad(event) {
-	var node = event.target.nodeName.toUpperCase();
+	var el = event.target ? event.target : event,
+			node = el.nodeName.toUpperCase();
 
 	if (!(node in kinds)) return 1;
 
 	var source = getAbsoluteURL(event.url), pathname, host, at, arr, use_source, did_something = 0, kind = kinds[node][0];
 
-	if (!event.target[allowedToLoad]) {
+	if (!el[allowedToLoad]) {
 		if (~alwaysAllow.indexOf(kind)) return 1;
-		else if (event.type !== 'DOMNodeInserted') {									
+		else if (event.target) {									
 			if (source && source.length)
 				use_source = source, host = activeHost(source, 1);
 			else if (node !== 'OBJECT')
@@ -255,15 +257,15 @@ function canLoad(event) {
 			if (!~jsblocker[mo][kind].unique.indexOf(host)) jsblocker[mo][kind].unique.push(host);
 
 			if (kinds[node][1] && event.preventDefault) kinds[node][1].call(event.target, kind, isAllowed, host, use_source);
-		} else if ((!source || source.length === 0) && event.type === 'DOMNodeInserted') {
-			if (event.target.innerHTML.length && !event.target.getAttribute('data-jsblocker_added')) {
+		} else if ((!source || source.length === 0) && !event.target) {
+			if (el.innerHTML.length && !el.getAttribute('data-jsblocker_added')) {
 				did_something = 1;
 
-				event.target.setAttribute('data-jsblocker_added', 1);
+				el.setAttribute('data-jsblocker_added', 1);
 
-				jsblocker.unblocked[kind].all.push(event.target.innerHTML);
+				jsblocker.unblocked[kind].all.push(el.innerHTML);
 			
-				if (kinds[node][1]) kinds[node][1].call(event.target, kind, 1);
+				if (kinds[node][1]) kinds[node][1].call(el, kind, 1);
 			}
 		}
 	}
@@ -276,7 +278,7 @@ function ready(event) {
 	if (disabled) return false;
 
 	if (window === window.top)
-		GlobalPage.dispatchMessage('updateReady');
+		GlobalPage.message('updateReady');
 		
 	var t = event.type === 'DOMContentLoaded' ? 1 : 0;
 	
@@ -299,12 +301,13 @@ function ready(event) {
 
 		if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
 			lastAddedFrameData = jsonBlocker;
-			GlobalPage.dispatchMessage('addFrameData', [jsblocker.href, jsblocker]);
+			GlobalPage.message('addFrameData', [jsblocker.href, jsblocker]);
 		}
 			
 		try {
 			if (window === window.top)
-				GlobalPage.dispatchMessage('updatePopover', jsblocker);
+				GlobalPage.message('setActiveTab', jsblocker),
+				GlobalPage.message('updatePopover', jsblocker);
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
@@ -316,6 +319,11 @@ function ready(event) {
 }
 
 function messageHandler(event) {
+	if (event.message)
+		try {
+			event.message = JSON.parse(event.message);
+		} catch (e) {}
+
 	switch (event.name) {
 		case 'reload': window.location.reload(); break;
 		case 'updatePopover': ready(event); break;
@@ -340,7 +348,7 @@ function messageHandler(event) {
 				if (a.length < 3) a.push(-1);
 			}
 				
-			GlobalPage.dispatchMessage('addFrameData', a);
+			GlobalPage.message('addFrameData', a);
 		break;
 
 		case 'setting':
@@ -361,8 +369,7 @@ function messageHandler(event) {
 				position: 'fixed',
 				top: '0px',
 				'z-index': +new Date(),
-				border: 'none',
-				background: 'rgba(0,0,0,0.1)'
+				border: 'none'
 			});
 
 			document.documentElement.appendChild(fr);
@@ -379,7 +386,19 @@ function messageHandler(event) {
 		break;
 
 		case 'notification':
-			special_actions.alert_dialogs()(event.message[0], event.message[1]);
+			special_actions.alert_dialogs(1, [1])(event.message[0], event.message[1], 1);
+		break;
+
+		case 'loadElementsOnce':
+			var pls = document.querySelectorAll('.jsblocker-placeholder');
+	
+			for (var i = 0; pls[i]; i++) {
+				var ev = document.createEvent('MouseEvents');
+				
+				ev.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+
+				pls[i].dispatchEvent(ev);
+			}
 		break;
 	}
 }
@@ -389,7 +408,7 @@ function hashUpdate(event) {
 	
 	jsblocker.href = pageHost();
 		
-	GlobalPage.dispatchMessage('updateFrameData', [jsblocker.href, jsblocker, ohref])
+	GlobalPage.message('updateFrameData', [jsblocker.href, jsblocker, ohref]);
 	
 	ready(event);
 }
@@ -405,8 +424,8 @@ function prepareAnchors(event, anchors, forms) {
 			}, [a[x], x]);
 	for (var y = 0; y < f.length; y++)
 		zero_timeout(function (fo) {
-			if (fo.method && fo.method.toLowerCase() === 'post')
-				GlobalPage.dispatchMessage('cannotAnonymize', getAbsoluteURL(fo.getAttribute('action')));
+			if (fo.getAttribute('method') && fo.getAttribute('method').toLowerCase() === 'post')
+				GlobalPage.message('cannotAnonymize', getAbsoluteURL(fo.getAttribute('action')));
 		}, [f[y]]);
 }
 
@@ -440,15 +459,15 @@ function prepareAnchor(anchor, i) {
 			}, null, [anchor]);
 		
 		if (anchor.getAttribute('href') && anchor.getAttribute('href').charAt(0) === '#')
-			GlobalPage.dispatchMessage('cannotAnonymize', getAbsoluteURL(anchor.getAttribute('href')));
+			GlobalPage.message('cannotAnonymize', getAbsoluteURL(anchor.getAttribute('href')));
 		else	
 			anchor.addEventListener('mousedown', function (e) {
 				var k = (window.navigator.platform.match(/Win/)) ? e.ctrlKey : e.metaKey;
 			
-				GlobalPage.dispatchMessage('anonymousNewTab', k ? 1 : 0);
+				GlobalPage.message('anonymousNewTab', k ? 1 : 0);
 			
 				setTimeout(function () {
-					GlobalPage.dispatchMessage('anonymousNewTab', 0);
+					GlobalPage.message('anonymousNewTab', 0);
 				}, 1000);
 			}, true);
 	}
@@ -481,6 +500,8 @@ function prepareFrame(frame) {
 function windowMessenger(event) {
 	var mayI = 'mayIPleaseKnowYourURL:', sure = 'theURLFor:';
 
+	if (typeof event.data !== 'string') return;
+
 	if (event.data === 'zero-timeout') {
 		event.stopPropagation();
 		if (zero.length) {
@@ -511,6 +532,10 @@ function windowMessenger(event) {
 	}
 }
 
+function contextmenu(event) {
+	Events.setContextMenuEventUserInfo(event, document.querySelectorAll('.jsblocker-placeholder').length);
+}
+
 Events.addTabListener('message', messageHandler, true);
 
 if (!disabled) {
@@ -521,12 +546,40 @@ if (!disabled) {
 	window.addEventListener('hashchange', hashUpdate, true);
 	window.addEventListener('message', windowMessenger, true);
 
+	if (parseInt(bv[0], 10) >= 536) {
+		var observer = new WebKitMutationObserver(function (mutations) {
+			mutations.forEach(function (mutation) {
+				if (mutation.type === 'childList') {
+					var node, i;
+
+					for (i = 0; i < mutation.addedNodes.length; i++) {
+						node = mutation.addedNodes[i];
+
+						if (node.nodeName === 'A')
+							prepareAnchor(node);
+						else if (node.nodeName in kinds) {
+							if (node.nodeName === 'IFRAME' || node.nodeName === 'FRAME')
+								prepareFrame(node);
+
+							canLoad(node);
+						}
+					}
+				}
+			});
+		});
+
+		observer.observe(document, { childList: true, subtree: true });
+	} else
+		document.addEventListener('DOMNodeInserted', canLoad, true);
+
+	document.addEventListener('contextmenu', contextmenu, false);
 	document.addEventListener('DOMContentLoaded', ready, true);
 	document.addEventListener('DOMContentLoaded', prepareAnchors, true);
 	document.addEventListener('DOMContentLoaded', prepareFrames, true);
 	document.addEventListener('beforeload', canLoad, true);
-	document.addEventListener('DOMNodeInserted', canLoad, true);
-	document.addEventListener('DOMNodeInserted', prepareAnchor, true);
-	document.addEventListener('DOMNodeInserted', prepareFrame, true);
-	document.addEventListener('DOMNodeElementChanged', prepareAnchor, true);
 }
+
+window.postMessage = function (one, two, three) {
+	if (one !== 'zero-timeout')
+		GlobalPage.message('postMessage', [one,two,three]);
+};

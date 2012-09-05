@@ -82,10 +82,10 @@
 	opacity: 0.25;
 }
 	.poppy.shake {
-		-webkit-animation: shake 0.5s linear 0 1;
+		-webkit-animation: shake 0.4s linear 0 1;
 	}
 	.poppy.shake.slow {
-		-webkit-animation: shake 5s linear 0 1;
+		-webkit-animation: shake 4s linear 0 1;
 	}
 	.poppy .poppy-arrow {
 		pointer-events: none;
@@ -98,10 +98,10 @@
 			background: -webkit-canvas(poppy-arrow-flip);
 		}
 		.poppy.shake .poppy-arrow {
-			-webkit-animation: unshake 0.5s linear 0 1;
+			-webkit-animation: unshake 0.4s linear 0 1;
 		}
 			.poppy.shake.slow .poppy-arrow {
-				-webkit-animation: unshake 5s linear 0 1;
+				-webkit-animation: unshake 4s linear 0 1;
 			}
 	.poppy .poppy-content {
 		padding: 0 7px;
@@ -168,11 +168,17 @@
 		margin-top: 3px;
 		float: right;
 	}
+	.poppy ul {
+		margin-left: 5px;
+	}
 	.poppy ul li span {
 		width: auto;
-		max-width: 100%;
+		max-width: 497px;
 		white-space: nowrap;
 	}
+		body.simple .poppy ul li span {
+			max-width: 397px;
+		}
 	.poppy p.misc-info {
 		margin-bottom: 7px;
 	}

@@ -41,7 +41,7 @@
 }
 
 body {
-	font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif;
+	font: -webkit-control;
 	font-size: 10pt;
 	line-height: 1.5;
 	text-shadow: 0 1px 0 rgba(255,255,255,0.7);
@@ -51,7 +51,8 @@ body {
 	width: 560px;
 	color: #3A3A3A;
 	overflow: hidden;
-	background: rgba(239,239,239,0.3);
+	background: rgba(239,239,239,0.4);
+	text-rendering: optimizeLegibility;
 }
 	body.simple {
 		height: 347px;
@@ -89,13 +90,13 @@ header h1 {
 	position: absolute;
 	width: 560px;
 	overflow: hidden;
-	height: 399px;
-	margin: 1px 0 0 0;
+	height: 401px;
+	margin: 0 0 0 0;
 /*	-webkit-mask-image: -webkit-linear-gradient(top, rgba(0,0,0,0), rgba(0,0,0,1) 2%, rgba(0,0,0,1) 98%, rgba(0,0,0,0)); */
 }
 	body.simple #container {
 		width: 460px;
-		height: 349px;
+		height: 351px;
 	}
 	body.busy *,
 	#container.loading * {
@@ -103,14 +104,14 @@ header h1 {
 	}
 .whoop {
 	width: 560px;
-	height: 393px;
+	height: 394px;
 	overflow-y: scroll !important;
 	overflow-x: hidden;
 	padding-top: 6px;
 }
 	body.simple .whoop {
 		width: 460px;
-		height: 343px;
+		height: 344px;
 	}
 	#misc {
 		overflow-x: auto !important;
@@ -123,53 +124,73 @@ header h1 {
 		width: 557px;
 		padding-left: 3px;
 		padding-top: 0;
-		height: 399px;
+		height: 400px;
 	}
 		body.simple #main {
 			width: 457px;
-			height: 349px;
+			height: 350px;
 		}
 	#rules-list,
 	#modal,
 	#setup,
 	#misc,
-	#snapshots {
+	#snapshots,
+	#disabled {
 		display: none;
 	}
 	.zoom-window-animating {
 		display: block;
 	}
 	#allowed-blocked-columns {
-		background: -webkit-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,0) 272px, rgba(0,0,0,0.04) 272px, rgba(0,0,0,0.04));
+		display: -webkit-box;
+		background: -webkit-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,0) 50%, rgba(0,0,0,0.04) 50%, rgba(0,0,0,0.04));
+		min-height: 333px;
 	}
-	body.simple #allowed-blocked-columns {
-		background: -webkit-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,0) 222px, rgba(0,0,0,0.04) 222px, rgba(0,0,0,0.04));
-	}
+		body.simple #allowed-blocked-columns {
+			min-height: 283px;
+		}
 	#allowed-column {
 		border-right: 1px solid #ccc;
 	}
 	#blocked-column {
-		padding-left: 3px;
+		padding-left: 2px;
 		border-left: 1px solid #ccc;
 		margin-left: -1px;
 	}
 	.column {
-		height: 100%;
-		float: left;
+		-webkit-box-flex: 1;
 		width: 272px;
 	}
 		body.simple .column {
 			width: 222px;
 		}
-#modal {
+#modal,
+#disabled {
 	width: 560px;
 	height: 424px;
 	background: rgba(0,0,0,0.5);
 	z-index: 9999;
+	position: absolute;
+	left: 0;
+	top: 0;
 }
-	body.simple #modal {
+	body.simple #modal,
+	body.simple #disabled {
 		width: 460px;
 		height: 374px;
+	}
+	.embossed {
+		color: rgba(0,0,0,0.15);
+		font-weight: bold;
+		text-shadow: 0 1px 1px #fff, 0 0 0 rgba(0,0,0,0.27), 0 0 1px #fff;
+	}
+	body.disabled #disabled {
+		display: block;
+		background: transparent;
+		text-align: center;
+		margin: 100px 0 0;
+		pointer-events: none;
+		font-size: 15pt;
 	}
 	
 #domain-script,
@@ -300,7 +321,7 @@ button.confirm-click {
 		background: -webkit-linear-gradient(top, #883A3D, #CF4D54 20%, #CF4D54);
 	}
 select {
-	-webkit-appearance: button;
+	-webkit-appearance: none;
 	padding: 1px 16px 2px 7px;
 	color: #3A3A3A;
 	-webkit-border-radius: 4px;
@@ -486,7 +507,7 @@ select.single {
 		}
 	.some-helper {
 		font-size: 8pt;
-		margin: 10px 0 2px;
+		margin: 0 0 2px;
 	}
 		.some-helper p {
 			margin: 3px 0 3px 2px;
@@ -678,12 +699,16 @@ ul li > span {
 		max-width: 100% !important;
 		margin-left: 0 !important;
 	}
-	ul li span.https,
-	select.https {
+	ul li span.HTTPS,
+	select.HTTPS {
 		color: #956B05;
 	}
-	ul li span.safari-extension,
-	select.safari-extension {
+	ul li span.FTP,
+	select.FTP {
+		color: #950085;
+	}
+	ul li span.SAFARI-EXTENSION,
+	select.SAFARI-EXTENSION {
 		color: #0851FE;
 	}
 	ul li small {
@@ -1155,6 +1180,7 @@ div.divider {
 			}
 				#jsblocker-name span {
 					padding: 0;
+					overflow: visible;
 				}
 			#unlock {
 				color: #803200;
@@ -1322,7 +1348,7 @@ body.disabled #toggle-hidden {
 	width: 558px;
 	height: 17px;
 	margin: 0;
-	top: 26px;
+	top: 1px;
 	left: 0;
 	position: fixed;
 	z-index: 99999;
@@ -1410,26 +1436,26 @@ body.disabled #toggle-hidden {
 	width: 0;
 }
 
-#jsoutput {
+.jsoutput {
 	min-height: 10px;
 	min-width: 400px;
 	margin: 0;
 }
-	#jsoutput .date {
+	.jsoutput .date {
 		display: none;
 		font-size: 6pt;
 		color: #666;
 	}
-	#jsoutput .unread {
+	.jsoutput .unread {
 		background: rgba(255,255,0,0.2);
 	}
-	#jsoutput li {
+	.jsoutput li {
 		padding-top: 2px;
 	}
-	#jsoutput .divider {
+	.jsoutput .divider {
 		margin-top: 2px;
 	}
-	#jsoutput li:first-child {
+	.jsoutput li:first-child {
 		padding: 0;
 	}
 	.console-unread {

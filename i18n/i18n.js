@@ -12,7 +12,7 @@ var Strings = {},
 	
 	if (args) {
 		for(var i = 1; i <= args.length; i++) {
-			var new_string = (typeof args[i - 1] != 'undefined') ? ((args[i - 1] === false) ? 'false' : args[i - 1]) : 'undefined';
+			var new_string = (args[i - 1] !== undefined) ? ((args[i - 1] === false) ? 'false' : args[i - 1]) : 'undefined';
 
 			if(new_string instanceof Array) new_string = '[' + new_string.join(', ') + ']';
 			else if(typeof new_string == 'number') new_string = new_string.toString();
@@ -26,5 +26,5 @@ var Strings = {},
 
 Strings.getLanguage = function () {
 	var lang = Settings.current_value ? Settings.current_value('language') : Settings.getItem('language');
-	return (lang !== 'Automatic') ? lang : window.navigator.language;
+	return (lang !== 'Automatic') ? lang : window.navigator.language.toLowerCase();
 };

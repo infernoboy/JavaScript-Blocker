@@ -1,5 +1,5 @@
 body {
-	font-family: 'Lucida Grand', 'Lucida Sans Unicode', Helvetica, sans-serif;
+	font: -webkit-control;
 	font-size: 8pt;
 }
 	body.large {
@@ -12,10 +12,9 @@ body {
 }
 
 #container {
-	margin: 5px 0 20px -311px;
+	margin: 5px auto 20px;
 	position: relative;
-	left: 50%;
-	width: 600px;
+	width: 635px;
 	background: #E8E8E8;
 	box-shadow: 0 12px 30px rgba(0,0,0,0.4);
 	border: 1px solid rgba(0,0,0,0.15);
@@ -107,8 +106,7 @@ body {
 			}
 .divider {
 	width: 80%;
-	left: 50%;
-	margin: 16px 0 16px -40%;
+	margin: 16px auto 16px;
 	height: 1px;
 	background: rgba(0,0,0,0.17);
 	border-bottom: 1px solid rgba(255,255,255,0.75);
@@ -190,8 +188,7 @@ textarea {
 		}
 select {
 	position: relative;
-	top: -1px;
-	width: 203px;
+	width: 223px;
 	-webkit-appearance: button;
 	-webkit-border-radius: 4px;
 	padding: 2px 18px 2px 8px;
@@ -208,7 +205,7 @@ section {
 	display: none;
 	font-size: 13px;
 	line-height: 1.4;
-	-webkit-font-smoothing: subpixel-antialiased;
+	-webkit-font-smoothing: antialiased;
 	width: 100%;
 }
 	body.large section {
@@ -260,7 +257,7 @@ section {
 			}
 	section li .setting {
 		float: left;
-		max-width: 301px;
+		max-width: 336px;
 		text-indent: -16px;
 	}
 	section li.disabled {
@@ -276,13 +273,13 @@ section {
 		background-image: -webkit-linear-gradient(top, #eee, #ddd);
 		border: 1px solid #b4b4b4;
 		box-shadow: 0 1px 0 #fff, inset 0 8px 0 rgba(255,255,255,0.32), inset 0 6px 0 rgba(255,255,255,0.52);
-		padding: 0 2px 0 3px;
+		padding: 1px 2px 0 3px;
 		display: inline-block;
 		-webkit-border-radius: 20px;
-		height: 16px;
+		height: 15px;
 		width: 11px;
 		text-align: center;
-		font-size: 10pt;
+		font-size: 9pt;
 		margin-left: 5px;
 		margin-top: -1px;
 		text-shadow: 0 1px 0 #fff;

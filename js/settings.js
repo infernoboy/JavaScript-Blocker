@@ -1,6 +1,6 @@
 "use strict";
 
-var speedMultiplier = 1;
+var speedMultiplier = 1, firstLoad = true;
 $.extend(Settings, {
 	loaded: 0,
 	tba: 0,
@@ -9,7 +9,7 @@ $.extend(Settings, {
 
 		$(document).click(function (e) {
 			if (e.target && e.target.nodeName === 'BODY')
-				GlobalPage.dispatchMessage('closeSettings');
+				GlobalPage.message('closeSettings');
 		}).on('click', '#toolbar li', function () {
 			if ($(this).hasClass('selected')) return false;
 
@@ -30,7 +30,7 @@ $.extend(Settings, {
 					ac = $('section.active'),
 					sec = $(this).siblings('li').removeClass('selected').end().addClass('selected').attr('id').substr(4),
 					ph = c.height(),
-					s = $('section').removeClass('active').filter('#' + sec).addClass('active').css('opacity', 0);
+					s = $('section').removeClass('active').filter('#' + sec).css('opacity', 0).addClass('active');
 					
 			if (sec !== 'about') {
 				var ul = s.find('ul').empty();
@@ -46,44 +46,42 @@ $.extend(Settings, {
 			var nh = c.height();
 
 			c.height(ph);
+
+			$('section').css({
+				position: 'absolute',
+				bottom: 30
+			});
+
+			ac.show();
 	
-			zero_timeout(function (c, nh, s, self) {
-				function end () {
-					$('section').css({
-						position: 'relative',
-						bottom: 'auto'
-					});
-										
-					ac.css({ display: '', opacity: 1 });
-					
-					c.addClass('no-transition').height('auto');
-				}
-				
-				if (self.current_value('animations')) c.removeClass('no-transition');
-				
+			function end () {
 				$('section').css({
-					position: 'absolute',
-					bottom: 30
+					position: 'relative',
+					bottom: 'auto'
 				});
+									
+				ac.css({ display: '', opacity: 1 });
 				
-				ac.show().fadeTo(Settings.current_value('animations') ? 200 * speedMultiplier : 0.001, 0);
-				
-				c.height(nh).one('webkitTransitionEnd', end);
-								
-				s.animate({
-					opacity: 1
-				}, {
-					duration: Settings.current_value('animations') ? 200 * speedMultiplier : 0.001,
-					complete: function () {
-						self.tba = 0;
-					},
-					step: function () {
-						document.body.scrollTop = 0;
-					}
-				});
-				
-				if (!self.current_value('animations')) end();
-			}, [c, nh, s, self]);
+				c.addClass('no-transition').height('auto');
+			}
+			
+			if (self.current_value('animations') && !firstLoad) c.removeClass('no-transition');
+			
+			ac.fadeTo(Settings.current_value('animations') && !firstLoad ? 200 * speedMultiplier : 0.001, 0);
+			
+			c.height(nh).one('webkitTransitionEnd', end);
+							
+			s.animate({
+				opacity: 1
+			}, Settings.current_value('animations') && !firstLoad ? 200 * speedMultiplier : 0.001, function () {
+				self.tba = 0;
+			});
+			
+			if (!self.current_value('animations') || firstLoad) end();
+
+			firstLoad = false;
+
+			c.css('opacity', 1);
 		}).on('click', 'a', function (e) {
 			e.stopImmediatePropagation();
 
@@ -143,18 +141,18 @@ $.extend(Settings, {
 				case 'removeRules':
 					Settings.set_value('Rules', '{}');
 					Settings.set_value('SimpleRules', '{}');
-					alert(_('All rules have been removed.'));
+					alert(_('All rules have been removed.'), null, 1);
 				break;
 
 				case 'reinstallWLBL':
-					GlobalPage.dispatchMessage('reinstallWLBL');
+					GlobalPage.message('reinstallWLBL');
 
-					alert(_('Whitelist and blacklist rules have been reinstalled.'), 'reinstallWLBL');
+					alert(_('Whitelist and blacklist rules have been reinstalled.'), 'reinstallWLBL', 1);
 				break;
 
 				case 'createBackup':
 					if (Settings.invalid_donation_setting()) {
-						alert(_('Donation Required'));
+						alert(_('Donation Required'), null, 1);
 						break;
 					}
 
@@ -171,7 +169,7 @@ $.extend(Settings, {
 						settings: settings,
 						rules: Settings.current_value('Rules') || '{}',
 						simpleRules: Settings.current_value('SimpleRules') || '{}'
-					}) + '</textarea>', _('Copy below'));
+					}) + '</textarea>', _('Copy below'), 1);
 
 					var ta = document.querySelector('.jsblocker-alert textarea');
 
@@ -182,7 +180,7 @@ $.extend(Settings, {
 
 				case 'importBackup':
 					if (Settings.invalid_donation_setting()) {
-						alert(_('Donation Required'));
+						alert(_('Donation Required'), null, 1);
 						break;
 					}
 
@@ -201,38 +199,38 @@ $.extend(Settings, {
 						for (var setting in js.settings)
 							Settings.set_value(setting, js.settings[setting], 1);
 
-						alert(_('Your backup has been successfully restored.'));
+						alert(_('Your backup has been successfully restored.'), null, 1);
 					} catch (e) {
-						alert(e.toString(), _('Error importing backup'));
+						alert(e.toString(), _('Error importing backup'), 1);
 					}
 				break;
 
 				case 'convertRules':
-					GlobalPage.dispatchMessage('convertRules');
+					GlobalPage.message('convertRules');
 				break;
 			}
 		}).on('search', '#search', function () {
 			$('#for-search:not(.selected)').click();
 			
 			var val = $.trim(this.value),
-					ul = $('#search ul').empty(), set, li, label, inp;
+					ul = $('#search ul').empty(), set, li = null, label, inp;
 					
 			Settings.make_setting('search', 'headerSearch', Settings.settings.search.headerSearch, ul);
-			
-			if (!val.length) return false;
-			
+						
 			for (var section in Settings.settings)
 				if (section !== 'misc')
 					for (var setting in Settings.settings[section]) {
 						set = Settings.settings[section][setting];
 						
-						if (typeof set.label === 'string' && ~set.label.toLowerCase().indexOf(val.toLowerCase())) {
+						if (typeof set.label === 'string' && val.length && ~set.label.toLowerCase().indexOf(val.toLowerCase())) {
 							li = Settings.make_setting(section, setting, set, ul);
 							li.attr('id', li.attr('id') + '-search-result');
 							inp = li.find('input[type="checkbox"]').attr('id', li.attr('id') + '-search-result');
 							li.find('label').attr('for', inp.attr('id'));
 						}
 					}
+
+			var head = $('#setting-headerSearch .label').html(li ? _('Search Results') : _('No Results'));
 			
 			ul.find('.donator:gt(0)').remove().end().find('.description').remove().end().find('.divider').remove();
 		}).keydown(function (e) {
@@ -262,14 +260,14 @@ $.extend(Settings, {
 	},
 	_current: {},
 	current_value: function (setting) {
-		return (typeof this._current[setting] !== 'undefined') ? this._current[setting] : (Settings.items && (setting in Settings.items) ? Settings.items[setting].default : null);
+		return (this._current[setting] !== undefined) ? this._current[setting] : (Settings.items && (setting in Settings.items) ? Settings.items[setting].default : null);
 	},
 	set_value: function (setting, v, no_reload) {
-		GlobalPage.dispatchMessage('reloadPopover');
+		GlobalPage.message('reloadPopover');
 
 		v = v === 'false' ? false : (v === 'true' ? true : v);
 
-		GlobalPage.dispatchMessage('setting_set', [setting, v]);
+		GlobalPage.message('setting_set', [setting, v]);
 		
 		this._current[setting] = v;
 		
@@ -390,7 +388,7 @@ $.extend(Settings, {
 			
 		if (setting_item.help)
 			$('<div class="help">?</div>').click(_(setting_item.help), function (event) {
-				alert(event.data, setting);
+				alert(event.data, setting, 1);
 			}).appendTo(li);
 			
 		li.append('<br style="clear:both;" />')
@@ -417,10 +415,18 @@ Settings.toolbar_items = {
 appendScript(special_actions.alert_dialogs, true);
 
 Events.addTabListener('message', function (event) {
+	if (event.message) 
+		try {
+			event.message = JSON.parse(event.message);
+		} catch (e) {}
+
 	switch (event.name) {
-		case 'allSettings':
+		case 'gotAllSettings':
 			for (var setting in Settings.items)
 				Settings._current[setting] = event.message[setting];
+
+			Settings._current.Rules = event.message.Rules;
+			Settings._current.SimpleRules = event.message.SimpleRules;
 
 			settingsReady();
 		break;
@@ -438,43 +444,47 @@ Events.addTabListener('message', function (event) {
 			
 			if (!don) {
 				if (event.message.trial_active)
-					$('#trial-remaining').html(_('Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>', rem));
+					$('#trial-remaining').html([
+						'<p>', _('Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>', rem), '</p>',
+						'<p>', _('Remember for free'), '</p>'].join(''));
 				else
 					$('#trial-remaining').html([
 						'<p>', _('Free trial expired', [_('JavaScript Blocker')]), '</p>',
-						'<p><a href="http://javascript-blocker.toggleable.com/donation_only" target="_top">', _('What donation?'), '</a></p>'].join(''));
+						'<p><a href="http://javascript-blocker.toggleable.com/donation_only" target="_top">', _('What donation?'), '</a></p>',
+						'<p>', _('Remember for free'), '<p>'].join(''));
 			} else
 				$('#trial-remaining').html(_('Your donation has been verified') + ' ' + _('Thanks for your support!'));
 		break;
 
 		case 'convertRules':
-			if (event.message === true) alert(_('Rules converted.'), 'convertRules');
-			else alert(_('Some rules could not be converted {1}', ['<textarea readonly>' + event.message + '</textarea>']), 'convertRules');
+			if (event.message === true) alert(_('Rules converted.'), 'convertRules', 1);
+			else alert(_('Some rules could not be converted {1}', ['<textarea readonly>' + event.message + '</textarea>']), 'convertRules', 1);
 		break;
 	}
 });
 
-GlobalPage.dispatchMessage('allSettings');
+GlobalPage.message('getAllSettings');
 
 $(function () {
 	$('#requirements').remove();
+	$('#container').css('opacity', 0);
 	Settings.bind_events();
 });
 
 function settingsReady() {
-	var section, sec, setting, setting_item, set, select, li, current, load_language = Strings.getLanguage();
+	var section, sec, setting, setting_item, set, select, li, current, tool, load_language = Strings.getLanguage();
 
 	if (load_language !== 'en-us' && !(load_language in Strings))
 		$('<script />').attr('src', 'i18n/' + load_language + '.js').appendTo(document.head);
 	
-	for (var section in Settings.settings)
+	for (section in Settings.settings)
 		if (section !== 'misc')
 			$('<section />').attr('id', section).appendTo('#content').append('<ul class="settings"></ul>');
 	
-	for (var setting in Settings.settings.about)
+	for (setting in Settings.settings.about)
 		Settings.make_setting('about', setting, Settings.settings.about[setting], $('#about ul'));
 	
-	for (var tool in Settings.toolbar_items) {
+	for (tool in Settings.toolbar_items) {
 		$('<li />').attr('id', 'for-' + tool)
 				.html('<div class="left"></div><span>' + (tool !== 'search' ? _(Settings.toolbar_items[tool]) : Settings.toolbar_items[tool]) + '</span><div class="right"></div>').appendTo('#toolbar');
 	}
@@ -483,7 +493,7 @@ function settingsReady() {
 	else if (window.localStorage.tab) $('#' + window.localStorage.tab).click();
 	else $('#for-about').click();
 
-	GlobalPage.dispatchMessage('aboutPage');
+	GlobalPage.message('aboutPage');
 		
 	$(document.body).toggleClass('large', Settings.current_value('largeFont')).toggleClass('windows', /Win/.test(window.navigator.platform));
 	

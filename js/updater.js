@@ -309,12 +309,21 @@ JB.updater = function () {
 				'</p>'
 			].join(''), function () {
 				$$('#rawr-ok').click(function () {
-					self.donate();
+					self.installedBundle = 90
+					self.updater();
 				});
 			}, null, null, true);
 		break;
 
+		case v < 94: // 3.0.4
+			self.installedBundle = 94;
+			self.updater();
+		break;
+
 		case v < this.bundleid:
 			this.donate();
+
+		default:
+		break;
 	}
 };

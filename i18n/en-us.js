@@ -193,6 +193,9 @@ Strings['en-us'] = {
 	'Rules Only in Snapshot: {1}': 'Rules Only in Snapshot ({1})', // NEW
 	'Rules Not in Snapshot: {1}': 'Rules Not in Snapshot ({1})', // NEW
 	'Rules in Both My Rules and Snapshot: {1}': 'Rules in Both My Rules and Snapshot ({1})', // NEW
+	'Load {1} Blocked Elements': 'Load {1} Blocked Elements', // NEW
+	'Load {1} Blocked Element': 'Load {1} Blocked Element', // NEW
+	'{1} allowed, {2} blocked': '{1} allowed, {2} blocked', // NEW
 	/** /BUTTONS **/
 	
 	/** POPPIES **/
@@ -295,6 +298,7 @@ Strings['en-us'] = {
 	'{1} domains, {2} rule': '{1} domains, {2} rule', // *
 	'{1} domains, {2} rules': '{1} domains, {2} rules', // *
 	'Unblockable Script': 'Unblockable Script',
+	'JavaScript Blocker is disabled.': 'JavaScript Blocker is disabled.',
 	/** /MISC **/
 	
 	/** INFO ABOUT REMOVING RULES **/
@@ -324,6 +328,8 @@ Strings['en-us'] = {
 	'ABOUT': '',
 	'DATA': 'data URI',
 	'JAVASCRIPT': 'JavaScript URI',
+	'SPECIAL': 'other',
+	'FTP': 'file transfer protocol',
 	'Temporarily': 'Temporarily',
 	'allow': 'allow',
 	'block': 'block',
@@ -336,15 +342,15 @@ Strings['en-us'] = {
 	'and': 'and',
 	'all': 'all',
 
-	// Temporarily allow secure scripts from google.com
-	// Allow insecure scripts from google.com
-	// Allow insecure scripts within google.com
-	// Temporarily block secure scripts from google.com
-	// Hide insecure and secure scripts from google.com
-	// Hide Safari extension, secure and insecure scripts within google.com
-	// Allow others matching ^window_resize$
-	// Allow window resize fucntions
-	// Block scripts matching ^http:\/\/google\.com\/.*$
+/*Temporarily allow secure scripts from google.com
+	Allow non-secure scripts from google.com
+	Allow non-secure scripts within google.com
+	Temporarily block secure scripts from google.com
+	Hide non-secure and secure scripts from google.com
+	Hide Safari extension, secure and non-secure scripts within google.com
+	Allow others matching ^window_resize$
+	Allow window resize fucntions
+	Block scripts matching ^http:\/\/google\.com\/.*$ */
 	
 	/** SPECIALS (Other Features) **/
 	'alert_dialogs': 'Modal alert dialogs',
@@ -377,10 +383,12 @@ Strings['en-us'] = {
 	'Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>': 'You have {1} days, {2} hours, and {3} minutes remaining in your trial of the <b>{4}</b>', // UPDATED
 		'donator-only features.': 'pay-for features.',
 	'Free trial expired': 'Your free trial has expired. You must make a contribution and have it verified in order to continue using the pay-for features of {1}.', // NEW
+	'Remember for free': 'If you are unable to make a contribution (or just don\'t want to), <a href="mailto:travis@toggleable.com?subject=I cannot contribute to JavaScript Blocker">contact me</a> ' +
+		'and you can have access to all the pay-for features for free.', // NEW
 	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
 	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
 	'Please, if you can': 'Please, if you can, show your support by making a contribution of any amount. ' +
-			'It would be greatly appreciated and will encourage me to create an even better product.', // UPDATED
+			'It would be greatly appreciated and you will have unlimited access to all the pay-for features of JavaScript Blocker!', // UPDATED
 	'Donation Verification': 'Payment Verification', // UPDATED
 	'To complete the unlocking': 'To unlock all features permanently, you must enter the email address you used to make your payment. Please note that ' +
 			'it may take up to 24 hours for it to become active on the server.', // UPDATED
@@ -423,7 +431,8 @@ Strings['en-us'] = {
 	'Highlight items that matched a rule': 'Highlight items that matched a rule', // NEW
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
 	'Hide donator-only features': 'Hide pay-for features', // NEW
-	'Show the number of items blocked or allowed for each host': 'Show the number of items blocked/allowed per host',
+	'Show the number of items blocked or allowed for each host': 'Show number of items blocked/allowed per host',
+	'Show blocked and allowed resources in page list': 'Show number of blocked and allowed resources in page selector',
 	'Show whitelist and blacklist rules in the rule list': 'Show whitelist and blacklist rules in the rule list', // NEW
 	'Theme:': 'Theme:',
 	'Enable expert features to block individual items instead of full hosts': 'Enable expert features to block individual items instead of full hosts',
@@ -460,6 +469,7 @@ Strings['en-us'] = {
 		"The short URL—{1}—is redirecting you to:\n\n{2}\n{3}\n\nDo you want to continue?", // NEW
 
 	'Search Results': 'Search Results', // Header displayed in the search panel.
+	'No Results': 'No Results',
 	
 	'Other…': 'Other…', // Generic option
 
@@ -585,8 +595,6 @@ Strings['en-us'] = {
 		'This can be done from the About tab and choosing Convert Rules.',
 	'convertRules help': 'This will attempt to convert rules created using the non-expert UI (with simplified rules disabled) into simplified ones. Any custom or edited rules may not be converted ' +
 		'and will have to be re-added manually when using the simplified rules UI. Any existing rules will remain untouched.',
-	'Settings page requirements': 'You have to allow scripts from the host <b>com.toggleable.JavaScriptBlocker-6S8J5HV3H4</b> (or <b>com.toggleable.JavaScriptBlockerBeta-6S8J5HV3H4</b> ' +
-		'if using the beta) in order for the settings page to function.', // NEW
 
 	date: {
 		days_short: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],

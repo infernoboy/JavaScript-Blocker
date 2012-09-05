@@ -17,11 +17,13 @@ var special_actions = {
 			window[wo](URL, name, undefined, replace);
 		};
 	},
-	alert_dialogs: function () {
-		window.alert = function (a, text) {
+	alert_dialogs: function (enabled, args) {
+		window.alert = function (a, text, html_allowed) {
 			a = a.toString();
+			text = text ? text.toString() : null;
 			
-			var cur_all = document.querySelectorAll('.jsblocker-alert'), top = 0,
+			var html_verify = args[0],
+					cur_all = document.querySelectorAll('.jsblocker-alert'), top = 0,
 					ht = document.createElement('div'),
 					more = parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10) >= 536;
 
@@ -29,7 +31,7 @@ var special_actions = {
 				'<div class="jsblocker-alert-inner">',
 					'<a href="javascript:void(0);" class="jsblocker-close"></a>',
 					'<div class="jsblocker-alert-bg">', (text ? text.replace(/</g, '&lt;') : 'alert()'), '</div>',
-					'<div class="jsblocker-alert-text">', (!text ? a.replace(/</g, '&lt;') : a), '</div>',
+					'<div class="jsblocker-alert-text">', (!text || html_allowed !== html_verify ? a.replace(/</g, '&lt;') : a), '</div>',
 				'</div>'].join('');
 			ht.className = 'jsblocker-alert';
 			ht.id = 'jsblocker-alert-' + (+new Date());
@@ -143,7 +145,7 @@ var special_actions = {
 						}
 					}
 				}, true);
-			}, 100, ht, cur_all);
+			}, 10, ht, cur_all);
 		};
 		
 		window.alert.prototype.jsblocker = 1;
@@ -190,11 +192,18 @@ var special_actions = {
 			for (var i = 0; inps[i]; i++)
 				inps[i].setAttribute('autocomplete', 'on');
 		}, true);
-		
-		document.addEventListener('DOMNodeInserted', function (e) {
-			if (e.nodeName === 'INPUT')
-				e.setAttribute('autocomplete', 'on');
-		}, true);
+
+		var observer = new WebKitMutationObserver(function (mutations) {
+			mutations.forEach(function (mutation) {
+				if (mutation.type === 'childList') {
+					for (var i = 0; i < mutation.addedNodes.length; i++)
+						if (mutation.addedNodes[i].nodeName === 'INPUT')
+							mutation.addedNodes[i].setAttribute('autocomplete', 'on');
+				}
+			});
+		});
+
+		observer.observe(document, { childList: true, subtree: true });
 	},
 	font: function (v) {
 		var s = document.createElement('style');
@@ -206,12 +215,19 @@ var special_actions = {
 },
 non_injected_special_actions = {};
 
+special_actions.alert_dialogs.prototype.args = [window.allowedToLoad || 1];
+
 function appendScript(script, v) {
-	var script = script.toString(), p = script.split(/\{/), s = document.createElement('script');
+	var script_string = script.toString(), p = script_string.split(/\{/), s = document.createElement('script');
 	p[1] = "\n" + '"use strict";' + "\n// JSBlocker Injected Helper Script" + p[1];
-	script = p.join('{');
+	script_string = p.join('{');
 	s.id = 'jsblocker-' + (+new Date());
-	s.innerHTML = '(' + script + ')(' + (typeof v !== 'undefined' ? (typeof v === 'string' ? '"' + v + '"' : v ): '') + ');';
+	s.innerHTML = [
+		'(', script_string, ')',
+		'(',
+			v !== undefined ? (typeof v === 'string' ? '"' + v + '"' : v) : '',
+			script.prototype && script.prototype.args ? ',' + JSON.stringify(script.prototype.args) : '',
+		');'].join('');
 	document.documentElement.appendChild(s);
 }
 

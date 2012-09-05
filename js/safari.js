@@ -1,15 +1,17 @@
-if (typeof safari !== 'undefined') {
+if (window.safari !== undefined) {
 var SAFARI = true, CHROME = false,
 		ToolbarItems = {
 			badge: function (number) {
 				safari.extension.toolbarItems.forEach(function (toolbarItem) {
 					toolbarItem.badge = number;
 				});
+				return this;
 			},
 			image: function (path) {
 				safari.extension.toolbarItems.forEach(function (toolbarItem) {
 					toolbarItem.image = ExtensionURL(path);
 				});
+				return this;
 			},
 			visible: function () {
 				return safari.extension.toolbarItems.length > 0;
@@ -18,6 +20,7 @@ var SAFARI = true, CHROME = false,
 				safari.extension.toolbarItems.forEach(function (toolbarItem) {
 					toolbarItem.disabled = enabled;
 				});
+				return this;
 			}
 		},
 
@@ -76,9 +79,9 @@ var SAFARI = true, CHROME = false,
 				if (activeWindow) activeWindow.openTab().url = object.url;
 				else BrowserWindows.open().activeTab.url = object.url;
 			},
-			dispatchToActive: function (message, data) {
+			messageActive: function (message, data) {
 				this.active(function (tab) {
-					if (tab.length && tab[0].page) tab[0].page.dispatchMessage(message, data);
+					if (tab.length && tab[0].page) tab[0].page.dispatchMessage(message, JSON.stringify(data));
 				});
 			}
 		},
@@ -87,7 +90,7 @@ var SAFARI = true, CHROME = false,
 			page: function () {
 				return safari.extension.globalPage.contentWindow;
 			},
-			dispatchMessage: function (message, data) {
+			message: function (message, data) {
 				safari.self.tab.dispatchMessage(message, data);
 			}
 		},
@@ -101,6 +104,9 @@ var SAFARI = true, CHROME = false,
 			},
 			setItem: function (key, value) {
 				safari.extension.settings.setItem(key, value);
+			},
+			removeItem: function (key) {
+				safari.extension.settings.removeItem(key);
 			},
 			all: function () {
 				return safari.extension.settings;	
@@ -116,6 +122,9 @@ var SAFARI = true, CHROME = false,
 			},
 			addTabListener: function (type, callback) {
 				safari.self.addEventListener(type, callback, true);
+			},
+			setContextMenuEventUserInfo: function (event, data) {
+				safari.self.tab.setContextMenuEventUserInfo(event, data);
 			}
 		},
 

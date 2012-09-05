@@ -1,4 +1,4 @@
-if (typeof chrome !== 'undefined') {
+if (window.chrome !== undefined) {
 var CHROME = true, SAFARI = false,
 		ToolbarItems = {
 			badge: function (number) {
@@ -68,7 +68,7 @@ var CHROME = true, SAFARI = false,
 					}
 				});
 			},
-			dispatchToActive: function (message, data) {
+			messageActive: function (message, data) {
 				Tabs.active(function (tab) {
 					if (tab.length)
 						chrome.tabs.sendMessage(tab[0].id, { message: message, data: data });
@@ -94,6 +94,9 @@ var CHROME = true, SAFARI = false,
 			},
 			setItem: function (key, value) {
 				window.localStorage.setItem(key, value);
+			},
+			removeItem: function (key) {
+				window.localStorage.removeItem(key);
 			},
 			all: function () {
 				return window.localStorage;	

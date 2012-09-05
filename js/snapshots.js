@@ -68,7 +68,7 @@ Snapshots.prototype = {
 	},
 	name: function (id, name) {
 		if (!this.exist(id)) return;
-		if (typeof name === 'undefined') return this.store[id].name;
+		if (name === undefined) return this.store[id].name;
 		if (name !== null && this.named(name) !== null) return false;
 
 		this.store[id].name = name;
@@ -180,7 +180,7 @@ Snapshots.prototype = {
 		return reverse ? JB.utils.sort_object(this.store, 1) : JB.utils.sort_object(this.store);
 	},
 	size: function (id) {
-		return typeof id !== 'undefined' ? JSON.stringify(this.store[id] || {}).length : JSON.stringify(this.snapshots).length;
+		return id !== undefined ? JSON.stringify(this.store[id] || {}).length : JSON.stringify(this.snapshots).length;
 	},
 	compare: function (left, right) {
 		var cleft = left in this.store ? this.store[left].data : left, cright = right in this.store ? this.store[right].data : right,

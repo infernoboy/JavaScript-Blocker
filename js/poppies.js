@@ -22,7 +22,7 @@ JB.poppies = {
 				'<p><input type="text" placeholder="', _('PayPal Email Address'), '" id="donation-id" /> ',
 				'<input type="button" value="', _('Continue'), '" id="donation-confirm" class="onenter" /></p>',
 				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donate ">', _('Make a Donation'), '</a> <span class="label">￨</span> ',
-				'<a class="outside" href="mailto:travis@toggleable.com?subject=I cannot donate to JavaScript Blocker, but want all the features!&body=Reason: ">', _('I can\'t donate'), '</a> <span class="label">￨</span> ',
+				'<a class="outside" href="mailto:travis@toggleable.com?subject=I cannot contribute to JavaScript Blocker, but want all the features!&body=Reason: ">', _('I can\'t donate'), '</a> <span class="label">￨</span> ',
 				'<a class="outside" href="mailto:travis@toggleable.com?subject=I forgot my JavaScript Blocker activation information!&body=Help me out!">', _('Forgot'), '</a></p>'].join(''),
 			onshowstart: function () {
 				var did = $$('#donation-id');
@@ -123,7 +123,7 @@ JB.poppies = {
 				main.rules.add((n === 42 && !~k.indexOf('hide_') ? 'hide_' : '') + zoo.me.li.data('kind'), ed, (proto ? proto + ':' : '') + ru, n, true, $$('#rule-temporary').is(':checked'), proto.length ? proto.split(/, ?/) : false);
 
 				if (!no_refresh) {
-					Tabs.dispatchToActive('reload');
+					Tabs.messageActive('reload');
 					new Poppy();
 				}
 				
@@ -133,21 +133,17 @@ JB.poppies = {
 				var i = $$('#poppy #rule-input').val(zoo.main.rules.with_protos(zoo.me.url).rule).focus(),
 						protos = zoo.main.rules.with_protos(zoo.me.url).protos;
 				
-				$$('#poppy #rule-proto-input').val(protos instanceof Array ? protos.join(',') : undefined).keypress(function (e) {
-					if (e.which == 13 || e.which == 3) {
-						i.focus();
-						e.preventDefault();
-					}
-				});
-
-				i.keypress(function (e) {
-					if (e.which === 13 || e.which === 3) {
+				$$('#poppy #rule-proto-input').val(protos instanceof Array ? protos.join(',') : undefined)
+					.parents('#poppy').keypress(function (e) {
+						if (e.which === 13 || e.which === 3) {
+							$(this).unbind('keypress');
+							zoo.save.call(i);
+							e.preventDefault();
+						}
+					}).find('#rule-save').click(function () {
 						zoo.save.call(i);
-						e.preventDefault();
-					}
-				}).siblings('#rule-save').click(function () {
-					zoo.save.call(i);
-				});
+						$(this).unbind('click');
+					});
 			}
 		};
 		
@@ -182,7 +178,7 @@ JB.poppies = {
 					Settings.setItem(JB.rules.which, JSON.stringify(JB.rules.rules));
 					JB.rules.use_snapshot(0);
 
-					if ($$('#rules-list:visible').length)
+					if ($$('#rules-list').is(':visible'))
 						JB.rules.show();
 				}).siblings('#snapshot-merge').click(function () {
 					var rules = JB.rules.current_rules;
@@ -200,7 +196,7 @@ JB.poppies = {
 					Settings.setItem(JB.rules.which, JSON.stringify(rules));
 					JB.rules.use_snapshot(0);
 
-					if ($$('#rules-list:visible').length)
+					if ($$('#rules-list').is(':visible'))
 						JB.rules.show();
 				}).siblings('#snapshot-keep').click(function () {
 					var id = JB.rules.using_snapshot;
@@ -222,14 +218,14 @@ JB.poppies = {
 					JB.rules.snapshots.remove(JB.rules.using_snapshot);
 					JB.rules.use_snapshot(0);
 
-					if ($$('#rules-list:visible').length)
+					if ($$('#rules-list').is(':visible'))
 						JB.rules.show();
 				});
 
 				$$('#snapshots-current').click(function () {
 					JB.rules.use_snapshot(0);
 
-					if ($$('#rules-list:visible').length)
+					if ($$('#rules-list').is(':visible'))
 						JB.rules.show();
 				}).siblings('#snapshots-show').click(function () {
 					$$('#time-machine').addClass('force-open').click();

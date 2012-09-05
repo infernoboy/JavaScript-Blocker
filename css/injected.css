@@ -9,10 +9,10 @@
 	text-align: center !important;
 	font-style: normal !important;
 	text-decoration: none !important;
-	opacity: 0.5 !important;
+	opacity: 0.55 !important;
 }
 	.jsblocker-placeholder * {
-		font-family: 'Lucida Grande', 'Lucida Sans Unicode' !important;
+		font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif !important;
 		color: #444 !important;
 		text-shadow: 0 1px 0 rgba(255,255,255,0.4) !important;
 		cursor: default !important;
@@ -89,7 +89,7 @@
 	opacity: 0;
 	padding-bottom: 4px !important;
 	overflow: hidden !important;
-	font-family: 'Lucida Grande', 'Lucida Sans Unicode', Helvetica, sans-serif !important;
+	font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif !important;
 	color: #3f3f3f !important;
 }
 	.jsblocker-alert p {

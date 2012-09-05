@@ -18,7 +18,7 @@
  */
 var Poppy = function (x, y, content, onshowstart, onshowend, time, modal, secondary) {
 	if (!ToolbarItems.visible()) {
-		if (!JB.toolbar_notified) {
+		if (BrowserWindows.all().length && !JB.toolbar_notified) {
 			JB.toolbar_notified = 1;
 			alert(_('{1} cannot function when its toolbar icon is hidden.', [_('JavaScript Blocker')]));
 		}
@@ -33,6 +33,7 @@ var Poppy = function (x, y, content, onshowstart, onshowend, time, modal, second
 			onshowend = content.onshowend || $.noop;
 			time = typeof content.time === 'number' ? content.time : null;
 			modal = content.modal || null;
+			secondary = content.secondary !== undefined ? content.secondary : false;
 		} catch (e) { }
 		
 		content = temporary;
@@ -85,27 +86,35 @@ Poppy.prototype = {
 		return (this.removeOnly !== false) ? false : JB.utils.zero_timeout($.proxy(this.create, this));
 	},
 	remove: function (onshowstart) {
-		$$('#modal').fadeOut(this._time * 1000);
+		if (this.removeOnly) {
+			$$('#modal').fadeOut(this._time * 1000);
 
-		$(this.e, this.p).css({
-			opacity: 0,
-			WebkitTransitionDuration: (this._time * .3) + 's'
-		}).one('webkitTransitionEnd', { s: this, c: onshowstart }, function (event) {
-			var d = event.data;
-			
-			$(this).remove();
-			
-			JB.utils.zero_timeout($.proxy(d.c, d.s));
-			
-			if (d.s.removeOnly) {
+			$(this.e, this.p).css({
+				opacity: 0,
+				WebkitTransitionDuration: (this._time * .3) + 's'
+			}).one('webkitTransitionEnd', { s: this, c: onshowstart }, function (event) {
+				var d = event.data;
+				
+				$(this).remove();
+				
+				JB.utils.zero_timeout($.proxy(d.c, d.s));
 				JB.utils.zero_timeout(d.s.onshowstart);
 				JB.utils.zero_timeout(d.s.onshowend);
-			}
-		});
+			});
+		} else {
+			if (!this.modal) $$('#modal').fadeOut(this._time * 1000);
+
+			$(this.e, this.p).css({
+				opacity: 0,
+				WebkitTransitionDuration: this._time + 's'
+			}).one('webkitTransitionEnd', function (event) {				
+				$(this).remove();
+			});
+
+			JB.utils.zero_timeout(this.create.bind(this));
+		}
 	},
-	create: function () {
-		if ($(this.e, this.p).length) $(this.e, this.p).remove();
-		
+	create: function () {		
 		var mo = $$('#modal'),
 				self = this,
 				eC = '<div id="' + this.e.substr(1) + '" class="poppy"></div>',
@@ -119,7 +128,7 @@ Poppy.prototype = {
 			new Poppy(null, null, null, null, null, 0.5, false, true);
 		});
 		
-		var m = this.p.append(eC)
+		var m = this.p.prepend(eC)
 				.find(this.e).append(cC)
 				.find(this.c).append(this.content)
 				.end()

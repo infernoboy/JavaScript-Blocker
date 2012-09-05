@@ -84,6 +84,11 @@ Settings.settings = {
 			setting: true,
 			default: true
 		},
+		showPageListCount: {
+			label: 'Show blocked and allowed resources in page list',
+			setting: true,
+			default: true
+		},
 		showPerHost: {
 			label: 'Show the number of items blocked or allowed for each host',
 			setting: true,
@@ -91,25 +96,6 @@ Settings.settings = {
 			help: 'showPerHost help',
 			default: false,
 			divider: 1
-		},
-		quickAdd: {
-			label: 'Enable Quick Add—lets you add rules with a single click',
-			default: false,
-			setting: true,
-			help: 'quickAdd help'
-		},
-		quickAddTemporary: {
-			label: 'Quick-add rules are temporary',
-			default: false,
-			setting: true,
-			if_setting: ['quickAdd', true]
-		},
-		quickAddType: {
-			label: 'Create Quick Add rules for:',
-			default: '1',
-			setting: [[0, 'Same hostname as page host'], [1, 'Least domain of page host'], [2, 'All Domains']],
-			divider: 1,
-			if_setting: ['quickAdd', true]
 		},
 		language: {
 			label: 'Language:',
@@ -180,6 +166,25 @@ Settings.settings = {
 			setting: true,
 			default: true,
 			divider: 1
+		},
+		quickAdd: {
+			label: 'Enable Quick Add—lets you add rules with a single click',
+			default: false,
+			setting: true,
+			help: 'quickAdd help'
+		},
+		quickAddTemporary: {
+			label: 'Quick-add rules are temporary',
+			default: false,
+			setting: true,
+			if_setting: ['quickAdd', true]
+		},
+		quickAddType: {
+			label: 'Create Quick Add rules for:',
+			default: '1',
+			setting: [[0, 'Same hostname as page host'], [1, 'Least domain of page host'], [2, 'All Domains']],
+			divider: 1,
+			if_setting: ['quickAdd', true]
 		},
 		enablescript: {
 			label: 'Enable script blocker',
@@ -447,7 +452,7 @@ Settings.settings = {
 	search: {
 		headerSearch: {
 			classes: 'donator',
-			label: 'Search Results',
+			label: 'No Results',
 			setting: null
 		}
 	}
