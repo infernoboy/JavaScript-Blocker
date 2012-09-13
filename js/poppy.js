@@ -168,6 +168,12 @@ Poppy.prototype = {
 				WebkitTransitionTimingFunction: 'ease',
 				opacity: 1
 			});
+
+			JB.utils.zero_timeout(function (m) {
+				m.one('webkitTransitionEnd', { m: m }, function (event) {
+					d.m.find('.onenter').addClass('animate');
+				});
+			}, [d.m]);
 		});
 		
 		$('> *:not(#poppy,#poppy-secondary,#modal)', this.p).one('mousedown', function () {
@@ -177,6 +183,8 @@ Poppy.prototype = {
 		$('> *:not(#poppy-secondary,#modal)', this.p).one('mousedown', function () {
 			new Poppy(null, null, null, null, null, null, false, true);
 		});
+
+		$$('#poppy-arrow-settings').toggleClass('flip', $(this.a, m).hasClass('flip'));
 
 		this.createArrow();
 	},
@@ -189,7 +197,7 @@ Poppy.prototype = {
 					},
 					main: {
 						left: 0,
-						bottom: (this.p.height() - this.center.y) + $(this.a, this.p).height(),
+						bottom: (this.p.height() - this.center.y) + $(this.a, this.p).height() - 4,
 						top: 'auto'
 					}
 				},
@@ -222,7 +230,7 @@ Poppy.prototype = {
 		if (this.center.y - my_height - 3 <= base_height) {			
 			if (this.center.y <= this.p.height() / 2) {
 				o.main.bottom = 'auto';
-				o.main.top = this.center.y + half_arrow;
+				o.main.top = this.center.y + half_arrow - 5;
 				o.arrow.top = o.arrow.bottom;
 				o.arrow.bottom = 'auto';
 

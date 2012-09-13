@@ -2,7 +2,8 @@
 	background: url(../images/linen.png) left top repeat;
 }
 
-#poppy-arrow-settings {
+#poppy-arrow-settings,
+#poppy-arrow-settings.flip {
 	background-image: url(../images/linen.png);
 	background-color: #DFE1E3;
 }

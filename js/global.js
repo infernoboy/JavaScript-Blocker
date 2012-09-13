@@ -6,6 +6,8 @@
 
 "use strict";
 
+jQuery.fn.reverse = [].reverse;
+
 window.open = function (url, name, specs) {
 	JB.utils.open_url(url);
 };
@@ -80,10 +82,11 @@ var Template = {
 	},
 	commandKey: !1,
 	speedMultiplier: 1,
+	optionKey: false,
 	disabled: !1,
 	frames: {},
-	displayv: '3.0.7',
-	bundleid: 97,
+	displayv: '3.1.0',
+	bundleid: 99,
 	update_attention_required: 90,
 	beta_attention_required: 1,
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
@@ -379,8 +382,7 @@ var Template = {
 			return (Math.round(num * 100) / 100) + ' ' + power + (divisor === 1024 ? 'i' : '') + (power.length ? 'B' : ('byte' + (num === 1 ? '' : 's')));
 		},
 		date: function (date, type) {
-			var h, m, s;
-			var time = '';
+			var h, m, s, time = '';
 
 			date = typeof date === 'number' ? new Date(date) : date;
 
@@ -468,58 +470,49 @@ var Template = {
 			
 			fb.push(to_float);
 			
-			sc.data('floater_bound', fb).data('offset', sc.offset().top);
+			sc.data('floater_bound', fb);
 
-			sc.scroll({ scroller: sc, to_float: to_float, related: related, off: off }, function (event) {				
-				var d = event.data,
-						off = typeof d.off === 'function' ? d.off.call(JB) : 0,
-						s = d.scroller, soff = s.data('offset') + off, stop = s.scrollTop(),
-						eoff = parseInt(s.css('marginTop')),
-						every = $('*', s),
-						all = $(d.to_float, s).css({ top: 'auto', left: 'auto', opacity: 1 }).width('auto'), behind;
-				
-				behind = all.filter('.floater').remove().end().filter(function () {
-					var th = $(this);
+			sc.scroll({ scroller: sc, to_float: to_float, related: related, off: off }, function (event) {
+				self.utils.timer.timeout('onscroll_' + event.data.to_float, function (d) {
+					var off = typeof d.off === 'function' ? d.off.call(JB) : d.off || 0,
+							all = $(d.to_float, d.scroller).not('.floater'),
+							current_header = all.filter(function () {
+								return $(this).offset().top <= off;
+							}).filter(':last'),
+							next_header = all.eq(all.index(current_header) + 1);
 
-					return th.offset().top <= soff;
-				});
-				
-				var current_header = behind.filter(':last'),
-						next_header = all.eq(all.index(current_header) + 1);
-						
-				if (!current_header.length || next_header.hasClass('floater')) return false;
-													
-				var id = 'clone-' + (current_header.attr('id') || +new Date()),
-						current_header_clone = current_header.clone(true, true).insertBefore(current_header).attr('id', id).addClass('floater-clone'),
-						top = off,
-						related_push = 0, next_push = 0;
-										
-				related = d.related ? d.related.call(JB, every.slice(every.index(current_header))) : [];
-								
-				if (related.length) {
-					var ooo = off + related.offset().top - soff + related.outerHeight() + 3;
+					$(d.to_float, d.scroller).remove('.floater');
+					
+					if (!current_header.length) return;
 
-					if (ooo < current_header_clone.outerHeight(true) + soff - eoff) {
-						top = ooo - current_header_clone.outerHeight(true) - soff + off + eoff;
-						related_push = 1;
+					var id = 'clone-' + (current_header.attr('id') || +new Date()),
+							current_header_clone = current_header.clone(true, true).insertBefore(current_header).attr('id', id).addClass('floater floater-clone'),
+							top = off,
+							related_push = 0;
+											
+					related = d.related ? d.related.call(JB, current_header) : [];
+									
+					if (related.length) {
+						var ooo = off + related.offset().top - off + related.outerHeight() + 3;
+
+						if (ooo < current_header_clone.outerHeight(true) + off) {
+							top = ooo - current_header_clone.outerHeight(true) - off;
+							related_push = 1;
+						}
 					}
-				}
-				
-				if (next_header.length && !related_push) {
-					var ooo = next_header.offset().top - soff - next_header.outerHeight() - current_header_clone.outerHeight(true) - parseInt(next_header.css('marginTop'));
+					
+					if (next_header.length && !related_push) {
+						var ooo = next_header.offset().top - off - next_header.outerHeight();
 
-					if (ooo < 0) {
-						top += ooo;
-						next_push = 1;
+						if (ooo < 0) top += ooo;
 					}
-				}
 
-				current_header_clone.css({
-					top: top + ($$('#find-bar:visible').outerHeight(true) || 0),
-					zIndex: 999 - off
-				}).width(current_header.width()).addClass('floater').append('<div class="divider floater-divider"></div>');
-				
-				current_header.css('opacity', 0);
+					current_header_clone.css({
+						top: top + ($$('#find-bar:visible').outerHeight(true) || 0),
+						zIndex: 999 - off,
+						width: current_header.width()
+					}).append('<div class="divider floater-divider"></div>');
+				}, 35, [event.data]);
 			});
 		},
 		fill: function (string, args) {
@@ -597,6 +590,9 @@ var Template = {
 			hide = hide || $('<div />');
 			
 			hide.addClass('zoom-window-animating zoom-window-hidden');
+
+			hide.find('*:focus').blur();
+			e.find('*:focus').blur();
 			
 			start_value = !e.hasClass('zoom-window') ? 0.3 : 1;
 			end_value = start_value === 1 ? 0.3 : 1;
@@ -896,17 +892,15 @@ var Template = {
 			for (var id in snapshots) {
 				$([
 					'<li class="', id === this.using_snapshot ? 'using' : '', snapshots[id].keep ? ' kept' : '', '">',
-						'<a class="snapshot-date" data-id="', id, '">', snapshots[id].name ? self.utils.escape_html(snapshots[id].name) : this.snapshots.date(id), '</a> ',
-						'<span class="buttons">',
-							'<input type="button" value="', self.using_snapshot === id ? _('Close Preview') : _('Open Preview'), '" class="preview-snapshot" /> ',
-						'</span>',
+						'<a class="', Settings.getItem('traverseSnapshots') ? 'selectable' : '', ' snapshot-date" data-id="', id, '">', snapshots[id].name ? self.utils.escape_html(snapshots[id].name) : this.snapshots.date(id), '</a> ',
+						'<input type="button" value="', self.using_snapshot === id ? _('Close Preview') : _('Open Preview'), '" class="preview-snapshot" /> ',
 						'<div class="divider"></div>',
 					'</li>'].join('')).appendTo(snapshots[id].keep ? ul_kept : ul_unkept);
 			}
 
-			ul.find('.snapshot-date').click(function (event) {
+			ul.find('.snapshot-date').click(function (event, t) {
 				var using = $(this).parents('li:first').hasClass('using'),
-						me = $(this), off = me.offset(), left = event.pageX, top = off.top + 12,
+						me = $(this), off = me.offset(), left = t ? t.pageX : event.pageX, top = off.top + 12,
 						li = me.parents('li:first'),
 						id = me.attr('data-id');
 
@@ -1009,7 +1003,7 @@ var Template = {
 			}).end().find('.preview-snapshot').click(function () {
 				new Poppy();
 
-				var id = $(this).parent().prev().attr('data-id'), me = this;
+				var id = $(this).prev().attr('data-id'), me = this;
 
 				self.utils.zoom($$('#snapshots'), $$('#rules-list'), null, function () {
 					self.use_snapshot(me.value === _('Close Preview') ? 0 : id);
@@ -1226,7 +1220,7 @@ var Template = {
 				for (frame in this.frames) {
 					frame_host = this.utils.active_host(frame);
 					
-					if ((new RegExp(this.utils.escape_regexp(frame_host) + '$')).test(d))
+					if ((new RegExp(this.utils.escape_regexp(frame_host) + '$', 'i')).test(d))
 						delete this.frames[frame];
 				}
 			}
@@ -1235,7 +1229,7 @@ var Template = {
 				this.cache[kind] = {};
 			else if (d.charAt(0) === '.') {
 				for (var c in this.cache[kind])
-					if ((new RegExp(this.utils.escape_regexp(d) + '$')).test(c))
+					if ((new RegExp(this.utils.escape_regexp(d) + '$', 'i')).test(c))
 						delete this.cache[kind][c];
 			} else
 				delete this.cache[kind][d];
@@ -1264,7 +1258,7 @@ var Template = {
 			
 			for (domain in domains)
 				for (spec in domains[domain])
-					if ((new RegExp(spec)).test(special))
+					if ((new RegExp(spec, 'i')).test(special))
 						return domains[domain][spec][0];
 					
 			return 0;
@@ -1396,7 +1390,7 @@ var Template = {
 				return 0;
 			}
 
-			return (new RegExp(urule)).test(url);
+			return (new RegExp(urule, 'i')).test(url);
 		},
 		with_protos: function (rule) {
 			if (!this.simplified || rule.charAt(0) === '^') {
@@ -1588,7 +1582,7 @@ var Template = {
 						local: _(kind + ' Rules')
 					}));
 				
-				var head = $$('#head-' + kind + '-rules'), wrap = $$('#rules-list-' + kind + 's').parent();
+				var head = $$('#head-' + kind + '-rules').show(), wrap = $$('#rules-list-' + kind + 's').parent().show();
 				
 				if (!this.enabled(kind)) {
 					head.hide();
@@ -1637,7 +1631,7 @@ var Template = {
 				event.stopPropagation();
 
 				var li = $(this.parentNode), kind = li.data('kind'), domain = li.data('domain'),
-						current_rules = self.current_rules, off = self.utils.position_poppy(this, 0, 12),
+						current_rules = self.current_rules, off = self.utils.position_poppy(this, 0, 14),
 						left = off.left, top = off.top;
 
 				new Poppy(left, top, [
@@ -1695,7 +1689,7 @@ var Template = {
 					var j = this.collapsedDomains(),
 							domain_name = (domain.charAt(0) === '.' && domain !== '.*' ? domain : (domain === '.*' ? _('All Domains') : domain));
 				
-					newul = ul.append('<li class="domain-name"><span>' + self.utils.escape_html(domain_name) + '</span></li><li><ul></ul></li>')
+					newul = ul.append('<li class="domain-name"><span class="' + (Settings.getItem('traverseRulesDomains') ? 'selectable' : '') + '">' + self.utils.escape_html(domain_name) + '</span></li><li class="domain-rules"><ul></ul></li>')
 							.find('.domain-name:last').data({ domain: domain, kind: kind }).attr('data-value', domain === '.*' ? _('All Domains') : domain)
 							.attr('id', this.utils.id()).end().find('li:last ul');
 					rules = 0;
@@ -1775,7 +1769,7 @@ var Template = {
 						if (this.rules.simplified)
 							a.push(this.utils.fill(opt, [proto + ':' + (x > 0 ? '.' : '') + parts[x], (x > 0 ? '.' : '') + parts[x]]));
 						else
-							a.push(this.utils.fill(opt, ['^' + proto + ':\\/\\/' + (x === 0 ? self.utils.escape_regexp(parts[x]) :
+							a.push(this.utils.fill(opt, ['^' + proto.toLowerCase() + ':\\/\\/' + (x === 0 ? self.utils.escape_regexp(parts[x]) :
 								'([^\\/]+\\.)?' + self.utils.escape_regexp(parts[x])) + '\\/.*$', (x > 0 ? '.' : '') + parts[x]]));
 				break;
 			}
@@ -1799,7 +1793,7 @@ var Template = {
 				'</p>',
 				'<p>',
 					'<select id="which-type" class="', allow ? 'allowed' : 'blocked', '-color">', cs.join(''), '</select> ',
-					'<select id="domain-script" class="', proto, ' kind-', kind, a.length === 1 ? ' single' : '', '">', a.join(''), '</select> ',
+					'<select id="domain-script" class="', proto, ' kind-', kind, a.length === 1 ? ' single' : '', '"', a.length === 1 ? ' tabindex="-1"' : '', '>', a.join(''), '</select> ',
 					'<input id="domain-script-continue" type="button" value="', _('Save'), '" />',
 				'</p>'].join(''), function () {
 					$$('#domain-script-continue').click(function () {
@@ -1942,7 +1936,7 @@ var Template = {
 					is_automatic = $('span.rule.type-2, span.rule.type--2', li).length, data = $.data(li[0]);
 			
 			if (this.value === _('Recover')) {
-				var off = self.utils.position_poppy(this, 0, 12), left = off.left, top = off.top,
+				var off = self.utils.position_poppy(this, 0, 14), left = off.left, top = off.top,
 						current_rules = self.rules.current_rules, current = current_rules[data.kind];
 
 				if (!(data.domain in current)) current[data.domain] = {};
@@ -1992,21 +1986,21 @@ var Template = {
 				});
 			}
 		}).on('click', 'ul.rules-wrapper li:not(.domain-name) span:not(.nodbl).rule', function (e) {
-			var t = $(this), off = t.offset(), domain = t.parent().data('domain'),
-					dv = self.utils.escape_html(domain), rule = t.parent().data('rule');
+			var t = $(this), off = t.offset();
 
 			if (self.rules.using_snapshot) return new Poppy(e.pageX, off.top + 12, _('Snapshot in use'));
 			
-			new Poppy(e.pageX, off.top + 12, [t.hasClass('type-4') || t.hasClass('type-5') ?
+			new Poppy(e.pageX || 40, off.top + 12, [t.hasClass('type-4') || t.hasClass('type-5') ?
 					_('Predefined rules cannot be edited.') :
 					'<input type="button" value="' + _('Edit Rule') + '" id="rule-edit" /> ',
 					'<button id="rule-new">' + _('New Rule') + '</button>'].join(''), function () {
+				var domain = t.parent().data('domain'), dv = self.utils.escape_html(domain);
 				$$('#poppy #rule-edit, #poppy #rule-new').filter('#rule-new')
 						.html(_('New rule for {1}', [(domain === '.*' ? _('All Domains') : dv)])).end().click(function () {
 					var is_new = this.id === 'rule-new',
-						hider = ~t.parent().data('kind').indexOf('hide_'),
-						u = is_new ? '' : t.parent().data('rule'),
-						pts = domain === '.*' ? [null, '*'] : self.utils.domain_parts(domain);
+							hider = ~t.parent().data('kind').indexOf('hide_'),
+							u = is_new ? '' : t.parent().data('rule'),
+							pts = domain === '.*' ? [null, '*'] : self.utils.domain_parts(domain);
 
 					if (domain.indexOf('.') === 0) pts[0] = null;
 
@@ -2017,14 +2011,13 @@ var Template = {
 							hider: hider,
 							li: t.parent(),
 							is_new: is_new,
+							rtype: t.parent().data('type'),
 							header: _((is_new ? 'Adding' : 'Editing') + ' a ' + t.parent().data('kind') + ' Rule For {1}', [Template.create('domain_picker', {
 								page_parts: pts,
 								no_label: true,
 								show_other: true
 							})])
 					}, JB);
-
-					var crulelevel = parseInt(t[0].className.split(' ')[1].substr(5));
 					
 					padd.onshowend = function () {
 						$$('#domain-picker').change(function () {
@@ -2042,17 +2035,10 @@ var Template = {
 								a.focus();
 							}
 						});
-
-						if (hider)
-							$$('#select-type-hide').click();
-						else if (crulelevel === 1)
-							$$('#select-type-allow').click();
-					 	else
-							$$('#select-type-block').click();
 					};
 					padd.save_orig = padd.save;
 					padd.save = function () {
-						var kind = padd.me.li.data('kind'), v, ed = $.trim($$('#domain-picker').val()),
+						var rule = padd.me.li.data('rule'), kind = padd.me.li.data('kind'), v, ed = $.trim($$('#domain-picker').val()),
 								temp = $$('#rule-temporary').is(':checked'), proto = $$('#rule-proto-input').val(), proto = proto && proto.length ? proto.toLowerCase() : false,
 								nrule = $.trim(this.val()), nrule = proto && nrule.length ? proto + ':' + nrule : nrule;
 
@@ -2078,18 +2064,14 @@ var Template = {
 									.toggleClass('temporary', temp)
 									.siblings('input').val(_('Delete')).parent().data({ rule: nrule, type: v} );
 
-							new Poppy(e.pageX, off.top + 12, '<p>' + _('Rule succesfully edited.') + '</p>', $.noop, $.noop, 0.2);
-						} else if (!is_new && padd.me.domain !== ed) {
-							new Poppy(e.pageX, off.top + 12, [
-									'<p>', _('Rule succesfully moved to {1}', [self.utils.escape_html(ed === '.*' ? _('All Domains') : ed)]), '</p>',
-									'<p>', _('Changes will appear when you reload the rules list.'), '</p>'].join(''));
+							new Poppy(e.pageX || 40, off.top + 12, '<p>' + _('Rule succesfully edited.') + '</p>', $.noop, $.noop, 0.2);
 						} else {
-							new Poppy(e.pageX, off.top + 12, [
-									'<p>', _('Rule succesfully added for {1}', [self.utils.escape_html(ed === '.*' ? _('All Domains') : ed)]), '</p>',
-									'<p>', _('Changes will appear when you reload the rules list.'), '</p>'].join(''));
+							self.rules.show();
+							new Poppy(e.pageX || 40, off.top + 12, [
+									'<p>', _('Rule succesfully ' + (!is_new && padd.me.domain !== ed ? 'moved to' : 'added for') + ' {1}', [self.utils.escape_html(ed === '.*' ? _('All Domains') : ed)]), '</p>'].join(''));
 						}
 					};
-					new Poppy(e.pageX, off.top + 12, padd);
+					new Poppy(e.pageX || 40, off.top + 12, padd);
 				});
 			});
 		}).on('click', 'ul .domain-name', function () {
@@ -2157,12 +2139,47 @@ var Template = {
 						scrollTop: rulesList.scrollTop() + bottomView - rulesList.height(),
 					}, 200 * self.speedMultiplier);
 			}
+		}).on('mousedown click', 'select.single', function (e) {
+			e.preventDefault();
+		}).on('enter', '.urls-wrapper li', function (e) {
+			self.utils.timer.timeout('trigger_span', function (me, e) {
+				var span = me.find('span'), off = me.offset();
+
+				e.pageX = off.left + 30;
+
+				if (me.is('.show-me-more')) {
+					var next = me.next();
+					span.find('a').click();
+					next.addClass('current-selection');
+				} else if (!self.optionKey)
+					span.trigger('click', e);
+				else
+					span.trigger('mousedown', e);
+			}, 50, [$(this), e]);
+		}).on('enter', '.domain-name', function (e) {
+			$(this).click();
+		}).on('enter', '#next-frame, #previous-frame', function (e) {
+			$(this).click().toggleClass('current-selection', !~this.className.indexOf('disabled'));
+		}).on('enter', '#main .actions-bar li', function (e) {
+			self.utils.timer.timeout('trigger_action', function (me) {
+				me.trigger('click', 1);
+			}, 50, [$(this)]);
+		}).on('enter', '#rules-list .filter-bar li', function (e) {
+			$(this).click();
+		}).on('enter', '.snapshot-date', function (e) {
+			$(this).trigger('click', { pageX: 30 });
+		}).on('enter', '.rules-wrapper span', function (e) {
+			$(this).trigger('click', { pageX: 30 });
 		});
 
 		var alblspan = '#allowed-script-urls ul li:not(.show-me-more) span, #blocked-script-urls ul li:not(.show-me-more) span';
 
-		$(this.popover).on('mousedown', alblspan, function (e) {
+		$(this.popover).on('mousedown', alblspan, function (e, t) {
 			var span = $(this);
+
+			e = t || e;
+
+			if (e.which && e.which !== 1) return;
 
 			span.removeClass('triggered').data('quick_add_ignore_timeout', setTimeout(function (span, e) {
 				$$('#main li.pending').removeClass('pending').removeData('pending_index').each(function () {
@@ -2244,7 +2261,7 @@ var Template = {
 						.data('pending_data', rule)
 						.find('.info-link').text('+');
 
-					span.html(url.replace(new RegExp((pi > 0 ? '\\.' : '') + (special ? url : to_do_clean) + '$'), '<mark class="quick-add">' + (pi > 0 ? '.' : '') + (special ? url : to_do) + '</mark>'));
+					span.html(url.replace(new RegExp((pi > 0 ? '\\.' : '') + (special ? url : to_do_clean) + '$', 'i'), '<mark class="quick-add">' + (pi > 0 ? '.' : '') + (special ? url : to_do) + '</mark>'));
 				} else
 					li.removeClass('pending').removeData('pending_index').find('.info-link').text('?');
 
@@ -2362,8 +2379,8 @@ var Template = {
 			else if (!self.donationVerified) return false;
 			
 			new Poppy(left, off.top + 12, padd);
-		}).on('click', '#allowed-script-urls ul li .info-link, #blocked-script-urls ul li .info-link', url_display)
-			.on('click', '#unblocked-script-urls ul li span', function() {
+		}).on('click', '#allowed-script-urls .info-link, #blocked-script-urls .info-link', url_display)
+			.on('click', '#unblocked-script-urls li span', function() {
 			var t = $(this).text();
 			
 			function do_highlight (t, no_zoom) {
@@ -2387,6 +2404,9 @@ var Template = {
 					});
 			
 			do_highlight(t);
+		}).on('mousedown', 'body', function (e) {
+			if (!e.isTrigger)
+				$$('.current-selection').removeClass('current-selection');
 		});
 		
 		var toggle_find_bar = function (show_only) {
@@ -2417,30 +2437,156 @@ var Template = {
 		}
 		
 		$(this.popover.body).keydown(function (e) {
-			if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 20;
-			else if ((e.which === 93 || e.which === 91) || (window.navigator.platform.match(/Win/) && e.which === 17)) {
-				self.commandKey = true;
-				self.utils.timer.timeout('no_commandkey', function (self) {
-					self.commandKey = false;
-				}, 1000, [self]);
-			} else if (e.which === 70 && self.commandKey) {
+			var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;
+
+			switch (e.which) {
+				case 9: // TAB
+					if (!$$('.poppy').length)  {
+						var current = $$('.current-selection:visible');
+
+						if (current.length) {
+							var sibs = current.siblings('input:not(:focus):visible:first'),
+									children = current.children('input:not(:focus):visible:first');
+
+							if (sibs.length) {
+								e.preventDefault();
+								sibs.focus();
+							} else if (children.length) {
+								e.preventDefault();
+								children.focus();
+							}
+						}
+					}
+				break;
+
+				case 27: // ESCAPE
+					var focused = $$('*:focus');
+
+					if ($$('#find-bar-search').is(':focus')) {
+						e.preventDefault();
+						$$('#find-bar-done').click();
+					}
+
+					if (focused.length) {
+						e.preventDefault();
+						e.stopPropagation();
+						focused.blur();
+					} else if ($$('.poppy').length) {
+						e.preventDefault();
+						e.stopPropagation();
+						new Poppy();
+						new Poppy(true);
+					} else if ($$('.current-selection').length) {
+						e.preventDefault();
+						e.stopPropagation();
+						$$('.current-selection').removeClass('current-selection');
+					}
+				break;
+
+				case 3:
+				case 13: // ENTER
+					if (!$$('.poppy').length && !$$('input:focus, textarea:focus, select:focus').length) {
+						e.preventDefault();
+						$$('.whoop:not(#disabled):visible:first').find('.current-selection').trigger('enter');
+					}
+				break;
+
+				case 17:
+				case 18: // ALT/OPTION
+					self.optionKey = true;
+					self.utils.timer.timeout('no_optionkey', function (self) {
+						self.optionKey = false;
+					}, 1000, [self]);
+				break;
+			
+				case 16: // SHIFT
+					self.speedMultiplier = !self.useAnimations ? 0.001 : 20; break;
+			
+				case 93:
+				case 91: // COMMAND/CONTROL
+				case 17:
+					if ((window.navigator.platform.match(/Win/) && e.which === 17) || !window.navigator.platform.match(/Win/)) {
+						self.commandKey = true;
+						self.utils.timer.timeout('no_commandkey', function (self) {
+							self.commandKey = false;
+						}, 1000, [self]);
+					}
+				break;
+
+				case 70:  // F
+					if (self.commandKey) {
+						e.preventDefault();
+						
+						setTimeout(function (self) {
+							var b = $$('#find-bar-search').focus().trigger('search');
+							b[0].selectionStart = 0;
+							b[0].selectionEnd = b[0].value.length;
+						}, 10, self);
+						
+						if (toggle_find_bar(true)) return false;
+					}
+				break;
+			} 
+
+			if (~[UP, DOWN, LEFT, RIGHT].indexOf(e.which) && !$$('.poppy').length) {
+				var	which = $$('.whoop:not(#disabled):visible:first'),
+						cs = which.find('.current-selection'),
+						all = $('*', which),
+						next = all.slice(all.index(cs) + 1).filter('.selectable:not(.disabled):visible:first'),
+						prev = all.slice(0, all.index(cs)).filter('.selectable:not(.disabled):visible:last'),
+						selected = [];
+
+				if ($$('input:not([type="button"]):focus, textarea:focus, select:focus').length) return;
+
 				e.preventDefault();
-				
-				setTimeout(function (self) {
-					var b = $$('#find-bar-search').focus().trigger('search');
-					b[0].selectionStart = 0;
-					b[0].selectionEnd = b[0].value.length;
-				}, 10, self);
-				
-				if (toggle_find_bar(true)) return false;
-			} else if (e.which === 27 && $$('#find-bar-search').is(':focus')) {
-				e.preventDefault();
-				$$('#find-bar-done').click();
+
+				if (!cs.length && !~[LEFT, RIGHT].indexOf(e.which))
+					selected = which.find('.selectable:not(.disabled):visible:first').addClass('current-selection');
+				else {
+					cs.removeClass('current-selection');
+
+					switch (e.which) {
+						case UP:
+							if (prev.length) {
+								selected = prev.addClass('current-selection');
+								break;
+							}
+						case RIGHT:
+							selected = which.find('.selectable:not(.disabled):visible:last').addClass('current-selection');
+						break;
+
+						case DOWN:
+							if (next.length) {
+								selected = next.addClass('current-selection');
+								break;
+							}
+						case LEFT:
+							selected = which.find('.selectable:not(.disabled):visible:first').addClass('current-selection');
+						break;
+					}
+				}
+
+				if (selected.length) {
+					which.find('input:focus, textarea:focus').blur();
+
+					var off = selected.offset();
+
+					if (off.top < selected.height()) {
+						selected[0].scrollIntoView();
+						which.scrollTop(which.scrollTop() - 25);
+					} else if (off.top + selected.height() > which.height()) {
+						selected[0].scrollIntoView(false);
+						which.scrollTop(which.scrollTop() + 15)
+					}
+				}
 			}
 		}).keyup(function (e) {
-			if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 1;
+			if (e.which === 17 || e.which === 18) self.optionKey = false;
+			else if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 1;
 			else if ((e.which === 93 || e.which === 91) || (window.navigator.platform.match(/Win/) && e.which === 17)) self.commandKey = false;
 		});
+
+
 		
 		$$('#find-bar-done').click(function() {
 			toggle_find_bar();
@@ -2480,7 +2626,7 @@ var Template = {
 			self.finding = true;
 			
 			var visible = $$('#main, #rules-list, #misc, #setup, #snapshots').filter(':visible'),
-					offset = $$('header:first').outerHeight() + $$('#find-bar').outerHeight(),
+					offset = $$('#find-bar').outerHeight(),
 					end_find = function (self, visible) {
 						self.busy = 0;
 						self.finding = false;
@@ -2558,8 +2704,7 @@ var Template = {
 		});
 	
 		$$('#block-domain, #allow-domain').click(function () {
-
-			var page_parts = self.utils.domain_parts(self.host), n, off = self.utils.position_poppy(this, 0, 10),
+			var page_parts = self.utils.domain_parts(self.host), n, off = self.utils.position_poppy(this, 0, 14),
 					me = this, kinds = [], block = this.id === 'block-domain',
 					left = off.left, top = off.top;
 
@@ -2638,25 +2783,25 @@ var Template = {
 				'<input type="button" id="do-some" value="', _('Some'), '" /> ',
 				'<input type="button" id="do-all" value="', _('All'), '" /> ',
 			].join(''), function () {
-				$$('#do-all').click(all_poppy).siblings('#do-some').click({ pp: page_parts },function (e) {
+				$$('#do-all').click(all_poppy).siblings('#do-some').click({ pp: page_parts }, function (e) {
 					if (ob.parent().hasClass('some-list')) return false;
 
 					var c = $([
 						'<div class="some-helper">',
 							'<p>',
-								'<input class="domain-script-temporary" id="domain-script-temporary-', !block ? 1 : 0, '" type="checkbox" /> ',
-								'<label for="domain-script-temporary-', !block ? 1 : 0, '">', _('Make these temporary rules'), '</label>',
+								'<input class="domain-script-temporary" id="domain-script-temporary-', block ? 0 : 1, '" type="checkbox" /> ',
+								'<label for="domain-script-temporary-', block ? 0 : 1, '">', _('Make these temporary rules'), '</label>',
 							'</p>',
 							'<p>',
-								Template.create('domain_picker', { page_parts: e.data.pp, id: !block ? 1 : 0 }),
+								Template.create('domain_picker', { page_parts: e.data.pp, id: block ? 0 : 1 }),
 							'</p>',
 							'<p>',
 								_('{1} selected items', [[
-									'<select class="which-type ', !block ? 'allowed' : 'blocked', '-color">',
-										'<option value="', !block ? 1 : 0, '">', !block ? _('Allow') : _('Block'), '</option>',
+									'<select class="which-type ', block ? 'blocked' : 'allowed', '-color">',
+										'<option value="', block ? 0 : 1, '">', block ? _('Block') : _('Allow'), '</option>',
 										'<option value="42">', _('Hide'), '</option>',
 									'</select>'].join('')]),
-								' <input type="button" class="save-some" id="save-some-', !block ? 1 : 0, '" value="', _('Save'), '" />',
+								' <input type="button" class="save-some" id="save-some-', block ? 0 : 1, '" value="', _('Save'), '" />',
 							'</p>',
 							'<div class="divider"></div>',
 						'</div>'
@@ -2692,7 +2837,7 @@ var Template = {
 							cl.html([
 								'<input type="checkbox" class="some-checkbox" /> ',
 								(self.simpleMode || data.kind === 'special' ? [
-									'<select class="', op.length === 1 ? 'single' : '', ' ', proto, '">', opts, '</select>'
+									'<select class="', op.length === 1 ? 'single' : '', ' ', proto, '"', op.length === 1 ? ' tabindex="-1"' : '', '>', opts, '</select>'
 								] : [
 									'<textarea placeholder="Rule" wrap="off" class="rule-input">^', self.utils.escape_regexp(data.script[0]), '$</textarea>'
 								]).join('')
@@ -2735,7 +2880,7 @@ var Template = {
 			});
 		});
 		
-		$$('#disable').click(function (event) {
+		$$('#disable').click(function (event, ignore) {
 			if (!self.methodAllowed) return false;
 
 			self.disabled = !self.disabled;
@@ -2747,7 +2892,7 @@ var Template = {
 
 			this.innerHTML = _((self.disabled ? 'Enable' : 'Disable') + ' JavaScript Blocker');
 
-			if (!event.isTrigger)
+			if (!event.isTrigger || ignore)
 				Tabs.messageActive('reload');
 		});
 
@@ -2756,7 +2901,7 @@ var Template = {
 
 			var hid = $$('#main .urls-wrapper li.hidden-by-rule'),
 					visi = hid.toggleClass('show-for-now').hasClass('show-for-now'),
-					pos = self.utils.position_poppy(this, 0, 8);
+					pos = self.utils.position_poppy(this, 0, 14);
 
 			$(this).toggleClass('hidden-visible', visi);
 			
@@ -2785,7 +2930,7 @@ var Template = {
 		$$('#view-rules').click(function (e) {
 			if (!self.methodAllowed) return false;
 			
-			var offset = self.utils.position_poppy(this, 0, 8),
+			var offset = self.utils.position_poppy(this, 0, 14),
 					left = offset.left,
 					top = offset.top;
 			
@@ -2842,7 +2987,7 @@ var Template = {
 					});		
 				}).siblings('#rules-make-perm, #rules-remove-temp').click(function () {
 					if (self.rules.using_snapshot) {
-						var off = self.utils.position_poppy(this, 0, 12);
+						var off = self.utils.position_poppy(this, 0, 14);
 						return new Poppy(off.left, off.top, _('Snapshot in use'), null, null, null, null, true);
 					}
 
@@ -3006,7 +3151,7 @@ var Template = {
 		});
 
 		$$('#create-snapshot').click(function () {
-			var off = self.utils.position_poppy(this, 0, 12);
+			var off = self.utils.position_poppy(this, 0, 14);
 
 			self.rules.snapshots.add(self.rules.rules, 1, 0);
 
@@ -3110,22 +3255,27 @@ var Template = {
 				
 				if (a) head.find('a').html(_('Show'));
 				
-				if (!self.enabled(key) || !rs.find('.domain-name:visible').length) {
+				if (!self.enabled(key) || !rs.find('.domain-name:not(.not-included,.state-hidden,.filter-hidden)').length) {
 					head.hide();
 					wrap.hide();
 				}
 				
-				rs.css({ opacity: a ? 0 : 1, marginBottom: a ? 0 : '6px', marginTop: a ? -(rs.outerHeight() * 2) : -3 }).toggleClass('visible', !a);
+				rs.css({
+					opacity: a ? 0 : 1,
+					marginBottom: a ? 0 : '6px',
+					marginTop: a ? -(rs.outerHeight() * 2) : -3,
+					display: a ? 'none' : 'block'
+				}).toggleClass('visible', !a);
 			}
-			
+
 			var d = $$('#rules-list .domain-name:visible').length,
 					r = $$('#rules-list .domain-name:visible + li > ul li span.rule:not(.hidden)').length;
 						
-			$$('#rules-list #rule-counter').html(
+			$$('#rule-counter').html(
 					_('{1} domain' + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
 			).removeData('orig_html');		
 
-			$$('#rules-list .rules-wrapper').each(function () {
+			$$('.rules-wrapper').each(function () {
 				$('.domain-name:visible .divider', this).removeClass('invisible').filter(':visible:first').addClass('invisible');
 			});
 
@@ -3224,7 +3374,7 @@ var Template = {
 		});
 		
 		$$('#unlock').click(function () {
-			var off = self.utils.position_poppy(this, 1, 8);
+			var off = self.utils.position_poppy(this, 1, 14);
 			
 			if (self.donationVerified && !self.trial_active()) return new Poppy(off.left, off.top, _('All features are already unlocked.'));
 			
@@ -3247,7 +3397,7 @@ var Template = {
 		});
 
 		$(this.popover).on('click', '.toggle-rules', function () {
-			var e = $(this).parent().nextAll('.rules-list-container:first').find('.rules-wrapper'),
+			var e = $(this).parent().nextAll('.rules-list-container:first').find('.rules-wrapper').show(),
 					a = e.css('opacity') === '1',
 					o = e.outerHeight(), oT = e.outerHeight(true);
 										
@@ -3267,6 +3417,7 @@ var Template = {
 			}, {
 				duration: 200 * self.speedMultiplier,
 				complete: function () {
+					this.style.display = a ? 'none' : 'block';
 					this.style.opacity = a ? 0 : 1;
 					this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
 				
@@ -3282,7 +3433,7 @@ var Template = {
 			var me = $(this),
 					head = me.parent(),
 					pos = me.hasClass('floater') ? me.next().attr('id') : this.id,
-					e = me.parent().next().find('.main-wrapper');
+					e = me.parent().next().find('.main-wrapper').show();
 			
 			if (!e.length) e = me.parent().next().next().find('.main-wrapper');
 			
@@ -3305,13 +3456,14 @@ var Template = {
 			e.css({ opacity: 1, marginTop: !a ? -o : 0 }).animate({
 				marginTop: a ? -oT : 0
 			}, 200 * self.speedMultiplier, function () {
+				this.style.display = a ? 'none' : 'block';
 				this.style.opacity = a ? 0 : 1;
 				this.style.marginTop = a ? -(oT * 2) + 'px' : 0;
 			
 				$(this).parent().prev().toggleClass('collapsed', a).css('opacity', 1);
 			});
 		}).on('click', 'a.toggle-snapshots', function () {
-			var e = $(this).parent().parent().next().find('ul'),
+			var e = $(this).parent().parent().next().find('ul').show(),
 					a = e.css('opacity') === '1',
 					o = e.outerHeight(), oT = e.outerHeight(true);
 										
@@ -3323,6 +3475,7 @@ var Template = {
 				marginTop: a ? -oT : -3,
 				marginBottom: a ? 0 : '6px'
 			}, 200 * self.speedMultiplier, function () {
+				this.style.display = a ? 'none' : 'block';
 				this.style.opacity = a ? 0 : 1;
 				this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
 			});
@@ -3375,7 +3528,7 @@ var Template = {
 		});
 				
 		$$('#jsblocker-name').dblclick(function () {
-			var off = self.utils.position_poppy(this, 9, 8);
+			var off = self.utils.position_poppy(this, 9, 14);
 
 			new Poppy(off.left, off.top, [
 				'<ul class="jsoutput"></ul>',
@@ -3412,12 +3565,12 @@ var Template = {
 						script: [script],
 						kind: kind,
 						protocol: protocol
-					}).addClass('visible kind-' + kind)
+					}).addClass('visible kind-' + kind).toggleClass('selectable', Settings.getItem('traverseMainItems'))
 					.toggleClass('by-rule', typeof type !== 'string' && type !== -1)
 					.toggleClass('rule-type-' + type, type > -1)
 					.toggleClass('unblockable', kind !== 'special' && unblockable && text !== 'unblocked')
 					.find('span').text(use_url).addClass(protocol)
-					.attr('title', self.simpleMode ? (_(protocol) + ' (' + protocol + ')') : '').parent();
+					.attr('title', self.simpleMode && protocol ? (_(protocol) + ' (' + protocol + ')') : '').parent();
 		}
 		
 		function add_item(index, kind, the_item) {
@@ -3470,6 +3623,7 @@ var Template = {
 					kind: key
 				})).appendTo(el).filter('div').find('ul');
 			
+			ul.css('display', do_hide ? 'none' : 'block');
 			ul.parent().prev().toggleClass('collapsed', do_hide).toggleClass('visible', !do_hide).find('.toggle-main').html(_(do_hide ? 'Show' : 'Hide'));;
 
 			if (self.simpleMode && text !== 'unblocked') {		
@@ -3507,7 +3661,7 @@ var Template = {
 									
 					if (ccheck > Settings.getItem('sourceCount')) {
 						if (!$('.show-me-more', ul).length)
-							show_me = $(['<li class="show-me-more visible kind-', key, '">',
+							show_me = $(['<li class="', Settings.getItem('traverseMainItems') ? 'selectable' : '', ' show-me-more visible kind-', key, '">',
 									'<span><a href="javascript:void(1)" class="show-more"></a></span>',
 									'<div class="divider" style="visibility:hidden;"></div>',
 								'</li>'].join('')).insertBefore(li);
@@ -3611,7 +3765,7 @@ var Template = {
 					
 			this.caches.jsblocker[event.message.href] = jsblocker;
 					
-			page_list.empty();
+			page_list.empty().blur();
 			
 			for (var act in jsblocker) {
 				if (act === 'href') continue;
@@ -3700,15 +3854,19 @@ var Template = {
 					page_list[0].selectedIndex = index;
 					
 					if (index === 0)
-						$$('#previous-frame').addClass('disabled');
+						$$('#previous-frame').addClass('disabled').removeClass('current-selection');
 					else if (index > 1)
 						$$('#previous-frame .text').html(_('Prev. frame'));
-											
-					jsblocker = this.frames[jsblocker.href][page_list.val()];
+					
+					try {
+						jsblocker = this.frames[jsblocker.href][page_list.val()];
+					} catch (e) {}
 				} else
-					$$('#previous-frame').addClass('disabled');
+					$$('#previous-frame').addClass('disabled').removeClass('current-selection');
 				
-				$$('#next-frame').toggleClass('disabled', max === 0 || index === max);					
+				if ($$('#next-frame').toggleClass('disabled', max === 0 || index === max).hasClass('current-selection'))
+					$$('#next-frame').toggleClass('current-selection', !(max === 0 || index === max))
+
 				$$('#frame-switcher .divider').toggleClass('disabled', $$('#next-frame.disabled, #previous-frame.disabled').length === 2);
 				
 				page_list.attr('title', page_list.val()).unbind('change').one('change', function () {
@@ -3923,7 +4081,7 @@ var Template = {
 					this.frames[event.target.url] = {};
 				
 				if (event.target.url === event.message[0] && event.message.length < 3) {
-					event.target.page.dispatchMessage('validateFrame', JSON.stringify(event.message[0]));
+					MessageTarget(event, 'validateFrame', JSON.stringify(event.message[0]));
 					break;
 				} else if (event.target.url === event.message[0] && event.message.length === 3)
 					event.message[1].display = event.message[2] === -1 ? _('Custom Frame') : event.message[2];
@@ -3964,7 +4122,7 @@ var Template = {
 			break;
 			
 			case 'setting':
-				event.target.page.dispatchMessage('setting', JSON.stringify([event.message, Settings.getItem(event.message)]));
+				MessageTarget(event, 'setting', JSON.stringify([event.message, Settings.getItem(event.message)]));
 			break;
 			
 			case 'reloadPopover':
@@ -4002,7 +4160,7 @@ var Template = {
 					do_test(event.url, this.caches.redirects[event.url].title, this.caches.redirects[event.url]['long-url']);
 			} else if (
 					!this._redirectors[host].regex.length ||
-					(this._redirectors[host].regex && (new RegExp(this._redirectors[host].regex)).test(event.url))
+					(this._redirectors[host].regex && (new RegExp(this._redirectors[host].regex, 'i')).test(event.url))
 				) {
 				$.ajax({
 					async: false,
@@ -4105,7 +4263,7 @@ var Template = {
 								new Poppy($(self.popover.body).width() / 2, 0, message.join(''));
 
 								if (url in self.caches.jsblocker)
-										self.do_update_popover({ message: self.caches.jsblocker[url] });
+										self.do_update_popover({ message: self.caches.jsblocker[url], target: { url: url } });
 								else
 									self.clear_ui();
 							}, 300, self, url);
@@ -4196,6 +4354,10 @@ var Template = {
 				$$('#unlock').toggleClass('hidden', ver);
 				$$('#disable').toggleClass('divider', !ver);
 				$$('#console-access').css('display', this.isBeta ? 'block' : 'none');
+
+				$$('#main .actions-bar li:not(#jsblocker-name)').toggleClass('selectable', Settings.getItem('traverseMainActions'));
+				$$('#rules-list .filter-bar:not(.actions-bar) li:not(.label,.li-text-filter)').toggleClass('selectable', Settings.getItem('traverseRulesFilter'));
+				$$('#previous-frame, #next-frame').toggleClass('selectable', Settings.getItem('traverseMainItems'));
 			} else
 				this.utils.once_again('load');
 		}, this);

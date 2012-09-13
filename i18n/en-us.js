@@ -52,17 +52,6 @@ Strings['en-us'] = {
 	'All': 'All', // NEW
 	'{1} selected items': '{1} selected items', // NEW - Block/Allow/Hide selected items
 	'{1} All': '{1} All', // NEW
-	'Block scripts manually': 'Allow scripts that originate within the same domain',
-	'Block frames unless': 'Block inline frames not originating within the same domain',
-	'Enable embed blocker': 'Enable embed, object, and video blocker',
-	'Items on secure sites must also be secure': 'Items on secure sites must also be secure',
-	'Enable alert blocker': 'Display alert() messages within the webpage instead of a dialog', // NEW
-	'Enable confirm blocker': 'Disable confirm() dialogs and confirm actions automatically', // NEW
-	'Enable context menu override blocker': 'Block webpages from using a custom context menu and prevent other extensions from creating menu items', // NEW
-	'Enable window resize blocker': 'Prevent webpages from resizing the window and creating new windows with a custom size', // NEW
-	'Custom zoom for webpages:': 'Custom zoom for webpages:', // NEW
-	'You can enable these now': 'You can enable these options now, but they will remain inactive until you verify your donation. ' +
-			'Each feature can be blocked on a per-domain basis once enabled.', // NEW
 	'Webpage default': 'Webpage default', // NEW
 	'The following features will appear as <b>{1}</b>.': 'The following features will appear as <b>{1}</b>. They will not count towards the amount of blocked/allowed resources.',
 	'Finish Setup': 'Finish Setup',
@@ -205,7 +194,7 @@ Strings['en-us'] = {
 	'Rule succesfully edited.': 'Rule succesfully edited.',
 	'Rule succesfully added for {1}': 'Rule succesfully added for <b>{1}</b>', // {1} = domain name
 	'Rule succesfully moved to {1}': 'Rule succesfully moved to <b>{1}</b>', // {1} = domain name NEW
-	'Changes will appear when you reload the rules list.': 'Changes will appear when you reload the rules list.',
+	'Changes will appear when you <a id="reload-rules" href="#">reload the rules list</a>.': 'Changes will appear when you <a id="reload-rules" href="#">reload the rule list</a>.',
 	'Loading script': 'Loading script&hellip;',
 	'Loading frame': 'Loading frame&hellip;',
 	'Loading embed': 'Loading embed&hellip;',
@@ -410,11 +399,13 @@ Strings['en-us'] = {
 	
 	/** SETTINGS - NEW **/
 	'JavaScript Blocker Settings': 'JavaScript Blocker Settings',
-	'Once any of these features are active, they can be disabled on a per-domain basis. They will appear in the main window under <b>OTHER</b> and will not count towards the amount of blocked/allowed resources.':
-		'Once any of the following features are active, they can be disabled on a per-domain basis. They will appear in the main window under <b>OTHER</b> and will not count towards the amount of blocked/allowed resources.',
+	'Once any of these features are active,':
+		'When active, the following features will appear in the main window as a blocked item under <b>OTHER</b>, but will not count towards the amount of blocked/allowed resources. ' + 
+		'You can create rules for them just as you would any other item.',
 	
 	// Toolbar items
 	'User Interface': 'User Interface',
+	'Keyboard': 'Keyboard',
 	'Other Features': 'Other Features',
 	'Search': 'Search',
 	'About': 'About',
@@ -453,15 +444,15 @@ Strings['en-us'] = {
 	'Automatically block embeds and objects from:': 'Automatically block embeds & objects from:', // UPDATED
 	'Enable video blocker': 'Enable video blocker', // NEW
 	'Show a placeholder for blocked videos': 'Show a placeholder for blocked videos', // NEW
-	'Automatically block videos from:': 'Automatically block videos from', // NEW
+	'Automatically block videos from:': 'Automatically block videos from:', // NEW
 	'Enable DOM image blocker': 'Enable DOM image blocker',
 	'Show a placeholder for blocked images': 'Show a placeholder for blocked images',
 	'Automatically block images from:': 'Automatically block images from:',
-	'Display alert() messages within the webpage instead of a popup dialog': 'Display alert() messages within the webpage instead of a popup dialog', // alert() is a function in javascript; do not localize.
-	'Disable confirm() popup dialogs and confirm actions automatically': 'Disable confirm() popup dialogs and confirm actions automatically', // confirm() is a function in javascript; do not localize.
-	'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items': 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items',
-	'Prevent webpages from resizing the window and creating new windows with a custom size': 'Prevent webpages from resizing the window and creating new windows with a custom size',
-	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete', // NEW
+	'Display alert() messages within the webpage instead of a popup dialog': 'Display alert() messages within the webpage instead of a popup dialog <span class="aside">— Modal alert dialogs</span>', // alert() is a function in javascript; do not localize.
+	'Disable confirm() popup dialogs and confirm actions automatically': 'Disable confirm() popup dialogs and confirm actions automatically <span class="aside">— Confirm dialogs</span>', // confirm() is a function in javascript; do not localize.
+	'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items': 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items <span class="aside">— Context menu overrides</span>',
+	'Prevent webpages from resizing the window and creating new windows with a custom size': 'Prevent webpages from resizing the window and creating new windows with a custom size <span class="aside">— Window resize functions</span>',
+	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete <span class="aside">— Autocomplete disablers</span>', // NEW
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
 
@@ -481,6 +472,7 @@ Strings['en-us'] = {
 	'Least domain of page host': 'Root domain of page host',
 	
 	// Zoom
+	'Default webpage zoom level': '<span class="aside">Default webpage zoom level</span>',
 	'Enter a custom zoom level to use.': 'Enter a custom zoom level to use. Do not include the % symbol.', // Pops up when "Other..." is clicked
 	
 	// Font size
@@ -507,6 +499,7 @@ Strings['en-us'] = {
 	'Twilight (Incomplete)': 'Twilight (Incomplete)', // NEW
 	
 	// Font selection
+	'Default webpage font': '<span class="aside">Default webpage font</span>',
 	'Helvetica': 'Helvetica', // do not localize
 	'Arial': 'Arial', // do not localize
 	'Times': 'Times', // do not localize
@@ -527,6 +520,20 @@ Strings['en-us'] = {
 	 'Create a snapshot when rules are modified': 'Create a snapshot when rules are modified',
 	 'Store only': 'Store only',
 	 'unkept snapshots': 'unkept snapshots',
+
+	 // Keyboard
+	 'Keyboard navigation helps you get around JavaScript Blocker using only the keyboard.':
+	 	'Keyboard navigation helps you get around JavaScript Blocker using just the keyboard. ' +
+	 	'Use the arrow keys and enter/return to select items. Use the tab key to traverse through ' +
+	 	'normal input and select elements. Hiting the tab key while on a selected ' +
+	 	'item will focus its closest input or select element. Press escape to cancel a selection or ' +
+	 	'to unfocus an element.<br /><br />Traverse through the following items:',
+	 'Main window actions bar': 'Main window actions bar',
+	 'Main window allowed/blocked/unblockable items': 'Main window allowed/blocked/unblockable items',
+	 'Rule list filter bar': 'Rule list filter bar',
+	 'Rule list domains': 'Rule list domains',
+	 'Rule list rules': 'Rule list rules',
+	 'Holding option rule': 'Holding alt/option while hitting enter/return will trigger the standard add-a-rule UI if Quick Add is enabled.',
 	
 	'EXPERIMENTAL: Enable full referrer blocking':
 		'EXPERIMENTAL: Enable full referrer blocking', // UPDATED

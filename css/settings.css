@@ -14,7 +14,7 @@ body {
 #container {
 	margin: 5px auto 20px;
 	position: relative;
-	width: 635px;
+	width: 645px;
 	background: #E8E8E8;
 	box-shadow: 0 12px 30px rgba(0,0,0,0.4);
 	border: 1px solid rgba(0,0,0,0.15);
@@ -188,7 +188,7 @@ textarea {
 		}
 select {
 	position: relative;
-	width: 223px;
+	width: 203px;
 	-webkit-appearance: button;
 	-webkit-border-radius: 4px;
 	padding: 2px 18px 2px 8px;
@@ -257,9 +257,17 @@ section {
 			}
 	section li .setting {
 		float: left;
-		max-width: 336px;
+		max-width: 346px;
 		text-indent: -16px;
 	}
+		section li .setting .aside {
+			color: #999;
+			text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+			font-size: 8pt;
+		}
+			body.large section li .setting .aside {
+				font-size: 9pt;
+			}
 	section li.disabled {
 		opacity: 0.4;
 	}
@@ -284,7 +292,7 @@ section {
 		margin-top: -1px;
 		text-shadow: 0 1px 0 #fff;
 		cursor: default;
-		color: #484848;
+		color: #333;
 		font-weight: bold;
 		-webkit-user-select: none;
 	}
@@ -299,7 +307,11 @@ section {
 	section span.label-after {
 		margin-left: 7px;
 	}
-
+	
+input[type="checkbox"] {
+	position: relative;
+	top: -1px;
+}
 input[type="checkbox"] ~ label {
 	margin-bottom: -3px;
 }

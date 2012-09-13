@@ -375,6 +375,7 @@ $.extend(Settings, {
 
 			if (other)
 				setting_item.setting = setting_item.setting.slice(0, setting_item.setting.length - 1);
+			if (setting_item.label_after) select.after($('<span />').addClass('label-after').html(_(setting_item.label_after)));
 		}
 		
 		if (setting_item.divider)
@@ -407,6 +408,7 @@ Settings.toolbar_items = {
 	ui: 'User Interface',
 	predefined: 'Rules',
 	snapshots: 'Snapshots',
+	keyboard: 'Keyboard',
 	other: 'Other Features',
 	about: 'About',
 	search: '<input type="search" id="search" incremental="incremental" placeholder="' + 'Search' + '" results="10" autosave="setting_search" />'

@@ -6,6 +6,15 @@ JB.updater = function () {
 	if ((v === this.bundleid && !this.isBeta) || this.silence) return false;
 	
 	switch (true) {
+		case v < 53: // Too Old
+			this.clear_ui();
+			
+			new Poppy($(this.popover.body).width() / 2, 0, [
+				'<p class="misc-info">Too Old</p>',
+				'<p>You are using an extremely outdated version of JavaScript Blocker. You must uninstall it and reinstall the latest version manually; ',
+					'updating will not work.'].join(''), null, null, null, true);
+		break;
+
 		case v < 54: // 2.3.0
 			if (!('Rules' in window.localStorage)) {
 				window.localStorage.removeItem('CollapsedDomains');

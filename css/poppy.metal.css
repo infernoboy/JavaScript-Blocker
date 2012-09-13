@@ -1,10 +1,11 @@
 .poppy {
-	background: rgba(215,215,215,0.93) url(../images/texture.png) left top repeat;
+	background: rgb(215,215,215) url(../images/texture.png) left top repeat;
 	border-color: #999;
 }
 
-#poppy-arrow-settings {
+#poppy-arrow-settings,
+#poppy-arrow-settings.flip {
 	background-image: url(../images/texture.png);
-	background-color: rgba(215,215,215,0.98);
+	background-color: rgb(215,215,215);
 	border-color: #999;
 }

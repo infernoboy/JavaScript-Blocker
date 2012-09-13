@@ -10,8 +10,8 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 		random = +new Date(),
 		blank = window.location.href === 'about:blank',
 		allowedToLoad = 'al' + Math.random() * 1000000000000000000,
-		parentURL = (window !== window.top && blank) ? (safari.self.tab.canLoad(beforeLoad, 'parentURL') + '&about:blank:' + random) : false,
-		disabled = safari.self.tab.canLoad(beforeLoad, ['disabled']);
+		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '&about:blank:' + random) : false,
+		disabled = ResourceCanLoad(beforeLoad, ['disabled']);
 
 function pageHost(not_real) {
 	if (parentURL) return parentURL;
@@ -59,7 +59,7 @@ function fitFont(e, f) {
 		tH = text.offsetHeight;
 		tW = text.offsetWidth;
 		fs -= 1;
-	} while ((tH > maxH || tW > maxW) && fs > 4);
+	} while ((tH + 3 > maxH || tW + 3 > maxW) && fs > 4);
 
 	setCSSs(text, {
 		position: 'absolute',
@@ -187,7 +187,7 @@ function if_setting(setting, value, cb, cb2, args) {
 		
 	for (var i = 0; i < s.length; i++) {
 		if (!(s[i] in settings))
-			settings[s[i]] = safari.self.tab.canLoad(beforeLoad, ['setting', s[i]]);
+			settings[s[i]] = ResourceCanLoad(beforeLoad, ['setting', s[i]]);
 	
 		if (settings[s[i]] === value) {
 			if (typeof cb === 'function') cb.apply(window, args);
@@ -239,7 +239,7 @@ function canLoad(event) {
 			else
 				return 1;
 
-			var allo = safari.self.tab.canLoad(event, [kind, jsblocker.href, use_source, !(window == window.top)]),
+			var allo = ResourceCanLoad(event, [kind, jsblocker.href, use_source, !(window == window.top)]),
 					isAllowed = allo[0],
 					mo = isAllowed || !event.preventDefault ? 'allowed' : 'blocked';
 
@@ -451,7 +451,7 @@ function prepareAnchor(anchor, i) {
 					var target = this.getAttribute('target');
 
 					if (target !== '_blank' && target !== '_top')
-						if (!safari.self.tab.canLoad(beforeLoad, ['confirmShortURL', this.href, jsblocker.href])) {
+						if (!ResourceCanLoad(beforeLoad, ['confirmShortURL', this.href, jsblocker.href])) {
 							ev.preventDefault();
 							ev.stopPropagation();
 						}
@@ -516,8 +516,11 @@ function windowMessenger(event) {
 		var off = event.data.substr(sure.length),
 				id = off.substr(0, off.indexOf('#')),
 				url = decodeURI(off.substr(id.length + 1)),
-				fr = document.getElementById(id),
-				old = fr.getAttribute('data-jsblocker_url');
+				fr = document.getElementById(id);
+
+		if (!fr) return;
+
+		var old = fr.getAttribute('data-jsblocker_url');
 
 		fr[allowedToLoad] = 0;
 

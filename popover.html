@@ -135,7 +135,10 @@
 					<div class="divider"></div>
 					<ul id="filter-type-domain">
 						<li class="label" data-i18n="Filter:"></li>
-						<li id="li-domain-filter"><input type="search" placeholder="Domains" data-i18n="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" /><br style="clear:both;" /></li>
+						<li id="li-domain-filter" class="li-text-filter">
+							<input type="search" placeholder="Domains" data-i18n="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" class="text-filter" />
+							<br style="clear:both;" />
+						</li>
 					</ul>
 					<br style="clear:both;" />
 				</div>
@@ -241,7 +244,7 @@
 		<textarea id="tmpl_rule_item">
 			<li>
 				<div class="bubble bubble-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><div class="inner-bubble"></div></div>
-				<span class="rule type-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><%=self.text%></span>
+				<span class="<%=Settings.getItem('traverseRulesRules') ? 'selectable' : ''%> rule type-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><%=self.text%></span>
 				<input type="button" value="<%=self.button%>" />
 				<div class="divider"></div>
 			</li>

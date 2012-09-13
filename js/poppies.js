@@ -93,9 +93,9 @@ JB.poppies = {
 				'<div>',
 					'<p class="misc-info">', this.header, '</p>',
 					'<p id="rules-radios">',
-						'<input id="select-type-block" type="radio" name="select-type" value="0" ', !this.hider ? 'checked' : (!this.is_new ? 'disabled' : ''), '/>',
+						'<input id="select-type-block" type="radio" name="select-type" value="0" ', !this.hider ? (this.is_new || !(this.rtype % 2) ? 'checked' : '') : (!this.is_new ? 'disabled' : ''), '/>',
 						'<label for="select-type-block"> ', _('Block'),' &nbsp;</label>',
-						'<input id="select-type-allow" type="radio" name="select-type" value="1" ', this.hider && !this.is_new ? 'disabled' : '', '/>',
+						'<input id="select-type-allow" type="radio" name="select-type" value="1" ', this.hider && !this.is_new ? 'disabled' : (!this.hider &&  (this.is_new || this.rtype % 2) ? 'checked' : ''), '/>',
 						'<label for="select-type-allow"> ', _('Allow'), ' &nbsp;</label>',
 						'<input id="select-type-hide" type="radio" name="select-type" value="42" ', this.hider ? 'checked' : (!this.is_new ? 'disabled' : ''), '/>',
 						'<label for="select-type-hide"> ', _('Hide'), '</label>',
@@ -133,8 +133,9 @@ JB.poppies = {
 				var i = $$('#poppy #rule-input').val(zoo.main.rules.with_protos(zoo.me.url).rule).focus(),
 						protos = zoo.main.rules.with_protos(zoo.me.url).protos;
 				
-				$$('#poppy #rule-proto-input').val(protos instanceof Array ? protos.join(',') : undefined)
-					.parents('#poppy').keypress(function (e) {
+				$$('#poppy #rule-proto-input').val(protos instanceof Array ? protos.join(',') : undefined);
+
+				$$('#poppy').keypress(function (e) {
 						if (e.which === 13 || e.which === 3) {
 							$(this).unbind('keypress');
 							zoo.save.call(i);
@@ -276,7 +277,7 @@ JB.poppies = {
 								new Poppy(zoo.me.left, zoo.me.top, _('Error importing'));
 							else {
 								new Poppy();
-								JB.tab.page.dispatchMessage('reload');
+								Tabs.messageActive('reload');
 								$$('#rules-list-back:visible').click();
 							}
 						});

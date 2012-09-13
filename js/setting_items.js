@@ -316,6 +316,40 @@ Settings.settings = {
 			if_setting: ['enableSnapshots', true]
 		},
 	},
+	keyboard: {
+		traverseMainActions: {
+			default: false,
+			setting: true,
+			label: 'Main window actions bar',
+			description: 'Keyboard navigation helps you get around JavaScript Blocker using only the keyboard.',
+		},
+		traverseMainItems: {
+			default: false,
+			setting: true,
+			label: 'Main window allowed/blocked/unblockable items',
+			help: 'Holding option rule'
+		},
+		traverseRulesFilter: {
+			default: false,
+			setting: true,
+			label: 'Rule list filter bar'
+		},
+		traverseRulesDomains: {
+			default: false,
+			setting: true,
+			label: 'Rule list domains'
+		},
+		traverseRulesRules: {
+			default: false,
+			setting: true,
+			label: 'Rule list rules'
+		},
+		traverseSnapshots: {
+			default: false,
+			setting: true,
+			label: 'Snapshots'
+		}
+	},
 	other: {
 		simpleReferrer: {
 			label: 'Prevent links on webpages from sending referrer information',
@@ -356,7 +390,7 @@ Settings.settings = {
 		enable_special_alert_dialogs: {
 			label: 'Display alert() messages within the webpage instead of a popup dialog',
 			setting: true,
-			description: 'Once any of these features are active, they can be disabled on a per-domain basis. They will appear in the main window under <b>OTHER</b> and will not count towards the amount of blocked/allowed resources.',
+			description: 'Once any of these features are active,',
 			default: false,
 			donator_only: 1
 		},
@@ -388,12 +422,14 @@ Settings.settings = {
 		enable_special_font: {
 			label: 'Custom font for webpages:',
 			prompt: 'Enter a custom font name to use.',
+			label_after: 'Default webpage font',
 			setting: [[0, 'Webpage default'], ['Helvetica', 'Helvetica'], ['Arial', 'Arial'], ['Times', 'Times'], ['Comic Sans MS', 'Comic Sans MS'], ['other', 'Other…']],
 			default: '0',
 			donator_only: 1
 		},
 		enable_special_zoom: {
 			label: 'Custom zoom level for webpages:',
+			label_after: 'Default webpage zoom level',
 			prompt: 'Enter a custom zoom level to use.',
 			setting: [[0, 'Webpage default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%'], ['other', 'Other…']],
 			default: '0',

@@ -128,11 +128,19 @@ var SAFARI = true, CHROME = false,
 			}
 		},
 
+		MessageTarget = function (event, name, data) {
+			event.target.page.dispatchMessage(name, data);
+		},
+
 		PrivateBrowsing = function () {
 			return safari.application.privateBrowsing && safari.application.privateBrowsing.enabled;
 		},
 
 		ExtensionURL = function (path) {
 			return safari.extension.baseURI + (path || '');
+		},
+
+		ResourceCanLoad = function (beforeLoad, data) {
+			return safari.self.tab.canLoad(beforeLoad, data);
 		}
 };

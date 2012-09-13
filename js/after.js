@@ -185,7 +185,9 @@ var special_actions = {
 		
 		window.jsblocker_block_context_override();
 	},
-	autocomplete_disabler: function () {
+	autocomplete_disabler: function (v, args) {
+		var bv = parseInt(args[0], 10);
+
 		document.addEventListener('DOMContentLoaded', function () {
 			var inps = document.getElementsByTagName('input');
 			
@@ -193,17 +195,25 @@ var special_actions = {
 				inps[i].setAttribute('autocomplete', 'on');
 		}, true);
 
-		var observer = new WebKitMutationObserver(function (mutations) {
-			mutations.forEach(function (mutation) {
-				if (mutation.type === 'childList') {
-					for (var i = 0; i < mutation.addedNodes.length; i++)
-						if (mutation.addedNodes[i].nodeName === 'INPUT')
-							mutation.addedNodes[i].setAttribute('autocomplete', 'on');
-				}
-			});
-		});
+		function withNode(node) {
+			if (node.nodeName === 'INPUT')
+				node.setAttribute('autocomplete', 'on');
+		}
 
-		observer.observe(document, { childList: true, subtree: true });
+		if (bv >= 536) {
+			var observer = new WebKitMutationObserver(function (mutations) {
+				mutations.forEach(function (mutation) {
+					if (mutation.type === 'childList')
+						for (var i = 0; i < mutation.addedNodes.length; i++)
+							withNode(mutation.addedNodes[i]);
+				});
+			});
+
+			observer.observe(document, { childList: true, subtree: true });
+		} else
+			document.addEventListener('DOMNodeInserted', function (event) {
+				withNode(event.target);
+			}, true);
 	},
 	font: function (v) {
 		var s = document.createElement('style');
@@ -216,6 +226,7 @@ var special_actions = {
 non_injected_special_actions = {};
 
 special_actions.alert_dialogs.prototype.args = [window.allowedToLoad || 1];
+special_actions.autocomplete_disabler.prototype.args = [window.bv || 0];
 
 function appendScript(script, v) {
 	var script_string = script.toString(), p = script_string.split(/\{/), s = document.createElement('script');
@@ -256,4 +267,16 @@ if (typeof if_setting === 'function') {
 
 	for (var b in non_injected_special_actions)
 		doSpecial(0, b, non_injected_special_actions[b]);
+
+	if_setting('simpleReferrer', true, function () {
+		appendScript(function () {
+			document.addEventListener('DOMContentLoaded', function () {
+				var meta = document.createElement('meta');
+				meta.setAttribute('name', 'referrer');
+				meta.setAttribute('content', 'never');
+
+				document.head.appendChild(meta);
+			});
+		}, true);
+	});
 }

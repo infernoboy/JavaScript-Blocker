@@ -1,6 +1,6 @@
 body,
 body.windows {
-	background: rgba(200,200,200,0.8) url(../images/texture.png) left top repeat;
+	background: rgb(200,200,200) url(../images/texture.png) left top repeat;
 	text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }
 
@@ -105,12 +105,13 @@ button.confirm-click {
 }
 .kind-header.floater,
 .info-container.floater,
-.rules-header.floater {
-	background: rgba(210,210,210,0.92) url(../images/texture.png) left top repeat;
+.rules-header.floater,
+.rules-header.floater-next {
+	background: rgb(200,200,200) url(../images/texture.png) left top repeat;
 }
 .domain-name.floater {
-	background: url(../images/disclosure-open.png) no-repeat left 7px, rgba(210,210,210,0.92) url(../images/texture.png) left top repeat;
+	background: url(../images/disclosure-open.png) no-repeat left 7px, rgb(200,200,200) url(../images/texture.png) left top repeat;
 }
 	.domain-name.hidden.floater {
-		background: url(../images/disclosure-closed.png) no-repeat left 7px, rgba(210,210,210,0.92) url(../images/texture.png) left top repeat;
+		background: url(../images/disclosure-closed.png) no-repeat left 7px, rgb(200,200,200) url(../images/texture.png) left top repeat;
 	}

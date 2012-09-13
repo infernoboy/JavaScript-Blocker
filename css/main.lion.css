@@ -42,8 +42,8 @@ textarea {
 	button.onenter:not(:active) {
 		box-shadow: inset 0 19px 0 rgba(0,103,192,0), inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 0 rgba(0,0,0,0.1);
 		background: -webkit-linear-gradient(bottom, #d9f6fd, #a3d3fc 50%, #bbdefb 50%, #deeefc);
-		-webkit-animation: bluePulse 0.54s linear 0 infinite alternate;
 	}
+	
 	input[type="text"],
 	input[type="search"],
 	textarea {
@@ -88,16 +88,4 @@ select {
 	}
 	body.simple ul li input[type="button"] {
 		max-width: 17%;
-	}
-
-.kind-header.floater,
-.info-container.floater,
-.rules-header.floater {
-	background: rgba(239,239,239,0.93);
-}
-.domain-name.floater {
-	background: url(../images/disclosure-open.png) no-repeat left 7px, rgba(239,239,239,0.93);
-}
-	.domain-name.hidden.floater {
-		background: url(../images/disclosure-closed.png) no-repeat left 7px, rgba(239,239,239,0.93);
 	}
