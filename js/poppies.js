@@ -22,7 +22,7 @@ JB.poppies = {
 				'<p><input type="text" placeholder="', _('PayPal Email Address'), '" id="donation-id" /> ',
 				'<input type="button" value="', _('Continue'), '" id="donation-confirm" class="onenter" /></p>',
 				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donate ">', _('Make a Donation'), '</a> <span class="label">￨</span> ',
-				'<a class="outside" href="mailto:travis@toggleable.com?subject=I cannot contribute to JavaScript Blocker, but want all the features!&body=Reason: ">', _('I can\'t donate'), '</a> <span class="label">￨</span> ',
+				'<a id="unlock-free" href="javascript:void(0);">', _('Unlock Without Contributing'), '</a> <span class="label">￨</span> ',
 				'<a class="outside" href="mailto:travis@toggleable.com?subject=I forgot my JavaScript Blocker activation information!&body=Help me out!">', _('Forgot'), '</a></p>'].join(''),
 			onshowstart: function () {
 				var did = $$('#donation-id');
@@ -69,6 +69,25 @@ JB.poppies = {
 					});
 				}).siblings('#donation-id').keypress(function (e) {
 					if (e.which === 13 || e.which === 3) $$('#donation-confirm').click();
+				});
+
+				$$('#unlock-free').click(function () {
+					new Poppy(zoo.me[0], zoo.me[1], [
+						'<p>', _('By clicking continue'), '</p>',
+						'<div class="inputs">',
+							'<input type="button" id="go-back" value="', _('Back'), '" /> ',
+							'<input type="button" id="continue" value="', _('Continue'), '" /> ',
+						'</div>'
+					].join(''), function () {
+						$$('#go-back').click(function () {
+							$$('#unlock').click();
+						}).siblings('#continue').click(function () {
+							JB.donationVerified = 777;
+							try {
+								Popover.window().location.reload();
+							} catch (e) {}
+						});
+					});
 				});
 			}
 		}

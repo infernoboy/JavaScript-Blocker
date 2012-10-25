@@ -442,7 +442,9 @@ function prepareAnchor(anchor, i) {
 
 	if (anchor.nodeName && anchor.nodeName.toUpperCase() === 'A') {
 		if_setting('simpleReferrer', true, function (anchor) {
-			if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length)) anchor.setAttribute('rel', 'noreferrer');
+			if (anchor.getAttribute('href') && anchor.getAttribute('href').length && anchor.getAttribute('href').charAt(0) !== '#')
+				if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length))
+					anchor.setAttribute('rel', 'noreferrer');
 		}, null, [anchor]);
 
 		if (window !== window.top)

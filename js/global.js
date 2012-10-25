@@ -13,7 +13,7 @@ window.open = function (url, name, specs) {
 };
 
 var Template = {
-			tmpl_cache: { },
+			cache: { },
 			create: function(str, data) {
 				// Simple JavaScript Templating
 				// John Resig - http://ejohn.org/ - MIT Licensed
@@ -23,7 +23,7 @@ var Template = {
 				if(!/\W/.test(str)) {
 					str = 'tmpl_' + str;
 
-					if(str in this.tmpl_cache) var fn = this.tmpl_cache[str];
+					if(str in this.cache) var fn = this.cache[str];
 					else {
 						var e;
 						
@@ -32,8 +32,8 @@ var Template = {
 						var fn = this.create($(e).text(), false);
 					}
 				} else
-					var fn = this.tmpl_cache[str] = new Function('self',
-						"var p=[],print=function(){p.push.apply(p,arguments);};p.push('" +
+					var fn = this.cache[str] = new Function('self',
+						"var p=[];p.push('" +
 						str
 							.replace(/[\r\t\n]/g, "")
 							.split("<%").join("\t")
@@ -83,10 +83,9 @@ var Template = {
 	commandKey: !1,
 	speedMultiplier: 1,
 	optionKey: false,
-	disabled: !1,
 	frames: {},
-	displayv: '3.1.0',
-	bundleid: 99,
+	displayv: '3.1.4',
+	bundleid: 136,
 	update_attention_required: 90,
 	beta_attention_required: 1,
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
@@ -237,6 +236,12 @@ var Template = {
 		}
 	},
 	isBeta: 0,
+	get disabled() {
+		return Settings.getItem('isDisabled');
+	},
+	set disabled(v) {
+		Settings.setItem('isDisabled', v);
+	},
  	get simpleMode() {
 		return Settings.getItem('simpleMode');
 	},
@@ -470,9 +475,8 @@ var Template = {
 			
 			fb.push(to_float);
 			
-			sc.data('floater_bound', fb);
-
-			sc.scroll({ scroller: sc, to_float: to_float, related: related, off: off }, function (event) {
+			sc.data('floater_bound', fb)
+				.scroll({ scroller: sc, to_float: to_float, related: related, off: off }, function (event) {
 				self.utils.timer.timeout('onscroll_' + event.data.to_float, function (d) {
 					var off = typeof d.off === 'function' ? d.off.call(JB) : d.off || 0,
 							all = $(d.to_float, d.scroller).not('.floater'),
@@ -889,132 +893,13 @@ var Template = {
 
 			$$('#snapshots-info').html(_('You have {1} snapshots using {2} of storage.', [this.snapshots.count(), this.utils.bsize(this.snapshots.size())]));
 
-			for (var id in snapshots) {
+			for (var id in snapshots)
 				$([
 					'<li class="', id === this.using_snapshot ? 'using' : '', snapshots[id].keep ? ' kept' : '', '">',
 						'<a class="', Settings.getItem('traverseSnapshots') ? 'selectable' : '', ' snapshot-date" data-id="', id, '">', snapshots[id].name ? self.utils.escape_html(snapshots[id].name) : this.snapshots.date(id), '</a> ',
 						'<input type="button" value="', self.using_snapshot === id ? _('Close Preview') : _('Open Preview'), '" class="preview-snapshot" /> ',
 						'<div class="divider"></div>',
 					'</li>'].join('')).appendTo(snapshots[id].keep ? ul_kept : ul_unkept);
-			}
-
-			ul.find('.snapshot-date').click(function (event, t) {
-				var using = $(this).parents('li:first').hasClass('using'),
-						me = $(this), off = me.offset(), left = t ? t.pageX : event.pageX, top = off.top + 12,
-						li = me.parents('li:first'),
-						id = me.attr('data-id');
-
-				new Poppy(left, top, [
-					'<input type="button" value="', _('Name'), '" id="name-snapshot" /> ',
-					'<input type="button" value="', _('Compare'), '" id="compare-snapshot" /> ',
-					'<input type="button" value="', _(snapshots[id].keep ? 'Unkeep' : 'Keep'), '" id="keep-snapshot" /> ',
-					'<input type="button" value="', _('Delete'), '" id="delete-snapshot" />',
-				].join(''), function () {
-					$$('#name-snapshot').click(function () {
-						new Poppy(left, top, [
-							'<input type="text" id="snapshot-name" value="', self.snapshots.name(id), '" /> ',
-							'<input type="button" id="save-name" value="', _('Save'), '" class="onenter" />'
-						].join(''), function () {
-							$$('#snapshot-name').focus().keypress(function (e) {
-								if (e.which === 13 || e.which === 3) $$('#save-name').click();
-							}).siblings('#save-name').click(function () {
-								var v = $.trim($(this).siblings('#snapshot-name').val()), v = v.length ? v : null,
-										cname = self.snapshots.name(id);
-								
-								if (self.snapshots.name(id, v) === false && self.snapshots.name(id) !== v) {
-									$$('#poppy').toggleClass('slow', self.speedMultiplier > 1).addClass('shake').one('webkitAnimationEnd', function () {
-										$(this).removeClass('shake slow');
-									}).find('#snapshot-name').focus();
-								} else {
-									new Poppy();
-
-									self.utils.timer.timeout('show_snapshots', function (self, id) {
-										if (id === self.using_snapshot)
-											self.use_snapshot(id);
-
-										self.show_snapshots();
-									}, 200, [self, id]);
-								}
-							});
-						});
-					}).siblings('#compare-snapshot').click(function () {
-						new Poppy(left, top, [
-							'<p class="misc-info">', _('Show Rules'), '</p>',
-							'<input type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
-							'<input type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
-							'<input type="button" value="', _('In Both'), '" id="compare-both" data-type="both" /> ',
-						].join(''), function () {
-							$$('#poppy input').click(function () {
-								new Poppy();
-
-								var compare = self.snapshots.compare(id, self.current_rules), dir = this.getAttribute('data-type'), mes,
-										cache_id = self.snapshots.add(compare[dir], 1, 'Comparison Cache (' + +new Date() + ')');
-
-								self.use_snapshot(cache_id);
-
-								self.utils.zoom($$('#snapshots'), $$('#rules-list'), null, function () {
-									self.show();
-									self.snapshots.remove(cache_id);
-								});
-
-								if (dir === 'left') mes = 'Rules Only in Snapshot: {1}';
-								else if (dir === 'right') mes = 'Rules Not in Snapshot: {1}';
-								else mes = 'Rules in Both My Rules and Snapshot: {1}';
-
-								$$('#rules-list .snapshot-info').show().html(_(mes, [self.snapshots.name_or_date(id)]));
-							});
-						});
-					}).siblings('#keep-snapshot').click(function () {
-						if (this.value === _('Keep'))
-							self.snapshots.keep(id);
-						else {
-							if (!self.utils.confirm_click(this)) return false;
-
-							self.snapshots.unkeep(id);
-						}
-
-						self.show_snapshots();
-
-						new Poppy();
-					}).siblings('#delete-snapshot').click(function () {
-						if (!self.utils.confirm_click(this)) return false;
-
-						new Poppy();
-
-						self.snapshots.remove(id);
-
-						if (id === self.using_snapshot) self.use_snapshot(0);
-
-						li.animate({
-							top: li.height() - parseInt(li.css('marginTop')),
-							right: -li.outerWidth(),
-							opacity: 0,
-							padding: 0,
-							marginTop: -li.height()
-						}, 200 * self.speedMultiplier, function () {
-							$(this).remove();
-							
-							self.utils.timer.timeout('show_snapshots', function (self) {
-								self.show_snapshots();
-							}, 1000, [self]);
-						});
-					});
-				});
-			}).end().find('.preview-snapshot').click(function () {
-				new Poppy();
-
-				var id = $(this).prev().attr('data-id'), me = this;
-
-				self.utils.zoom($$('#snapshots'), $$('#rules-list'), null, function () {
-					self.use_snapshot(me.value === _('Close Preview') ? 0 : id);
-					self.show();
-				}, function () {
-					var parts = $$('#domain-filter').trigger('search').data('parts');
-													
-					for (var i = 0; i < parts.length; i++)
-						$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + parts[i] + '"].hidden').click();
-				});
-			});
 
 			ul_kept.find('.divider:last').addClass('invisible');
 			ul_unkept.find('.divider:last').addClass('invisible');
@@ -1263,7 +1148,9 @@ var Template = {
 					
 			return 0;
 		},
-		allowed: function (kind, message) {
+		allowed: function (message) {
+			var kind = message[0];
+
 			if (kind.indexOf('hide_') === -1)
 				if ((kind !== 'script' && !this.donationVerified) || !this.enabled(kind)) return [1, -84];
 
@@ -1820,8 +1707,36 @@ var Template = {
 	bind_events: function(some, host) {
 		if (!this.popover) return;
 
-		var add_rule, remove_rule, self = this;
+		var add_rule, remove_rule, self = this,
+				alblspan = '#allowed-script-urls ul li:not(.show-me-more) span, #blocked-script-urls ul li:not(.show-me-more) span';
 		
+		function toggle_find_bar (show_only) {
+			var f = $$('#find-bar'),
+					v = f.is(':visible');
+			
+			if (v && show_only) return false;
+			
+			var	h = 25,
+					a = v ? f.show() : f.hide(),
+					m = (f.slideToggle(200 * self.speedMultiplier).toggleClass('visible').hasClass('visible')) ? '-' : '+',
+					mM = m === '-' ? '+' : '-';
+			
+			$$('#main, #rules-list, #misc, #setup, #snapshots').animate({
+				height: m + '=' + h,
+				marginTop: mM + '=' + h
+			}, {
+				duration: 200 * self.speedMultiplier,
+				easing: 'linear',
+				step: function () {
+					$(this).trigger('scroll');
+				}
+			});
+			
+			if (v) $('#find-bar-search', f).blur();
+			
+			return true;
+		}
+
 		function url_display (e) {
 			var me = $(this), t = $(this).siblings('span:first'), pa = t.parent(), off = t.offset(), kind = pa.data('kind'),
 					left = Math.floor(me.offset().left + me.outerWidth() / 2);
@@ -1930,13 +1845,163 @@ var Template = {
 						});
 					});
 		}
+
+		$(this.popover.body).keydown(function (e) {
+			var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;
+
+			switch (e.which) {
+				case 9: // TAB
+					if (!$$('.poppy').length)  {
+						var current = $$('.current-selection:visible');
+
+						if (current.length) {
+							var sibs = current.siblings('input:not(:focus):visible:first'),
+									children = current.children('input:not(:focus):visible:first');
+
+							if (sibs.length) {
+								e.preventDefault();
+								sibs.focus();
+							} else if (children.length) {
+								e.preventDefault();
+								children.focus();
+							}
+						}
+					}
+				break;
+
+				case 27: // ESCAPE
+					var focused = $$('*:focus');
+
+					if ($$('#find-bar-search').is(':focus')) {
+						e.preventDefault();
+						$$('#find-bar-done').click();
+					}
+
+					if (focused.length) {
+						e.preventDefault();
+						e.stopPropagation();
+						focused.blur();
+					} else if ($$('.poppy').length) {
+						e.preventDefault();
+						e.stopPropagation();
+						new Poppy();
+						new Poppy(true);
+					} else if ($$('.current-selection').length) {
+						e.preventDefault();
+						e.stopPropagation();
+						$$('.current-selection').removeClass('current-selection');
+					}
+				break;
+
+				case 3:
+				case 13: // ENTER
+					if (!$$('.poppy').length && !$$('input:focus, textarea:focus, select:focus').length) {
+						e.preventDefault();
+						$$('.whoop:not(#disabled):visible:first').find('.current-selection').trigger('enter');
+					}
+				break;
+
+				case 17:
+				case 18: // ALT/OPTION
+					self.optionKey = true;
+					self.utils.timer.timeout('no_optionkey', function (self) {
+						self.optionKey = false;
+					}, 1000, [self]);
+				break;
+			
+				case 16: // SHIFT
+					self.speedMultiplier = !self.useAnimations ? 0.001 : 20; break;
+			
+				case 93:
+				case 91: // COMMAND/CONTROL
+				case 17:
+					if ((window.navigator.platform.match(/Win/) && e.which === 17) || !window.navigator.platform.match(/Win/)) {
+						self.commandKey = true;
+						self.utils.timer.timeout('no_commandkey', function (self) {
+							self.commandKey = false;
+						}, 1000, [self]);
+					}
+				break;
+
+				case 70:  // F
+					if (self.commandKey) {
+						e.preventDefault();
+						
+						setTimeout(function (self) {
+							var b = $$('#find-bar-search').focus().trigger('search');
+							b[0].selectionStart = 0;
+							b[0].selectionEnd = b[0].value.length;
+						}, 10, self);
+						
+						if (toggle_find_bar(true)) return false;
+					}
+				break;
+			} 
+
+			if (~[UP, DOWN, LEFT, RIGHT].indexOf(e.which) && !$$('.poppy').length) {
+				var	which = $$('.whoop:not(#disabled):visible:first'),
+						cs = which.find('.current-selection'),
+						all = $('*', which),
+						next = all.slice(all.index(cs) + 1).filter('.selectable:not(.disabled):visible:first'),
+						prev = all.slice(0, all.index(cs)).filter('.selectable:not(.disabled):visible:last'),
+						selected = [];
+
+				if ($$('input:not([type="button"]):focus, textarea:focus, select:focus').length) return;
+
+				e.preventDefault();
+
+				if (!cs.length && !~[LEFT, RIGHT].indexOf(e.which))
+					selected = which.find('.selectable:not(.disabled):visible:first').addClass('current-selection');
+				else {
+					cs.removeClass('current-selection');
+
+					switch (e.which) {
+						case UP:
+							if (prev.length) {
+								selected = prev.addClass('current-selection');
+								break;
+							}
+						case RIGHT:
+							selected = which.find('.selectable:not(.disabled):visible:last').addClass('current-selection');
+						break;
+
+						case DOWN:
+							if (next.length) {
+								selected = next.addClass('current-selection');
+								break;
+							}
+						case LEFT:
+							selected = which.find('.selectable:not(.disabled):visible:first').addClass('current-selection');
+						break;
+					}
+				}
+
+				if (selected.length) {
+					which.find('input:focus, textarea:focus').blur();
+
+					var off = selected.offset();
+
+					if (off.top < selected.height()) {
+						selected[0].scrollIntoView();
+						which.scrollTop(which.scrollTop() - 25);
+					} else if (off.top + selected.height() > which.height()) {
+						selected[0].scrollIntoView(false);
+						which.scrollTop(which.scrollTop() + 15);
+					}
+				}
+			}
+		}).keyup(function (e) {
+			if (e.which === 17 || e.which === 18) self.optionKey = false;
+			else if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 1;
+			else if ((e.which === 93 || e.which === 91) || (window.navigator.platform.match(/Win/) && e.which === 17)) self.commandKey = false;
+		});
 		
-		$(this.popover).on('click', 'ul.rules-wrapper li input', function () {	
+		$(this.popover).on('click', '.rules-wrapper li input', function () {	
 			var me = $(this), li = me.parent(), parent = li.parent(), span = $('span.rule', li),
 					is_automatic = $('span.rule.type-2, span.rule.type--2', li).length, data = $.data(li[0]);
 			
 			if (this.value === _('Recover')) {
-				var off = self.utils.position_poppy(this, 0, 14), left = off.left, top = off.top,
+				var off = self.utils.position_poppy(this, 0, 14),
 						current_rules = self.rules.current_rules, current = current_rules[data.kind];
 
 				if (!(data.domain in current)) current[data.domain] = {};
@@ -1945,7 +2010,7 @@ var Template = {
 
 				Settings.setItem(self.rules.which, JSON.stringify(current_rules));
 
-				return new Poppy(left, top, _('Rule added to current rule set.'));
+				return new Poppy(off.left, off.top, _('Rule added to current rule set.'));
 			}
 
 			if (!self.utils.confirm_click(this)) return false;
@@ -1985,7 +2050,7 @@ var Template = {
 					$$('#domain-filter').trigger('search');
 				});
 			}
-		}).on('click', 'ul.rules-wrapper li:not(.domain-name) span:not(.nodbl).rule', function (e) {
+		}).on('click', '.rules-wrapper li:not(.domain-name) span:not(.nodbl).rule', function (e) {
 			var t = $(this), off = t.offset();
 
 			if (self.rules.using_snapshot) return new Poppy(e.pageX, off.top + 12, _('Snapshot in use'));
@@ -2074,8 +2139,8 @@ var Template = {
 					new Poppy(e.pageX || 40, off.top + 12, padd);
 				});
 			});
-		}).on('click', 'ul .domain-name', function () {
-			if (this.className.match(/no\-disclosure/)) return;
+		}).on('click', '.domain-name', function () {
+			if (~this.className.indexOf('no-disclosure')) return;
 			
 			var me = $(this), d = me.data('domain'), t = me.next(), x;
 			
@@ -2109,28 +2174,22 @@ var Template = {
 										
 			ul.css({ marginTop: hid ? -o : 0 }).animate({
 				marginTop: hid ? 0 : -o
-			}, {
-				duration: 200 * self.speedMultiplier,
-				complete: function () {
-					if (!me.hasClass('hidden')) {
-						if (dex > -1) c.splice(dex, 1);
-					} else {
-						if (dex === -1) c.push(d);
-					}
-				
-					t.css('display', '');
-					ul.css({ marginTop: 0 });
-				
-					self.collapsedDomains(c);
-		
-					rulesList.trigger('scroll');
-				},
-				step: function () {
-					rulesList.trigger('scroll');
+			}, 200 * self.speedMultiplier, function () {
+				if (!me.hasClass('hidden')) {
+					if (dex > -1) c.splice(dex, 1);
+				} else {
+					if (dex === -1) c.push(d);
 				}
+			
+				t.css('display', '');
+				ul.css('marginTop', 0);
+			
+				self.collapsedDomains(c);
+	
+				rulesList.trigger('scroll');
 			});
 						
-			if (!this.className.match(/hidden/)) {
+			if (!~this.className.indexOf('hidden')) {
 				var offset = t.offset(),
 						bottomView = offset.top + h;
 				
@@ -2170,11 +2229,7 @@ var Template = {
 			$(this).trigger('click', { pageX: 30 });
 		}).on('enter', '.rules-wrapper span', function (e) {
 			$(this).trigger('click', { pageX: 30 });
-		});
-
-		var alblspan = '#allowed-script-urls ul li:not(.show-me-more) span, #blocked-script-urls ul li:not(.show-me-more) span';
-
-		$(this.popover).on('mousedown', alblspan, function (e, t) {
+		}).on('mousedown', alblspan, function (e, t) {
 			var span = $(this);
 
 			e = t || e;
@@ -2190,8 +2245,7 @@ var Template = {
 
 				if (li.hasClass('unblockable') || self.rules.using_snapshot) return;
 
-				li.find('.info-link').text('?').end()
-					.addClass('ignore-quick-add').end()
+				li.addClass('ignore-quick-add').end()
 					.trigger('click', e).text(li.data('url'));
 
 				span.addClass('triggered');
@@ -2405,190 +2459,8 @@ var Template = {
 			
 			do_highlight(t);
 		}).on('mousedown', 'body', function (e) {
-			if (!e.isTrigger)
-				$$('.current-selection').removeClass('current-selection');
-		});
-		
-		var toggle_find_bar = function (show_only) {
-			var f = $$('#find-bar'),
-					v = f.is(':visible');
-			
-			if (v && show_only) return false;
-			
-			var	h = 25,
-					a = v ? f.show() : f.hide(),
-					m = (f.slideToggle(200 * self.speedMultiplier).toggleClass('visible').hasClass('visible')) ? '-' : '+',
-					mM = m === '-' ? '+' : '-';
-			
-			$$('#main, #rules-list, #misc, #setup, #snapshots').animate({
-				height: m + '=' + h,
-				marginTop: mM + '=' + h
-			}, {
-				duration: 200 * self.speedMultiplier,
-				easing: 'linear',
-				step: function () {
-					$(this).trigger('scroll');
-				}
-			});
-			
-			if (v) $('#find-bar-search', f).blur();
-			
-			return true;
-		}
-		
-		$(this.popover.body).keydown(function (e) {
-			var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;
-
-			switch (e.which) {
-				case 9: // TAB
-					if (!$$('.poppy').length)  {
-						var current = $$('.current-selection:visible');
-
-						if (current.length) {
-							var sibs = current.siblings('input:not(:focus):visible:first'),
-									children = current.children('input:not(:focus):visible:first');
-
-							if (sibs.length) {
-								e.preventDefault();
-								sibs.focus();
-							} else if (children.length) {
-								e.preventDefault();
-								children.focus();
-							}
-						}
-					}
-				break;
-
-				case 27: // ESCAPE
-					var focused = $$('*:focus');
-
-					if ($$('#find-bar-search').is(':focus')) {
-						e.preventDefault();
-						$$('#find-bar-done').click();
-					}
-
-					if (focused.length) {
-						e.preventDefault();
-						e.stopPropagation();
-						focused.blur();
-					} else if ($$('.poppy').length) {
-						e.preventDefault();
-						e.stopPropagation();
-						new Poppy();
-						new Poppy(true);
-					} else if ($$('.current-selection').length) {
-						e.preventDefault();
-						e.stopPropagation();
-						$$('.current-selection').removeClass('current-selection');
-					}
-				break;
-
-				case 3:
-				case 13: // ENTER
-					if (!$$('.poppy').length && !$$('input:focus, textarea:focus, select:focus').length) {
-						e.preventDefault();
-						$$('.whoop:not(#disabled):visible:first').find('.current-selection').trigger('enter');
-					}
-				break;
-
-				case 17:
-				case 18: // ALT/OPTION
-					self.optionKey = true;
-					self.utils.timer.timeout('no_optionkey', function (self) {
-						self.optionKey = false;
-					}, 1000, [self]);
-				break;
-			
-				case 16: // SHIFT
-					self.speedMultiplier = !self.useAnimations ? 0.001 : 20; break;
-			
-				case 93:
-				case 91: // COMMAND/CONTROL
-				case 17:
-					if ((window.navigator.platform.match(/Win/) && e.which === 17) || !window.navigator.platform.match(/Win/)) {
-						self.commandKey = true;
-						self.utils.timer.timeout('no_commandkey', function (self) {
-							self.commandKey = false;
-						}, 1000, [self]);
-					}
-				break;
-
-				case 70:  // F
-					if (self.commandKey) {
-						e.preventDefault();
-						
-						setTimeout(function (self) {
-							var b = $$('#find-bar-search').focus().trigger('search');
-							b[0].selectionStart = 0;
-							b[0].selectionEnd = b[0].value.length;
-						}, 10, self);
-						
-						if (toggle_find_bar(true)) return false;
-					}
-				break;
-			} 
-
-			if (~[UP, DOWN, LEFT, RIGHT].indexOf(e.which) && !$$('.poppy').length) {
-				var	which = $$('.whoop:not(#disabled):visible:first'),
-						cs = which.find('.current-selection'),
-						all = $('*', which),
-						next = all.slice(all.index(cs) + 1).filter('.selectable:not(.disabled):visible:first'),
-						prev = all.slice(0, all.index(cs)).filter('.selectable:not(.disabled):visible:last'),
-						selected = [];
-
-				if ($$('input:not([type="button"]):focus, textarea:focus, select:focus').length) return;
-
-				e.preventDefault();
-
-				if (!cs.length && !~[LEFT, RIGHT].indexOf(e.which))
-					selected = which.find('.selectable:not(.disabled):visible:first').addClass('current-selection');
-				else {
-					cs.removeClass('current-selection');
-
-					switch (e.which) {
-						case UP:
-							if (prev.length) {
-								selected = prev.addClass('current-selection');
-								break;
-							}
-						case RIGHT:
-							selected = which.find('.selectable:not(.disabled):visible:last').addClass('current-selection');
-						break;
-
-						case DOWN:
-							if (next.length) {
-								selected = next.addClass('current-selection');
-								break;
-							}
-						case LEFT:
-							selected = which.find('.selectable:not(.disabled):visible:first').addClass('current-selection');
-						break;
-					}
-				}
-
-				if (selected.length) {
-					which.find('input:focus, textarea:focus').blur();
-
-					var off = selected.offset();
-
-					if (off.top < selected.height()) {
-						selected[0].scrollIntoView();
-						which.scrollTop(which.scrollTop() - 25);
-					} else if (off.top + selected.height() > which.height()) {
-						selected[0].scrollIntoView(false);
-						which.scrollTop(which.scrollTop() + 15)
-					}
-				}
-			}
-		}).keyup(function (e) {
-			if (e.which === 17 || e.which === 18) self.optionKey = false;
-			else if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 1;
-			else if ((e.which === 93 || e.which === 91) || (window.navigator.platform.match(/Win/) && e.which === 17)) self.commandKey = false;
-		});
-
-
-		
-		$$('#find-bar-done').click(function() {
+			if (!e.isTrigger) $$('.current-selection').removeClass('current-selection');
+		}).on('click', '#find-bar-done', function() {
 			toggle_find_bar();
 			
 			self.utils.timer.timeout('hide_results', function () {
@@ -2601,7 +2473,7 @@ var Template = {
 					b.val(s);
 				}, 210 * self.speedMultiplier, [b, s]);
 			}, 200 * self.speedMultiplier);
-		}).siblings('#find-bar-search').bind('search', function () {
+		}).on('search', '#find-bar-search', function () {
 			if (self.finding) return false;
 			
 			var s = $(this).val(),
@@ -2647,7 +2519,7 @@ var Template = {
 			x = visible.find('*:visible');
 					
 			x.each(function (index) {
-				if (!this.className.match(/link\-button/) && ['MARK', 'OPTION', 'SCRIPT'].indexOf(this.nodeName.toUpperCase()) === -1 && this.innerHTML && this.innerHTML.length)
+				if (!~this.className.indexOf('link-button') && ['MARK', 'OPTION', 'SCRIPT'].indexOf(this.nodeName.toUpperCase()) === -1 && this.innerHTML && this.innerHTML.length)
 					self.utils.zero_timeout(function (self, e, s) {
 						var $e = $(e),
 								t = $('<div>').text($e.text()).html(),
@@ -2701,9 +2573,7 @@ var Template = {
 						}, 50, [self]);
 					}, [self]);
 			}, [self]);
-		});
-	
-		$$('#block-domain, #allow-domain').click(function () {
+		}).on('click', '#allow-domain, #block-domain', function () {
 			var page_parts = self.utils.domain_parts(self.host), n, off = self.utils.position_poppy(this, 0, 14),
 					me = this, kinds = [], block = this.id === 'block-domain',
 					left = off.left, top = off.top;
@@ -2878,9 +2748,7 @@ var Template = {
 					})
 				});
 			});
-		});
-		
-		$$('#disable').click(function (event, ignore) {
+		}).on('click', '#disable', function (event, ignore) {
 			if (!self.methodAllowed) return false;
 
 			self.disabled = !self.disabled;
@@ -2894,9 +2762,7 @@ var Template = {
 
 			if (!event.isTrigger || ignore)
 				Tabs.messageActive('reload');
-		});
-
-		$$('#toggle-hidden').click(function (e) {
+		}).on('click', '#toggle-hidden', function (e) {
 			if ($$('.some-list').length) return;
 
 			var hid = $$('#main .urls-wrapper li.hidden-by-rule'),
@@ -2925,9 +2791,7 @@ var Template = {
 					else
 						$(this).parent().hide().prev().hide();
 			});
-		});
-		
-		$$('#view-rules').click(function (e) {
+		}).on('click', '#view-rules', function (e) {
 			if (!self.methodAllowed) return false;
 			
 			var offset = self.utils.position_poppy(this, 0, 14),
@@ -2949,7 +2813,7 @@ var Template = {
 				$$('#current-snapshot').click(function () {
 					var pop = self.poppies.current_snapshot();
 					pop.onshowend = function () {
-						$$('#snapshots-show').unbind('click').click(function () {
+						$$('#snapshots-show').off('click').on('click', function () {
 							new Poppy();
 
 							self.utils.zoom($$('#snapshots'), $$('#main'));
@@ -3019,28 +2883,21 @@ var Template = {
 					}));
 				});
 			});
-		});
-
-		$$('#rules-list-back').click(function () {
+		}).on('click', '#rules-list-back', function () {
 			var r = $$('#rules-list:not(.zoom-window-animating)');
 
 			if (r.length)
 				self.utils.zoom(r.addClass('zoom-window-open zoom-window'), $$('#main'), function () {
-					$$('#rules-list #data ul.rules-wrapper').empty();
-					$$('#rules-list').find('.snapshot-info').hide();
+					$$('#rules-list').find('.rules-wrapper').empty().end().find('.snapshot-info').hide();
 				}, function () {
 					if (self.rules.using_snapshot && !self.rules.snapshots.exist(self.rules.using_snapshot))
 						self.rules.use_snapshot(0);
 				});
-		});
-		
-		$$('#misc-close').click(function() {
+		}).on('click', '#misc-close', function() {
 			self.utils.zoom($$('#misc'), $$('.zoom-window-hidden:first'), function () {
 				$$('#misc-content, p.misc-header').html('');
 			});
-		});
-		
-		$$('.allowed-label, .blocked-label, .unblocked-label').click(function () {
+		}).on('click', '.allowed-label, .blocked-label, .unblocked-label', function () {
 			var me = $(this), which = this.className.substr(0, this.className.indexOf('-')), e = $$('#' + which + '-script-urls .urls-inner');
 			
 			if (e.is(':animated')) return false;
@@ -3071,9 +2928,7 @@ var Template = {
 			self.utils.timer.timeout('label_search', function (self) {
 				$$('#find-bar-search:visible').trigger('search');
 			}, 400 * self.speedMultiplier, [self]);
-		});
-		
-		$$('#collapse-all, #expand-all').click(function () {
+		}).on('click', '#collapse-all, #expand-all', function () {
 			self.busy = 1;
 						
 			var col = this.id === 'collapse-all';
@@ -3089,9 +2944,7 @@ var Template = {
 				}));
 			
 			self.busy = 0;
-		});
-
-		$$('#show-active-rules').click(function () {
+		}).on('click', '#show-active-rules', function () {
 			var parts = self.domain_parts(self.host),
 					x = parts.slice(0, 1),
 					y = parts.slice(1), active;
@@ -3104,9 +2957,7 @@ var Template = {
 			active = ~this.className.indexOf('using') ? '' : '^' + parts.join('$|^.') + '$|^' + _('All Domains') + '$';
 						
 			$$('#domain-filter').val(active).data('parts', parts).data('active', active.length ? active : null).trigger('search');
-		});
-		
-		$$('#edit-domains').click(function () {
+		}).on('click', '#edit-domains', function () {
 			$(this).toggleClass('edit-mode');
 						
 			var ul = $$('.rules-wrapper');
@@ -3116,9 +2967,7 @@ var Template = {
 			$$('#rules-list .rules-wrapper').each(function () {
 				$('.domain-name:visible .divider', this).removeClass('invisible').filter(':visible:first').addClass('invisible');
 			});
-		});
-
-		$$('#time-machine').click(function () {
+		}).on('click', '#time-machine', function () {
 			var off = self.utils.position_poppy(this, 2, 12);
 
 			if (!Settings.getItem('enableSnapshots')) return new Poppy(off.left, off.top, _('Snapshots disabled'));
@@ -3135,9 +2984,7 @@ var Template = {
 			self.utils.zoom($$('#snapshots'), $$('#rules-list'));
 
 			self.rules.show_snapshots();
-		});
-
-		$$('#close-snapshots').click(function () {
+		}).on('click', '#close-snapshots', function () {
 			var go_to = $$('.zoom-window-hidden:last').addClass('zoom-window-open zoom-window');
 		
 			$$('#rules-list').find('.snapshot-info').hide();
@@ -3148,9 +2995,7 @@ var Template = {
 				if (go_to.is('#rules-list'))
 					self.rules.show();
 			});
-		});
-
-		$$('#create-snapshot').click(function () {
+		}).on('click', '#create-snapshot', function () {
 			var off = self.utils.position_poppy(this, 0, 14);
 
 			self.rules.snapshots.add(self.rules.rules, 1, 0);
@@ -3161,9 +3006,7 @@ var Template = {
 				}, 1000, [self.rules]);
 
 			new Poppy(off.left, off.top, _('Snapshot created.'));
-		});
-		
-		$$('#make-temp-perm').click(function () {
+		}).on('click', '#make-temp-perm', function () {
 			if (self.rules.using_snapshot) return;
 
 			var off = $(this).offset();
@@ -3183,9 +3026,7 @@ var Template = {
 			$$('#filter-type-state li.selected').click();
 			
 			new Poppy(2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('All temporary rules are now permanent.') + '</p>');
-		});
-		
-		$$('#remove-all-temp').click(function () {
+		}).on('click', '#remove-all-temp', function () {
 			if (self.rules.using_snapshot) return;
 
 			var off = $(this).offset();
@@ -3208,9 +3049,7 @@ var Template = {
 			$$('#filter-type-state li.selected').click();
 			
 			new Poppy(-2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('All temporary rules have been removed.') + '</p>');
-		});
-
-		$$('#reinstall-pre').click(function () {
+		}).on('click', '#reinstall-pre', function () {
 			if (self.rules.using_snapshot) return;
 
 			var off = $(this).offset(), key;
@@ -3223,9 +3062,7 @@ var Template = {
 			new Poppy(2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('Whitelist and blacklist rules have been reinstalled.') + '</p>');
 
 			self.busy = 0;
-		});
-		
-		$$('#domain-filter').bind('search', function () {
+		}).on('search', '#domain-filter', function () {
 			self.busy = 1;
 
 			$$('#show-active-rules').toggleClass('using', $(this).data('active') === this.value);
@@ -3280,9 +3117,7 @@ var Template = {
 			});
 
 			self.busy = 0;
-		});
-		
-		$$('#filter-type-collapse li').not('.label').click(function () {
+		}).on('click', '#filter-type-collapse li:not(.label)', function () {
 			self.busy = 1;
 			
 			$(this).siblings('li').removeClass('selected').end().addClass('selected');
@@ -3303,9 +3138,7 @@ var Template = {
 					$$('#domain-filter').trigger('search');
 				}, [self]);
 			}, [self, this]);
-		});
-		
-		$$('#filter-type-state li:not(.filter-divider)').not('.label').click(function () {
+		}).on('click', '#filter-type-state li:not(.filter-divider):not(.label)', function () {
 			self.busy = 1;
 			
 			var that = this;
@@ -3366,14 +3199,10 @@ var Template = {
 			self.utils.zero_timeout(function (self) {				
 				$$('#domain-filter').trigger('search');
 			}, [self]);
-		});
-		
-		$(this.popover).on('click', 'a.outside', function (e) {
+		}).on('click', '.outside', function (e) {
 			e.preventDefault();
 			self.utils.open_url(this.href);
-		});
-		
-		$$('#unlock').click(function () {
+		}).on('click', '#unlock', function () {
 			var off = self.utils.position_poppy(this, 1, 14);
 			
 			if (self.donationVerified && !self.trial_active()) return new Poppy(off.left, off.top, _('All features are already unlocked.'));
@@ -3381,11 +3210,9 @@ var Template = {
 			var pop = self.poppies.verify_donation.call([off.left, off.top, 0], self);
 			
 			new Poppy(off.left, off.top, pop);
-		});
-		
-		$$('#js-help').click(function () {
+		}).on('click', '#js-help', function () {
 			self.utils.open_url('http://javascript-blocker.toggleable.com/help');
-		}).siblings('#js-settings').click(function () {
+		}).on('click', '#js-settings', function () {
 			Popover.hide();
 
 			Tabs.active(function (tab) {
@@ -3394,9 +3221,7 @@ var Template = {
 				else
 					self.utils.open_url(ExtensionURL('settings.html'));
 			});
-		});
-
-		$(this.popover).on('click', '.toggle-rules', function () {
+		}).on('click', '.toggle-rules', function () {
 			var e = $(this).parent().nextAll('.rules-list-container:first').find('.rules-wrapper').show(),
 					a = e.css('opacity') === '1',
 					o = e.outerHeight(), oT = e.outerHeight(true);
@@ -3429,7 +3254,7 @@ var Template = {
 					$$('#rules-list').trigger('scroll');
 				}
 			});
-		}).on('click', 'a.toggle-main', function (event) {
+		}).on('click', '.toggle-main', function (event) {
 			var me = $(this),
 					head = me.parent(),
 					pos = me.hasClass('floater') ? me.next().attr('id') : this.id,
@@ -3462,7 +3287,7 @@ var Template = {
 			
 				$(this).parent().prev().toggleClass('collapsed', a).css('opacity', 1);
 			});
-		}).on('click', 'a.toggle-snapshots', function () {
+		}).on('click', '.toggle-snapshots', function () {
 			var e = $(this).parent().parent().next().find('ul').show(),
 					a = e.css('opacity') === '1',
 					o = e.outerHeight(), oT = e.outerHeight(true);
@@ -3479,9 +3304,7 @@ var Template = {
 				this.style.opacity = a ? 0 : 1;
 				this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
 			});
-		});
-		
-		$$('#page-lists-label').dblclick(function () {
+		}).on('dblclick', '#page-lists-label', function () {
 			var l = $.extend({}, window.localStorage);
 			delete l.Rules;
 			delete l.CollapsedDomains;
@@ -3511,9 +3334,7 @@ var Template = {
 				t.selectionStart = 0;
 				t.selectionEnd = t.innerHTML.length;
 			});
-		});
-		
-		$$('#next-frame, #previous-frame').click(function () {
+		}).on('click', '#next-frame, #previous-frame', function () {
 			var page = $$('#page-list'), index = page[0].selectedIndex, max = $('option', page).length - 1;
 			
 			if (this.id === 'next-frame') {
@@ -3525,9 +3346,7 @@ var Template = {
 			}
 			
 			page.trigger('change');
-		});
-				
-		$$('#jsblocker-name').dblclick(function () {
+		}).on('dblclick', '#jsblocker-name', function () {
 			var off = self.utils.position_poppy(this, 9, 14);
 
 			new Poppy(off.left, off.top, [
@@ -3546,6 +3365,143 @@ var Template = {
 					$('li:not(#console-header)', l).remove();
 					$$('#jsblocker-name').trigger('dblclick');
 				});
+			});
+		}).on('click', '.show-scripts', function () {
+			var off = $(this).offset(), scripts = $(this.parentNode.parentNode).data('script').map(function (v) { return encodeURI(v); });
+
+			new Poppy(off.left + 2 + $(this).width() / 2, off.top + 10, [
+				'<ul>',
+					'<li><span><a href="javascript:void(0)">', scripts.join(['</a></span> ',
+						'<div class="divider"></div>',
+					'</li>',
+					'<li><span><a href="javascript:void(0)">'].join('')), '</a></span></li>',
+				'</ul>'].join(''), function () {
+					$$('#poppy a').click(function (e) {
+						e.preventDefault();
+						self.utils.open_url($('<div />').html(this.innerHTML).text());
+					}).parent().scrollLeft(88888);
+				});
+		}).on('click', '.show-more', function () {
+			$(this).parent().parent().nextUntil('.kind-header').filter('.show-more-hidden:not(.hidden-by-rule)')
+					.show().removeClass('show-more-hidden').end().end()
+					.remove()
+			$$('#find-bar-search:visible').trigger('search');
+		}).on('click', '.snapshot-date', function (event, t) {
+			var snapshots = self.rules.snapshots.all(1),
+					using = $(this).parents('li:first').hasClass('using'),
+					me = $(this), off = me.offset(), left = t ? t.pageX : event.pageX, top = off.top + 12,
+					li = me.parents('li:first'),
+					id = me.attr('data-id');
+
+			new Poppy(left, top, [
+				'<input type="button" value="', _('Name'), '" id="name-snapshot" /> ',
+				'<input type="button" value="', _('Compare'), '" id="compare-snapshot" /> ',
+				'<input type="button" value="', _(snapshots[id].keep ? 'Unkeep' : 'Keep'), '" id="keep-snapshot" /> ',
+				'<input type="button" value="', _('Delete'), '" id="delete-snapshot" />',
+			].join(''), function () {
+				$$('#name-snapshot').click(function () {
+					new Poppy(left, top, [
+						'<input type="text" id="snapshot-name" value="', self.rules.snapshots.name(id), '" /> ',
+						'<input type="button" id="save-name" value="', _('Save'), '" class="onenter" />'
+					].join(''), function () {
+						$$('#snapshot-name').focus().keypress(function (e) {
+							if (e.which === 13 || e.which === 3) $$('#save-name').click();
+						}).siblings('#save-name').click(function () {
+							var v = $.trim($(this).siblings('#snapshot-name').val()), v = v.length ? v : null,
+									cname = self.rules.snapshots.name(id);
+							
+							if (self.rules.snapshots.name(id, v) === false && self.rules.snapshots.name(id) !== v) {
+								$$('#poppy').toggleClass('slow', self.speedMultiplier > 1).addClass('shake').one('webkitAnimationEnd', function () {
+									$(this).removeClass('shake slow');
+								}).find('#snapshot-name').focus();
+							} else {
+								new Poppy();
+
+								self.utils.timer.timeout('show_snapshots', function (self, id) {
+									if (id === self.using_snapshot)
+										self.rules.use_snapshot(id);
+
+									self.rules.show_snapshots();
+								}, 200, [self, id]);
+							}
+						});
+					});
+				}).siblings('#compare-snapshot').click(function () {
+					new Poppy(left, top, [
+						'<p class="misc-info">', _('Show Rules'), '</p>',
+						'<input type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
+						'<input type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
+						'<input type="button" value="', _('In Both'), '" id="compare-both" data-type="both" /> ',
+					].join(''), function () {
+						$$('#poppy input').click(function () {
+							new Poppy();
+
+							var compare = self.rules.snapshots.compare(id, self.rules.current_rules), dir = this.getAttribute('data-type'), mes,
+									cache_id = self.rules.snapshots.add(compare[dir], 1, 'Comparison Cache (' + +new Date() + ')');
+
+							self.rules.use_snapshot(cache_id);
+
+							self.utils.zoom($$('#snapshots'), $$('#rules-list'), null, function () {
+								self.rules.show();
+								self.rules.snapshots.remove(cache_id);
+							});
+
+							if (dir === 'left') mes = 'Rules Only in Snapshot: {1}';
+							else if (dir === 'right') mes = 'Rules Not in Snapshot: {1}';
+							else mes = 'Rules in Both My Rules and Snapshot: {1}';
+
+							$$('#rules-list .snapshot-info').show().html(_(mes, [self.rules.snapshots.name_or_date(id)]));
+						});
+					});
+				}).siblings('#keep-snapshot').click(function () {
+					if (this.value === _('Keep'))
+						self.rules.snapshots.keep(id);
+					else {
+						if (!self.utils.confirm_click(this)) return false;
+
+						self.rules.snapshots.unkeep(id);
+					}
+
+					self.rules.show_snapshots();
+
+					new Poppy();
+				}).siblings('#delete-snapshot').click(function () {
+					if (!self.utils.confirm_click(this)) return false;
+
+					new Poppy();
+
+					self.rules.snapshots.remove(id);
+
+					if (id === self.rules.using_snapshot) self.rules.use_snapshot(0);
+
+					li.animate({
+						top: li.height() - parseInt(li.css('marginTop')),
+						right: -li.outerWidth(),
+						opacity: 0,
+						padding: 0,
+						marginTop: -li.height()
+					}, 200 * self.speedMultiplier, function () {
+						$(this).remove();
+						
+						self.utils.timer.timeout('show_snapshots', function (self) {
+							self.rules.show_snapshots();
+						}, 1000, [self]);
+					});
+				});
+			});
+		}).on('click', '.preview-snapshot', function () {
+			new Poppy();
+
+			var id = $(this).prev().attr('data-id'), me = this;
+
+			self.utils.zoom($$('#snapshots'), $$('#rules-list'), null, function () {
+				self.rules.use_snapshot(me.value === _('Close Preview') ? 0 : id);
+				self.rules.show();
+			}, function () {
+				var parts = $$('#domain-filter').trigger('search').data('parts');
+												
+				for (var i = 0; i < parts.length; i++)
+					$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + parts[i] + '"].hidden').click();
 			});
 		});
 	},
@@ -3623,8 +3579,8 @@ var Template = {
 					kind: key
 				})).appendTo(el).filter('div').find('ul');
 			
-			ul.css('display', do_hide ? 'none' : 'block');
-			ul.parent().prev().toggleClass('collapsed', do_hide).toggleClass('visible', !do_hide).find('.toggle-main').html(_(do_hide ? 'Show' : 'Hide'));;
+			ul.css('display', do_hide ? 'none' : 'block')
+				.parent().prev().toggleClass('collapsed', do_hide).toggleClass('visible', !do_hide).find('.toggle-main').html(_(do_hide ? 'Show' : 'Hide'));;
 
 			if (self.simpleMode && text !== 'unblocked') {		
 				cn += jsblocker[text][key].unique.length;
@@ -3649,7 +3605,7 @@ var Template = {
 							add_item(i, key, jitem);
 
 					if (text !== 'unblocked' && !~key.indexOf('hide_')) {
-						var al = self.rules.allowed('hide_' + key, ['hide_' + key, jsblocker.href, key === 'special' ? jitem : jitem[0], false]);
+						var al = self.rules.allowed(['hide_' + key, jsblocker.href, key === 'special' ? jitem : jitem[0], false]);
 
 						if (al[1] === 42) {
 							li.addClass('hidden-by-rule');
@@ -3676,13 +3632,12 @@ var Template = {
 					show_me.nextAll().removeClass('show-more-hidden').end().remove();
 				
 				if (do_hide) ul.css({ marginTop: -999999, opacity: 0 }).removeClass('visible');
-			} else
+			}
+				
+			if (!$('li:not(.hidden-by-rule)', ul).length || !jsblocker[text][key].all.length)
 				ul.parent().hide().prev().hide();
 				
-			if (!$('li:not(.hidden-by-rule)', ul).length)
-				ul.parent().hide().prev().hide();
-				
-			$('li .divider:last', ul).css('visibility', 'hidden');
+			$('li .divider:last', ul).addClass('invisible');
 
 			if ($('li:last', ul).is('.hidden-by-rule'))
 				$('li:not(.hidden-by-rule):last .divider', ul).addClass('invisible');
@@ -3695,33 +3650,9 @@ var Template = {
 						for (use_url in shost_list[kind][poopy]) {
 							$('#' + shost_list[kind][poopy][use_url][1], ul).find('small')
 									.html('<a href="javascript:void(0);" class="show-scripts">' + shost_list[kind][poopy][use_url][0] + '</a>');
-						}
-				
-				$('.show-scripts', ul).click(function () {
-					var off = $(this).offset(), scripts = $(this.parentNode.parentNode).data('script').map(function (v) { return encodeURI(v); });
-
-					new Poppy(off.left + 2 + $(this).width() / 2, off.top + 10, [
-						'<ul>',
-							'<li><span><a href="javascript:void(0)">', scripts.join(['</a></span> ',
-								'<div class="divider"></div>',
-							'</li>',
-							'<li><span><a href="javascript:void(0)">'].join('')), '</a></span></li>',
-						'</ul>'].join(''), function () {
-							$$('#poppy a').click(function (e) {
-								e.preventDefault();
-								self.utils.open_url($('<div />').html(this.innerHTML).text());
-							}).parent().scrollLeft(88888);
-						});
-				});
+						}				
 			}
-		
-			$('.show-more', ul).click(function () {
-				$(this).parent().parent().nextUntil('.kind-header').filter('.show-more-hidden:not(.hidden-by-rule)')
-						.show().removeClass('show-more-hidden').end().end()
-						.remove()
-				$$('#find-bar-search:visible').trigger('search');
-			});
-		
+				
 			if (self.collapsed(text)) {
 				$$('.' + text + '-label:not(.hidden)').click();
 				$('.kind-header', ul).removeClass('visible');
@@ -3749,24 +3680,16 @@ var Template = {
 			return this.utils.timer.timeout('do_update_popover', function (self, event, index, badge_only) {
 				self.do_update_popover(event, index, badge_only);
 			}, 1500, [this, event, index, badge_only]);
-
-		$$('.some-helper').remove();
-		$$('.column .info-container').show();
-		$$('#toggle-hidden').addClass('disabled').removeClass('hidden-visible');
 		
 		this.busy = 1;
 
-		if (this.tab.url === event.target.url) {
-			$$('#main:visible').scrollTop(0);
-			
-			var page_list = $$('#page-list'), frame_count = { blocked: 0, allowed: 0 }, frame,
+		if (this.tab.url === event.target.url) {			
+			var frame_count = { blocked: 0, allowed: 0 }, frame,
 					count = { blocked: 0, allowed: 0, unblocked: 0 }, self = this, jsblocker = event.message, toolbarItem = null,
 					frame_items = { blocked: 0, allowed: 0 }, main_items = { blocked: 0, allowed: 0 };
 					
 			this.caches.jsblocker[event.message.href] = jsblocker;
-					
-			page_list.empty().blur();
-			
+								
 			for (var act in jsblocker) {
 				if (act === 'href') continue;
 				for (var kind in jsblocker[act])
@@ -3783,21 +3706,27 @@ var Template = {
 				}
 			}
 
-			$('<optgroup />').attr('label', _('Main Page')).appendTo(page_list).append('<option />').find('option')
-				.attr('value', jsblocker.href)
-				.text(jsblocker.href)
-				.append(Settings.getItem('showPageListCount') ? ' - ' + _('{1} allowed, {2} blocked', [this.simpleMode ? main_items.allowed : count.allowed, this.simpleMode ? main_items.blocked : count.blocked]) : '');
-						
+			if (!badge_only) {
+				var page_list = $$('#page-list').empty().blur();
+
+				$('<optgroup />').attr('label', _('Main Page')).appendTo(page_list).append('<option />').find('option')
+					.attr('value', jsblocker.href)
+					.text(jsblocker.href)
+					.append(Settings.getItem('showPageListCount') ? ' - ' + _('{1} allowed, {2} blocked', [this.simpleMode ? main_items.allowed : count.allowed, this.simpleMode ? main_items.blocked : count.blocked]) : '');
+			}
+
 			if (jsblocker.href in this.frames) {
 				var frame, inline, xx = this.frames[jsblocker.href], d;
 
 				for (frame in xx) {
 					var this_one = { blocked: 0, allowed: 0 };
 
-					if (page_list.find('optgroup').length == 1)
-						inline = $('<optgroup />').attr('label', _('Inline Frame Pages')).appendTo(page_list);
-					else
-						inline = page_list.find('optgroup:eq(1)');
+					if (!badge_only) {
+						if (page_list.find('optgroup').length == 1)
+							inline = $('<optgroup />').attr('label', _('Inline Frame Pages')).appendTo(page_list);
+						else
+							inline = page_list.find('optgroup:eq(1)');
+					}
 
 					for (var act in xx[frame]) {
 						if (act === 'href') continue;
@@ -3824,9 +3753,10 @@ var Template = {
 					
 					d = ('display' in xx[frame]) ? xx[frame].display : xx[frame].href;
 				
-					$('<option />').addClass('frame-page').attr('value', xx[frame].href)
-						.text(d).appendTo(inline)
-						.append(Settings.getItem('showPageListCount') ? ' - ' + _('{1} allowed, {2} blocked', [this_one.allowed, this_one.blocked]) : '');
+					if (!badge_only)
+						$('<option />').addClass('frame-page').attr('value', xx[frame].href)
+							.text(d).appendTo(inline)
+							.append(Settings.getItem('showPageListCount') ? ' - ' + _('{1} allowed, {2} blocked', [this_one.allowed, this_one.blocked]) : '');
 				}
 			}
 			
@@ -3844,7 +3774,11 @@ var Template = {
 						(Settings.getItem('toolbarDisplay') === 'blocked' ? main_items.blocked + frame_items.blocked : 0));
 			}
 			
-			if (!badge_only) {				
+			if (!badge_only) {
+				$$('#main:visible').scrollTop(0);
+				$$('.some-helper').remove();
+				$$('.column .info-container').show();
+				$$('#toggle-hidden').addClass('disabled').removeClass('hidden-visible');	
 				$$('#previous-frame, #next-frame, #frame-switcher .divider').removeClass('disabled').filter('#previous-frame').find('.text').html(_('Main page'));
 				$$('#block-domain, #allow-domain').show();
 				
@@ -3869,7 +3803,7 @@ var Template = {
 
 				$$('#frame-switcher .divider').toggleClass('disabled', $$('#next-frame.disabled, #previous-frame.disabled').length === 2);
 				
-				page_list.attr('title', page_list.val()).unbind('change').one('change', function () {
+				page_list.attr('title', page_list.val()).off('change').one('change', function () {
 					new Poppy();
 					$$('.some-list').removeClass('some-list');
 					self.do_update_popover(event, this.selectedIndex);
@@ -3952,7 +3886,7 @@ var Template = {
 			}
 		}
 	},
-	handle_message: function (event) {		
+	handle_message: function (event) {
 		theSwitch:
 		switch (event.name) {
 			case 'canLoad':
@@ -4009,7 +3943,7 @@ var Template = {
 					break theSwitch;
 				}
 
-				event.message = this.rules.allowed(event.message[0], event.message);
+				event.message = this.rules.allowed(event.message);
 			break;
 
 			case 'setActiveTab':
@@ -4296,6 +4230,8 @@ var Template = {
 		});
 
 		this.utils.once('load', function () {
+			if (!Settings.getItem('persistDisabled')) this.disabled = false;
+
 			this.rules.warm_caches();
 			this.rules.snapshots = new Snapshots(this.rules.which, Settings.getItem('enableSnapshots') ? Settings.getItem('snapshotsLimit') : 0);
 
@@ -4349,7 +4285,7 @@ var Template = {
 					$$('#unblocked-script-urls').hide().prev().hide();
 					
 				var ver = Settings.getItem('donationVerified');
-				ver = (ver === 1 || ver === true || (typeof ver === 'string' && ver.length));
+				ver = (ver === 1 || ver === 777 || ver === true || (typeof ver === 'string' && ver.length));
 
 				$$('#unlock').toggleClass('hidden', ver);
 				$$('#disable').toggleClass('divider', !ver);
@@ -4369,20 +4305,22 @@ var Template = {
 
 		if (event && event.target) {
 			Tabs.active(function (tab) {
-				event.target.disabled = (!tab.length || !tab[0].page);
-				
-				if (event.target.disabled) {
-					ToolbarItems.badge(0);
-					Popover.hide();
-				} else if (!self.methodAllowed)
+				if (!self.disabled) {
+					event.target.disabled = (!tab.length || !tab[0].page);
+					
+					if (event.target.disabled) {
+						ToolbarItems.badge(0);
+						Popover.hide();
+					}
+				}
+				if (!self.methodAllowed)
 					ToolbarItems.badge(999);
 			});
 		}
 	},
 	command: function (event) {
-		if (event.command === 'loadElementsOnce') {
+		if (event.command === 'loadElementsOnce')
 			Tabs.messageActive('loadElementsOnce');
-		}
 	},
 	contextmenu: function (event) {		
 		if (event.userInfo > 0)

@@ -144,7 +144,7 @@ Poppy.prototype = {
 			WebkitTransitionDuration: this._time + 's',
 			WebkitTransform: JB.speedMultiplier < 1 ? 'scale(1)' : 'scale(1.22)',
 			WebkitTransformOrigin: (points.arrow.left + 15) + 'px ' + ((points.main.bottom === 'auto') ? '-5%' : '105%'),
-			opacity: 0.3,
+			opacity: JB.speedMultiplier < 1 ? 1 : 0.3,
 			left: points.main.left,
 			bottom: points.main.bottom,
 			top: points.main.top,
@@ -248,7 +248,7 @@ Poppy.prototype = {
 		
 		return o;
 	},
-	createArrow: function (fill, stroke) {
+	createArrow: function () {
 		var set = $$('#poppy-arrow-settings'), com = window.getComputedStyle(set[0]),
 				shd = 'rgba(0,0,0,0.15)', bg = com.backgroundColor, brd = com.borderTopColor,
 				img = com.backgroundImage, ig, trans, trans_flip,

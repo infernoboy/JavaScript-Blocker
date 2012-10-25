@@ -419,8 +419,7 @@ body:not(.simplified) .rule.temporary {
 	color: #888;
 }
 
-label,
-select.single {
+label {
 	color: #555;
 }
 
@@ -1191,7 +1190,7 @@ div.divider {
 			}
 				#toggle-hidden.hidden-visible {
 					color: #0069de;
-					text-shadow: 0 1px 0 rgba(255,255,255,0.6), 0 0 2px rgba(0,105,222,0.45) !important;
+					text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 0 2px rgba(0,105,222,0.45) !important;
 				}
 		#main li.divider {
 			padding-left: 6px !important;

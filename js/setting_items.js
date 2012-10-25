@@ -47,6 +47,9 @@ Settings.settings = {
 		},
 		usingSnapshot: {
 			default: 0
+		},
+		isDisabled: {
+			default: false
 		}
 	},
 	ui: {
@@ -72,6 +75,11 @@ Settings.settings = {
 			setting: true,
 			default: true,
 			help: 'highlight help'
+		},
+		persistDisabled: {
+			label: 'Disabled mode persist across Safari restarts',
+			setting: false,
+			default: false
 		},
 		showUnblocked: {
 			label: 'Show scripts that can\'t be blocked',

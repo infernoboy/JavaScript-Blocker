@@ -89,6 +89,7 @@ Strings['en-us'] = {
 	'Show Active': 'Show Active',
 	'Show': 'Show',
 	'Hide': 'Hide',
+	'Back': 'Back',
 	'Continue': 'Continue',
 	'View script Source': 'View Script Source',
 	'View frame Source': 'View Frame Source',
@@ -224,6 +225,9 @@ Strings['en-us'] = {
 	'Rule added to current rule set.': 'Rule added to current rule set.', // NEW
 	'Snapshot created.': 'A new snapshot has been created.', // NEW
 	'You have {1} snapshots using {2} of storage.': 'You have {1} snapshots using {2} of storage.', // NEW
+
+	'By clicking continue': 'By clicking continue, all features will be unlocked permanently. If in the future you want to ' +
+		'make a donation, you can find a link to do so from the <b>About</b> section of the settings page.',
 	/** /POPPIES **/
 	
 	/** ERRORS-ISH **/
@@ -367,17 +371,17 @@ Strings['en-us'] = {
 	/** /SPECIALS **/
 			
 	/** DONATION STUFF **/
-	'Donator-only Features': 'Pay-for Features', // NEW
+	'Donator-only Features': 'Extra Features', // NEW
 	'Trial remaining {1} days, {2} hours, and {3} minutes': 'You have {1} days, {2} hours, and {3} minutes remaining in your free trial.', // TO BE DELETED
 	'Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>': 'You have {1} days, {2} hours, and {3} minutes remaining in your trial of the <b>{4}</b>', // UPDATED
-		'donator-only features.': 'pay-for features.',
-	'Free trial expired': 'Your free trial has expired. You must make a contribution and have it verified in order to continue using the pay-for features of {1}.', // NEW
+		'donator-only features.': 'extra features.',
+	'Free trial expired': 'Your free trial has expired. You must make a contribution and have it verified in order to continue using the extra features of {1}, or <b>Unlock Without Contributing</b>.', // NEW
 	'Remember for free': 'If you are unable to make a contribution (or just don\'t want to), <a href="mailto:travis@toggleable.com?subject=I cannot contribute to JavaScript Blocker">contact me</a> ' +
-		'and you can have access to all the pay-for features for free.', // NEW
+		'and you can have access to all the extra features for free.', // NEW
 	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
 	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
 	'Please, if you can': 'Please, if you can, show your support by making a contribution of any amount. ' +
-			'It would be greatly appreciated and you will have unlimited access to all the pay-for features of JavaScript Blocker!', // UPDATED
+			'It would be greatly appreciated and you will have unlimited access to all the extra features of JavaScript Blocker!', // UPDATED
 	'Donation Verification': 'Payment Verification', // UPDATED
 	'To complete the unlocking': 'To unlock all features permanently, you must enter the email address you used to make your payment. Please note that ' +
 			'it may take up to 24 hours for it to become active on the server.', // UPDATED
@@ -386,12 +390,14 @@ Strings['en-us'] = {
 	'A donation with that email address was not found.': 'A contribution with that email address was not found.', // UPDATED
 	'The maximum number': 'The maximum number of activations has been used for that email address.',
 	'Your donation has been verified': 'Your payment has been verified and all features have been unlocked.', // UPDATED
+	'Unlocked without contributing': 'All features have been unlocked for free. If you would like to make a donation, you may do so ' +
+		'from the <a class="outside" href="http://javascript-blocker.toggleable.com/donate">donation page</a>.',
 	'You may unlock {1}': 'You may unlock JavaScript Blocker on {1} more copies of Safari.',
 	'Thanks for your support!': 'Thanks for your support!',
 	'All features are already unlocked.': 'All features are already unlocked.',
 	'Donation Required': 'A verified contribution is required to use that feature. Click "Unlock All Features Permanently" from the main window to do so.', // UPDATED
-	"I can't donate": "I can't contribute", // UPDATED
-	'What donation?': 'What pay-for features are there?', // UPDATED
+	"Unlock Without Contributing": "Unlock Without Contributing", // UPDATED
+	'What donation?': 'What extra features are there?', // UPDATED
 	'You cannot use JavaScript Blocker': 'You cannot use JavaScript Blocker with expert features enabled until you have made a contribution and had it verified.', // UPDATED
 	'Either disable expert': 'Either disable expert features or click <b>{1}</b> below to verify your contribution.', // UPDATED
 	'New donation method {1}': 'Due to many complaints about features not remaining unlocked, a new payment verification system has been created. Please click <b>{1}</b> to verify your payment one final time.', // UPDATED
@@ -410,7 +416,7 @@ Strings['en-us'] = {
 	'Search': 'Search',
 	'About': 'About',
 	
-	'Donator-only features': 'Pay-for features', // Header displayed above the section containing donator-only features.
+	'Donator-only features': 'Extra features', // Header displayed above the section containing donator-only features.
 	
 	'Language:': 'Language:',
 	'Sources displayed by default:': 'Sources displayed by default:',
@@ -421,7 +427,7 @@ Strings['en-us'] = {
 	'Use simplified rules': 'Use simplified rules', // NEW
 	'Highlight items that matched a rule': 'Highlight items that matched a rule', // NEW
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
-	'Hide donator-only features': 'Hide pay-for features', // NEW
+	'Hide donator-only features': 'Hide extra features', // NEW
 	'Show the number of items blocked or allowed for each host': 'Show number of items blocked/allowed per host',
 	'Show blocked and allowed resources in page list': 'Show number of blocked and allowed resources in page selector',
 	'Show whitelist and blacklist rules in the rule list': 'Show whitelist and blacklist rules in the rule list', // NEW
@@ -455,6 +461,7 @@ Strings['en-us'] = {
 	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete <span class="aside">— Autocomplete disablers</span>', // NEW
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
+	'Disabled mode persist across Safari restarts': 'Disabled mode persist across Safari restarts',
 
 	'The short URL—{1}—is redirecting you to: {2} {3} Do you want to continue?':
 		"The short URL—{1}—is redirecting you to:\n\n{2}\n{3}\n\nDo you want to continue?", // NEW

@@ -443,7 +443,7 @@ Events.addTabListener('message', function (event) {
 
 			$('#js-displayv').html(dv);
 			$('#js-bundleid').html(bi);
-			
+						
 			if (!don) {
 				if (event.message.trial_active)
 					$('#trial-remaining').html([
@@ -454,7 +454,10 @@ Events.addTabListener('message', function (event) {
 						'<p>', _('Free trial expired', [_('JavaScript Blocker')]), '</p>',
 						'<p><a href="http://javascript-blocker.toggleable.com/donation_only" target="_top">', _('What donation?'), '</a></p>',
 						'<p>', _('Remember for free'), '<p>'].join(''));
-			} else
+			} else if (don === 777)
+				$('#trial-remaining').html([
+					'<p>', _('Unlocked without contributing'), '</p>'].join(''));
+			else
 				$('#trial-remaining').html(_('Your donation has been verified') + ' ' + _('Thanks for your support!'));
 		break;
 

@@ -261,22 +261,12 @@ function doSpecial(do_append, n, action) {
 	}
 }
 
-if (typeof if_setting === 'function') {
-	for (var n in special_actions)
-		doSpecial(1, n, special_actions[n]);
+if (typeof beforeLoad === 'undefined' || !ResourceCanLoad(beforeLoad, ['disabled'])) {
+	if (typeof if_setting === 'function') {
+		for (var n in special_actions)
+			doSpecial(1, n, special_actions[n]);
 
-	for (var b in non_injected_special_actions)
-		doSpecial(0, b, non_injected_special_actions[b]);
-
-	if_setting('simpleReferrer', true, function () {
-		appendScript(function () {
-			document.addEventListener('DOMContentLoaded', function () {
-				var meta = document.createElement('meta');
-				meta.setAttribute('name', 'referrer');
-				meta.setAttribute('content', 'never');
-
-				document.head.appendChild(meta);
-			});
-		}, true);
-	});
+		for (var b in non_injected_special_actions)
+			doSpecial(0, b, non_injected_special_actions[b]);
+	}
 }
