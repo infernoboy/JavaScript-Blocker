@@ -103,6 +103,7 @@ function createPlaceholder(e, host, url) {
 			h = e.offsetHeight <= 12 ? e.offsetHeight : e.offsetHeight - 12;
 	
 	pl.className = 'jsblocker-placeholder';
+	pl.id = 'placeholder-' + +new Date();
 
 	setCSSs(pl, {
 		display: 'inline-block',

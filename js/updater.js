@@ -3,7 +3,7 @@
 JB.updater = function () {
 	var v = this.installedBundle, self = this;
 				
-	if ((v === this.bundleid && !this.isBeta) || this.silence) return false;
+	if (v === this.bundleid && !this.isBeta) return false;
 	
 	switch (true) {
 		case v < 53: // Too Old

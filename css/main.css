@@ -1181,6 +1181,9 @@ div.divider {
 			#unlock {
 				color: #803200;
 			}
+				#unlock.contribute {
+					color: #0058ca;
+				}
 			body.disabled #disable {
 				color: #008602;
 			}

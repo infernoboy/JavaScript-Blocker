@@ -112,9 +112,9 @@ var Template = {
 	},
 
 	donate: function () {
-		var self = this;
+		var self = this, status = Settings.getItem('donationVerified');
 				
-		if (!Settings.getItem('donationVerified'))
+		if (!status || status === 777)
 			new Poppy($(this.popover.body).width() / 2, 0, [
 				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/240">' + this.displayv + '</a>']), '</p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
@@ -2434,7 +2434,7 @@ var Template = {
 			
 			new Poppy(left, off.top + 12, padd);
 		}).on('click', '#allowed-script-urls .info-link, #blocked-script-urls .info-link', url_display)
-			.on('click', '#unblocked-script-urls li span', function() {
+			.on('click', '#unblocked-script-urls li:not(.show-me-more) span', function() {
 			var t = $(this).text();
 			
 			function do_highlight (t, no_zoom) {
@@ -2726,7 +2726,7 @@ var Template = {
 					}).end().find('select').mousedown(function () {
 						$(this).prev().attr('checked', 'checked');
 					}).end().find('.save-some').click(function () {
-						var som = $('.main-wrapper li', parent), item;
+						var som = $('.main-wrapper li.some-thing', parent), item;
 
 						this.disabled = 1;
 
@@ -2735,7 +2735,7 @@ var Template = {
 
 							if (!item.find('input:checked').length) continue;
 
-							var rule = item.find('select, input[type="text"]').val(), kind = ($('.which-type', parent).val() === '42' ? 'hide_' : '') + item.data('kind');
+							var rule = item.find('select, textarea').val(), kind = ($('.which-type', parent).val() === '42' ? 'hide_' : '') + item.data('kind');
 
 							self.rules.add(kind, $('.domain-picker', parent).val(), rule, $('.which-type', parent).val(), true, $('.domain-script-temporary', parent).is(':checked'));
 						}
@@ -3203,11 +3203,8 @@ var Template = {
 			e.preventDefault();
 			self.utils.open_url(this.href);
 		}).on('click', '#unlock', function () {
-			var off = self.utils.position_poppy(this, 1, 14);
-			
-			if (self.donationVerified && !self.trial_active()) return new Poppy(off.left, off.top, _('All features are already unlocked.'));
-			
-			var pop = self.poppies.verify_donation.call([off.left, off.top, 0], self);
+			var off = self.utils.position_poppy(this, 1, 14),
+					pop = self.poppies.verify_donation.call([off.left, off.top, 0], self);
 			
 			new Poppy(off.left, off.top, pop);
 		}).on('click', '#js-help', function () {
@@ -4284,11 +4281,11 @@ var Template = {
 				else
 					$$('#unblocked-script-urls').hide().prev().hide();
 					
-				var ver = Settings.getItem('donationVerified');
-				ver = (ver === 1 || ver === 777 || ver === true || (typeof ver === 'string' && ver.length));
+				var verc = Settings.getItem('donationVerified'),
+						ver = (verc === 1 || verc === 777 || verc === true || (typeof verc === 'string' && verc.length));
 
-				$$('#unlock').toggleClass('hidden', ver);
-				$$('#disable').toggleClass('divider', !ver);
+				$$('#unlock').toggleClass('hidden', ver && verc !== 777).text(verc === 777 ? _('Contribute') : _('Unlock')).toggleClass('contribute', verc === 777);
+				$$('#disable').toggleClass('divider', !ver || verc === 777);
 				$$('#console-access').css('display', this.isBeta ? 'block' : 'none');
 
 				$$('#main .actions-bar li:not(#jsblocker-name)').toggleClass('selectable', Settings.getItem('traverseMainActions'));

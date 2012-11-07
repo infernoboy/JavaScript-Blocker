@@ -112,7 +112,7 @@ Strings['en-us'] = {
 	'Leave Settings Alone': 'Leave Settings Alone', // TO BE DELETED
 	'Make a Donation': 'Make a Contribution', // UPDATED
 	'Maybe Later': 'Maybe Later',
-	'I\'ve Donated!': 'I\'ve Paid!', // UPDATED
+	'I\'ve Donated!': 'I\'ve Contributed', // UPDATED
 	'Unblocked Script': 'Unblockable Script',
 	'More Info': 'Safety Info',
 	'Unlock': 'Unlock',
@@ -186,6 +186,7 @@ Strings['en-us'] = {
 	'Load {1} Blocked Elements': 'Load {1} Blocked Elements', // NEW
 	'Load {1} Blocked Element': 'Load {1} Blocked Element', // NEW
 	'{1} allowed, {2} blocked': '{1} allowed, {2} blocked', // NEW
+	'Contribute': 'Contribute',
 	/** /BUTTONS **/
 	
 	/** POPPIES **/
@@ -227,7 +228,7 @@ Strings['en-us'] = {
 	'You have {1} snapshots using {2} of storage.': 'You have {1} snapshots using {2} of storage.', // NEW
 
 	'By clicking continue': 'By clicking continue, all features will be unlocked permanently. If in the future you want to ' +
-		'make a donation, you can find a link to do so from the <b>About</b> section of the settings page.',
+		'make a donation, click <b>Contribute</b> (the <b>Unlock</b> button will be renamed) and then <b>Make a Contribution</b>.',
 	/** /POPPIES **/
 	
 	/** ERRORS-ISH **/
@@ -381,7 +382,7 @@ Strings['en-us'] = {
 	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
 	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
 	'Please, if you can': 'Please, if you can, show your support by making a contribution of any amount. ' +
-			'It would be greatly appreciated and you will have unlimited access to all the extra features of JavaScript Blocker!', // UPDATED
+			'It would be greatly appreciated and you will have unlimited access to all the extra features of JavaScript Blocker.', // UPDATED
 	'Donation Verification': 'Payment Verification', // UPDATED
 	'To complete the unlocking': 'To unlock all features permanently, you must enter the email address you used to make your payment. Please note that ' +
 			'it may take up to 24 hours for it to become active on the server.', // UPDATED
@@ -525,7 +526,7 @@ Strings['en-us'] = {
 	 'Snapshots disabled': 'Snapshots are disabled.',
 	 'Enable rule snapshots': 'Enable rule snapshots',
 	 'Create a snapshot when rules are modified': 'Create a snapshot when rules are modified',
-	 'Store only': 'Store only',
+	 'Store only': 'Store up to',
 	 'unkept snapshots': 'unkept snapshots',
 
 	 // Keyboard
@@ -558,7 +559,7 @@ Strings['en-us'] = {
 		'Please check your firewall and/or Little Snitch settings and try again. If everything seems okay, the server itself may be down temporarily.', // NEW
 
 	'These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.':
-		'These actions are permanent and cannot be undone. If you are a paid user, create a backup before proceeding.',
+		'These actions are permanent and cannot be undone. If you can, create a backup before proceeding.',
 	
 	'Reset all settings to their default values:': 'Reset all settings to their default values:', // label
 	'Reset Settings': 'Reset Settings', // button
