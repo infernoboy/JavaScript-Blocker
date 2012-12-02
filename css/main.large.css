@@ -5,6 +5,7 @@ p.misc-info select {
 	font-size: 11pt;
 }
 
+
 #page-list {
 	width: 412px;
 }
@@ -71,6 +72,14 @@ p.misc-header,
 #main .actions-bar li {
 	font-size: 8pt;
 }
+
+#main .actions-bar #jsblocker-name {
+	font-size: 6pt;
+}
+	#main .actions-bar #jsblocker-name span {
+		margin-top: 2px;
+	}
+
 header h3,
 header a {
 	font-size: 13px;

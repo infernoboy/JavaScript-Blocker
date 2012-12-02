@@ -84,8 +84,8 @@ var Template = {
 	speedMultiplier: 1,
 	optionKey: false,
 	frames: {},
-	displayv: '3.1.4',
-	bundleid: 136,
+	displayv: null,
+	bundleid: null,
 	update_attention_required: 90,
 	beta_attention_required: 1,
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
@@ -582,8 +582,10 @@ var Template = {
 		 * @param {jQuery.Element} hide The element to be hidden/revealed when e is zoomed in or out.
 		 * @param {function} cb Callback function to call once zoom window execution is completed.
 		 */
-		zoom: function (e, hide, onshow, onstart, onhide) {
-			var t = 0.5 * this.speedMultiplier, self = this, start_value, end_value, start_hide_zoom, end_hide_zoom, c;
+		zoom: function (e, onshow, onstart, onhide) {
+			var t = 0.5 * this.speedMultiplier, self = this,
+					hide = e.is('.zoom-window-open') ? $$('.zoom-window-hidden:last') : $$('.whoop').filter(':visible'),
+					start_value, end_value, start_hide_zoom, end_hide_zoom, c;
 
 			if (e.data('isAnimating') || hide.data('isAnimating')) return false;
 
@@ -886,6 +888,8 @@ var Template = {
 				this.cache[kind] = {};
 		},
 		show_snapshots: function () {
+			this.busy = 1;
+
 			var snapshots = this.snapshots.all(1),
 					ul = $$('#current-snapshots'),
 					ul_unkept = $$('#snapshots-list-unkept').empty(),
@@ -893,13 +897,23 @@ var Template = {
 
 			$$('#snapshots-info').html(_('You have {1} snapshots using {2} of storage.', [this.snapshots.count(), this.utils.bsize(this.snapshots.size())]));
 
-			for (var id in snapshots)
+			for (var id in snapshots) {
 				$([
-					'<li class="', id === this.using_snapshot ? 'using' : '', snapshots[id].keep ? ' kept' : '', '">',
+					'<li id="snapshot-', id, '" class="', id === this.using_snapshot ? 'using' : '', snapshots[id].keep ? ' kept' : '', '">',
 						'<a class="', Settings.getItem('traverseSnapshots') ? 'selectable' : '', ' snapshot-date" data-id="', id, '">', snapshots[id].name ? self.utils.escape_html(snapshots[id].name) : this.snapshots.date(id), '</a> ',
-						'<input type="button" value="', self.using_snapshot === id ? _('Close Preview') : _('Open Preview'), '" class="preview-snapshot" /> ',
+						'<input type="button" value="', self.using_snapshot === id ? _('Close Snapshot') : _('Open Preview'), '" class="preview-snapshot" /> ',
 						'<div class="divider"></div>',
 					'</li>'].join('')).appendTo(snapshots[id].keep ? ul_kept : ul_unkept);
+
+				this.utils.zero_timeout(function (rules, id) {
+					var compare = rules.snapshots.compare(id, rules.current_rules);
+					$$('#snapshot-' + id).find('a').toggleClass('equal', compare.equal);
+				}, [this, id]);
+			}
+
+			this.utils.zero_timeout(function (me) {
+				me.busy = 0;
+			}, [this]);
 
 			ul_kept.find('.divider:last').addClass('invisible');
 			ul_unkept.find('.divider:last').addClass('invisible');
@@ -920,7 +934,7 @@ var Template = {
 
 				if (snapshot) {
 					if (!no_info_update)
-						$$('.snapshot-info').show().html(_('Snapshot Preview: {1}', [this.snapshots.name_or_date(id)]));
+						$$('.snapshot-info').show().html(_('Snapshot Preview: {1}', [this.snapshots.name_or_date(id)])).data('id', id);
 					
 					this._loaded = true;
 					this.using_snapshot = id;
@@ -1460,7 +1474,7 @@ var Template = {
 			$$('#edit-domains').removeClass('edit-mode');
 
 			if (this.using_snapshot)
-				$$('.snapshot-info').show().html(_('Snapshot Preview: {1}', [this.snapshots.name_or_date(this.using_snapshot)]));
+				$$('.snapshot-info').show().data('id', this.using_snapshot);
 
 			for (var kind in this.data_types) {
 				if (!$$('#head-' + kind + '-rules').length)
@@ -1721,7 +1735,7 @@ var Template = {
 					m = (f.slideToggle(200 * self.speedMultiplier).toggleClass('visible').hasClass('visible')) ? '-' : '+',
 					mM = m === '-' ? '+' : '-';
 			
-			$$('#main, #rules-list, #misc, #setup, #snapshots').animate({
+			$$('.whoop').animate({
 				height: m + '=' + h,
 				marginTop: mM + '=' + h
 			}, {
@@ -1746,7 +1760,7 @@ var Template = {
 					$$('#misc-content pre').remove();
 					
 					$('<pre />').append('<code class="javascript"></code>').find('code').text(data).end().appendTo($$('#misc-content'));
-					if (!no_zoom) self.utils.zoom($$('#misc').find('.misc-header').text(t.text()).end(), $$('#main'));
+					if (!no_zoom) self.utils.zoom($$('#misc').find('.misc-header').text(t.text()).end());
 					var p = $$('#misc-content pre code');
 					p.data('unhighlighted', p.html());
 					self.hljs.highlightBlock(p[0]);
@@ -1810,7 +1824,7 @@ var Template = {
 								new Poppy();
 								$$('#beautify-script').remove();
 								$$('#misc-content').html('<img src="' + t.html() + '" />');
-								self.utils.zoom($$('#misc').find('.misc-header').text(t.text()).end(), $$('#main'));
+								self.utils.zoom($$('#misc').find('.misc-header').text(t.text()).end());
 								return false;
 							}
 							
@@ -1934,6 +1948,13 @@ var Template = {
 						}, 10, self);
 						
 						if (toggle_find_bar(true)) return false;
+					}
+				break;
+
+				case 83: // S
+					if (e.ctrlKey) {
+						e.preventDefault();
+						$$('#time-machine').click();
 					}
 				break;
 			} 
@@ -2442,7 +2463,7 @@ var Template = {
 				
 				$('<pre></pre>').append('<code class="javascript"></code>').find('code')
 						.text(t).end().appendTo($$('#misc-content'));
-				if (!no_zoom) self.utils.zoom($$('#misc').find('.misc-header').html(_('Unblocked Script')).end(), $$('#main'));
+				if (!no_zoom) self.utils.zoom($$('#misc').find('.misc-header').html(_('Unblocked Script')).end());
 				var p = $$('#misc-content pre code');
 				p.data('unhighlighted', p.html());
 				self.hljs.highlightBlock(p[0]);
@@ -2482,7 +2503,7 @@ var Template = {
 						
 			$$('.find-scroll').remove();
 			
-			$$('#main, #rules-list, #misc, #setup, #snapshots').find('*').each(function () {
+			$$('.whoop').find('*').each(function () {
 				self.utils.zero_timeout(function (e) {
 					if (e.data('orig_html'))
 						e.html(e.data('orig_html')).removeData('orig_html');
@@ -2497,7 +2518,7 @@ var Template = {
 			self.busy = 1;
 			self.finding = true;
 			
-			var visible = $$('#main, #rules-list, #misc, #setup, #snapshots').filter(':visible'),
+			var visible = $$('.whoop').filter(':visible'),
 					offset = $$('#find-bar').outerHeight(),
 					end_find = function (self, visible) {
 						self.busy = 0;
@@ -2811,12 +2832,13 @@ var Template = {
 					' <input type="button" value="', _('Snapshot'), '" id="current-snapshot" />'].join('') : ''
 				].join(''), function () {
 				$$('#current-snapshot').click(function () {
-					var pop = self.poppies.current_snapshot();
+					var pop = self.poppies.current_snapshot(!self.rules.snapshots.exist(self.rules.using_snapshot));
+
 					pop.onshowend = function () {
 						$$('#snapshots-show').off('click').on('click', function () {
 							new Poppy();
 
-							self.utils.zoom($$('#snapshots'), $$('#main'));
+							self.utils.zoom($$('#snapshots'));
 
 							self.rules.show_snapshots();
 						});
@@ -2842,7 +2864,7 @@ var Template = {
 
 					new Poppy();
 
-					self.utils.zoom($$('#rules-list'), $$('#main'), null, null, function () {
+					self.utils.zoom($$('#rules-list'), null, null, function () {
 						var parts = $$('#domain-filter').trigger('search').data('parts');
 							
 						parts.forEach(function (part, i) {
@@ -2887,14 +2909,11 @@ var Template = {
 			var r = $$('#rules-list:not(.zoom-window-animating)');
 
 			if (r.length)
-				self.utils.zoom(r.addClass('zoom-window-open zoom-window'), $$('#main'), function () {
+				self.utils.zoom(r.addClass('zoom-window-open zoom-window'), function () {
 					$$('#rules-list').find('.rules-wrapper').empty().end().find('.snapshot-info').hide();
-				}, function () {
-					if (self.rules.using_snapshot && !self.rules.snapshots.exist(self.rules.using_snapshot))
-						self.rules.use_snapshot(0);
 				});
 		}).on('click', '#misc-close', function() {
-			self.utils.zoom($$('#misc'), $$('.zoom-window-hidden:first'), function () {
+			self.utils.zoom($$('#misc'), function () {
 				$$('#misc-content, p.misc-header').html('');
 			});
 		}).on('click', '.allowed-label, .blocked-label, .unblocked-label', function () {
@@ -2973,7 +2992,6 @@ var Template = {
 			if (!Settings.getItem('enableSnapshots')) return new Poppy(off.left, off.top, _('Snapshots disabled'));
 
 			if (self.rules.using_snapshot && !~this.className.indexOf('force-open')) {
-
 				new Poppy(off.left, off.top, self.poppies.current_snapshot(!self.rules.snapshots.exist(self.rules.using_snapshot)));
 
 				return;
@@ -2981,18 +2999,16 @@ var Template = {
 
 			$(this).removeClass('force-open');
 
-			self.utils.zoom($$('#snapshots'), $$('#rules-list'));
+			self.utils.zoom($$('#snapshots'));
 
 			self.rules.show_snapshots();
-		}).on('click', '#close-snapshots', function () {
-			var go_to = $$('.zoom-window-hidden:last').addClass('zoom-window-open zoom-window');
-		
+		}).on('click', '#close-snapshots', function () {		
 			$$('#rules-list').find('.snapshot-info').hide();
 			
-			self.utils.zoom($$('#snapshots'), go_to, $.noop, function () {
+			self.utils.zoom($$('#snapshots'), $.noop, function () {
 				if (self.rules.using_snapshot && !self.rules.snapshots.exist(self.rules.using_snapshot))
 					self.rules.use_snapshot(0);
-				if (go_to.is('#rules-list'))
+				if ($$('.zoom-window-hidden:last').is('#rules-list'))
 					self.rules.show();
 			});
 		}).on('click', '#create-snapshot', function () {
@@ -3428,26 +3444,28 @@ var Template = {
 						'<p class="misc-info">', _('Show Rules'), '</p>',
 						'<input type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
 						'<input type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
-						'<input type="button" value="', _('In Both'), '" id="compare-both" data-type="both" /> ',
+						'<input type="button" value="', _('In Both'), '" id="compare-both" data-type="both" />'
 					].join(''), function () {
 						$$('#poppy input').click(function () {
 							new Poppy();
+
+							$$('#rules-list').addClass('zoom-window-hidden')
 
 							var compare = self.rules.snapshots.compare(id, self.rules.current_rules), dir = this.getAttribute('data-type'), mes,
 									cache_id = self.rules.snapshots.add(compare[dir], 1, 'Comparison Cache (' + +new Date() + ')');
 
 							self.rules.use_snapshot(cache_id);
 
-							self.utils.zoom($$('#snapshots'), $$('#rules-list'), null, function () {
+							self.utils.zoom($$('#snapshots'), null, function () {
 								self.rules.show();
 								self.rules.snapshots.remove(cache_id);
 							});
 
 							if (dir === 'left') mes = 'Rules Only in Snapshot: {1}';
 							else if (dir === 'right') mes = 'Rules Not in Snapshot: {1}';
-							else mes = 'Rules in Both My Rules and Snapshot: {1}';
+							else mes = 'Rules in Both Current Rules and Snapshot: {1}';
 
-							$$('#rules-list .snapshot-info').show().html(_(mes, [self.rules.snapshots.name_or_date(id)]));
+							$$('.snapshot-info').show().html(_(mes, [self.rules.snapshots.name_or_date(id)])).data('id', id);
 						});
 					});
 				}).siblings('#keep-snapshot').click(function () {
@@ -3491,8 +3509,10 @@ var Template = {
 
 			var id = $(this).prev().attr('data-id'), me = this;
 
-			self.utils.zoom($$('#snapshots'), $$('#rules-list'), null, function () {
-				self.rules.use_snapshot(me.value === _('Close Preview') ? 0 : id);
+			$$('#rules-list').addClass('zoom-window-hidden');
+
+			self.utils.zoom($$('#snapshots'), null, function () {
+				self.rules.use_snapshot(me.value === _('Close Snapshot') ? 0 : id);
 				self.rules.show();
 			}, function () {
 				var parts = $$('#domain-filter').trigger('search').data('parts');
@@ -3500,6 +3520,10 @@ var Template = {
 				for (var i = 0; i < parts.length; i++)
 					$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + parts[i] + '"].hidden').click();
 			});
+		}).on('mousedown', 'body > *:not(#poppy,#poppy-secondary,#modal)', function () {
+			new Poppy();
+		}).on('mousedown', 'body > *:not(#poppy-secondary,#modal)', function () {
+			new Poppy(null, null, null, null, null, null, false, true);
 		});
 	},
 	
@@ -4113,7 +4137,7 @@ var Template = {
 		return re;
 	},
 	open_popover: function (event) {
-		var self = this, s = $$('#setup');
+		var self = this;
 
 		if (event && ('type' in event) && event.type == 'popover') {
 			/**
@@ -4153,9 +4177,8 @@ var Template = {
 			}, 100, this, event);
 			
 			try {
-				if (event.target === this.tab && event.type === 'beforeNavigate') {
+				if (event.target === this.tab && event.type === 'beforeNavigate')
 					ToolbarItems.badge(0);
-				}
 			} catch (e) {}
 		}
 		
@@ -4328,6 +4351,16 @@ var Template = {
 JB.rules.__proto__ = JB;
 JB.utils.__proto__ = JB;
 
+$.ajax({
+	url: 'Info.plist',
+	async: false
+}).success(function (xml) {
+	var $xml = $(xml);
+
+	JB.bundleid = parseInt($xml.find('key:contains("CFBundleVersion")').next().text(), 10),
+	JB.displayv = $xml.find('key:contains("CFBundleShortVersionString")').next().text();
+});
+
 window.receiveMessage = function (target, message, data) {
 	JB.handle_message({
 		type: message,
@@ -4367,5 +4400,3 @@ Events.addApplicationListener('popover', JB.open_popover, JB);
 Events.addApplicationListener('validate', JB.validate, JB);
 Events.addApplicationListener('message', JB.handle_message, JB);
 Events.addSettingsListener(JB.setting_changed, JB);
-
-var JavaScriptBlocker = JB;

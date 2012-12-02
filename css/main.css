@@ -130,7 +130,6 @@ header h1 {
 		}
 	#rules-list,
 	#modal,
-	#setup,
 	#misc,
 	#snapshots,
 	#disabled {
@@ -691,8 +690,8 @@ ul li > span {
 		background: -webkit-linear-gradient(left, rgba(255,0,60,0), rgba(255,0,60,0.05) 20%, rgba(255,0,60,0.06) 50%, rgba(255,0,60,0.05) 80%, rgba(255,0,60,0));
 	}
 		body.highlight-matched #main #allowed-column li.by-rule.rule-type-5:not(.unblockable) {
-		background: -webkit-linear-gradient(left, rgba(0,255,0,0), rgba(0,255,0,0.05) 20%, rgba(0,255,0,0.1) 50%, rgba(0,255,0,0.05) 80%, rgba(0,255,0,0));
-			}
+			background: -webkit-linear-gradient(left, rgba(0,255,0,0), rgba(0,255,0,0.05) 20%, rgba(0,255,0,0.1) 50%, rgba(0,255,0,0.05) 80%, rgba(0,255,0,0));
+		}
 	#unblocked-script-urls li span {
 		max-width: 100% !important;
 		margin-left: 0 !important;
@@ -964,6 +963,9 @@ div.divider {
 	body.simple #snapshots .snapshot-date {
 		max-width: 344px;
 	}
+	.snapshot-date.equal {
+		text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 0 5px #33ff55 !important;
+	}
 
 #snapshots .using a {
 	color: green;
@@ -1042,10 +1044,6 @@ div.divider {
 		padding: 0;
 	}
 
-#setup {
-	display: none;
-	font-size: 9pt;
-}
 #page-lists {
 	position: relative;
 	width: 100%;

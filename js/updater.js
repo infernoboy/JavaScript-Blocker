@@ -329,6 +329,12 @@ JB.updater = function () {
 			self.updater();
 		break;
 
+		case v < 137: // 3.1.5
+			var rs = this.rules.rules, k;
+
+			for (k in rs)
+				this.rules.reinstall_predefined(k);
+
 		case v < this.bundleid:
 			this.donate();
 

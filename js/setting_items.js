@@ -124,9 +124,9 @@ Settings.settings = {
 		theme: {
 			label: 'Theme:',
 			setting: [['default', 'Default'], ['metal', 'Textured Metal'], ['lion', 'OS X Lion'], ['linen', 'Blue Linen']],
-			donator: 1,
+			extras: 1,
 			default: 'default',
-			donator_only: 1,
+			extra: 1,
 			divider: 1
 		},
 		simpleMode: {
@@ -135,7 +135,7 @@ Settings.settings = {
 			opposite: 1,
 			default: true,
 			help: 'simpleMode help',
-			donator_only: 1
+			extra: 1
 		}
 	},
 	predefined: {
@@ -154,14 +154,14 @@ Settings.settings = {
 			setting: true,
 			if_setting: ['simpleMode', false],
 			default: true,
-			donator_only: 1
+			extra: 1
 		},
 		savePrivate: {
 			label: '…even if Private Browsing is enabled',
 			setting: true,
 			if_setting: ['simpleMode', false],
 			default: false,
-			donator_only: 1,
+			extra: 1,
 			indent: 1
 		},
 		secureOnly: {
@@ -210,16 +210,16 @@ Settings.settings = {
 		enableframe: {
 			label: 'Enable frame blocker',
 			setting: true,
-			donator: 1,
+			extras: 1,
 			default: true,
-			donator_only: 1
+			extra: 1
 		},
 		showPlaceholderframe: {
 			label: 'Show a placeholder for blocked frames',
 			setting: true,
 			if_setting: ['enableframe', true],
 			default: true,
-			donator_only: 1
+			extra: 1
 		},
 		alwaysBlockframe: {
 			label: 'Automatically block frames from:',
@@ -228,20 +228,20 @@ Settings.settings = {
 			if_setting: ['enableframe', true],
 			help: Settings._alwaysBlockHelp,
 			default: 'domain',
-			donator_only: 1
+			extra: 1
 		},
 		enableembed: {
 			label: 'Enable embed and object blocker',
 			setting: true,
 			default: false,
-			donator_only: 1
+			extra: 1
 		},
 		showPlaceholderembed: {
 			label: 'Show a placeholder for blocked embeds and objects',
 			setting: true,
 			if_setting: ['enableembed', true],
 			default: true,
-			donator_only: 1
+			extra: 1
 		},
 		alwaysBlockembed: {
 			label: 'Automatically block embeds and objects from:',
@@ -250,20 +250,20 @@ Settings.settings = {
 			if_setting: ['enableembed', true],
 			help: Settings._alwaysBlockHelp,
 			default: 'everywhere',
-			donator_only: 1
+			extra: 1
 		},
 		enablevideo: {
 			label: 'Enable video blocker',
 			setting: true,
 			default: false,
-			donator_only: 1
+			extra: 1
 		},
 		showPlaceholdervideo: {
 			label: 'Show a placeholder for blocked videos',
 			setting: true,
 			if_setting: ['enablevideo', true],
 			default: true,
-			donator_only: 1
+			extra: 1
 		},
 		alwaysBlockvideo: {
 			label: 'Automatically block videos from:',
@@ -272,21 +272,21 @@ Settings.settings = {
 			if_setting: ['enablevideo', true],
 			help: Settings._alwaysBlockHelp,
 			default: 'everywhere',
-			donator_only: 1
+			extra: 1
 		},
 		enableimage: {
 			label: 'Enable DOM image blocker',
 			setting: true,
 			help: 'enableimage help',
 			default: false,
-			donator_only: 1
+			extra: 1
 		},
 		showPlaceholderimage: {
 			label: 'Show a placeholder for blocked images',
 			setting: true,
 			if_setting: ['enableimage', true],
 			default: true,
-			donator_only: 1
+			extra: 1
 		},
 		alwaysBlockimage: {
 			label: 'Automatically block images from:',
@@ -294,7 +294,7 @@ Settings.settings = {
 			if_setting: ['enableimage', true],
 			help: Settings._alwaysBlockHelp,
 			default: 'nowhere',
-			donator_only: 1
+			extra: 1
 		}
 	},
 	snapshots: {
@@ -302,15 +302,15 @@ Settings.settings = {
 			default: true,
 			setting: true,
 			label: 'Enable rule snapshots',
-			donator_only: 1,
-			donator: 1,
+			extra: 1,
+			extras: 1,
 			description: 'Snapshots description'
 		},
 		autoSnapshots: {
 			default: true,
 			setting: true,
 			label: 'Create a snapshot when rules are modified',
-			donator_only: 1,
+			extra: 1,
 			if_setting: ['enableSnapshots', true]
 		},
 		snapshotsLimit: {
@@ -318,7 +318,7 @@ Settings.settings = {
 			setting: 1,
 			label: 'Store only',
 			label_after: 'unkept snapshots',
-			donator_only: 1,
+			extra: 1,
 			min: 1,
 			max: 999,
 			if_setting: ['enableSnapshots', true]
@@ -389,10 +389,10 @@ Settings.settings = {
 		blockReferrer: {
 			label: 'EXPERIMENTAL: Enable full referrer blocking',
 			setting: true,
-			donator: 1,
+			extras: 1,
 			divider: 1,
 			default: false,
-			donator_only: 1,
+			extra: 1,
 			help: 'blockReferrer help'
 		},
 		enable_special_alert_dialogs: {
@@ -400,32 +400,32 @@ Settings.settings = {
 			setting: true,
 			description: 'Once any of these features are active,',
 			default: false,
-			donator_only: 1
+			extra: 1
 		},
 		enable_special_confirm_dialogs: {
 			label: 'Disable confirm() popup dialogs and confirm actions automatically',
 			setting: true,
 			default: false,
-			donator_only: 1
+			extra: 1
 		},
 		enable_special_contextmenu_overrides: {
 			label: 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items',
 			setting: true,
 			help: 'contextmenu_overrides help',
 			default: false,
-			donator_only: 1
+			extra: 1
 		},
 		enable_special_window_resize: {
 			label: 'Prevent webpages from resizing the window and creating new windows with a custom size',
 			setting: true,
 			default: false,
-			donator_only: 1
+			extra: 1
 		},
 		enable_special_autocomplete_disabler: {
 			label: 'Prevent webpages from disabling autocomplete',
 			setting: true,
 			default: false,
-			donator_only: 1
+			extra: 1
 		},
 		enable_special_font: {
 			label: 'Custom font for webpages:',
@@ -433,7 +433,7 @@ Settings.settings = {
 			label_after: 'Default webpage font',
 			setting: [[0, 'Webpage default'], ['Helvetica', 'Helvetica'], ['Arial', 'Arial'], ['Times', 'Times'], ['Comic Sans MS', 'Comic Sans MS'], ['other', 'Other…']],
 			default: '0',
-			donator_only: 1
+			extra: 1
 		},
 		enable_special_zoom: {
 			label: 'Custom zoom level for webpages:',
@@ -441,7 +441,7 @@ Settings.settings = {
 			prompt: 'Enter a custom zoom level to use.',
 			setting: [[0, 'Webpage default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%'], ['other', 'Other…']],
 			default: '0',
-			donator_only: 1
+			extra: 1
 		}
 	},
 	about: {
@@ -483,19 +483,25 @@ Settings.settings = {
 		createBackup: {
 			label: 'Create a full backup:',
 			setting: 'Create Backup',
-			donator: 1,
-			donator_only: 1,
+			extras: 1,
+			extra: 1,
 			description: 'Full backup description'
 		},
 		importBackup: {
 			label: 'Import a full backup:',
 			setting: 'Import Backup',
-			donator_only: 1
+			extra: 1,
+			divider: 1
+		},
+		clearSnapshots: {
+			label: 'Delete all snapshots:',
+			setting: 'Delete Snapshots',
+			extra: 1
 		}
 	},
 	search: {
 		headerSearch: {
-			classes: 'donator',
+			classes: 'extras',
 			label: 'No Results',
 			setting: null
 		}

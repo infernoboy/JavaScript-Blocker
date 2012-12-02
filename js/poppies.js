@@ -180,9 +180,14 @@ JB.poppies = {
 					'<input type="button" value="', _('Keep'), '" id="snapshot-keep" /> ',
 					'<input type="button" value="', _('Delete'), '" id="snapshot-delete" />'
 				].join('') : '',
+				'<div class="divider" style="margin:7px 0 6px;"></div>',
+				'<input type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
+				'<input type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
+				'<input type="button" value="', _('In Both'), '" id="compare-both" data-type="both" /> ',
+				'<input type="button" value="', _('All in Snapshot'), '" id="all-rules" />',
 				'<div class="divider" style="margin:7px 0 3px;"></div>',
 				'<div class="inputs">',
-					'<input type="button" value="', _('Close ' + (comparison ? 'Comparison' : 'Preview')), '" id="snapshots-current" /> ',
+					'<input type="button" value="', _('Close ' + (comparison ? 'Comparison' : 'Snapshot')), '" id="snapshots-current" /> ',
 					'<input type="button" value="', _('Show Snapshots'), '" id="snapshots-show" />',
 				'</div>'].join(''),
 			onshowstart: function () {
@@ -240,6 +245,44 @@ JB.poppies = {
 
 					if ($$('#rules-list').is(':visible'))
 						JB.rules.show();
+				});
+
+				$$('#compare-left, #compare-right, #compare-both').click(function () {
+					new Poppy();
+
+					var si = $$('.snapshot-info'),
+							id = si.data('id'),
+							compare = JB.rules.snapshots.compare(id, JB.rules.current_rules), dir = this.getAttribute('data-type'), mes,
+							cache_id = JB.rules.snapshots.add(compare[dir], 1, 'Comparison Cache (' + +new Date() + ')'),
+							fun = function () {
+								JB.rules.show();
+								JB.rules.snapshots.remove(cache_id);
+							};
+
+					JB.rules.use_snapshot(cache_id);
+
+					if ($$('#main').is(':visible'))
+						JB.utils.zoom($$('#rules-list'), null, fun);
+					else
+						fun();
+
+					if (dir === 'left') mes = 'Rules Only in Snapshot: {1}';
+					else if (dir === 'right') mes = 'Rules Not in Snapshot: {1}';
+					else mes = 'Rules in Both Current Rules and Snapshot: {1}';
+
+					si.show().html(_(mes, [JB.rules.snapshots.name_or_date(id)])).data('id', id);
+				});
+
+				$$('#all-rules').click(function () {
+					function fun () {
+						JB.rules.use_snapshot($$('.snapshot-info').data('id'));
+						JB.rules.show();
+					}
+
+					if ($$('#main').is(':visible'))
+						JB.utils.zoom($$('#rules-list'), null, fun);
+					else
+						fun();
 				});
 
 				$$('#snapshots-current').click(function () {

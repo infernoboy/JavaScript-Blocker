@@ -355,7 +355,8 @@ JB.rules.whitelist = {
 			'^(jQuery, the JavaScript framework)?.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js(\\?.*)?$',
 			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.[^.\\/]+\\.js(\\?.*)?$',
 			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.js(\\?.*)?$',
-			'^(jQuery UI, the JavaScript framework to make things pretty)?.*\\/jquery(\\-ui|\\.ui)\\.([^.\\/]+)?\\.js$'
+			'^(jQuery UI, the JavaScript framework to make things pretty)?.*\\/jquery(\\-ui|\\.ui)\\.([^.\\/]+)?\\.js$',
+			'^(reCAPTCHA)?https?:\\/\\/www\\.google\\.com\\/recaptcha\\/api\\/.*$'
 		]
 	},
 	embed: {

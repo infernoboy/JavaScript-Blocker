@@ -175,14 +175,6 @@ Poppy.prototype = {
 				});
 			}, [d.m]);
 		});
-		
-		$('> *:not(#poppy,#poppy-secondary,#modal)', this.p).one('mousedown', function () {
-			new Poppy();
-		});
-
-		$('> *:not(#poppy-secondary,#modal)', this.p).one('mousedown', function () {
-			new Poppy(null, null, null, null, null, null, false, true);
-		});
 
 		$$('#poppy-arrow-settings').toggleClass('flip', $(this.a, m).hasClass('flip'));
 

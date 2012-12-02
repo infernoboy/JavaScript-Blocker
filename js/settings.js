@@ -121,8 +121,10 @@ $.extend(Settings, {
 				}
 			}
 
-			if (this.getAttribute('type') === 'checkbox' && Settings.settings[group][setting].confirm && this.checked)
+			if (this.getAttribute('type') === 'checkbox' && Settings.settings[group][setting].confirm && this.checked) {
+				this.checked = false;
 				this.checked = Settings.settings[group][setting].confirm();
+			}
 
 			Settings.set_value(setting, (this.type === 'checkbox') ? (Settings.settings[group][setting].opposite ? !this.checked : this.checked) : this.value);
 		}).on('click', 'input[type="button"]', function () {
@@ -151,7 +153,7 @@ $.extend(Settings, {
 				break;
 
 				case 'createBackup':
-					if (Settings.invalid_donation_setting()) {
+					if (Settings.extras_active()) {
 						alert(_('Donation Required'), null, 1);
 						break;
 					}
@@ -179,7 +181,7 @@ $.extend(Settings, {
 				break;
 
 				case 'importBackup':
-					if (Settings.invalid_donation_setting()) {
+					if (Settings.extras_active()) {
 						alert(_('Donation Required'), null, 1);
 						break;
 					}
@@ -203,6 +205,11 @@ $.extend(Settings, {
 					} catch (e) {
 						alert(e.toString(), _('Error importing backup'), 1);
 					}
+				break;
+
+				case 'clearSnapshots':
+					Settings.set_value('Snapshots', '{}');
+					alert(_('All snapshots have been removed.'), null, 1);
 				break;
 
 				case 'convertRules':
@@ -232,7 +239,7 @@ $.extend(Settings, {
 
 			var head = $('#setting-headerSearch .label').html(li ? _('Search Results') : _('No Results'));
 			
-			ul.find('.donator:gt(0)').remove().end().find('.description').remove().end().find('.divider').remove();
+			ul.find('.extras:gt(0)').remove().end().find('.description').remove().end().find('.divider').remove();
 		}).keydown(function (e) {
 			if (e.which === 16) speedMultiplier = !Settings.current_value('animations') ? 0.001 : 20;
 		}).keyup(function (e) {
@@ -293,7 +300,7 @@ $.extend(Settings, {
 	trial_active: function () {
 		return (+new Date() - this._current.trialStart < 1000 * 60 * 60 * 24 * 10);
 	},
-	invalid_donation_setting: function () {
+	extras_active: function () {
 		return (!Settings.current_value('donationVerified') && !this.trial_active());
 	},
 	make_setting: function (group, setting, setting_item, sec) {
@@ -302,17 +309,17 @@ $.extend(Settings, {
 		current = Settings.current_value(setting);
 		current = setting_item.opposite ? !current : current;
 		
-		if (setting_item.donator)
-			$('<li class="donator" />').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
+		if (setting_item.extras)
+			$('<li class="extras" />').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
 
 		if (setting_item.description)
-			$('<li class="description" />').html(setting !== 'header' ? _(setting_item.description) : setting_item.description).appendTo(sec).toggleClass('disabled', setting_item.donator_only ? this.invalid_donation_setting() : false);
+			$('<li class="description" />').html(setting !== 'header' ? _(setting_item.description) : setting_item.description).appendTo(sec).toggleClass('disabled', setting_item.extra ? this.extras_active() : false);
 
 		li = $('<li />').attr({
 			'data-setting': setting,
 			'id': 'setting-' + setting,
 		}).data('group', group)
-			.toggleClass('disabled', setting_item.donator_only ? this.invalid_donation_setting() : false)
+			.toggleClass('disabled', setting_item.extra ? this.extras_active() : false)
 			.toggleClass('indent', setting_item.indent === 1)
 			.appendTo(sec);
 		
@@ -324,7 +331,7 @@ $.extend(Settings, {
 				'type': 'checkbox',
 				'id': 'setting-check-' + setting,
 				'checked': current,
-				'disabled': (setting_item.donator_only && this.invalid_donation_setting())
+				'disabled': (setting_item.extra && this.extras_active())
 			}).appendTo(set);
 			
 			$('<label></label>').attr('for', 'setting-check-' + setting).html(' ' + _(setting_item.label)).appendTo(set);
@@ -333,7 +340,7 @@ $.extend(Settings, {
 				'type': 'button',
 				'id': 'button-' + setting,
 				'value': _(setting_item.setting),
-				'disabled': (setting_item.donator_only && this.invalid_donation_setting())
+				'disabled': (setting_item.extra && this.extras_active())
 			}).appendTo(set);
 		} else if (typeof setting_item.setting === 'number' ) {
 			var inp = $('<input />').attr({
@@ -342,12 +349,12 @@ $.extend(Settings, {
 				'value': current,
 				'min': setting_item.min,
 				'max': setting_item.max,
-				'disabled': (setting_item.donator_only && this.invalid_donation_setting())
+				'disabled': (setting_item.extra && this.extras_active())
 			}).appendTo(set);
 
 			if (setting_item.label_after) inp.after($('<span />').addClass('label-after').html(_(setting_item.label_after)));
 		} else if (setting_item.label && setting_item.setting) {
-			select = $('<select />').attr('disabled', (setting_item.donator_only && this.invalid_donation_setting())).appendTo(set);
+			select = $('<select />').attr('disabled', (setting_item.extra && this.extras_active())).appendTo(set);
 			
 			for (var b = 0; setting_item.setting[b]; b++) {
 				if ((typeof current === 'string' || typeof curent === 'number') && setting_item.setting[b][0].toString() === current.toString()) break;
@@ -366,7 +373,7 @@ $.extend(Settings, {
 					$('<optgroup />').attr('label', '----------').appendTo(select);
 					
 				$('<option />').attr({
-					'disabled': (setting_item.donator_only && this.invalid_donation_setting()),
+					'disabled': (setting_item.extra && this.extras_active()),
 					'value': setting_item.setting[i][0],
 					'class': is_other ? 'other-option' : '',
 					'selected': (typeof current === 'string' || typeof curent === 'string') && (current == setting_item.setting[i][0] || current.toString() === setting_item.setting[i][0])

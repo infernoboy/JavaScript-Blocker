@@ -1,7 +1,7 @@
 "use strict";
 
 var Snapshots = function (store, purge) {
-	this.purge = typeof purge === 'number' ? purge : 10;
+	this.purge = purge ? purge : 10;
 
 	var snapshots = Settings.getItem('Snapshots');
 
@@ -114,7 +114,7 @@ Snapshots.prototype = {
 				keys.push(cid);
 
 		keys.sort();
-		keys.splice(-(this.purge - 1));
+		keys.splice(-this.purge);
 
 		for (var i = 0; keys[i]; i++)
 			delete this.store[keys[i]];
@@ -183,160 +183,106 @@ Snapshots.prototype = {
 		return id !== undefined ? JSON.stringify(this.store[id] || {}).length : JSON.stringify(this.snapshots).length;
 	},
 	compare: function (left, right) {
-		var cleft = left in this.store ? this.store[left].data : left, cright = right in this.store ? this.store[right].data : right,
-				dleft, dright, both, empty = $.isEmptyObject, lscore = 0, rscore = 0;
+		var compare = {
+					left: left in this.store ? this.store[left].data : left,
+					right: right in this.store ? this.store[right].data : right
+				}, swap = { left: 'right', right: 'left' },
+				diff = {}, both, empty = $.isEmptyObject, score = { left: 0, right: 0 },
+				side, key;
 
-		if (cleft instanceof Array) dleft = [];
-		else if (cleft instanceof Object) dleft = {};
-		else dleft = null;
+		for (var lr in compare) {
+			if (compare[lr] instanceof Array) diff[lr] = [];
+			else if (compare[lr] instanceof Object) diff[lr] = {};
+			else diff[lr] = null;
+		}
 
-		if (cright instanceof Array) dright = [];
-		else if (cright instanceof Object) dright = {};
-		else dright = null;
+		if (JSON.stringify(diff.left) !== JSON.stringify(diff.right)) return false;
 
-		if (JSON.stringify(dleft) !== JSON.stringify(dright)) return false;
-
-		if (dleft instanceof Object) {
+		if (diff.left instanceof Object) {
 			both = {};
 
-			for (var kleft in cleft)
-				if (!(kleft in cright)) {
-					dleft[kleft] = cleft[kleft];
-					lscore++;
-				} else if (cleft[kleft] instanceof Object) {
-					var cp = this.compare(cleft[kleft], cright[kleft]);
+			for (side in compare) {
+				var opp = swap[side], cp;
 
-					lscore += cp.left_score;
-					rscore += cp.right_score;
+				for (key in compare[side]) {
+					if (!(key in compare[opp])) {
+						diff[side][key] = compare[side][key];
+						score[side]++;
+					} else if (compare[side][key] instanceof Object) {
+						cp = this.compare(compare.left[key], compare.right[key]);
 
-					if (!empty(cp.left)) dleft[kleft] = cp.left;
-					if (!empty(cp.right))	dright[kleft] = cp.right;
-					if (!empty(cp.both)) both[kleft] = cp.both;
-				} else if (cleft[kleft] instanceof Array) {
-					for (var l = 0; l < cleft[kleft].length; l++) {
-						var ref = cleft[kleft][l];
+						score.left += cp.score.left;
+						score.right += cp.score.right;
 
-						if (ref instanceof Array || ref instanceof Object) {
-							var cp = this.compare(ref, cright[kleft][l]);
+						if (!empty(cp.left)) diff.left[key] = cp.left;
+						if (!empty(cp.right))	diff.right[key] = cp.right;
+						if (!empty(cp.both)) both[key] = cp.both;
+					} else if (compare[side][key] instanceof Array) {
+						var l, ref, cp;
 
-							lscore += cp.left_score;
-							rscore += cp.right_score;
+						for (l = 0; l < compare[side][key].length; l++) {
+							ref = compare[side][key][l];
 
-							dleft.push(cp.left);
-							dright.push(cp.right);
-							both.push(cp.both);
-						} else {
-							if (ref === cright[kleft][l]) {
-								both.push(ref);
-								lscore++;
+							if (ref instanceof Array || ref instanceof Object) {
+								cp = this.compare(ref, compare[opp][key][l]);
+
+								score.left += cp.score.left;
+								score.right += cp.score.right;
+
+								diff.left.push(cp.left);
+								diff.right.push(cp.right);
+								both.push(cp.both);
 							} else {
-								dleft.push(ref);
-								lscore++;
+								if (ref === compare[opp][key][l]) {
+									both.push(ref);
+									score[side]++;
+								} else {
+									diff[side].push(ref);
+									score[side]++;
+								}
 							}
 						}
-					}
-				} else if (cleft[kleft] !== cright[kleft]) {
-					dleft[kleft] = cleft[kleft];
-					lscore++;
-				} else {
-					both[kleft] = cleft[kleft];
-					lscore++;
-				}
-
-			for (var kright in cright)
-				if (!(kright in cleft)) {
-					dright[kright] = cright[kright];
-					rscore++;
-				} else if (cright[kright] instanceof Object) {
-					var cp = this.compare(cleft[kright], cright[kright]);
-
-					lscore += cp.left_score;
-					rscore += cp.right_score;
-
-					if (!empty(cp.left)) dleft[kright] = cp.left;
-					if (!empty(cp.right))	dright[kright] = cp.right;
-					if (!empty(cp.both)) both[kright] = cp.both;
-				} else if (cright[kright] instanceof Array) {
-					for (var l = 0; l < cright[kright].length; l++) {
-						var ref = cright[kright][l];
-
-						if (ref instanceof Array || ref instanceof Object) {
-							var cp = this.compare(ref, cleft[kright][l]);
-
-							lscore += cp.left_score;
-							rscore += cp.right_score;
-
-							dleft.push(cp.left);
-							dright.push(cp.right);
-							both.push(cp.both);
-						} else {
-							if (ref === cleft[kright][l]) {
-								both.push(ref);
-								rscore++;
-							} else {
-								dright.push(ref);
-								rscore++;
-							}
-						}
-					}
-				} else if (cleft[kright] !== cright[kright]) {
-					dright[kright] = cright[kright];
-					rscore++;
-				} else {
-					both[kright] = cright[kright];
-					rscore++;
-				}
-		} else if (dleft instanceof Array) {
-			both = [];
-
-			for (var l = 0; l < cleft.length; l++) {
-				var ref = cleft[l];
-
-				if (ref instanceof Array || ref instanceof Object) {
-					var cp = this.compare(ref, cright[l]);
-
-					lscore += cp.left_score;
-					rscore += cp.right_score;
-
-					dleft.push([cp.left]);
-					dright.push([cp.right]);
-					both.push([cp.both]);
-				} else {
-					if (ref === cright[l]) {
-						both.push(ref);
-						lscore++;
+					} else if (compare.left[key] === compare.right[key]) {
+						both[key] = compare[side][key];
+						score[side]++;
 					} else {
-						dleft.push(ref);
-						lscore++;
+						diff[side][key] = compare[side][key];
+						score[side]++;
 					}
 				}
 			}
+		} else if (diff.left instanceof Array) {
+			both = [];
 
-			for (var l = 0; l < cright.length; l++) {
-				var ref = cright[l];
+			for (side in compare) {
+				var opp = swap[side], l, ref, cp;
 
-				if (ref instanceof Array || ref instanceof Object) {
-					var cp = this.compare(ref, cleft[l]);
+				for (l = 0; l < compare[side].length; l++) {
+					ref = compare[side][l];
 
-					lscore += cp.left_score;
-					rscore += cp.right_score;
+					if (ref instanceof Array || ref instanceof Object) {
+						cp = this.compare(ref, compare[opp][l]);
 
-					dleft.push([cp.left]);
-					dright.push([cp.right]);
-					both.push([cp.both]);
-				} else {
-					if (ref === cleft[l]) {
-						both.push(ref);
-						rscore++;
+						score.left += cp.score.left;
+						score.right += cp.score.right;
+
+						diff.left.push([cp.left]);
+						diff.right.push([cp.right]);
+						both.push([cp.both]);
 					} else {
-						dright.push(ref);
-						rscore++;
+						if (ref === compare[opp][l]) {
+							both.push(ref);
+							score[side]++;
+						} else {
+							diff[side].push(ref);
+							score[side]++;
+						}
 					}
 				}
 			}
 		}
 
-		return { left: dleft, right: dright, both: both, left_score: lscore, right_score: rscore, equal: lscore === rscore };
+		return { left: diff.left, right: diff.right, both: both, score: score, equal: score.left === score.right };
 	},
 	_paused: 0,
 	pause: function (store) {
