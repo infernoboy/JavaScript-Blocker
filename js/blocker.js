@@ -387,7 +387,14 @@ function messageHandler(event) {
 		break;
 
 		case 'notification':
-			special_actions.alert_dialogs(1, [1])(event.message[0], event.message[1], 1);
+			if (window === window.top) {
+				if (event.message[1] === 'JavaScript Blocker Update') {
+					if (window.showedUpdateNotification) break;
+					else window.showedUpdateNotification = 1;
+				}
+
+				special_actions.alert_dialogs(1, [1])(event.message[0], event.message[1], 1);
+			}
 		break;
 
 		case 'loadElementsOnce':

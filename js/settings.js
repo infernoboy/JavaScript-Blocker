@@ -121,9 +121,16 @@ $.extend(Settings, {
 				}
 			}
 
-			if (this.getAttribute('type') === 'checkbox' && Settings.settings[group][setting].confirm && this.checked) {
-				this.checked = false;
-				this.checked = Settings.settings[group][setting].confirm();
+			if (this.getAttribute('type') === 'checkbox') {
+
+				if (Settings.settings[group][setting].confirm && this.checked) {
+					this.checked = false;
+					this.checked = Settings.settings[group][setting].confirm();
+				}
+
+				if (Settings.settings[group][setting].ask && Settings.settings[group][setting].ask.checked === this.checked)
+					if (confirm(_(Settings.settings[group][setting].ask.question)))
+						Settings.settings[group][setting].ask.action();
 			}
 
 			Settings.set_value(setting, (this.type === 'checkbox') ? (Settings.settings[group][setting].opposite ? !this.checked : this.checked) : this.value);
@@ -311,6 +318,9 @@ $.extend(Settings, {
 		
 		if (setting_item.extras)
 			$('<li class="extras" />').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
+
+		if (setting_item.header)
+			$('<li class="extras" />').html('<div class="label">' + _(setting_item.header) + '</div><br style="clear:both;" />').appendTo(sec);
 
 		if (setting_item.description)
 			$('<li class="description" />').html(setting !== 'header' ? _(setting_item.description) : setting_item.description).appendTo(sec).toggleClass('disabled', setting_item.extra ? this.extras_active() : false);

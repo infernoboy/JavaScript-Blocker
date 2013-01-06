@@ -134,6 +134,26 @@
 						<li id="filter-temporary" data-i18n="Temporary"></li>
 					</ul>
 					<div class="divider"></div>
+					<ul id="filter-type-not-used" class="age-filter">
+						<li class="label" data-i18n="Not Used Within:"></li>
+						<li id="filter-age-all" class="selected" data-i18n="All"></li>
+						<li id="filter-age-hour" data-i18n="Past Hour"></li>
+						<li id="filter-age-day" data-i18n="Past Day"></li>
+						<li id="filter-age-week" data-i18n="Past Week"></li>
+						<li id="filter-age-month" data-i18n="Past Month"></li>
+						<li id="filter-age-year" data-i18n="Past Year"></li>
+					</ul>
+					<div class="divider"></div>
+					<ul id="filter-type-used" class="age-filter">
+						<li class="label" data-i18n="Used Within:"></li>
+						<li id="filter-only-all" class="selected" data-i18n="All"></li>
+						<li id="filter-only-hour" data-i18n="Past Hour"></li>
+						<li id="filter-only-day" data-i18n="Past Day"></li>
+						<li id="filter-only-week" data-i18n="Past Week"></li>
+						<li id="filter-only-month" data-i18n="Past Month"></li>
+						<li id="filter-only-year" data-i18n="Past Year"></li>
+					</ul>
+					<div class="divider"></div>
 					<ul id="filter-type-domain">
 						<li class="label" data-i18n="Filter:"></li>
 						<li id="li-domain-filter" class="li-text-filter">
@@ -141,6 +161,7 @@
 							<br style="clear:both;" />
 						</li>
 					</ul>
+					<div class="divider"></div>
 					<br style="clear:both;" />
 				</div>
 				<div id="rules-actions-bar" class="filter-bar actions-bar">
@@ -153,6 +174,7 @@
 						<li id="remove-all-temp" title=" " data-i18n="Remove Temporary Rules"></li>
 						<li id="reinstall-pre" class="divider" title=" " data-i18n="Reinstall Whitelist and Blacklist"></li>
 						<li id="time-machine" class="divider" title=" " data-i18n="Snapshots"></li>
+						<li id="reload-rules" title=" " data-i18n="Reload Rules"></li>
 					</ul>
 					<br style="clear:both;" />
 				</div>
@@ -242,11 +264,20 @@
 			</div>
 		</textarea>
 
+		<textarea id="tmpl_rule_wrapper_inner">
+			<li id="<%=+ new Date()%>" class="domain-name" data-value="<%=self.domain_display%>">
+				<span class="<%=self.selectable%>"><%=self.domain%></span>
+			</li>
+			<li class="domain-rules">
+				<ul></ul>
+			</li>
+		</textarea>
+
 		<textarea id="tmpl_rule_item">
 			<li>
 				<div class="bubble bubble-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><div class="inner-bubble"></div></div>
 				<span class="<%=Settings.getItem('traverseRulesRules') ? 'selectable' : ''%> rule type-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><%=self.text%></span>
-				<input type="button" value="<%=self.button%>" />
+				<% if (self.button !== null) { %><input type="button" value="<%=self.button%>" /><% } %>
 				<div class="divider"></div>
 			</li>
 		</textarea>

@@ -330,10 +330,32 @@ JB.updater = function () {
 		break;
 
 		case v < 137: // 3.1.5
+		case v < 138: // 3.1.6
 			var rs = this.rules.rules, k;
 
 			for (k in rs)
 				this.rules.reinstall_predefined(k);
+
+		case v < 138: // 3.1.6 cont.
+			new Poppy($(this.popover.body).width() / 2, 0, [
+				'<p class="misc-info"><a class="outside" href="http://javascript-blocker.toggleable.com/change-log/316/">Update 3.1.6</a></p>',
+				'<p><b>New:</b> Filter bars have been added to the rule list that allow you to show rules that either have or haven\'t been used ',
+					'within a certain time. Because this is a new feature, all rules will be considered unused until used for the first time after ',
+					'this update.',
+				'<p><b>New:</b> You can turn off individual filter bars via the User Interface settings.</p>',
+				'<p>',
+					'<input type="button" id="rawr-ok" value="', _('Understood'), '" /> ',
+				'</p>'
+			].join(''), function () {
+				$$('#rawr-ok').click(function () {
+					self.installedBundle = 138;
+
+					$.post(self.baseURL + 'user.php', { id: Settings.getItem('installID') });
+
+					self.donate();
+				});
+			}, null, null, true);
+		break;
 
 		case v < this.bundleid:
 			this.donate();

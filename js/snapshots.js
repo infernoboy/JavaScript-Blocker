@@ -107,16 +107,16 @@ Snapshots.prototype = {
 	add: function (data, keep, name, callback) {
 		if (this._paused) return false;
 
-		var id = +new Date(), keys = [];
+		var id = +new Date(), keys = [], cid, i;
 
-		for (var cid in this.store)
+		for (cid in this.store)
 			if (!this.store[cid].keep)
 				keys.push(cid);
 
 		keys.sort();
 		keys.splice(-this.purge);
 
-		for (var i = 0; keys[i]; i++)
+		for (i = 0; keys[i]; i++)
 			delete this.store[keys[i]];
 
 		this.store[id] = {
@@ -147,9 +147,9 @@ Snapshots.prototype = {
 		return this.exist(id) ? this.store[id].data : null;
 	},
 	latest: function () {
-		var all = this.all(1);
+		var all = this.all(1), id;
 
-		for (var id in all)
+		for (id in all)
 			return this.load(id);
 		return false;
 	},
@@ -160,9 +160,9 @@ Snapshots.prototype = {
 		return null;
 	},
 	count: function (store) {
-		var c = 0;
+		var c = 0, id;
 
-		for (var id in this.store) c++;
+		for (id in this.store) c++;
 
 		return c;
 	},
@@ -188,9 +188,9 @@ Snapshots.prototype = {
 					right: right in this.store ? this.store[right].data : right
 				}, swap = { left: 'right', right: 'left' },
 				diff = {}, both, empty = $.isEmptyObject, score = { left: 0, right: 0 },
-				side, key;
+				side, key, lr;
 
-		for (var lr in compare) {
+		for (lr in compare) {
 			if (compare[lr] instanceof Array) diff[lr] = [];
 			else if (compare[lr] instanceof Object) diff[lr] = {};
 			else diff[lr] = null;

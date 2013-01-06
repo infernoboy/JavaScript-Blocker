@@ -45,6 +45,12 @@ Settings.settings = {
 		Snapshots: {
 			default: '{}'
 		},
+		SimpleRulesUseTracker: {
+			default: '{}'
+		},
+		RulesUseTracker: {
+			default: '{}'
+		},
 		usingSnapshot: {
 			default: 0
 		},
@@ -105,6 +111,33 @@ Settings.settings = {
 			default: false,
 			divider: 1
 		},
+		filterBarVisibility: {
+			label: 'Show visibility filter bar',
+			setting: true,
+			default: true,
+			header: 'Rule List Filter Bars'
+		},
+		filterBarState: {
+			label: 'Show state filter bar',
+			setting: true,
+			default: true
+		},
+		filterBarAge: {
+			label: 'Show "Not Used In Past" filter bar',
+			setting: true,
+			default: true
+		},
+		filterBarUsed: {
+			label: 'Show "Used In Past" filter bar',
+			setting: true,
+			default: true
+		},
+		filterBarDomain: {
+			label: 'Show domain filter bar',
+			setting: true,
+			default: true,
+			divider: 1
+		},
 		language: {
 			label: 'Language:',
 			setting: [['Automatic', 'Automatic'], ['en-us', 'US English'], ['de-de', 'Deutsch']],
@@ -135,7 +168,14 @@ Settings.settings = {
 			opposite: 1,
 			default: true,
 			help: 'simpleMode help',
-			extra: 1
+			extra: 1,
+			ask: {
+				checked: true,
+				question: 'A different rule set will be used in this mode.',
+				action: function () {
+					GlobalPage.message('convertSimpleToExpert');
+				}
+			}
 		}
 	},
 	predefined: {
@@ -304,12 +344,27 @@ Settings.settings = {
 			label: 'Enable rule snapshots',
 			extra: 1,
 			extras: 1,
-			description: 'Snapshots description'
+			description: 'Snapshots description',
+			ask: {
+				checked: false,
+				question: 'Do you want to remove snapshots that exist?',
+				action: function() {
+					Settings.set_value('Snapshots', '{}');
+					alert(_('All snapshots have been removed.'), null, 1);
+				}
+			}
 		},
 		autoSnapshots: {
 			default: true,
 			setting: true,
 			label: 'Create a snapshot when rules are modified',
+			extra: 1,
+			if_setting: ['enableSnapshots', true]
+		},
+		snapshotIgnoreTemporaryRules: {
+			label: 'Ignore temporary rules when creating new snapshots',
+			setting: true,
+			default: false,
 			extra: 1,
 			if_setting: ['enableSnapshots', true]
 		},

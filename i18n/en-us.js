@@ -24,6 +24,8 @@ Strings['en-us'] = {
 	'Filter:': 'Filter:',
 	'State:': 'State:',
 	'Visibility:': 'Visibility:',
+	'Not Used Within:': 'Not Used In Past:',
+	'Used Within:': 'Used In Past:',
 	'Actions:': 'Actions:',
 	'Page:': 'Page:',
 	'Allowed:': 'Allowed:',
@@ -49,7 +51,8 @@ Strings['en-us'] = {
 	'Block/Hide': 'Block or Hide',
 	'Block Some': 'Block or Hide Some',
 	'Some': 'Some',
-	'All': 'All…',
+	'All': 'All',
+	'All.': 'All…',
 	'All in Snapshot': 'All in Snapshot',
 	'{1} selected items': '{1} selected items', // Block/Allow/Hide selected items
 	'{1} All': '{1} All',
@@ -100,6 +103,11 @@ Strings['en-us'] = {
 	'Enabled': 'Enabled',
 	'Disabled': 'Disabled',
 	'Temporary': 'Temporary',
+	'Past Hour': 'Hour',
+	'Past Day': 'Day',
+	'Past Week': 'Week',
+	'Past Month': 'Month',
+	'Past Year': 'Year',
 	'Collapsed': 'Collapsed',
 	'Expanded': 'Expanded',
 	'Collapse All': 'Collapse All',
@@ -236,12 +244,13 @@ Strings['en-us'] = {
 		'Gallery website for security reasons.',
 	'This data URI cannot be displayed.': 'This data URI cannot be displayed.',	
 	'Predefined rules cannot be edited.': 'Predefined rules cannot be edited. ',
-	'Update Failure': 'Information about the current webpage is outdated or unavailable, possibly due to a bug with Safari. Reloading the page may resolve the issue.',
+	'Update Failure': 'Information about the current webpage is outdated or unavailable. Reloading the page may resolve the issue.',
 	'Unable to view source of embedded items.': 'Unable to view source of embedded items.',
 
 	'Unblockable frame': 'This frame\'s source cannot be blocked because it is the result of a navigation event that occurred from ' +
 		'the original URL. The original URL may appear as "blank" or "about:blank"; blocking that instead may work.',
 	'{1} cannot function when its toolbar icon is hidden.': '{1} cannot function when its toolbar icon is hidden.',
+	'No rules exist for this domain.': 'No rules exist for this domain',
 	/** /ERRORS-ISH **/
 	
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
@@ -374,11 +383,11 @@ Strings['en-us'] = {
 	/** DONATION STUFF **/
 	'Donator-only Features': 'Extra Features',
 	'Trial remaining {1} days, {2} hours, and {3} minutes': 'You have {1} days, {2} hours, and {3} minutes remaining in your free trial.', // TO BE DELETED
-	'Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>': 'You have {1} days, {2} hours, and {3} minutes remaining in your trial of the <b>{4}</b>',
+	'Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>': 'You have {1} days, {2} hours, and {3} minutes remaining in your trial of the {4}',
 		'donator-only features.': 'extra features.',
-	'Free trial expired': 'Your free trial has expired. You must make a contribution and have it verified in order to continue using the extra features of {1}, or <b>Unlock Without Contributing</b>.',
-	'Remember for free': 'If you are unable to make a contribution (or just don\'t want to), <a href="mailto:travis@toggleable.com?subject=I cannot contribute to JavaScript Blocker">contact me</a> ' +
-		'and you can have access to all the extra features for free.',
+	'Free trial expired': 'Your free trial has expired. You can make a contribution and have it verified to continue using the extra features of {1}.',
+	'Remember for free': 'If you are unable to make a contribution (or just don\'t want to), click <b>Unlock</b> in the JavaScript Blocker popup, then <b>Unlock Without Contributing</b>. ' +
+		'You will then have access to all of the extra features for free.',
 	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
 	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
 	'Please, if you can': 'Please, if you can, show your support by making a contribution of any amount. ' +
@@ -405,6 +414,7 @@ Strings['en-us'] = {
 	/** /DONATION **/
 	
 	/** SETTINGS - NEW **/
+	'Rule List Filter Bars': 'Rule list filter bars',
 	'JavaScript Blocker Settings': 'JavaScript Blocker Settings',
 	'Once any of these features are active,':
 		'When active, the following features will appear in the main window as a blocked item under <b>OTHER</b>, but will not count towards the amount of blocked/allowed resources. ' + 
@@ -434,6 +444,8 @@ Strings['en-us'] = {
 	'Show whitelist and blacklist rules in the rule list': 'Show whitelist and blacklist rules in the rule list',
 	'Theme:': 'Theme:',
 	'Enable expert features to block individual items instead of full hosts': 'Enable expert features to block individual items instead of full hosts',
+	'A different rule set will be used in this mode.': 'A different rule set will be used in this mode. Would you like to convert your existing rules ' +
+		'to be compatible? Some rules may not be able to be converted automatically.',
 	'Ignore whitelist rules': 'Ignore whitelist rules',
 	'Ignore blacklist rules': 'Ignore blacklist rules',
 	'Resources on secure sites must also be secure': 'Resources on secure sites must also be secure',
@@ -505,6 +517,12 @@ Strings['en-us'] = {
 	'OS X Lion': 'OS X Lion',
 	'Blue Linen': 'Blue Linen',
 	'Twilight (Incomplete)': 'Twilight (Incomplete)',
+
+	'Show visibility filter bar': 'Show visibility filter bar',
+	'Show state filter bar': 'Show state filter bar',
+	'Show "Not Used In Past" filter bar': 'Show "Not Used In Past" filter bar',
+	'Show "Used In Past" filter bar': 'Show "Used In Past" filter bar',
+	'Show domain filter bar': 'Show domain filter bar',
 	
 	// Font selection
 	'Default webpage font': '<span class="aside">Default webpage font</span>',
@@ -525,7 +543,9 @@ Strings['en-us'] = {
 	 		'rule sets, or recover just a few. You\'ll never have to worry about messing up your rules again.',
 	 'Snapshots disabled': 'Snapshots are disabled.',
 	 'Enable rule snapshots': 'Enable rule snapshots',
+	 'Do you want to remove snapshots that exist?': 'Do you want to remove all of the snapshots that exist?',
 	 'Create a snapshot when rules are modified': 'Create a snapshot when rules are modified',
+	 'Ignore temporary rules when creating new snapshots': 'Ignore temporary rules when creating new snapshots',
 	 'Store only': 'Store up to',
 	 'unkept snapshots': 'unkept snapshots',
 
@@ -550,7 +570,7 @@ Strings['en-us'] = {
 		'block some in these cases. This setting may cause a loop when trying to navigate back/forward.',
 
 	// Short URL stuff - NEW
-	'Confirm short URL redirects before they occur': 'Show a confirmation dialog before navigating to a short URL',
+	'Confirm short URL redirects before they occur': 'Show a confirmation dialog before navigating to a shortened URL',
 	'confirmShortURL confirm': 'Before navigating to a short URL, it will be sent to LongURL.org to determine where it will redirect to. ' +
 		'This cannot be done in JavaScript. No identifiable information is sent; just the URL ' +
 		'that needs to be examined. You may view their privacy policy at: http://longurl.org/privacy-policy' +
@@ -561,7 +581,7 @@ Strings['en-us'] = {
 	'These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.':
 		'These actions are permanent and cannot be undone. If you can, create a backup before proceeding.',
 	
-	'Reset all settings to their default values:': 'Reset all settings to their default values:', // label
+	'Reset all settings to their default values:': 'Reset settings to their default values:', // label
 	'Reset Settings': 'Reset Settings', // button
 	
 	'Remove all rules:': 'Remove all rules:', // label
@@ -571,6 +591,8 @@ Strings['en-us'] = {
 	'Rule removed.': 'Rule removed.',
 
 	'Reinstall': 'Reinstall', // reinstall WL and BL
+
+	'Reload Rules': 'Reload Rules',
 
 	'Convert non-simplified rules:': 'Convert non-simplified rules:',
 	'Convert Rules': 'Convert Rules',

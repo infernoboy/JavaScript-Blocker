@@ -322,6 +322,7 @@ var wld = {
 		'.*': [
 			'www\\.readability\\.com',
 			'seal\\.verisign\\.com',
+			'api\\.solvemedia\\.com'
 		],
 		'.amazon.com': ['(ssl\\-)?images\\-amazon\\.com'],
 		'.reddit.com': ['www\\.redditstatic\\.com'],
