@@ -139,7 +139,7 @@ JB.poppies = {
 				if (!ed.length) ed = zoo.me.domain;
 				else if (ed.toLowerCase() === _('All Domains').toLowerCase()) ed = '.*';
 
-				main.rules.add((n === 42 && !~k.indexOf('hide_') ? 'hide_' : '') + zoo.me.li.data('kind'), ed, (proto ? proto + ':' : '') + ru, n, true, $$('#rule-temporary').is(':checked'), proto.length ? proto.split(/, ?/) : false);
+				main.rules.add((n === 42 && !~k.indexOf('hide_') ? 'hide_' : '') + zoo.me.li.data('kind'), ed, (proto && ru[0] !== '^' ? proto + ':' : '') + ru, n, true, $$('#rule-temporary').is(':checked'), proto.length ? proto.split(/, ?/) : false);
 
 				if (!no_refresh) {
 					Tabs.messageActive('reload');

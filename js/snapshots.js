@@ -23,23 +23,7 @@ Snapshots.prototype = {
 			Settings.setItem('Snapshots', JSON.stringify(snapshots));
 		}, 1000, this.snapshots);
 	},
-	_periodic: null,
-	periodic: function (time, get_data, args, callback) {
-		if (this._periodic) clearInterval(this._periodic[0]);
-
-		this._periodic = [setInterval(function (self, get_data, args, callback) {
-			self.add(get_data.apply(self, args), 0, 0, callback);
-		}, time, this, get_data, args, callback), get_data, args, callback];
-
-		return this;
-	},
-	now: function () {
-		if (!this._periodic) return false;
-
-		this.add(this._periodic[1].apply(self, this._periodic[2]), 0, 0, this._periodic[3]);
-
-		return this;
-	},
+	hash_table: {},
 	exist: function (id) {
 		return this.store.hasOwnProperty(id);
 	},
@@ -87,22 +71,6 @@ Snapshots.prototype = {
 				ytt = JB.utils.date(id, 'y');
 
 		return JB.utils.date(parseInt(id, 10), 'L, F d' + (ytn !== ytt ? ', \'y' : '') + ', h:m P');
-	},
-	_remove_timeouts: {},
-	remove_after: function (id, time_or_callback) {
-		if (!this.exist(id)) return false;
-
-		clearTimeout(this._remove_timeouts[id]);
-
-		this._remove_timeouts[id] = setTimeout(function (self, id, callback) {
-			if (typeof callback === 'function') {
-				if (!callback.call(self)) return;
-
-				clearTimeout(self._remove_timeouts[id]);
-			}
-
-			self.remove(id);
-		}, typeof time === 'number' ? time : 1000, this, id, time_or_callback);
 	},
 	add: function (data, keep, name, callback) {
 		if (this._paused) return false;
@@ -183,6 +151,15 @@ Snapshots.prototype = {
 		return id !== undefined ? JSON.stringify(this.store[id] || {}).length : JSON.stringify(this.snapshots).length;
 	},
 	compare: function (left, right) {
+		var left_str = JSON.stringify(left), right_str = JSON.stringify(right);
+
+		if (left_str in this.hash_table) {
+			if (right_str in this.hash_table[left_str])
+				return this.hash_table[left_str][right_str];
+		} else if (right_str in this.hash_table)
+			if (left_str in this.hash_table[right_str])
+				return this.hash_table[right_str][left_str];
+
 		var compare = {
 					left: left in this.store ? this.store[left].data : left,
 					right: right in this.store ? this.store[right].data : right
@@ -282,15 +259,16 @@ Snapshots.prototype = {
 			}
 		}
 
-		return { left: diff.left, right: diff.right, both: both, score: score, equal: score.left === score.right };
-	},
-	_paused: 0,
-	pause: function (store) {
-		this._paused = 1;
-		return this;
-	},
-	resume: function (store) {
-		this._paused = 0;
-		return this;
+		var result = { left: diff.left, right: diff.right, both: both, score: score, equal: score.left === score.right };
+
+		if (!(left_str in this.hash_table)) this.hash_table[left_str] = {};
+		
+		this.hash_table[left_str][right_str] = result;
+
+		if (!(right_str in this.hash_table)) this.hash_table[right_str] = {};
+
+		this.hash_table[right_str][left_str] = this.hash_table[left_str][right_str];
+		
+		return result;
 	}
 };

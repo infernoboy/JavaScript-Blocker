@@ -153,12 +153,6 @@ $.extend(Settings, {
 					alert(_('All rules have been removed.'), null, 1);
 				break;
 
-				case 'reinstallWLBL':
-					GlobalPage.message('reinstallWLBL');
-
-					alert(_('Whitelist and blacklist rules have been reinstalled.'), 'reinstallWLBL', 1);
-				break;
-
 				case 'createBackup':
 					if (Settings.extras_active()) {
 						alert(_('Donation Required'), null, 1);

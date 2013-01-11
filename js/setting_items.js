@@ -93,11 +93,6 @@ Settings.settings = {
 			help: 'showUnblocked help',
 			default: false
 		},
-		showWLBLRules: {
-			label: 'Show whitelist and blacklist rules in the rule list',
-			setting: true,
-			default: true
-		},
 		showPageListCount: {
 			label: 'Show blocked and allowed resources in page list',
 			setting: true,
@@ -514,11 +509,6 @@ Settings.settings = {
 			label: '',
 			classes: 'description',
 			divider: 1
-		},
-		reinstallWLBL: {
-			label: 'Reinstall whitelist and blacklist rules:',
-			setting: 'Reinstall',
-			description: 'These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.'
 		},
 		resetSettings: {
 			label: 'Reset all settings to their default values:',

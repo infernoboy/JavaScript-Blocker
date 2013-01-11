@@ -846,6 +846,8 @@ var Template = {
 		return this.domain_parts(domain);
 	},
 	rules: {
+		blacklist: {},
+		whitelist: {},
 		get quick() {
 			return Settings.getItem('quickAdd');
 		},
@@ -942,12 +944,13 @@ var Template = {
 		warm_caches: function () {
 			this.cache = this.data_types;
 
+			return;
+
 			for (var kind in this.rules)
 				this.utils.zero_timeout(function (kind, rules) {
 					for (var domain in rules)
 						this.utils.zero_timeout(function (kind, domain) {
-							var warm = this.for_domain(kind, domain, true);
-							warm = undefined;
+							this.for_domain(kind, domain, true);
 						}.bind(this, kind, domain));
 				}.bind(this, kind, this.rules[kind]));
 		},
@@ -1088,9 +1091,6 @@ var Template = {
 				if ($.isEmptyObject(un[kind])) delete un[kind];
 			}
 
-			for (var key in this.data_types)
-				this.reinstall_predefined(key);
-
 			Settings.setItem('simpleMode', simbefore);
 			Settings.setItem('simplifiedRules', rulebefore);
 
@@ -1139,9 +1139,6 @@ var Template = {
 				}
 			}
 
-			for (var key in this.data_types)
-				this.reinstall_predefined(key);
-
 			JB.reloaded = false;
 
 			if ($$('#rules-list').is(':visible')) this.show();
@@ -1171,14 +1168,16 @@ var Template = {
 						} else
 							var filtered_rules = rules;
 
-						if (!snapshots.compare(snapshots.latest(), filtered_rules).equal) {
-							snapshots.delayed_add(filtered_rules, null, 0, null, function (id, snapshot) {
-								if ($$('#snapshots').is(':visible')) {
-									new Poppy();
-									self.show_snapshots();
-								}
-							});
-						}
+						self.utils.zero_timeout(function (snapshots, filtered_rules, self) {
+							if (!snapshots.compare(snapshots.latest(), filtered_rules).equal) {
+								snapshots.delayed_add(filtered_rules, null, 0, null, function (id, snapshot) {
+									if ($$('#snapshots').is(':visible')) {
+										new Poppy();
+										self.show_snapshots();
+									}
+								});
+							}
+						}, [snapshots, filtered_rules, self])
 					}
 
 					if (!self.using_snapshot)
@@ -1273,21 +1272,126 @@ var Template = {
 			} else
 				delete this.cache[kind][d];
 		},
-		reinstall_predefined: function (kind) {
-			var a, b, c, d, rs = this.rules, k, e, r;
+		easylist: function () {
+			var self = this, map = { '5': 'whitelist', '4': 'blacklist' },
+					processList = function (list) {
+				var def = {}, split = list.split(/\n/), firstTwo = function (str) { return str[0] + str[1]; },
+						type_map = { script: 'script', image: 'image', object: 'embed' };
 
-			for (e in rs[kind])
-				for (r in rs[kind][e])
-					if (~[4,5].indexOf(rs[kind][e][r][0]))
-						this.remove(kind, e, r);
-		
-			for (a in this.whitelist[kind])
-				for (b = 0; b < this.whitelist[kind][a].length; b++)
-					this.add(kind, a, this.whitelist[kind][a][b], 5);
-		
-			for (c in this.blacklist[kind])
-				for (d = 0; d < this.blacklist[kind][c].length; d++)
-					this.add(kind, c, this.blacklist[kind][c][d], 4);
+				var processItem = function (whole) {
+					var mode = firstTwo(whole) === '@@' ? 5 : 4,
+							whole = mode === 5 ? whole.substr(2) : whole,
+							dollar = whole.indexOf('$'),
+							rule = whole.substr(0, ~dollar ? dollar : 999), regexp, $check = whole.split(/\$/),
+							use_type = false, domains = ['.*'];
+
+					if ($check[1]) {
+						var args = $check[1].split(',');
+
+						for (var z = 0; z < args.length; z++) {
+							if (args[z].match(/^domain=/)) domains = args[z].substr(7).split('|').map(function (v) { return '.' + v; });
+							else if (args[z] in type_map) use_type = type_map[args[z]];
+						}
+					}
+
+					if (whole[0] === '!' || whole[0] === '[' || ~whole.indexOf('##')) return;
+
+					rule = rule.replace(/\//g, '\\/')
+						.replace(/\+/g, '\\+')
+						.replace(/\?/g, '\\?')
+						.replace(/\^/g, '([^a-zA-Z0-9_\.%-]+|$)')
+						.replace(/\./g, '\\.')
+						.replace(/\*/g, '.*');
+
+					if (firstTwo(whole) === '||') rule = rule.replace('||', 'https?:\\/\\/([^\\/]+\\.)?');
+					else if (whole[0] === '|') rule = rule.replace('|', '');
+					else rule = '.*' + rule;
+
+					if (rule.match(/\|[^$]/)) return;
+
+					rule = '^' + rule
+
+					if (rule[rule.length - 1] === '|') rule = rule.substr(0, rule.length - 1) + '.*$';
+					else rule += '.*$';
+
+					rule = rule.replace(/\.\*\.\*/g, '.*');
+
+					for (var s = 0; s < domains.length; s++) {
+						if (firstTwo(domains[s]) === '.~') return;
+
+						var list = JB.rules[map[mode]];
+
+						if (use_type) {
+							if (!(use_type in list)) list[use_type] = {};
+							if (!(domains[s] in list[use_type])) list[use_type][domains[s]] = {};
+
+							list[use_type][domains[s]][rule] = [mode, false];
+						} else {
+							for (var kind in JB.rules.data_types) {
+								if (!(kind in list)) list[kind] = {};
+
+								if (~kind.indexOf('hide_') || kind === 'special') continue;
+
+								if (!(domains[s] in list[kind])) list[kind][domains[s]] = {};
+
+								list[kind][domains[s]][rule] = [mode, false];
+							}
+						}
+					}
+				}
+
+				for (var i = 0, b = split.length; i < b; i++)
+					processItem(split[i]);
+			};
+
+			var fromSettings = function (which) {
+				var el = Settings.getItem(which);
+
+				if (el) processList(el);
+
+				JB.rules.cache = JB.rules.data_types;
+			};
+
+			var lastUpdate = Settings.getItem('EasyListLastUpdate');
+
+			if (lastUpdate && Date.now() - lastUpdate < 432000000) {
+				fromSettings('EasyPrivacy');
+				fromSettings('EasyList');
+				return;
+			}
+
+			$.ajax({
+				url: 'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
+				async: false
+			}).success(function (easyprivacy) {
+				Settings.setItem('EasyPrivacy', easyprivacy);
+
+				fromSettings('EasyPrivacy');
+				$.ajax({
+					url: 'https://easylist-downloads.adblockplus.org/easylist.txt',
+					async: false
+				}).success(function (easylist) {
+					Settings.setItem('EasyListLastUpdate', Date.now());
+					Settings.setItem('EasyList', easylist);
+
+					fromSettings('EasyList');
+				}).error(function () {
+					fromSettings('EasyList');
+				});
+			}).error(function () {
+				fromSettings('EasyPrivacy');
+			});
+		},
+		remove_all_predefined: function (cb) {
+			var a, b, c, d, kind, rs = this.rules, k, e, r;
+
+			for (kind in rs)
+				for (e in rs[kind])
+					for (r in rs[kind][e])
+						if (rs[kind][e][r][0] === 4 || rs[kind][e][r][0] === 5)
+							delete this.rules[kind][e][r];
+
+			this.save();
 		},
 		special_allowed: function (special, url) {
 			if (!this.donationVerified || !this.special_enabled(special)) return 1;
@@ -1315,20 +1419,19 @@ var Template = {
 			var rule_found = false, the_rule = -1, do_break = 0, urule,
 					host = this.active_host(message[1]),
 					proto = this.utils.active_protocol(message[2]), protos,
-					parts = this.utils.domain_parts(this.active_host(message[2])),
 					domains = this.for_domain(kind, host), domain, rule,
 					alwaysFrom = Settings.getItem('alwaysBlock' + kind) || Settings.getItem('alwaysBlockscript'),
-					hider = ~kind.indexOf('hide_');
-			
+					hider = ~kind.indexOf('hide_'), ignoreBL = Settings.getItem('ignoreBlacklist'), ignoreWL = Settings.getItem('ignoreWhitelist'),
+					sim = this.simplified;
+
 			domainFor:
 			for (domain in domains) {
 				ruleFor:
 				for (rule in domains[domain]) {
-					if (!rule.length ||
-							(Settings.getItem('ignoreBlacklist') && domains[domain][rule][0] === 4) ||
-							(Settings.getItem('ignoreWhitelist') && domains[domain][rule][0] === 5)) continue;
+					if ((ignoreBL && domains[domain][rule][0] === 4) ||
+							(ignoreWL && domains[domain][rule][0] === 5)) continue;
 
-					do_break = this.match(kind, rule, message[2]);
+					do_break = this.match(kind, rule, message[2], sim);
 
 					if (do_break) {
 						rule_found = domains[domain][rule][0] < 0 ? ((domains[domain][rule][0] * -1) - 5) % 2 : domains[domain][rule][0] % 2;
@@ -1375,7 +1478,7 @@ var Template = {
 	
 			return [1, -1];
 		},
-		for_domain: function (kind, domain, one) {
+		for_domain: function (kind, domain, one, hide_wlbl) {
 			if (!(kind in this.rules) || (kind !== 'script' && !this.donationVerified)) return {};
 					
 			if (domain in this.cache[kind]) {
@@ -1389,6 +1492,8 @@ var Template = {
 				} else
 					rules = this.cache[kind][domain];
 
+				if (domain !== '.*' && ('.*' in this.cache[kind])) rules['.*'] = this.cache[kind]['.*']['.*'];
+
 				return rules;
 			}
 						
@@ -1398,7 +1503,7 @@ var Template = {
 		
 			var x = parts.slice(0, 1),
 					y = parts.slice(1),
-					o = {}, i, c, r;
+					o = {}, i, c, r, append_lists = kind.indexOf('hide_') === -1 && kind !== 'special';
 		
 			x.push(x[0]);
 		
@@ -1406,13 +1511,12 @@ var Template = {
 	
 			for (i = 0; i < parts.length; i++) {
 				c = (i > 0 ? '.' : '') + parts[i];
-				r = this.rules[kind][c];
+				r = $.extend(true, {}, this.rules[kind][c] || {}, (append_lists && !hide_wlbl ? JB.rules.blacklist[kind][c] || {} : {}), (append_lists && !hide_wlbl ? JB.rules.whitelist[kind][c] || {} : {}));
 
-				if (r === null || r === undefined) continue;
+				if ($.isEmptyObject(r)) continue;
 
 				if (c === '.*') {
 					if (!(c in this.cache[kind])) this.cache[kind][c] = { '.*': r };
-					o[c] = this.cache[kind][c][c];
 					continue;
 				} 
 			
@@ -1423,23 +1527,26 @@ var Template = {
 
 			return this.for_domain(kind, domain, one);
 		},
-		match: function (kind, rule, url) {
-			var urule = this.with_protos(rule).rule;
+		match: function (kind, rule, url, simplified) {
+			var use_simplified = typeof simplified !== 'undefined' ? simplified : this.simplified;
 
-			if (this.simplified && urule.charAt(0) !== '^') {
-				var protos = this.with_protos(rule).protos,
-						parts = this.utils.domain_parts(this.utils.active_host(url));
+			if (use_simplified && rule[0] !== '^') {
+				var rrule = this.with_protos(rule), parts = this.utils.domain_parts(this.utils.active_host(url));
 
-				if (protos && !~protos.indexOf(this.utils.active_protocol(url))) return 0;
+				if (rrule.protos && !~rrule.protos.indexOf(this.utils.active_protocol(url))) return 0;
 
-				if ((~kind.indexOf('special') && urule === url) ||
-						(urule.indexOf('.') === 0 && ~parts.indexOf(urule.substr(1))) || 
-						(parts[0] === urule))
+				if ((~kind.indexOf('special') && rrule.rule === url) ||
+						(rrule.rule.indexOf('.') === 0 && ~parts.indexOf(rrule.rule.substr(1))) || 
+						(parts[0] === rrule.rule))
 					return 1;
 				return 0;
 			}
 
-			return (new RegExp(urule, 'i')).test(url);
+			try {
+				return (new RegExp(rule, 'i')).test(url);
+			} catch (e) {
+				console.error('Error:', rule)
+			}
 		},
 		with_protos: function (rule) {
 			if (!this.simplified || rule.charAt(0) === '^') {
@@ -1530,7 +1637,7 @@ var Template = {
 		matching_URLs: function (kind, domain, urls, block_allow, show_wlbl) {
 			if (kind !== 'script' && !this.donationVerified) return false;
 			
-			var rules = this.for_domain(kind, domain), matches = {}, match_tracker = {}, domain, rule, rtype;
+			var rules = this.for_domain(kind, domain), matches = {}, match_tracker = {}, domain, rule, rtype, sim = this.simplified;
 		
 			for (domain in rules) {
 				matches[domain] = [];
@@ -1544,7 +1651,7 @@ var Template = {
 							(!show_wlbl && (rtype === 4 || rtype === 5))) continue;
 
 					for (var i = 0; i < urls.length; i++) {		
-						if (this.match(kind, rule, urls[i]) && !~match_tracker[domain].indexOf(rule)) {
+						if (this.match(kind, rule, urls[i], sim) && !~match_tracker[domain].indexOf(rule)) {
 							match_tracker[domain].push(rule);
 							matches[domain].push([rule, rules[domain][rule]]);
 						}
@@ -1649,7 +1756,7 @@ var Template = {
 					ul.css({ marginTop: '-3px', marginBottom: '6px', opacity: 1 });
 
 					for (var domain in sorted)
-						ul.append($('> li', this.view(kind, domain, undefined, null, 1)))
+						ul.append($('> li', this.view(kind, domain, undefined, null, true)));
 				}
 			}
 			
@@ -1724,8 +1831,8 @@ var Template = {
 		 * @param {string|Boolean} url A url the rule must match in order to be displayed
 		 * @param {Boolean} no_dbl_click Wether or not to enable double clicking on a rule
 		 */
-		view: function (kind, domain, url, no_dbl_click, obey_wlbl, match_rtype) {
-			var self = this, allowed = this.for_domain(kind, domain, true),
+		view: function (kind, domain, url, no_dbl_click, hide_wlbl, match_rtype) {
+			var self = this, allowed = this.for_domain(kind, domain, true, hide_wlbl),
 					ul = $('<ul class="rules-wrapper"></ul>'), newul,
 					rules = 0, rule, urule, did_match = !1, rtype, artype, temp, proto;
 
@@ -1735,7 +1842,12 @@ var Template = {
 				allowed = allowed[domain];
 
 				var i, j = this.collapsedDomains(),
-						domain_name = (domain.charAt(0) === '.' && domain !== '.*' ? domain : (domain === '.*' ? _('All Domains') : domain));
+						domain_name = (domain.charAt(0) === '.' && domain !== '.*' ? domain : (domain === '.*' ? _('All Domains') : domain)),
+						settings = {
+							ignoreBL: Settings.getItem('ignoreBlacklist'),
+							ignoreWL: Settings.getItem('ignoreWhitelist')
+						}, sim = this.simplified,
+						_recover = _('Recover'), _restore = _('Restore'), _disable = _('Disable'), _delete = _('Delete');
 			
 				newul = ul.append(Template.create('rule_wrapper_inner', {
 					selectable: Settings.getItem('traverseRulesDomains') ? 'selectable' : '',
@@ -1749,23 +1861,23 @@ var Template = {
 					artype = rtype < 0 ? (rtype - 5) * -1 : rtype;
 					temp = allowed[rule][1];
 
+					if (hide_wlbl && (rtype === 4 || rtype == 5)) continue;
 					if (typeof match_rtype === 'number' && (artype % 2) !== match_rtype) continue;
 
 					if (url instanceof Array)
 						for (i = 0; url[i]; i++)						
-							if ((did_match = this.match(kind, rule, url[i])))
+							if ((did_match = this.match(kind, rule, url[i], sim)))
 								break;
 
-					if ((url && !did_match) ||
-							(obey_wlbl && (!Settings.getItem('showWLBLRules') && (rtype === 4 || rtype === 5))) || 
-							(Settings.getItem('ignoreBlacklist') && rtype === 4) ||
-							(Settings.getItem('ignoreWhitelist') && rtype === 5)) continue;
+					if ((url && !did_match) || 
+							(settings.ignoreBL && rtype === 4) ||
+							(settings.ignoreWL && rtype === 5)) continue;
 					
 					newul.append(Template.create('rule_item', {
 						rtype: rtype,
-						text: this.simplified ? this.make_message(kind, rule, rtype, temp).join(' ') : rule,
+						text: sim ? this.make_message(kind, rule, rtype, temp).join(' ') : rule,
 						temp: temp,
-						button: (this.using_snapshot ? _('Recover') : (rtype < 0 ? _('Restore') : (rtype === 2 ? _('Disable') : _('Delete')))),
+						button: (this.using_snapshot ? _recover: (rtype < 0 ? _restore : (rtype === 2 ? _disable : _delete))),
 					})).find('li:last').data({
 						rule: rule,
 						domain: domain,
@@ -2288,7 +2400,7 @@ var Template = {
 					padd.save = function () {
 						var rule = padd.me.li.data('rule'), kind = padd.me.li.data('kind'), v, ed = $.trim($$('#domain-picker').val()),
 								temp = $$('#rule-temporary').is(':checked'), proto = $$('#rule-proto-input').val(), proto = proto && proto.length ? proto.toLowerCase() : false,
-								nrule = $.trim(this.val()), nrule = proto && nrule.length ? proto + ':' + nrule : nrule;
+								nrule = $.trim(this.val()), nrule = proto && nrule.length && nrule[0] !== '^' ? proto + ':' + nrule : nrule;
 
 						if (!ed.length) ed = padd.me.domain;
 						else if (ed.toLowerCase() === _('All Domains').toLowerCase()) ed = '.*';
@@ -2545,7 +2657,7 @@ var Template = {
 					matches[d].forEach(function (match) {
 						rtype = match[1][0];
 
-						if (!Settings.getItem('showWLBLRules') && (rtype === 4 || rtype === 5)) return;
+						if (rtype === 4 || rtype === 5) return;
 
 						rs.push(rtype);
 						ds.push([d, match]);
@@ -2583,7 +2695,7 @@ var Template = {
 					var wrapper = $('<div><ul class="rules-wrapper"></ul></div>');
 
 					for (d in matches)
-						$('.rules-wrapper', wrapper).append(self.rules.view(li.data('kind'), d, script, true, true, blocked ? 1 : 0).find('> li').find('input').remove().end());
+						$('.rules-wrapper', wrapper).append(self.rules.view(li.data('kind'), d, script, true, false, blocked ? 1 : 0).find('> li').find('input').remove().end());
 
 					$('li.domain-name', wrapper).removeClass('hidden').addClass('no-disclosure');
 
@@ -2989,7 +3101,7 @@ var Template = {
 				'<div class="divider" style="margin:7px 0 6px;"></div>',
 				'<input type="button" value="', _('Show All'), '" id="view-all" /> ',
 				'<input type="button" value="', _('Show Active'), '" id="view-domain" /> ',
-				self.donationVerified ? ['<input type="button" value="', _('Backup'), '" id="rules-backup" />'].join('') : '',,
+				self.donationVerified ? ['<input type="button" value="', _('Backup'), '" id="rules-backup" />'].join('') : '',
 				self.rules.using_snapshot ? [
 					' <input type="button" value="', _('Snapshot'), '" id="current-snapshot" />'].join('') : ''
 				].join(''), function () {
@@ -3229,19 +3341,6 @@ var Template = {
 			$$('#filter-type-state li.selected').click();
 			
 			new Poppy(-2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('All temporary rules have been removed.') + '</p>');
-		}).on('click', '#reinstall-pre', function () {
-			if (self.rules.using_snapshot) return;
-
-			var off = $(this).offset(), key;
-
-			self.busy = 1;
-			
-			for (key in self.rules.data_types)
-				self.rules.reinstall_predefined(key);
-
-			new Poppy(2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('Whitelist and blacklist rules have been reinstalled.') + '</p>');
-
-			self.busy = 0;
 		}).on('search', '#domain-filter', function () {
 			self.busy = 1;
 
@@ -3517,6 +3616,8 @@ var Template = {
 			delete e.Snapshots;
 			delete e.RulesUseTracker;
 			delete e.SimpleRulesUseTracker;
+			delete e.EasyList;
+			delete e.EasyPrivacy;
 			e.donationVerified = !!e.donationVerified;
 			
 			new Poppy($(self.popover.body).width() / 2, 0, [
@@ -3714,6 +3815,39 @@ var Template = {
 			new Poppy();
 		}).on('mousedown', 'body > *:not(#poppy-secondary,#modal)', function () {
 			new Poppy(null, null, null, null, null, null, false, true);
+		}).on('click', '.urls-inner h3', function (event) {
+			var split = this.id.split('-'),
+					allowed = split[0] === 'allowed',
+					kind = split[1],
+					me = $(this), off = me.offset(), left = event.pageX, top = off.top + 12,
+					page_parts = self.utils.domain_parts(self.host);
+
+			new Poppy(left, top, [
+				'<p class="misc-info">', _((allowed ? 'Allowed' : 'Blocked') + ' ' + kind + 's'), '</p>',
+				'<p>',
+					'<input type="checkbox" id="excluding-list" checked /> ',
+					'<label for="excluding-list">Excluding ', allowed ? 'whitelist' : 'blacklist', 'ed items</label></p>',
+				'</p>',
+				'<p>', Template.create('domain_picker', { page_parts: page_parts, no_all: true }), '</p>',
+				'<input id="temporary-these" type="button" value="', _('Temporarily ' + (allowed ? 'Block' : 'Allow') +' These'), '" /> ',
+				'<input id="allow-these" type="button" value="', _('Always ' + (allowed ? 'Block' : 'Allow') +' These'), '" /> ',
+			].join(''), function () {
+				$$('#allow-these, #temporary-these').click(function () {
+					var temp = this.id === 'temporary-these',
+							host = $$('#domain-picker').val(), disallow_predefined = $$('#excluding-list').is(':checked');
+
+					$$('#' + (allowed ? 'allowed' : 'blocked') + '-items-' + kind).find('li').each(function () {
+						if (disallow_predefined && ($(this).is('.rule-type-5') || $(this).is('.rule-type-4'))) return;
+
+						var data = $.data(this), proto = self.utils.active_protocol(data.script[0]).toUpperCase(),
+								rule = self.simpleMode && kind !== 'special' ? proto + ':' + data.url : data.script[0];
+
+						self.rules.add(kind, host, rule, allowed ? 0 : 1, false, temp);
+					});
+
+					Tabs.messageActive('reload');
+				});
+			});
 		});
 	},
 	
@@ -3754,7 +3888,7 @@ var Template = {
 				test_url = use_url + the_item[1];
 
 				if (!(protocol in shost_list[kind])) shost_list[kind][protocol] = {};
-									
+
 				if (!(test_url in shost_list[kind][protocol])) {
 					li = append_url(index, kind, ul, use_url, item, the_item[1], button, protocol, the_item[2]);
 					shost_list[kind][protocol][test_url] = [1, li.attr('id')];
@@ -4285,12 +4419,6 @@ var Template = {
 			case 'reloadPopover':
 				this.reloaded = false;
 			break;
-
-			case 'reinstallWLBL':
-				for (var key in this.rules.data_types)
-					this.rules.reinstall_predefined(key);
-			break;
-
 			
 			case 'doNothing': break;
 		}
@@ -4460,9 +4588,6 @@ var Template = {
 			if (!this.setupDone) {
 				this.collapsed('allowed-script-urls-image', 1);
 
-				for (var key in this.rules.data_types)
-					this.rules.reinstall_predefined(key);
-
 				this.setupDone = 1;				
 				this.installedBundle = self.bundleid;
 
@@ -4565,6 +4690,11 @@ JB.rules.__proto__ = JB;
 JB.rules.use_tracker.__proto__ = JB;
 JB.utils.__proto__ = JB;
 
+for (var kind in JB.rules.data_types) {
+	JB.rules.blacklist[kind] = {};
+	JB.rules.whitelist[kind] = {};
+}
+
 $.ajax({
 	url: 'Info.plist',
 	async: false
@@ -4574,6 +4704,8 @@ $.ajax({
 	JB.bundleid = parseInt($xml.find('key:contains("CFBundleVersion")').next().text(), 10),
 	JB.displayv = $xml.find('key:contains("CFBundleShortVersionString")').next().text();
 });
+
+JB.rules.easylist();
 
 window.receiveMessage = function (target, message, data) {
 	JB.handle_message({

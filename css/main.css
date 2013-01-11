@@ -827,6 +827,9 @@ header h3 {
 	margin: 5px 0;
 	cursor: default;
 }
+	.urls-inner h3 {
+		cursor: pointer;
+	}
 	.kind-header {
 		position: relative;
 		margin-top: -1px;

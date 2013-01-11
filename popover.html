@@ -172,7 +172,6 @@
 						<li id="edit-domains" class="divider" title=" " data-i18n="Edit"></li>
 						<li id="make-temp-perm" class="divider" title=" " data-i18n="Make Temporary Rules Permanent"></li>
 						<li id="remove-all-temp" title=" " data-i18n="Remove Temporary Rules"></li>
-						<li id="reinstall-pre" class="divider" title=" " data-i18n="Reinstall Whitelist and Blacklist"></li>
 						<li id="time-machine" class="divider" title=" " data-i18n="Snapshots"></li>
 						<li id="reload-rules" title=" " data-i18n="Reload Rules"></li>
 					</ul>
@@ -277,7 +276,7 @@
 			<li>
 				<div class="bubble bubble-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><div class="inner-bubble"></div></div>
 				<span class="<%=Settings.getItem('traverseRulesRules') ? 'selectable' : ''%> rule type-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><%=self.text%></span>
-				<% if (self.button !== null) { %><input type="button" value="<%=self.button%>" /><% } %>
+				<% if (self.button !== null && self.rtype !== 4 && self.rtype !== 5) { %><input type="button" value="<%=self.button%>" /><% } %>
 				<div class="divider"></div>
 			</li>
 		</textarea>
