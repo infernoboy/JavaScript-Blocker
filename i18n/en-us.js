@@ -226,6 +226,7 @@ Strings['en-us'] = {
 	'Loading embed': 'Loading embed&hellip;',
 	'Loading object': 'Loading object&hellip;',
 	'Loading image': 'Loading image&hellip;',
+	'Loading Rules': 'Loading Rules…',
 	'Copy above': 'Copy the above and save it to a file to create a backup.',
 	'Copy below': 'Copy the below and save it to a file to create a backup.',
 	'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
@@ -551,7 +552,7 @@ Strings['en-us'] = {
 	// Automatically block items from...
 	'Different hostnames': 'Different hostnames',
 	'Different hosts &amp; subdomains': 'Different hosts &amp; subdomains',
-	'Nowhere': 'Nowhere',
+	'Nowhere': 'Blacklist only',
 	'Anywhere': 'Anywhere',
 
 	 // Snapshots
@@ -608,6 +609,7 @@ Strings['en-us'] = {
 
 	'Reinstall': 'Reinstall', // reinstall WL and BL
 
+	'Include whitelist and blacklist rules': 'Include whitelist and blacklist rules (can take a few minutes to load)',
 	'Reload Rules': 'Reload Rules',
 
 	'Convert non-simplified rules:': 'Convert non-simplified rules:',

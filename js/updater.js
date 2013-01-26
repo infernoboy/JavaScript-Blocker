@@ -330,13 +330,30 @@ JB.updater = function () {
 
 					$.post(self.baseURL + 'user.php', { id: Settings.getItem('installID') });
 
-					self.donate();
+					self.updater();
 				});
 			}, null, null, true);
 		break;
 
 		case v < 139: // 3.2.0
-			self.rules.remove_all_predefined();
+			new Poppy($(this.popover.body).width() / 2, 0, [
+				'<p class="misc-info"><a class="outside" href="http://javascript-blocker.toggleable.com/change-log/320a/">Update 3.2.0</a></p>',
+				'<p><b>New:</b> Blacklist and whitelist has been completely overhauled and now utilizes the power of EasyList. It will be updated automatically every 5 days when Safari is restarted.',
+				'<p><b>New:</b> In the main window, item headers (SCRIPTS, FRAMES, etc.) are now clickable. You can easily allow or block all of the items in the list with the option to exclude blacklisted or whitelisted items from being allowed or blocked.</p>',
+				'<p>',
+					'<input type="button" id="rawr-ok" value="', _('Understood'), '" /> ',
+				'</p>'
+			].join(''), function () {
+				$$('#rawr-ok').click(function () {
+				//	self.installedBundle = 139;
+
+					self.rules.remove_all_predefined();
+
+					self.donate();
+				});
+			}, null, null, true);
+
+		break;
 
 		case v < this.bundleid:
 			this.donate();

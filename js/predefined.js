@@ -83,6 +83,14 @@ wl['.amazon.co.uk'] = wl['.amazon.com'];
 
 /* ====================BLACKLIST===================== */
 
+$.extend(true, JB.rules.whitelist, {
+	script: {
+		'.*': {
+			'^.*google\\.[^\\/]+\\/.*\\/plusone\\.js(\\?.*)?$': [4,false]
+		}
+	}
+});
+
 var bld = {
 	script: {
 		'.*': [

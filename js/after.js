@@ -19,7 +19,7 @@ var special_actions = {
 	},
 	alert_dialogs: function (enabled, args) {
 		window.alert = function (a, text, html_allowed) {
-			a = a.toString();
+			a = a === null ? '' : (typeof a === 'undefined' ? 'undefined' : a.toString());
 			text = text ? text.toString() : null;
 			
 			var html_verify = args[0],
@@ -221,6 +221,22 @@ var special_actions = {
 		s.id = 'jsblocker-css-' + (+new Date());
 		s.innerText = '*:not(pre):not(code) { font-family: "' + v + '" !important; }';
 		document.documentElement.appendChild(s);
+	},
+	history_fix: function () {
+		window.history.jsbpushState = window.history.pushState
+		window.history.jsbreplaceState = window.history.replaceState
+
+		window.history.pushState = function () {
+			window.history.jsbpushState.apply(window.history, arguments);
+
+			window.postMessage('history-state-change', '*');
+		};
+
+		window.history.replaceState = function () {
+			window.history.jsbreplaceState.apply(window.history, arguments);
+
+			window.postMessage('history-state-change', '*');
+		};
 	}
 },
 non_injected_special_actions = {};
@@ -270,3 +286,5 @@ if (typeof beforeLoad === 'undefined' || !ResourceCanLoad(beforeLoad, ['disabled
 			doSpecial(0, b, non_injected_special_actions[b]);
 	}
 }
+
+appendScript(special_actions.history_fix);

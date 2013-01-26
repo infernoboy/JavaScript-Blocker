@@ -512,7 +512,9 @@ function windowMessenger(event) {
 
 	if (typeof event.data !== 'string') return;
 
-	if (event.data === 'zero-timeout') {
+	if (event.data === 'history-state-change')
+		jsblocker.href = pageHost();
+	else if (event.data === 'zero-timeout') {
 		event.stopPropagation();
 		if (zero.length) {
 			var o = zero.shift();
@@ -552,10 +554,6 @@ function contextmenu(event) {
 Events.addTabListener('message', messageHandler, true);
 
 if (!disabled) {
-	setInterval(function () {
-		jsblocker.href = pageHost();
-	}, 1000);
-
 	window.addEventListener('hashchange', hashUpdate, true);
 	window.addEventListener('message', windowMessenger, true);
 

@@ -79,7 +79,7 @@ Poppy.prototype = {
 		}
 
 		this._time *= JB.speedMultiplier;
-		
+
 		if ($(this.e, this.p).length)
 			return this.remove((this.removeOnly !== false) ? $.noop : this.create);
 				

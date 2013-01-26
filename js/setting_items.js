@@ -224,7 +224,7 @@ Settings.settings = {
 		},
 		quickAddType: {
 			label: 'Create Quick Add rules for:',
-			default: '1',
+			default: '0',
 			setting: [[0, 'Same hostname as page host'], [1, 'Least domain of page host'], [2, 'All Domains']],
 			divider: 1,
 			if_setting: ['quickAdd', true]
