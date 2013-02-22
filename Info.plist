@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>8536.28.9</string>
+	<string>8536.28.10</string>
 	<key>CFBundleDisplayName</key>
 	<string>JavaScript Blocker</string>
 	<key>CFBundleIdentifier</key>
@@ -60,8 +60,8 @@
 			<key>Start</key>
 			<array>
 				<string>js/safari.js</string>
-				<string>js/blocker.js</string>
 				<string>js/after.js</string>
+				<string>js/blocker.js</string>
 			</array>
 		</dict>
 		<key>Stylesheets</key>

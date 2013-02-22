@@ -410,7 +410,7 @@ Settings.settings = {
 	},
 	other: {
 		simpleReferrer: {
-			label: 'Prevent links on webpages from sending referrer information',
+			label: 'Prevent links on webpages from sending referer information',
 			setting: true,
 			help: 'simpleReferrer help',
 			default: false
@@ -437,7 +437,7 @@ Settings.settings = {
 			}
 		},
 		blockReferrer: {
-			label: 'EXPERIMENTAL: Enable full referrer blocking',
+			label: 'EXPERIMENTAL: Enable full referer blocking',
 			setting: true,
 			extras: 1,
 			divider: 1,

@@ -424,17 +424,13 @@ function hashUpdate(event) {
 function prepareAnchors(event, anchors, forms) {
 	var a = anchors || document.getElementsByTagName('a'),
 			f = forms || document.getElementsByTagName('form');
-	
+
 	for (var x = 0; x < a.length; x++)
 		if (a[x].getAttribute('href'))
-			zero_timeout(function (an, i) {
-				prepareAnchor(an, i);
-			}, [a[x], x]);
+			prepareAnchor(a[x], x);
 	for (var y = 0; y < f.length; y++)
-		zero_timeout(function (fo) {
-			if (fo.getAttribute('method') && fo.getAttribute('method').toLowerCase() === 'post')
-				GlobalPage.message('cannotAnonymize', getAbsoluteURL(fo.getAttribute('action')));
-		}, [f[y]]);
+		if (f[y].getAttribute('method') && f[y].getAttribute('method').toLowerCase() === 'post')
+			GlobalPage.message('cannotAnonymize', getAbsoluteURL(f[y].getAttribute('action')));
 }
 
 function prepareAnchor(anchor, i) {
@@ -580,8 +576,11 @@ if (!disabled) {
 		});
 
 		observer.observe(document, { childList: true, subtree: true });
-	} else
+	} else {
 		document.addEventListener('DOMNodeInserted', canLoad, true);
+		document.addEventListener('DOMNodeInserted', prepareFrame, true);
+		document.addEventListener('DOMNodeInserted', prepareAnchor, true);
+	}
 
 	document.addEventListener('contextmenu', contextmenu, false);
 	document.addEventListener('DOMContentLoaded', ready, true);

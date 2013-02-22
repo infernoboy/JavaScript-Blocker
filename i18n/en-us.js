@@ -394,6 +394,9 @@ Strings['en-us'] = {
 	'font': 'Default webpage font',
 		'font:0': 'Custom font is set to {1}',
 		'font:1': 'Webpage will use its own font.',
+	'rel_referer': 'Referer on navigation',
+		'rel_referer:1': 'Referer information will be sent. Anchor tags are unchanged.',
+		'rel_referer:0': 'Referer information will try to be hidden. Anchor tags are modified with "rel=noreferrer".',
 
 	/** /SPECIALS **/
 			
@@ -467,7 +470,7 @@ Strings['en-us'] = {
 	'Ignore blacklist rules': 'Ignore blacklist rules',
 	'Resources on secure sites must also be secure': 'Resources on secure sites must also be secure',
 	'Automatically allow resources from other extensions': 'Automatically allow resources from other extensions',
-	'Prevent links on webpages from sending referrer information': 'Prevent links on webpages from sending referrer information',
+	'Prevent links on webpages from sending referer information': 'Prevent links on webpages from sending referer information',
 	'Automatically block scripts from:': 'Automatically block scripts from:',
 	'Create temporary rules for automatic actions': 'Create temproary rules for automatic actions',
 	'…even if Private Browsing is enabled': '… even if Private Browsing is enabled',
@@ -580,11 +583,10 @@ Strings['en-us'] = {
 	 'Rule list rules': 'Rule list rules',
 	 'Holding option rule': 'Holding alt/option while hitting enter/return will trigger the standard add-a-rule UI if Quick Add is enabled.',
 	
-	'EXPERIMENTAL: Enable full referrer blocking':
-		'EXPERIMENTAL: Enable full referrer blocking',
+	'EXPERIMENTAL: Enable full referer blocking':
+		'EXPERIMENTAL: Enable full referer blocking',
 	'blockReferrer help': 'This will only work on GET requests in the main window. Inline frames will not ' +
-		'have referrer headers blocked due to a limitation of Safari. You can <b><a href="javascript:void(0);" id="search-simple">enable simple referrer blocking</a></b> to help ' +
-		'block some in these cases. This setting may cause a loop when trying to navigate back/forward.',
+		'have referer headers blocked due to a limitation of Safari. This setting may cause a loop when trying to navigate back/forward.',
 
 	// Short URL stuff - NEW
 	'Confirm short URL redirects before they occur': 'Show a confirmation dialog before navigating to a shortened URL',

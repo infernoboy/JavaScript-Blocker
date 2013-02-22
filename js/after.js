@@ -14,7 +14,7 @@ var special_actions = {
 		window.moveTo = function () {};
 		window[wo] = window.open;
 		window.open = function (URL, name, specs, replace) {
-			window[wo](URL, name, undefined, replace);
+			return window[wo](URL, name, undefined, replace);
 		};
 	},
 	alert_dialogs: function (enabled, args) {
