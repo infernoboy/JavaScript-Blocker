@@ -97,3 +97,6 @@ select {
 	.domain-name.hidden.floater {
 		background: url(../images/disclosure-closed.png) no-repeat left 7px, url(../images/linen.png);
 	}
+.zoom-window-animating {
+	background: url(../images/linen.png);
+}

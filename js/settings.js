@@ -458,8 +458,7 @@ Events.addTabListener('message', function (event) {
 			if (!don) {
 				if (event.message.trial_active)
 					$('#trial-remaining').html([
-						'<p>', _('Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>', rem), '</p>',
-						'<p>', _('Remember for free'), '</p>'].join(''));
+						'<p>', _('Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>', rem), '</p>'].join(''));
 				else
 					$('#trial-remaining').html([
 						'<p>', _('Free trial expired', [_('JavaScript Blocker')]), '</p>',

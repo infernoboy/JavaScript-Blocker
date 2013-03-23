@@ -2,59 +2,176 @@
  * @file i18n/en-us.js
  * @author Travis Roman (travis@toggleable.com)
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
+
+ * Any word or phrase preceded by "/*----" means it was already translated elsewhere in the file.
+ * For example: "/*---- 'Show Active'"
+ * This is not the same as "/***" or "/*--**", which is just a helper comment.
  ***************************************/
 
 Strings['en-us'] = {
-	'JavaScript Blocker': 'JavaScript Blocker',
 	'Thanks for using {1}': 'Thanks for using {1}!',
-	'Setup:Simple Mode': 'Show hostnames instead of individual scripts, similar to ' +
-			'<a href="http://noscript.net/">NoScript</a> for Firefox',
-	'Setup:Simple Desc': 'This option will disable the more advanced features of {1}, but will make it easier to use. Should you ' +
-			'want to start making more sophisticated rules later on, just enable expert features from the preferences.',
 	'All Domains': 'All Domains',
-	'Main Page': 'Main Page',
-	'Inline Frame Pages': 'Inline Frame Pages',
-	'Custom Frame': '(Non-URL Based Frame)',
-	'Disclaimer.': 'This tool only blocks scripts when they are loaded from an external file or a data URI. ' +
-		'What this means is that any scripts that are within the page itself can still run. ' +
-		'Unfortunately this is a limitation of the Safari extension design, not mine.',
-	
-	/** BUTTONS & LABELS **/
-	'Domains': 'Domains',
-	'Filter:': 'Filter:',
-	'State:': 'State:',
-	'Visibility:': 'Visibility:',
-	'Not Used Within:': 'Not Used In Past:',
-	'Used Within:': 'Used In Past:',
-	'Actions:': 'Actions:',
-	'Page:': 'Page:',
-	'Allowed:': 'Allowed:',
-	'Blocked:': 'Blocked:',
-	'Unblocked:': 'Unblockable:',
-	'On:': 'On:',
-	'?': '?',
-	'Edit': 'Edit',
-	'Done Editing': 'Done',
-	'Remove': 'Remove',
-	'Revoke': 'Revoke',
-	'Beautify Script': 'Beautify Script',
-	'Done': 'Done',
+	'?': '?', // Displayed next to an item to display further helpful information.
 	'{1} matches': '{1} matches', // {1} = Number of items found using the find bar (Cmd+F)
+
+
+	/*------ MAIN WINDOW ------
+	/**------ TOOLBAR ------
+	/*--*/ 'Unlock': 'Unlock',
+	/*--*/ 'Contribute': 'Contribute',
+	/*--*/ 'Enable JavaScript Blocker': 'Enable',
+	/*--*/ 'Disable JavaScript Blocker': 'Disable',
+	/*--*/ 'Help': 'Help',
+	/*--*/ 'Settings': 'Settings',
+	/*--*/ 'Rules': 'Rules',
+	/*--*/ 'Show Hidden': 'Show Hidden',
+	/*--*/ 'JavaScript Blocker': 'JavaScript Blocker',
+	/**--------*/
+	/**/
+	/**/ 'Page:': 'Page:', // Label for page selector
+	/***** Navigation on the right of the page selector.
+	/****/ 'Main page': 'Main page',
+	/****/ 'Prev. frame': 'Prev. frame',
+	/****/ 'Next frame': 'Next frame',
+	/**/
+	/*** Displayed in the page selector as an optgroup.
+	/**/ 'Main Page': 'Main Page',
+	/**/ 'Inline Frame Pages': 'Inline Frame Pages',
+	/**/
+	/*** Displayed in the page selector when a frame does not have a URL.
+	/**/ 'Custom Frame': '(Non-URL Based Frame)',
+	/**/
+	/*** A label preceding a number determining the amount of items in a section.
+	/**/ 'Allowed:': 'Allowed:',
+	/**/ 'Blocked:': 'Blocked:',
+	/**/ 'Unblocked:': 'Unblockable:',
+	/**/
+	/*** Headers for the item groups. Displayed in all-caps via CSS transformation.
+	/*** Also displayed when adding an All... rule as a list of checkboxes.
+	/**/ 'Scripts': 'Scripts',
+	/**/ 'Frames': 'Frames',
+	/**/ 'Images': 'Images',
+	/**/ 'Embeds': 'Embeds & objects',
+	/**/ 'Videos': 'Videos',
+	/**/ 'Specials': 'Other',
+	/**/
+	/*** Appears in a poppy when clicking the ? to the left of a Blocked or Allowed item when expert
+	/*** features are disabled.
+	/**/ 'More Info': 'Safety Info',
+	/****/ 'Safety Information for {1}': 'Safety Information for {1}', // {1} = domain (www.google.com)
+	/**/ 'View script Source': 'View Script Source',
+	/****/ 'Beautify Script': 'Beautify Script', // Displayed when viewing the contents of a script. Also applies to unblockable scripts.
+	/**/ 'View frame Source': 'View Frame Source',
+	/**/ 'View image Source': 'View Image',
+	/**/ 'Show Matched Rules': 'Show Matched Rules',
+	/***** These appear as a header in the poppy.
+	/****/ 'Matched script Rules': 'Matched Script Rules',
+	/****/ 'Matched frame Rules': 'Matched Frame Rules',
+	/****/ 'Matched image Rules': 'Matched Image Rules',
+	/****/ 'Matched embed Rules': 'Matched Embed & Object Rules',
+	/****/ 'Matched video Rules': 'Matched Video Rules',
+	/****/ 'Matched special Rules': 'Matched Other Rules',
+	/**/
+	/**/ 'Unblocked Script': 'Unblockable Script', // A header in a window displaying the contents of an unblockable script.
+	/**/
+	/*** Appears as buttons in a poppy when clicking the Rules toolbar item.
+	/**/ 'Active Temporary Rules': 'Active Temporary Rules', // A header for the 3 buttons below.
+	/****/ 'Make Permanent': 'Make Permanent',
+	/****/ 'Revoke': 'Revoke',
+	/****/ 'Show': 'Show',
+	/**/ 'Show All': 'Show All',
+	/**/ 'Show Active': 'Show Active',
+	/**/ 'Backup': 'Backup',
+	/****/ 'Export': 'Export',
+	/******/ 'Copy above': 'Copy the above and save it to a file to create a backup.',
+	/****/ 'Import': 'Import',
+	/******/ 'Restore': 'Restore',
+	/******/ 'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
+	/********/ 'Error importing': 'Error importing rules.',
+	/**/
+	/**------ RULE CREATION ------
+	/*--*/ 'Allow…': 'Allow or Hide',
+	/*--*/ 'Block…': 'Block or Hide',
+	/*----*/ 'All.': 'All…',
+	/*------*/ 'All': 'All', // [Allow/Block/Hide] All
+	/*----*/ 'Some': 'Some',
+	/*------*/ 'Make these temporary rules': 'Make these temporary rules', // Also appears when adding the above All... rule
+	/*------*/ '{1} selected items': '{1} selected items',
+	/*--*/
+	/*--*/ 'On:': 'On:', // The domain in which a rule is to be created for (On: google.com)
+	/******* These are also used in a select box before a domain name (Allow google.com)
+	/******* and in a select box when adding an All... rule (Allow All)
+	/*----*/ 'Hide': 'Hide', 
+	/*----*/ 'Block': 'Block',
+	/*----*/ 'Allow': 'Allow',
+	/**--------*/
+	/*-----------*/
+	
+	/*------ RULE WINDOW ------
+	/**/ 'Close Rules List': 'Close Rules',
+	/**/
+	/*** {1} - number of domains in list, {2} - number of rules in list
+	/**/ '{1} domain, {2} rule': '{1} domain, {2} rule',
+	/**/ '{1} domain, {2} rules': '{1} domain, {2} rules',
+	/**/ '{1} domains, {2} rule': '{1} domains, {2} rule',
+	/**/ '{1} domains, {2} rules': '{1} domains, {2} rules',
+	/**/
+	/**------ FILTER BARS ------
+	/*--*/ 'Filter:': 'Filter:',
+	/*----*/ 'Domains': 'Domains', // Used as the placeholder for the domain filter
+	/*--*/
+	/*--*/ 'State:': 'State:',
+	/*----*/ 'Any': 'Any',
+	/*----*/ 'Enabled': 'Enabled',
+	/*----*/ 'Disabled': 'Disabled',
+	/*----*/ 'Temporary': 'Temporary',
+	/*--*/
+	/*--*/ 'Visibility:': 'Visibility:',
+	/*------ 'Any'
+	/*----*/ 'Collapsed': 'Collapsed',
+	/*----*/ 'Expanded': 'Expanded',
+	/*--*/
+	/*--*/ 'Not Used Within:': 'Not Used In Past:', // If a rule has or hasn't been used in ...
+	/*--*/ 'Used Within:': 'Used In Past:',
+	/*----*/ 'Past Hour': 'Hour',
+	/*----*/ 'Past Day': 'Day',
+	/*----*/ 'Past Week': 'Week',
+	/*----*/ 'Past Month': 'Month',
+	/*----*/ 'Past Year': 'Year',
+	/**--------*/
+	/**/
+	/**------ ACTIONS TOOLBAR (displayed in a tooltip when hovering over the appropriate item) ------
+	/*--*/ 'Collapse All': 'Collapse All',
+	/*--*/ 'Expand All': 'Expand All',
+	/*---- 'Show Active'
+	/*--*/ 'Edit': 'Edit', // Switch rule list to edit mode to delete entire domain rulesets
+	/*--*/ 'Make Temporary Rules Permanent': 'Make Temporary Rules Permanent',
+	/*--*/ 'Remove Temporary Rules': 'Remove Temporary Rules',
+	/*--*/ 'Snapshots': 'Snapshots', // Also displayed as a header in the Snapshots window
+	/*--*/ 'Reload Rules': 'Reload Rules',
+	/**--------*/
+	/**/
+	/**------ RULE LISTING ------
+	/*--** Headers for the groups of rules. Displayed in all-caps via CSS transformation.
+	/*--*/ 'frame Rules': 'Frame Rules',
+	/*--*/ 'script Rules': 'Script Rules',
+	/*--*/ 'embed Rules': 'Embed & Object Rules',
+	/*--*/ 'video Rules': 'Video Rules',
+	/*--*/ 'image Rules': 'Image Rules',
+	/*--*/ 'special Rules': 'Other Rules',
+	/*--*/ 'hide_script Rules': 'Hide-Script Rules',
+	/*--*/ 'hide_frame Rules': 'Hide-Frame Rules',
+	/*--*/ 'hide_embed Rules': 'Hide-Embed-&-Object Rules',
+	/*--*/ 'hide_video Rules': 'Hide-Video Rules',
+	/*--*/ 'hide_image Rules': 'Hide-Image Rules',
+	/*--*/ 'hide_special Rules': 'Hide-Other Rules',
+
+	'Remove': 'Remove',
 	'Allow': 'Allow',
 	'Allow/Hide': 'Allow or Hide',
-	'Allow All': 'Allow or Hide All',
-	'Allow…': 'Allow or Hide',
-	'Allow Some': 'Allow or Hide Some',
-	'Block All': 'Block or Hide All',
-	'Block…': 'Block or Hide',
 	'Block': 'Block',
 	'Block/Hide': 'Block or Hide',
-	'Block Some': 'Block or Hide Some',
-	'Some': 'Some',
-	'All': 'All',
-	'All.': 'All…',
 	'All in Snapshot': 'All in Snapshot',
-	'{1} selected items': '{1} selected items', // Block/Allow/Hide selected items
 	'{1} All': '{1} All',
 	'Webpage default': 'Webpage default',
 	'The following features will appear as <b>{1}</b>.': 'The following features will appear as <b>{1}</b>. They will not count towards the amount of blocked/allowed resources.',
@@ -63,14 +180,10 @@ Strings['en-us'] = {
 	'View': 'View',
 	'Disable': 'Disable',
 	'Delete': 'Delete',
-	'Restore': 'Restore',
 	'Recover': 'Recover',
 	'Merge': 'Merge',
 	'Replace': 'Replace',
 	'Save': 'Save',
-	'Show Hidden': 'Show Hidden',
-	'Hide Hidden': 'Hide Hidden',
-	'Rules': 'Rules',
 	'Edit Rule': 'Edit Rule',
 	'New Rule': 'New Rule',
 	'Restore/Delete Rules': 'Restore/Delete Rules',
@@ -84,65 +197,22 @@ Strings['en-us'] = {
 	'Do you want to completely remove all rules for this domain?': 'Do you want to completely remove all rules for this domain?',
 	'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.':
 			'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.',
-	'Close Rules List': 'Close Rules',
 	'Close Snapshots': 'Close Snapshots',
 	'Close': 'Close',
 	'Reinstall whitelist and blacklist rules:': 'Reinstall whitelist and blacklist rules:', // CHANGED
 	'Reinstall Whitelist and Blacklist': 'Reinstall Whitelist and Blacklist',
-	'Show All': 'Show All',
-	'Show Active': 'Show Active',
-	'Show': 'Show',
-	'Hide': 'Hide',
 	'Back': 'Back',
 	'Continue': 'Continue',
-	'View script Source': 'View Script Source',
-	'View frame Source': 'View Frame Source',
-	'View image Source': 'View Image',
 	'New rule for {1}': 'New rule for <b>{1}</b>', // {1} = domain name
-	'Any': 'Any',
-	'Enabled': 'Enabled',
-	'Disabled': 'Disabled',
-	'Temporary': 'Temporary',
-	'Past Hour': 'Hour',
-	'Past Day': 'Day',
-	'Past Week': 'Week',
-	'Past Month': 'Month',
-	'Past Year': 'Year',
-	'Collapsed': 'Collapsed',
-	'Expanded': 'Expanded',
-	'Collapse All': 'Collapse All',
-	'Expand All': 'Expand All',
-	'Enable JavaScript Blocker': 'Enable',
-	'Disable JavaScript Blocker': 'Disable',
 	'Show {1} more': 'Show {1} more', // {1} = number of hidden items in main window.
-	'Help': 'Help',
 	'Understood': 'Understood',
 	'Reset JS Blocker': 'Reset JS Blocker',
 	'Leave Settings Alone': 'Leave Settings Alone', // TO BE DELETED
 	'Make a Donation': 'Make a Contribution',
 	'Maybe Later': 'Maybe Later',
 	'I\'ve Donated!': 'I\'ve Contributed',
-	'Unblocked Script': 'Unblockable Script',
-	'More Info': 'Safety Info',
-	'Unlock': 'Unlock',
 	'Temporary rule': 'Make this a temporary rule',
-	'Make these temporary rules': 'Make these temporary rules',
-	'Make Temporary Rules Permanent': 'Make Temporary Rules Permanent',
-	'Remove Temporary Rules': 'Remove Temporary Rules',
-	'Active Temporary Rules': 'Active Temporary Rules',
-	'Make Permanent': 'Make Permanent',
-	'Settings': 'Settings',
-	'Export': 'Export',
-	'Import': 'Import',
-	'Backup': 'Backup',
 	'Use large font': 'Use large font',
-	'Scripts': 'Scripts',
-	'Frames': 'Frames',
-	'Images': 'Images',
-	'Embeds': 'Embeds & objects',
-	'Videos': 'Videos',
-	'Specials': 'Other',
-	'Snapshots': 'Snapshots',
 	'Allowed scripts': 'Allowed Scripts',
 	'Allowed frames': 'Allowed Frames',
 	'Allowed embeds': 'Allowed Embeds & Objects',
@@ -166,23 +236,7 @@ Strings['en-us'] = {
 	'embeds': 'embeds and objects',
 	'videos': 'videos',
 	'specials': 'other',
-	'frame Rules': 'Frame Rules',
-	'script Rules': 'Script Rules',
-	'embed Rules': 'Embed & Object Rules',
-	'video Rules': 'Video Rules',
-	'image Rules': 'Image Rules',
-	'special Rules': 'Other Rules',
-	'hide_script Rules': 'Hide-Script Rules',
-	'hide_frame Rules': 'Hide-Frame Rules',
-	'hide_embed Rules': 'Hide-Embed-&-Object Rules',
-	'hide_video Rules': 'Hide-Video Rules',
-	'hide_image Rules': 'Hide-Image Rules',
-	'hide_special Rules': 'Hide-Other Rules',
 	'Forgot': 'iForgot',
-	'Main page': 'Main page',
-	'Prev. frame': 'Prev. frame',
-	'Next frame': 'Next frame',
-	'Show Matched Rules': 'Show Matched Rules',
 	'Current Snapshot': 'Current Snapshot',
 	'Current Comparison': 'Current Comparison',
 	'Create Snapshot': 'Create Snapshot',
@@ -210,7 +264,6 @@ Strings['en-us'] = {
 	'Load {1} Blocked Elements': 'Load {1} Blocked Elements',
 	'Load {1} Blocked Element': 'Load {1} Blocked Element',
 	'{1} allowed, {2} blocked': '{1} allowed, {2} blocked',
-	'Contribute': 'Contribute',
 	/** /BUTTONS **/
 	
 	/** POPPIES **/
@@ -227,21 +280,10 @@ Strings['en-us'] = {
 	'Loading object': 'Loading object&hellip;',
 	'Loading image': 'Loading image&hellip;',
 	'Loading Rules': 'Loading Rules…',
-	'Copy above': 'Copy the above and save it to a file to create a backup.',
 	'Copy below': 'Copy the below and save it to a file to create a backup.',
-	'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
-	'Error importing': 'Error importing rules.',
 	
 	'The rule allowing this item will be removed.': 'The rule allowing this item will be removed.',
 	'The rule blocking this item will be removed.': 'The rule blocking this item will be removed.',
-	
-	'Safety Information for {1}': 'Safety Information for {1}',
-	'Matched script Rules': 'Matched Script Rules',
-	'Matched frame Rules': 'Matched Frame Rules',
-	'Matched image Rules': 'Matched Image Rules',
-	'Matched embed Rules': 'Matched Embed & Object Rules',
-	'Matched video Rules': 'Matched Video Rules',
-	'Matched special Rules': 'Matched Other Rules',
 
 	'Nothing is hidden': 'Nothing is hidden.',
 
@@ -313,11 +355,6 @@ Strings['en-us'] = {
 	'Editing a hide_special Rule For {1}': 'Editing a Hide-Other Rule For {1}',
 
 	/** MISC HEADERS **/
-	'{1} domain, {2} rule': '{1} domain, {2} rule', // {1} = number of domains in list, {2} = number of rules in list
-	'{1} domain, {2} rules': '{1} domain, {2} rules', // *
-	'{1} domains, {2} rule': '{1} domains, {2} rule', // *
-	'{1} domains, {2} rules': '{1} domains, {2} rules', // *
-	'Unblockable Script': 'Unblockable Script',
 	'JavaScript Blocker is disabled.': 'JavaScript Blocker is disabled.',
 	/** /MISC **/
 	
@@ -612,7 +649,6 @@ Strings['en-us'] = {
 	'Reinstall': 'Reinstall', // reinstall WL and BL
 
 	'Include whitelist and blacklist rules': 'Include whitelist and blacklist rules (can take a few minutes to load)',
-	'Reload Rules': 'Reload Rules',
 
 	'Convert non-simplified rules:': 'Convert non-simplified rules:',
 	'Convert Rules': 'Convert Rules',
@@ -641,11 +677,12 @@ Strings['en-us'] = {
 		'<p><b>Different hostnames</b> will allow "dif.example.com", ',
 				'"www.example.com", and "example.com".</p>',
 		'<p><b>Different hosts & subdomains</b> will allow only "www.example.com".</p>',
-		'<p><b>Nowhere</b> will allow everything.</p>',
+		'<p><b>Blacklist only</b> will allow anything not blocked by the blacklist.</p>',
 		'<p><b>Anywhere</b> will allow nothing.</p>'].join(''),
 	
-	'quickAdd help': 'Lets you quickly add rules with a single click. Successive clicks in simple mode will select different parts of the host. A press-and-hold ' +
-		'will trigger the standard UI to add a rule.',
+	'quickAdd help': 'Quick Add lets you add rules with a single click. Successive clicks with expert features disabled will select different parts of the host. ' +
+		'You will have a second to click multiple items or multiple times until you reach your desired result. You can press-and-hold on an item ' +
+		'to bypass Quick Add and bring up the standard rule creator.',
 	'simpleMode help': 'When enabled, a different rule set will be used.',
 	'simpleReferrer help': 'Adds the attribute <b>rel="noreferrer"</b> to anchor tags.', // <b>rel="noreferrer"</b> = do not localize.
 	'enableimage help': 'This will <b>not</b> prevent the network request from being made on images. It will only hide it in the DOM. ' +

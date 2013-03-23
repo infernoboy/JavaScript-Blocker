@@ -132,7 +132,7 @@ JB.poppies = {
 			save: function (no_refresh) {
 				var n = parseInt(this.parent().prev().prev().find('input:checked').val(), 10), k = zoo.me.li.data('kind'),
 						ed = $.trim($$('#domain-picker').val()), ru = $.trim(this.val()), proto = $.trim($$('#rule-proto-input').val()).toLowerCase(),
-						proto = proto.length ? proto : false;
+						proto = proto.length ? proto.replace(/ /g, ',') : false;
 
 				if (!ru.length) return 0;
 

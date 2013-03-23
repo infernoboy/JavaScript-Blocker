@@ -1,5 +1,6 @@
 body,
-body.windows {
+body.windows,
+.zoom-window-animating {
 	background: rgb(200,200,200) url(../images/texture.png) left top repeat;
 	text-shadow: 0 1px 0 rgba(255,255,255,0.5);
 }

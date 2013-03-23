@@ -214,7 +214,10 @@ Settings.settings = {
 			label: 'Enable Quick Add—lets you add rules with a single click',
 			default: false,
 			setting: true,
-			help: 'quickAdd help'
+			help: 'quickAdd help',
+			confirm: function () {
+				return confirm(_('quickAdd help'));
+			}
 		},
 		quickAddTemporary: {
 			label: 'Quick-add rules are temporary',

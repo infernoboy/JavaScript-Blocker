@@ -638,8 +638,8 @@ var Template = {
 			hide.find('*:focus').blur();
 			e.find('*:focus').blur();
 			
-			start_value = !e.hasClass('zoom-window') ? 0.3 : 1;
-			end_value = start_value === 1 ? 0.3 : 1;
+			start_value = !e.hasClass('zoom-window') ? 0.7 : 1;
+			end_value = start_value === 1 ? 0.7 : 1;
 					
 			start_hide_zoom = start_value === 1 ? 1.2 : 1;
 			end_hide_zoom = start_hide_zoom === 1 ? 1.2 : 1;
@@ -683,7 +683,7 @@ var Template = {
 								
 				e.css({
 					WebkitTransform: 'scale(' + (end_value & 1) + ')',
-					opacity: (end_value & 1) === 0 ? end_value * 0.5 : end_value
+					opacity: (end_value & 1) === 0 ? end_value * 0.7 : end_value
 				}).one('webkitTransitionEnd', { e: e, s: start_value, h: hide, onshow: onshow, onhide: onhide }, function (event) {
 					this.scrollTop = 0;
 
@@ -2437,7 +2437,7 @@ var Template = {
 					padd.save_orig = padd.save;
 					padd.save = function () {
 						var rule = padd.me.li.data('rule'), kind = padd.me.li.data('kind'), v, ed = $.trim($$('#domain-picker').val()),
-								temp = $$('#rule-temporary').is(':checked'), proto = $$('#rule-proto-input').val(), proto = proto && proto.length ? proto.toLowerCase() : false,
+								temp = $$('#rule-temporary').is(':checked'), proto = $$('#rule-proto-input').val(), proto = proto && proto.length ? proto.toLowerCase().replace(/ /g, ',') : false,
 								nrule = $.trim(this.val()), nrule = proto && nrule.length && nrule[0] !== '^' ? proto + ':' + nrule : nrule;
 
 						if (!ed.length) ed = padd.me.domain;
@@ -3324,7 +3324,9 @@ var Template = {
 				if (self.rules.using_snapshot && !self.rules.snapshots.exist(self.rules.using_snapshot))
 					self.rules.use_snapshot(0);
 				if ($$('.zoom-window-hidden:last').is('#rules-list'))
-					self.rules.show();
+					self.utils.zero_timeout(function () {
+						self.rules.show();
+					});
 			});
 		}).on('click', '#create-snapshot', function () {
 			var off = self.utils.position_poppy(this, 0, 14);
@@ -3423,8 +3425,8 @@ var Template = {
 				}).toggleClass('visible', !a);
 			}
 
-			var d = $$('#rules-list .domain-name:not(.state-hidden,.domain-filter-hidden,.visibility-hidden)').length,
-					r = $$('#rules-list .domain-name:not(.state-hidden,.domain-filter-hidden,.visibility-hidden) + li > ul li:not(.none,.old-none,.used-none) span.rule:not(.hidden,.type-900)').length;
+			var d = $$('#rules-list .domain-name:visible').length,
+					r = $$('#rules-list .domain-name:visible + li > ul li:not(.none,.old-none,.used-none) span.rule:not(.hidden,.type-900)').length;
 			
 			$$('#rule-counter').html(
 					_('{1} domain' + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
@@ -3588,6 +3590,10 @@ var Template = {
 					$(this).toggleClass('visible', !a);
 					
 					$$('#rules-list').trigger('scroll');
+
+					setTimeout(function () {
+						$$('#filter-type-used .selected').click();
+					}, 100);
 				},
 				step: function (now) {
 					$$('#rules-list').trigger('scroll');
@@ -3787,7 +3793,9 @@ var Template = {
 							self.rules.use_snapshot(cache_id);
 
 							self.utils.zoom($$('#snapshots'), null, function () {
-								self.rules.show();
+								self.utils.zero_timeout(function () {
+									self.rules.show();
+								});
 								self.rules.snapshots.remove(cache_id);
 							});
 
@@ -3843,7 +3851,9 @@ var Template = {
 
 			self.utils.zoom($$('#snapshots'), null, function () {
 				self.rules.use_snapshot(me.value === _('Close Snapshot') ? 0 : id);
-				self.rules.show();
+				self.utils.zero_timeout(function () {
+					self.rules.show();
+				});
 			}, function () {
 				var parts = $$('#domain-filter').trigger('search').data('parts');
 												

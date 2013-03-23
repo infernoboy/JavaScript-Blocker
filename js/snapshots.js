@@ -70,7 +70,7 @@ Snapshots.prototype = {
 		var ytn = JB.utils.date(new Date, 'y'),
 				ytt = JB.utils.date(id, 'y');
 
-		return JB.utils.date(parseInt(id, 10), 'L, F d' + (ytn !== ytt ? ', \'y' : '') + ', h:m P');
+		return JB.utils.date(parseInt(id, 10), 'L, F d' + (ytn !== ytt ? ', Y' : '') + ', h:m P');
 	},
 	add: function (data, keep, name, callback) {
 		if (this._paused) return false;
