@@ -326,9 +326,11 @@ select {
 	color: #3A3A3A;
 	-webkit-border-radius: 4px;
 	background: url(../images/select-arrows.png) no-repeat right top, -webkit-linear-gradient(top, #FDFDFD, #F1F1F1);
+	background-size: 20px 16px, auto auto;
 }
 	select:active {
 		background: url(../images/select-arrows.png) no-repeat right top, -webkit-linear-gradient(top, #DDD, #EAEAEA 20%, #EAEAEA);
+		background-size: 20px 16px, auto auto;
 	}
 	select.single {
 		background: none !important;
@@ -378,6 +380,7 @@ body:not(.simplified) .rule.temporary {
 }
 	.bubble.temporary {
 		background-image: url(../images/hands.png);
+		background-size: 5px 8px;
 		box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 -1px 0 rgba(0,0,0,0.25),
 			1px 0 0 rgba(0,0,0,0.25), -1px 0 0 rgba(0,0,0,0.25);
 	}
@@ -385,6 +388,7 @@ body:not(.simplified) .rule.temporary {
 		.bubble-2.temporary,
 		.bubble-4.temporary {
 			background-image: url(../images/hands-light.png);
+			background-size: 5px 8px;
 		}
 	.bubble-0,
 	.bubble-2,
@@ -440,11 +444,13 @@ label {
 	margin: 3px 0 0;
 	padding-left: 10px;
 	background: url(../images/disclosure-open.png) no-repeat left 5px;
+	background-size: 8px 8px;
 }
 	.allowed-label.hidden,
 	.blocked-label.hidden,
 	.unblocked-label.hidden {
 		background-image: url(../images/disclosure-closed.png);
+		background-size: 8px 8px;
 	}
 	.allowed-label.no-disclosure,
 	.blocked-label.no-disclosure {
@@ -1026,12 +1032,14 @@ div.divider {
 	margin-left: -10px;
 	margin-top: 3px;
 	background: url(../images/disclosure-open.png) no-repeat left 7px;
+	background-size: 8px 8px;
 	padding: 2px 0 0 10px;
 	font-size: 9pt;
 	cursor: default;
 }
 	.domain-name:not(.no-disclosure).current-selection {
 		background: url(../images/disclosure-open.png) no-repeat left 7px, -webkit-linear-gradient(top, rgb(80,175,228), rgb(38,143,212)) !important;
+		background-size: 8px 8px;
 	}
 	.domain-name + li.domain-rules {
 		overflow: hidden;
@@ -1039,9 +1047,11 @@ div.divider {
 	}
 	.domain-name.hidden {
 		background-image: url(../images/disclosure-closed.png);
+		background-size: 8px 8px;
 	}
 	.domain-name.hidden:not(.no-disclosure).current-selection {
 		background-image: url(../images/disclosure-closed.png), -webkit-linear-gradient(top, rgb(80,175,228), rgb(38,143,212)) !important;
+		background-size: 8px 8px;
 	}
 	.domain-name.hidden + li.domain-rules,
 	.domain-name.domain-filter-hidden,
@@ -1086,12 +1096,15 @@ div.divider {
 			position: relative;
 			display: inline-block;
 			background: url(../images/arrow.png) no-repeat left top;
+			background-size: 20px 10px;
 			width: 10px;
 			height: 10px;
 			top: 1px;
+			left: 2px;
 		}
 		#previous-frame .arrow {
 			background: url(../images/arrow.png) no-repeat -10px top;
+			background-size: 20px 10px;
 		}
 	#previous-frame,
 	#next-frame {
@@ -1251,7 +1264,13 @@ div.divider {
 				padding: 0;
 				-webkit-border-radius: 0;
 				background: url(../images/rule-list-actions.png) no-repeat;
+				background-size: 48px 145px;
 			}
+				@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+					#rule-list-actions li:not(.label):not(.text) {
+						background-image: url(../images/rule-list-actions@2x.png);
+					}
+				}
 				.actions-bar li.divider {
 					margin-left: 3px;
 					padding-left: 4px !important;

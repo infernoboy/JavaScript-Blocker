@@ -502,8 +502,8 @@ Settings.settings = {
 			label: false,
 			description: [
 				'<a href="http://javascript-blocker.toggleable.com/" target="_top">',
-					'<img src="images/toggleable.png" alt="Toggleable" style="margin-left:-8px;" />',
-					'<img src="Icon-32.png" alt="JavaScript Blocker" style="margin-bottom:5px;margin-left:5px;" />',
+					'<img src="images/toggleable.png" alt="Toggleable" style="margin-left:-8px;" width="143" height="59" />',
+					'<img src="Icon-64.png" alt="JavaScript Blocker" style="margin-bottom:14px;margin-left:5px;" width="32" height="32" />',
 				'</a>',
 				'<h4>JavaScript Blocker <span id="js-displayv"></span> (<span id="js-bundleid"></span>)</h4>'].join('')
 		},
