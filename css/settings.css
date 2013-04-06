@@ -43,6 +43,7 @@ body {
 	left: 0;
 	width: 100%;
 	background: url(../images/texture.png), -webkit-linear-gradient(top, #DDD, #B0AFB0);
+	background-size: 97px 98px, auto auto;
 	height: 23px;
 	border-bottom: 1px solid #606060;
 	text-shadow: 0 1px 0 rgba(255,255,255,0.55);
@@ -193,6 +194,7 @@ select {
 	-webkit-border-radius: 4px;
 	padding: 2px 18px 2px 8px;
 	background: url(../images/select-arrows.png) no-repeat right 1px, -webkit-linear-gradient(top, rgb(255,255,255), rgb(255,255,255) 43%, rgb(252,252,252) 43%, rgb(243,243,243) 60%, rgb(239,239,239));
+	background-size: 20px 16px, auto auto;
 }
 	body.large select,
 	body.windows select {
@@ -200,6 +202,7 @@ select {
 	}
 	select:active {
 		background: url(../images/select-arrows.png) no-repeat right 1px, -webkit-linear-gradient(top, rgb(235,235,235), rgb(235,235,235) 43%, rgb(232,232,232) 43%, rgb(223,223,223) 60%, rgb(219,219,219));
+		background-size: 20px 16px, auto auto;
 	}
 section {
 	display: none;
