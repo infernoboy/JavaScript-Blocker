@@ -71,6 +71,21 @@ body {
 			color: #333;
 			text-shadow: none;
 		}
+		#toolbar #for-close {
+			width: 12px;
+			padding: 0;
+			margin-left: 6px;
+			margin-top: 1px;
+			margin-right: 6px;
+			background: url(../images/settings-close.png) no-repeat left 4px;
+			background-size: 36px 13px;
+		}
+			#toolbar #for-close:hover {
+				background-position: -12px 4px;
+			}
+			#toolbar #for-close:active {
+				background-position: -24px 4px;
+			}
 		#toolbar li#for-about {
 			float: right;
 			margin-right: 5px;
@@ -79,7 +94,7 @@ body {
 			float: right;
 		}
 		#toolbar li.selected {
-			background: -webkit-linear-gradient(top, rgba(0,0,0,0), rgba(0,0,0,0) 3%, rgba(0,0,0,0.14) 35%, rgba(0,0,0,0.14) 50%, rgba(0,0,0,0.02));
+			background: -webkit-linear-gradient(top, rgba(0,0,0,0), rgba(0,0,0,0) 3%, rgba(0,0,0,0.11) 35%, rgba(0,0,0,0.11) 50%, rgba(0,0,0,0.02));
 		}
 			#toolbar li .left,
 			#toolbar li .right {
@@ -91,15 +106,15 @@ body {
 				float: left;
 				margin: 0;
 				height: 22px;
-				width: 3px;
-				background: -webkit-linear-gradient(left, rgba(0,0,0,0.45), rgba(0,0,0,0));
+				width: 2px;
+				background: -webkit-linear-gradient(left, rgba(0,0,0,0.5), rgba(0,0,0,0));
 				-webkit-mask-image: -webkit-linear-gradient(top, rgba(0,0,0,0), rgba(0,0,0,0) 12%, rgba(0,0,0,1) 40%, rgba(0,0,0,1) 55%, rgba(0,0,0,0));
 			}
 			#toolbar li .right {
 				float: right;
 				left: auto;
 				right: -3px;
-				background: -webkit-linear-gradient(right, rgba(0,0,0,0.45), rgba(0,0,0,0));
+				background: -webkit-linear-gradient(right, rgba(0,0,0,0.5), rgba(0,0,0,0));
 			}
 			#toolbar li.selected .left,
 			#toolbar li.selected .right {

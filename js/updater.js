@@ -345,14 +345,28 @@ JB.updater = function () {
 				'</p>'
 			].join(''), function () {
 				$$('#rawr-ok').click(function () {
-				//	self.installedBundle = 139;
+					self.installedBundle = 139;
 
 					self.rules.remove_all_predefined();
 
-					self.donate();
+					self.updater();
 				});
 			}, null, null, true);
 
+		break;
+
+		case v < 151: // 3.2.9
+			self.rules.remove_all_predefined();
+
+			Settings.removeItem('EasyPrivacy');
+			Settings.removeItem('EasyList');
+			Settings.removeItem('EasyListLastUpdate');
+
+			JB.rules.easylist();
+
+			//self.installedBundle = 151;
+
+			self.donate();
 		break;
 
 		case v < this.bundleid:

@@ -141,5 +141,9 @@ var CHROME = true, SAFARI = false,
 
 		ExtensionURL = function (path) {
 			return chrome.extension.getURL(path);
+		},
+
+		ResourceCanLoad = function (beforeLoad, data) {
+			return safari.self.tab.canLoad(beforeLoad, data);
 		}
 };

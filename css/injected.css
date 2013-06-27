@@ -131,7 +131,7 @@
 		width: 16px !important;
 		height: 15px !important;
 		background: url(../images/close-button.png) no-repeat left top !important;
-		background-size: 32px 15px;
+		background-size: 32px 15px !important;
 	}
 		.jsblocker-close:hover {
 			opacity: 1 !important;
@@ -139,7 +139,7 @@
 		}
 		.jsblocker-close:active {
 			background: url(../images/close-button.png) no-repeat -15px top !important;
-			background-size: 32px 15px;
+			background-size: 32px 15px !important;
 		}
 	.jsblocker-alert-text {
 		position: relative !important;

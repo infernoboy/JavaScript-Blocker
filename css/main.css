@@ -51,7 +51,7 @@ body {
 	width: 560px;
 	color: #3A3A3A;
 	overflow: hidden;
-	background: -webkit-linear-gradient(top, rgba(255,255,255,.69), rgba(242,242,242,.69));
+	background: -webkit-linear-gradient(top, rgba(255,255,255,.6), rgba(247,247,247,.6));
 	text-rendering: optimizeLegibility;
 }
 	body.simple {
@@ -137,7 +137,6 @@ header h1 {
 	}
 	.zoom-window-animating {
 		display: block;
-		background: -webkit-linear-gradient(top, rgba(255,255,255,1), rgba(242,242,242,1));
 	}
 	#allowed-blocked-columns {
 		display: -webkit-box;
@@ -1231,11 +1230,8 @@ div.divider {
 	}
 		.filter-bar .li-text-filter {
 			margin-top: 0;
-			margin-left: -13px;
+			margin-left: -9px;
 		}
-			body.simple .filter-bar .li-text-filter {
-				margin-left: -9px;
-			}
 			body.simple.windows .filter-bar .li-text-filter {
 				margin-left: -8px;
 			}

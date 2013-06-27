@@ -1303,7 +1303,11 @@ var Template = {
 						type_map = { script: 'script', image: 'image', object: 'embed' };
 
 				var processItem = function (whole) {
-					var mode = firstTwo(whole) === '@@' ? 5 : 4,
+					var fTwo = firstTwo(whole);
+
+					if (fTwo === '##' || ~whole.indexOf('#@#')) return;
+
+					var mode = fTwo === '@@' ? 5 : 4,
 							whole = mode === 5 ? whole.substr(2) : whole,
 							dollar = whole.indexOf('$'),
 							rule = whole.substr(0, ~dollar ? dollar : 999), regexp, $check = whole.split(/\$/),
@@ -1500,7 +1504,7 @@ var Template = {
 							var rule_added = 1, script = message[2], ind = script.indexOf('?'), rr = '^' + this.utils.escape_regexp(~ind ? script.substr(0, script.indexOf('?')) : script) + '(\\?.*)?$';
 										
 							this.add(kind, host, rr, 2, true, true);
-							this.use_tracker(kind, host, rr, 2);
+							this.use_tracker.use(kind, host, rr, 2);
 						} else
 							var rule_added = 0;
 					
@@ -2257,7 +2261,7 @@ var Template = {
 							var b = $$('#find-bar-search').focus().trigger('search');
 							b[0].selectionStart = 0;
 							b[0].selectionEnd = b[0].value.length;
-						}, 10, self);
+						}, 210 * self.speedMultiplier, self);
 						
 						if (toggle_find_bar(true)) return false;
 					}
@@ -2352,14 +2356,14 @@ var Template = {
 				self.rules.add(li.data('kind'), li.data('domain'), li.data('rule'), li.data('type') * -1, false, true);
 				this.value = _('Disable');
 				span.addClass(span[0].className.substr(span[0].className.indexOf('type')).replace('--', '-'))
-					.removeClass('type--2').addClass('temporary').siblings('.bubble').addClass('temporary');;
+					.removeClass('type--2').addClass('temporary').siblings('.bubble').addClass('temporary bubble-2').removeClass('bubble--2');
 			} else {
 				self.rules.remove(li.data('kind'), li.data('domain'), li.data('rule'));
 				
 				if (is_automatic) {
 					this.value = _('Restore');
 					span.addClass(span[0].className.substr(span[0].className.indexOf('type')).replace('-', '--'))
-						.removeClass('type-2 temporary').siblings('.bubble').removeClass('temporary');
+						.removeClass('type-2 temporary').siblings('.bubble').removeClass('temporary bubble-2').addClass('bubble--2');
 				}
 			}
 			
@@ -2805,7 +2809,7 @@ var Template = {
 				self.utils.timer.timeout('set_back_find', function (b, s) {
 					b.val(s);
 				}, 210 * self.speedMultiplier, [b, s]);
-			}, 200 * self.speedMultiplier);
+			}, 200 * self.speedMultiplier * ($$('#find-bar-search').is(':visible') ? 0 : 1));
 		}).on('search', '#find-bar-search', function () {
 			if (self.finding) return false;
 			
@@ -2984,7 +2988,7 @@ var Template = {
 			new Poppy(left, top, [
 				'<p class="misc-info">', block ? _('Block/Hide') : _('Allow/Hide'), '</p>',
 				'<input type="button" id="do-some" value="', _('Some'), '" /> ',
-				'<input type="button" id="do-all" value="', _('All.'), '" /> ',
+				'<input type="button" id="do-all" value="', _('All'), '" /> ',
 			].join(''), function () {
 				$$('#do-all').click(all_poppy).siblings('#do-some').click({ pp: page_parts }, function (e) {
 					if (ob.parent().hasClass('some-list')) return false;
@@ -3057,7 +3061,11 @@ var Template = {
 					parent.find('.which-type').change(function () {
 						$(this).toggleClass((block ? 'blocked' : 'allowed') + '-color', this.value !== '42');
 					}).end().find('select').mousedown(function () {
-						$(this).prev().attr('checked', 'checked');
+						var ele = $(this).prev(), checked = ele.prop('checked');
+
+						ele.prop('checked', true);
+
+						if (checked && $(this).hasClass('single')) ele.prop('checked', false);
 					}).end().find('.save-some').click(function () {
 						var som = $('.main-wrapper li.some-thing', parent), item;
 
@@ -3555,13 +3563,7 @@ var Template = {
 			self.utils.open_url('http://javascript-blocker.toggleable.com/help');
 		}).on('click', '#js-settings', function () {
 			Popover.hide();
-
-			Tabs.active(function (tab) {
-				if (tab.length)
-					Tabs.messageActive('openSettings', ExtensionURL('settings.html'));
-				else
-					self.utils.open_url(ExtensionURL('settings.html'));
-			});
+			self.utils.open_url(ExtensionURL('settings.html'));
 		}).on('click', '.toggle-rules', function () {
 			var e = $(this).parent().nextAll('.rules-list-container:first').find('.rules-wrapper').show(),
 					a = e.css('opacity') === '1',
@@ -3877,14 +3879,16 @@ var Template = {
 				'<p class="misc-info">', _((allowed ? 'Allowed' : 'Blocked') + ' ' + kind + 's'), '</p>',
 				'<p>',
 					'<input type="checkbox" id="excluding-list" checked /> ',
-					'<label for="excluding-list">Excluding ', allowed ? 'whitelist' : 'blacklist', 'ed items</label></p>',
+					'<label for="excluding-list">Excluding ', allowed ? 'whitelist' : 'blacklist', 'ed items</label>',
+				'</p><p>',
+					'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+					'<label for="domain-script-temporary">&nbsp;', _('Make these temporary rules'), '</label>',
 				'</p>',
 				'<p>', Template.create('domain_picker', { page_parts: page_parts, no_all: true }), '</p>',
-				'<input id="temporary-these" type="button" value="', _('Temporarily ' + (allowed ? 'Block' : 'Allow') +' These'), '" /> ',
-				'<input id="allow-these" type="button" value="', _('Always ' + (allowed ? 'Block' : 'Allow') +' These'), '" /> ',
+				'<div class="inputs"><input id="allow-these" type="button" value="', _((allowed ? 'Block' : 'Allow') +' These'), '" /></div>',
 			].join(''), function () {
 				$$('#allow-these, #temporary-these').click(function () {
-					var temp = this.id === 'temporary-these',
+					var temp = $$('#domain-script-temporary').is(':checked'),
 							host = $$('#domain-picker').val(), disallow_predefined = $$('#excluding-list').is(':checked');
 
 					$$('#' + (allowed ? 'allowed' : 'blocked') + '-items-' + kind).find('li').each(function () {
@@ -4240,7 +4244,7 @@ var Template = {
 			this.rules.reload();
 		else if (event.key === 'snapshotsLimit' && event.newValue > 999)
 			Settings.setItem('snapshotsLimit', 999);
-		else if (event.key === 'snapshotsLimit' && event.newValue < 1)
+		else if (event.key === 'snapshotsLimit' && event.newValue < 1 && event.newValue)
 			Settings.setItem('snapshotsLimit', 1);
 	},
 	anonymous: {
@@ -4284,6 +4288,8 @@ var Template = {
 		}
 	},
 	handle_message: function (event) {
+		var self = this;
+
 		theSwitch:
 		switch (event.name) {
 			case 'canLoad':
@@ -4339,7 +4345,7 @@ var Template = {
 					if (this.installedBundle < this.update_attention_required)
 						Tabs.messageActive('notification', [
 							'Your attention is required in order for JavaScript Blocker to continue functioning properly. ' +
-								'Please click the flashing toolbar icon to open the popover and continue.',
+								'Please click the flashing toolbar icon to open the popover to continue.',
 							'JavaScript Blocker Update'
 						]);
 					event.message = this.enabled(event.message[0]) ? [0, -84] : [1, -84];
@@ -4374,7 +4380,8 @@ var Template = {
 					displayv: this.displayv,
 					trial_active: this.trial_active(),
 					trial_remaining: this.trial_remaining(),
-					bundleid: this.bundleid
+					bundleid: this.bundleid,
+					easylist_last_update: Settings.getItem('EasyListLastUpdate') || 0
 				});
 			break;
 
@@ -4384,7 +4391,7 @@ var Template = {
 				
 				if (event.message[1] === null) {
 					if (!~dl.indexOf(event.message[0]))
-						SettingsStore.removeItem(event.message[0]);
+						SettingStore.removeItem(event.message[0]);
 				} else if (event.message[0] === 'Rules') {
 					Settings.setItem('simplifiedRules', false);
 					this.rules.import(event.message[1]);
@@ -4393,17 +4400,29 @@ var Template = {
 					Settings.setItem('simplifiedRules', true);
 					this.rules.import(event.message[1]);
 					Settings.setItem('simplifiedRules', swith);
-				} else if (!~dl.indexOf(event.message[0])) {}
+				} else if (!~dl.indexOf(event.message[0]))
 					Settings.setItem(event.message[0], event.message[1]);
 			break;
 
+			case 'resetSettings':
+				var all = SettingStore.all();
+
+				for (var key in all)
+					if (!~['donationVerified', 'trialStart', 'installID', 'installedBundle', 'enablespecial', 'setupDone'].indexOf(key))
+						SettingStore.removeItem(key);
+
+				SettingStore.setItem('openSettings', false);
+			break;
+
 			case 'updatePopover':
-				if (event.target != this.tab ||
-						(Popover.visible() && $$('#page-list')[0].selectedIndex > 0)) break;
-					
-				this.utils.timer.timeout('update_popover', function (event, self) {
-					self.do_update_popover(event, undefined, !Popover.visible());
-				}, 10, [event, this]);
+				Tabs.active(function (tab) {
+					if (tab[0].url !== event.message.href ||
+							(Popover.visible() && $$('#page-list')[0].selectedIndex > 0)) return;
+						
+					self.utils.timer.timeout('update_popover', function (event, self) {
+						self.do_update_popover(event, undefined, !Popover.visible());
+					}, 10, [event, self]);
+				});
 			break;
 			
 			case 'updateReady':

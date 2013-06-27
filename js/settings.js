@@ -13,6 +13,13 @@ $.extend(Settings, {
 		}).on('click', '#toolbar li', function () {
 			if ($(this).hasClass('selected')) return false;
 
+			if (this.id === 'for-close') {
+				GlobalPage.message('closeSettings');
+
+				return;
+
+			}
+
 			if (self.tba)
 				return setTimeout(function (self) {
 					self.click();
@@ -139,12 +146,7 @@ $.extend(Settings, {
 			
 			switch (this.id.substr('button-'.length)) {
 				case 'resetSettings':
-					for (var section in Settings.settings)
-						if (section !== 'misc')
-							for (var setting in Settings.settings[section])
-								Settings.set_value(setting, null);
-					
-					window.location.reload();
+					Settings.clear();
 				break;
 				
 				case 'removeRules':
@@ -195,6 +197,8 @@ $.extend(Settings, {
 						var js = JSON.parse(inp);
 
 						if (!('settings' in js) || !('rules' in js)) throw 'Invalid backup data.';
+
+						Settings.clear();
 
 						Settings.set_value('Rules', js.rules || '{}');
 						Settings.set_value('SimpleRules', js.simpleRules || '{}');
@@ -297,6 +301,11 @@ $.extend(Settings, {
 			speedMultiplier = 1;
 		else if (setting === 'language' && !no_reload)
 			window.location.reload();
+	},
+	clear: function () {
+		GlobalPage.message('resetSettings');
+		
+		setTimeout(function () { window.location.reload(); }, 700);
 	},
 	trial_active: function () {
 		return (+new Date() - this._current.trialStart < 1000 * 60 * 60 * 24 * 10);
@@ -416,6 +425,7 @@ $.extend(Settings, {
 });
 
 Settings.toolbar_items = {
+	close: 'Close Settings',
 	ui: 'User Interface',
 	predefined: 'Rules',
 	snapshots: 'Snapshots',
@@ -424,6 +434,8 @@ Settings.toolbar_items = {
 	about: 'About',
 	search: '<input type="search" id="search" incremental="incremental" placeholder="' + 'Search' + '" results="10" autosave="setting_search" />'
 };
+
+if (window == window.top) delete Settings.toolbar_items.close;
 
 appendScript(special_actions.alert_dialogs, true);
 
@@ -448,9 +460,12 @@ Events.addTabListener('message', function (event) {
 			var dv = event.message.displayv,
 					bi = event.message.bundleid,
 					rem = event.message.trial_remaining,
+					lu = event.message.easylist_last_update,
 					don = Settings.current_value('donationVerified');
 
 			rem.push('<a class="outside" href="http://javascript-blocker.toggleable.com/donation_only" target="_top">' + _('donator-only features.') + '</a>');
+
+			$('#easy-list-update').html('<p>' + _('Last EasyList/EasyPrivacy update was {1}', [lu ? new Date(lu) : 'never.']) + '</p>');
 
 			$('#js-displayv').html(dv);
 			$('#js-bundleid').html(bi);
@@ -462,8 +477,7 @@ Events.addTabListener('message', function (event) {
 				else
 					$('#trial-remaining').html([
 						'<p>', _('Free trial expired', [_('JavaScript Blocker')]), '</p>',
-						'<p><a href="http://javascript-blocker.toggleable.com/donation_only" target="_top">', _('What donation?'), '</a></p>',
-						'<p>', _('Remember for free'), '<p>'].join(''));
+						'<p><a href="http://javascript-blocker.toggleable.com/donation_only" target="_top">', _('What donation?'), '</a></p>'].join(''));
 			} else if (don === 777)
 				$('#trial-remaining').html([
 					'<p>', _('Unlocked without contributing'), '</p>'].join(''));

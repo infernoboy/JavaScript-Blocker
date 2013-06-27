@@ -79,9 +79,11 @@ textarea {
 select {
 	padding: 1px 16px 2px 8px;
 	background: url(../images/select-arrows.png) no-repeat right top, -webkit-linear-gradient(top, rgb(255,255,255), rgb(255,255,255) 43%, rgb(252,252,252) 43%, rgb(243,243,243) 60%, rgb(239,239,239));
+	background-size: 20px 16px, auto auto;
 }
 	select:active {
 		background: url(../images/select-arrows.png) no-repeat right top, -webkit-linear-gradient(top, rgb(235,235,235), rgb(235,235,235) 43%, rgb(232,232,232) 43%, rgb(223,223,223) 60%, rgb(219,219,219));
+		background-size: 20px 16px, auto auto;
 	}
 	ul li input[type="button"] {
 		max-width: 13%;

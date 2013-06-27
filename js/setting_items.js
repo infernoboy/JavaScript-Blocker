@@ -513,6 +513,12 @@ Settings.settings = {
 			classes: 'description',
 			divider: 1
 		},
+		easy_list_last_update: {
+			id: 'easy-list-update',
+			label: '',
+			classes: 'description',
+			divider: 1
+		},
 		resetSettings: {
 			label: 'Reset all settings to their default values:',
 			setting: 'Reset Settings'
@@ -570,7 +576,7 @@ for (var section in Settings.settings) {
 
 Settings.getItem = function (setting) {
 	var tes = SettingStore.available() ? SettingStore.getItem(setting) : Settings.current_value(setting);
-	return tes === null ? (Settings.items[setting] ? Settings.items[setting].default : false) : tes;
+	return tes === null ? ((setting in Settings.items) ? Settings.items[setting].default : null) : tes;
 };
 
 Settings.setItem = function (setting, v) {

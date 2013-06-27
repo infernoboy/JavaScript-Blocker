@@ -16,6 +16,7 @@ Strings['en-us'] = {
 
 
 	/*------ MAIN WINDOW ------
+	/**/ 'Done': 'Done',
 	/**------ TOOLBAR ------
 	/*--*/ 'Unlock': 'Unlock',
 	/*--*/ 'Contribute': 'Contribute',
@@ -223,10 +224,8 @@ Strings['en-us'] = {
 	'Blocked embeds': 'Blocked Embeds & Objects',
 	'Blocked videos': 'Blocked Videos',
 	'Blocked specials': 'Blocked Others',
-	'Temporarily Allow These': 'Temporarily Allow These',
-	'Always Allow These': 'Always Allow These',
-	'Temporarily Block These': 'Temporarily Block These',
-	'Always Block These': 'Always Block These',
+	'Block These': 'Block These',
+	'Allow These': 'Allow These',
 	'Excluding whitelisted items': 'Excluding whitelisted items',
 	'Excluding blacklisted items': 'Excluding blacklisted items',
 
@@ -471,6 +470,7 @@ Strings['en-us'] = {
 	/** /DONATION **/
 	
 	/** SETTINGS - NEW **/
+	'Last EasyList/EasyPrivacy update was {1}': 'Last blacklist/whitelist update was {1}<br />Update is scheduled to run every 5 days.',
 	'Rule List Filter Bars': 'Rule list filter bars',
 	'JavaScript Blocker Settings': 'JavaScript Blocker Settings',
 	'Once any of these features are active,':
@@ -600,7 +600,7 @@ Strings['en-us'] = {
 	 		'rule sets, or recover just a few. You\'ll never have to worry about messing up your rules again.',
 	 'Snapshots disabled': 'Snapshots are disabled.',
 	 'Enable rule snapshots': 'Enable rule snapshots',
-	 'Do you want to remove snapshots that exist?': 'Do you want to remove all of the snapshots that exist?',
+	 'Do you want to remove snapshots that exist?': 'Do you want to remove all existing snapshots?',
 	 'Create a snapshot when rules are modified': 'Create a snapshot when rules are modified',
 	 'Ignore temporary rules when creating new snapshots': 'Ignore temporary rules when creating new snapshots',
 	 'Store only': 'Store up to',

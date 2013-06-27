@@ -306,9 +306,10 @@ function ready(event) {
 		}
 			
 		try {
-			if (window === window.top)
-				GlobalPage.message('setActiveTab', jsblocker),
+			if (window === window.top) {
+				GlobalPage.message('setActiveTab', jsblocker);
 				GlobalPage.message('updatePopover', jsblocker);
+			}
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
@@ -470,7 +471,7 @@ function prepareAnchor(anchor, i) {
 			anchor.addEventListener('mousedown', function (e) {
 				var k = (window.navigator.platform.match(/Win/)) ? e.ctrlKey : e.metaKey;
 			
-				GlobalPage.message('anonymousNewTab', k ? 1 : 0);
+				GlobalPage.message('anonymousNewTab', k || e.which === 2 ? 1 : 0);
 			
 				setTimeout(function () {
 					GlobalPage.message('anonymousNewTab', 0);
