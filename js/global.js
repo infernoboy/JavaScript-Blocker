@@ -79,7 +79,8 @@ var Template = {
 		collapsed_domains: null,
 		jsblocker: {},
 		messages: { 'false': {}, 'true': {} },
-		rule_regexp: {}
+		rule_regexp: {},
+		rule_actions: {}
 	},
 	commandKey: !1,
 	speedMultiplier: 1,
@@ -979,8 +980,8 @@ var Template = {
 
 			this._loaded = false;
 
-			for (var kind in this.data_types)
-				this.cache[kind] = {};
+			this.cache = this.data_types;
+			this.caches.rule_actions = this.data_types;
 		},
 		show_snapshots: function () {
 			this.busy = 1;
@@ -1212,7 +1213,7 @@ var Template = {
 		},
 		import: function (string) {
 			this.reload();
-		
+	
 			try {
 				var r = JSON.parse(string);
 
@@ -1271,6 +1272,7 @@ var Template = {
 					}
 
 					if ($.isEmptyObject(this.rules[kind][domain])) this.remove_domain(kind, domain);
+					else this.recache(kind, domain);
 				}
 
 			this.save(1);
@@ -1287,14 +1289,27 @@ var Template = {
 				}
 			}
 			
-			if (d === '.*')
+			if (d === '.*') {
+				this.caches.rule_actions = this.data_types;
 				this.cache[kind] = {};
-			else if (d.charAt(0) === '.') {
+			} else if (d.charAt(0) === '.') {
+				var nodot = d.substr(1),
+						full_regexp = new RegExp(this.utils.escape_regexp(d) + '$', 'i'),
+						nodot_regexp = new RegExp(this.utils.escape_regexp(nodot) + '$', 'i');
+
+				delete this.caches.rule_actions[kind][nodot];
+
+				for (var ra in this.caches.rule_actions[kind])
+					if (nodot_regexp.test(ra))
+						delete this.caches.rule_actions[kind][ra];
+
 				for (var c in this.cache[kind])
-					if ((new RegExp(this.utils.escape_regexp(d) + '$', 'i')).test(c))
+					if (full_regexp.test(c))
 						delete this.cache[kind][c];
-			} else
+			} else {
+				delete this.caches.rule_actions[kind][d];
 				delete this.cache[kind][d];
+			}
 		},
 		easylist: function () {
 			var self = this, map = { '5': 'whitelist', '4': 'blacklist' },
@@ -1445,6 +1460,16 @@ var Template = {
 					
 			return 0;
 		},
+		via_action_cache: function (kind, host, item) {
+			if (host in this.caches.rule_actions[kind])
+				return this.caches.rule_actions[kind][host][item] || null;
+			return null;
+		},
+		add_to_action_cache: function (kind, host, item, action) {
+			if (!(host in this.caches.rule_actions[kind])) this.caches.rule_actions[kind][host] = {};
+
+			this.caches.rule_actions[kind][host][item] = action;
+		},
 		allowed: function (message) {
 			var kind = message[0];
 
@@ -1454,7 +1479,11 @@ var Template = {
 			var rule_found = false, the_rule = -1, do_break = 0, urule,
 					host = this.active_host(message[1]),
 					proto = this.utils.active_protocol(message[2]), protos,
-					domains = this.for_domain(kind, host), domain, rule,
+					domains = this.for_domain(kind, host), action_cached = this.via_action_cache(kind, host, message[2]);
+
+			if (action_cached) return action_cached;
+
+			var domain, rule,
 					alwaysFrom = Settings.getItem('alwaysBlock' + kind) || Settings.getItem('alwaysBlockscript'),
 					hider = ~kind.indexOf('hide_'), ignoreBL = Settings.getItem('ignoreBlacklist'), ignoreWL = Settings.getItem('ignoreWhitelist'),
 					sim = this.simplified;
@@ -1481,8 +1510,11 @@ var Template = {
 				}
 			}
 
-			if (rule_found !== false)
+			if (rule_found !== false) {
+				this.add_to_action_cache(kind, host, message[2], [rule_found, the_rule]);
+
 				return [rule_found, the_rule];
+			}
 							
 			if (alwaysFrom !== 'nowhere') {
 				var sproto = this.utils.active_protocol(message[2]),
@@ -1507,11 +1539,15 @@ var Template = {
 							this.use_tracker.use(kind, host, rr, 2);
 						} else
 							var rule_added = 0;
+
+						this.add_to_action_cache(kind, host, message[2], [0, rule_added ? 2 : -1]);
 					
 						return [0, rule_added ? 2 : -1];
 					}
 				}
 			}
+
+			this.add_to_action_cache(kind, host, message[2], [1, -1]);
 	
 			return [1, -1];
 		},
@@ -1798,7 +1834,7 @@ var Template = {
 					ul.css({ marginTop: '-3px', marginBottom: '6px', opacity: 1 });
 
 					for (var domain in sorted)
-						ul.append($('> li', this.view(kind, domain, undefined, null, true)));
+						ul.append($('> li', this.view(kind, domain, undefined, null, false)));
 				}
 			}
 			
@@ -3868,7 +3904,7 @@ var Template = {
 		}).on('mousedown', 'body > *:not(#poppy-secondary,#modal)', function (event) {
 			if (event.isTrigger) return;
 			new Poppy(null, null, null, null, null, null, false, true);
-		}).on('click', '.urls-inner h3', function (event) {
+		}).on('click', '#allowed-blocked-columns .urls-inner h3', function (event) {
 			var split = this.id.split('-'),
 					allowed = split[0] === 'allowed',
 					kind = split[1],
@@ -4644,6 +4680,8 @@ var Template = {
 
 		this.utils.once('load', function () {
 			if (!Settings.getItem('persistDisabled') && this.disabled) this.disabled = false;
+
+			this.caches.rule_actions = this.rules.data_types;
 
 			this.rules.use_tracker.load();
 			this.rules.warm_caches();

@@ -119,13 +119,13 @@ header h1 {
 		position: absolute !important;
 	}
 	#main {
-		width: 557px;
-		padding-left: 3px;
+		width: 558px;
+		padding-left: 2px;
 		padding-top: 0;
 		height: 400px;
 	}
 		body.simple #main {
-			width: 457px;
+			width: 458px;
 			height: 350px;
 		}
 	#rules-list,
@@ -560,6 +560,10 @@ label {
 	margin-top: 3px;
 }
 
+.urls-wrapper {
+	margin-left: -1px;
+}
+
 .info-container {
 	position: relative;
 	margin-top: 2px;
@@ -700,12 +704,15 @@ ul li > span {
 		}
 	body.highlight-matched #main ul li.by-rule:not(.unblockable) {
 		background: -webkit-linear-gradient(left, rgba(44,158,250,0), rgba(44,158,250,0.07) 20%, rgba(44,158,250,0.09) 50%, rgba(44,158,250,0.07) 80%, rgba(44,158,250,0));
+		background: rgba(44,158,250,0.09);
 	}
 	body.highlight-matched #main ul li.by-rule.rule-type-4:not(.unblockable) {
 		background: -webkit-linear-gradient(left, rgba(255,0,60,0), rgba(255,0,60,0.05) 20%, rgba(255,0,60,0.06) 50%, rgba(255,0,60,0.05) 80%, rgba(255,0,60,0));
+		background: rgba(255,0,60,0.06);
 	}
 		body.highlight-matched #main #allowed-column li.by-rule.rule-type-5:not(.unblockable) {
 			background: -webkit-linear-gradient(left, rgba(0,255,0,0), rgba(0,255,0,0.05) 20%, rgba(0,255,0,0.1) 50%, rgba(0,255,0,0.05) 80%, rgba(0,255,0,0));
+			background: rgba(0,255,0,0.1);
 		}
 	#unblocked-script-urls li span {
 		max-width: 100% !important;
@@ -837,7 +844,7 @@ header h3 {
 	margin: 5px 0;
 	cursor: default;
 }
-	.urls-inner h3 {
+	#allowed-blocked-columns .urls-inner h3 {
 		cursor: pointer;
 	}
 	.kind-header {

@@ -33,11 +33,11 @@ textarea {
 	}
 	select {
 		background: url(../images/select-arrows.png) no-repeat right top, url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #F2F2F2, #BBB) left top;
-		background-size: auto auto, 98px 98px, auto auto;
+		background-size: 20px 16px, 98px 98px, auto auto;
 	}
 		select:active {
 			background: url(../images/select-arrows.png) no-repeat right top, url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #CCC, #E7E7E7) left top;
-			background-size: auto auto, 98px 98px, auto auto;
+			background-size: 20px 16px, 98px 98px, auto auto;
 		}
 
 #disclaimer input {
@@ -53,12 +53,12 @@ textarea {
 
 p.misc-info select {
 	color: #444;
-	background: url(../images/select-arrows.png) no-repeat 100% top, url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #F2F2F2, #BBB) left top;
-	background-size: auto auto, 98px 98px, auto auto;
+	background: url(../images/select-arrows.png) no-repeat 100% 1px, url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #F2F2F2, #BBB) left top;
+	background-size: 20px 16px, 98px 98px, auto auto;
 }
 	p.misc-info select:active {
-		background: url(../images/select-arrows.png) no-repeat 100% top, url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #CCC, #E7E7E7) left top;
-		background-size: auto auto, 98px 98px, auto auto;
+		background: url(../images/select-arrows.png) no-repeat 100% 1px, url(../images/texture.png) left top repeat, -webkit-linear-gradient(top, #CCC, #E7E7E7) left top;
+		background-size: 20px 16px, 98px 98px, auto auto;
 	}
 ul li span.https,
 select.https {

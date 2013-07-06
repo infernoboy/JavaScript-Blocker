@@ -262,7 +262,8 @@ section {
 		section li.indent {
 			padding-left: 16px;
 		}
-		section li.extras {
+		section li.extras,
+		section li.setting-header {
 			margin-bottom: 6px;
 			margin-top: -10px;
 			color: rgba(0,0,0,0.2);
@@ -270,8 +271,15 @@ section {
 			font-weight: bold;
 			text-shadow: 0 1px 1px #fff, 0 0 0 rgba(0,0,0,0.27), 0 0 1px #fff;
 		}
-			body.large section li.extras .label {
+			body.large section li.extras .label,
+			body.large section li.setting-header .label {
 				font-size: 16px;
+			}
+		section li.setting-header {
+			font-size: 16px;
+		}
+			body.large section li.setting-header .label {
+				font-size: 17px;
 			}
 	section li .setting {
 		float: left;
@@ -279,7 +287,7 @@ section {
 		text-indent: -16px;
 	}
 		section li .setting .aside {
-			color: #999;
+			color: #898989;
 			text-shadow: 0 1px 0 rgba(255,255,255,0.7);
 			font-size: 8pt;
 		}

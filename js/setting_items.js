@@ -103,7 +103,7 @@ Settings.settings = {
 			setting: true,
 			if_setting: ['simpleMode', true],
 			help: 'showPerHost help',
-			default: false,
+			default: true,
 			divider: 1
 		},
 		filterBarVisibility: {
@@ -120,12 +120,12 @@ Settings.settings = {
 		filterBarAge: {
 			label: 'Show "Not Used In Past" filter bar',
 			setting: true,
-			default: true
+			default: false
 		},
 		filterBarUsed: {
 			label: 'Show "Used In Past" filter bar',
 			setting: true,
-			default: true
+			default: false
 		},
 		filterBarDomain: {
 			label: 'Show domain filter bar',
@@ -556,7 +556,7 @@ Settings.settings = {
 	search: {
 		headerSearch: {
 			classes: 'extras',
-			label: 'No Results',
+			label: '',
 			setting: null
 		}
 	}

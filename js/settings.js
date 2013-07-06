@@ -224,17 +224,24 @@ $.extend(Settings, {
 		}).on('search', '#search', function () {
 			$('#for-search:not(.selected)').click();
 			
-			var val = $.trim(this.value),
-					ul = $('#search ul').empty(), set, li = null, label, inp;
+			var val = $.trim(this.value), placed_headers = [],
+					ul = $('#search ul').empty(), set, li = null, label, inp, ifed;
 					
 			Settings.make_setting('search', 'headerSearch', Settings.settings.search.headerSearch, ul);
 						
 			for (var section in Settings.settings)
 				if (section !== 'misc')
 					for (var setting in Settings.settings[section]) {
-						set = Settings.settings[section][setting];
+						set = $.extend({}, Settings.settings[section][setting]);
+
+						if (set.if_setting && Settings.current_value(set.if_setting[0]) !== set.if_setting[1]) continue;
 						
 						if (typeof set.label === 'string' && val.length && ~set.label.toLowerCase().indexOf(val.toLowerCase())) {
+							if (!~placed_headers.indexOf(section)) {
+								placed_headers.push(section);
+								set.header = _(Settings.toolbar_items[section]);
+							}
+
 							li = Settings.make_setting(section, setting, set, ul);
 							li.attr('id', li.attr('id') + '-search-result');
 							inp = li.find('input[type="checkbox"]').attr('id', li.attr('id') + '-search-result');
@@ -243,6 +250,9 @@ $.extend(Settings, {
 					}
 
 			var head = $('#setting-headerSearch .label').html(li ? _('Search Results') : _('No Results'));
+
+			if (li) head.parent().hide()
+			else head.parent().show();
 			
 			ul.find('.extras:gt(0)').remove().end().find('.description').remove().end().find('.divider').remove();
 		}).keydown(function (e) {
@@ -323,7 +333,7 @@ $.extend(Settings, {
 			$('<li class="extras" />').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
 
 		if (setting_item.header)
-			$('<li class="extras" />').html('<div class="label">' + _(setting_item.header) + '</div><br style="clear:both;" />').appendTo(sec);
+			$('<li class="setting-header" />').html('<div class="label">' + _(setting_item.header) + '</div><br style="clear:both;" />').appendTo(sec);
 
 		if (setting_item.description)
 			$('<li class="description" />').html(setting !== 'header' ? _(setting_item.description) : setting_item.description).appendTo(sec).toggleClass('disabled', setting_item.extra ? this.extras_active() : false);

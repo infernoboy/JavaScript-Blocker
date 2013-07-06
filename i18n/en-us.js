@@ -505,12 +505,12 @@ Strings['en-us'] = {
 		'to be compatible? Some rules may not be able to be converted automatically.',
 	'Ignore whitelist rules': 'Ignore whitelist rules',
 	'Ignore blacklist rules': 'Ignore blacklist rules',
-	'Resources on secure sites must also be secure': 'Resources on secure sites must also be secure',
+	'Resources on secure sites must also be secure': 'Resources on secure sites must also be secure<br/><span class="aside">This will only affect items that have a blocker enabled.</span>',
 	'Automatically allow resources from other extensions': 'Automatically allow resources from other extensions',
 	'Prevent links on webpages from sending referer information': 'Prevent links on webpages from sending referer information',
 	'Automatically block scripts from:': 'Automatically block scripts from:',
 	'Create temporary rules for automatic actions': 'Create temproary rules for automatic actions',
-	'…even if Private Browsing is enabled': '… even if Private Browsing is enabled',
+	'…even if Private Browsing is enabled': 'even if Private Browsing is enabled',
 	'Enable script blocker': 'Enable script blocker',
 	'Enable frame blocker': 'Enable frame blocker',
 	'Show a placeholder for blocked frames': 'Show a placeholder for blocked frames',
@@ -524,11 +524,11 @@ Strings['en-us'] = {
 	'Enable DOM image blocker': 'Enable DOM image blocker',
 	'Show a placeholder for blocked images': 'Show a placeholder for blocked images',
 	'Automatically block images from:': 'Automatically block images from:',
-	'Display alert() messages within the webpage instead of a popup dialog': 'Display alert() messages within the webpage instead of a popup dialog <span class="aside">— Modal alert dialogs</span>', // alert() is a function in javascript; do not localize.
-	'Disable confirm() popup dialogs and confirm actions automatically': 'Disable confirm() popup dialogs and confirm actions automatically <span class="aside">— Confirm dialogs</span>', // confirm() is a function in javascript; do not localize.
-	'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items': 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items <span class="aside">— Context menu overrides</span>',
-	'Prevent webpages from resizing the window and creating new windows with a custom size': 'Prevent webpages from resizing the window and creating new windows with a custom size <span class="aside">— Window resize functions</span>',
-	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete <span class="aside">— Autocomplete disablers</span>',
+	'Display alert() messages within the webpage instead of a popup dialog': 'Display alert() messages within the webpage instead of a popup dialog<br/><span class="aside">Modal alert dialogs</span>', // alert() is a function in javascript; do not localize.
+	'Disable confirm() popup dialogs and confirm actions automatically': 'Disable confirm() popup dialogs and confirm actions automatically<br/><span class="aside">Confirm dialogs</span>', // confirm() is a function in javascript; do not localize.
+	'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items': 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items<br/><span class="aside">Context menu overrides</span>',
+	'Prevent webpages from resizing the window and creating new windows with a custom size': 'Prevent webpages from resizing the window and creating new windows with a custom size<br/><span class="aside">Window resize functions</span>',
+	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete<br/><span class="aside">Autocomplete disablers</span>',
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
 	'Disabled mode persist across Safari restarts': 'Disabled mode persist across Safari restarts',

@@ -67,9 +67,11 @@ textarea {
 select {
 	padding: 1px 16px 2px 8px;
 	background: url(../images/select-arrows.png) no-repeat right top, -webkit-linear-gradient(top, rgba(255,255,255,0.6), rgba(255,255,255,0.6) 43%, rgba(252,252,252,0.6) 43%, rgba(243,243,243,0.6) 60%, rgba(239,239,239,0.6)), url(../images/linen.png);
+	background-size: 20px 16px, auto auto, auto auto;
 }
 	select:active {
 		background: url(../images/select-arrows.png) no-repeat right top, -webkit-linear-gradient(top, rgba(235,235,235,0.6), rgba(235,235,235,0.6) 43%, rgba(232,232,232,0.6) 43%, rgba(223,223,223,0.6) 60%, rgba(219,219,219,0.6)), url(../images/linen.png);
+		background-size: 20px 16px, auto auto, auto auto;
 	}
 	ul li input[type="button"] {
 		max-width: 13%;
