@@ -95,9 +95,6 @@ header a {
 	body.simple .poppy #rule-input {
 		width: 335px;
 	}
-	body.simplified .poppy #rule-input {
-		width: 302px;
-	}
 
 #main .item-list-container select {
 	left: -3px;

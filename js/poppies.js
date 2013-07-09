@@ -61,11 +61,13 @@ JB.poppies = {
 						} else
 							error = data;
 						
-						
 						if (error)
 							new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], error, id], main));
 					}).error(function (req) {
-						new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], 'Error ' + req.status + ': ' + req.statusText, id], main));
+						var text = (req.status === 0 || req.status === 404) ? 'Unable to connect to activation server at this time. The server may be down or your firewall may be blocking the connection. ' +
+							'Please ensure outgoing connections to port 160 of lion.toggleable.com are allowed.' : req.statusText;
+
+						new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], 'Error ' + req.status + ': ' + text, id], main));
 					});
 				}).siblings('#donation-id').keypress(function (e) {
 					if (e.which === 13 || e.which === 3) $$('#donation-confirm').click();

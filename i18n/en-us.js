@@ -219,11 +219,13 @@ Strings['en-us'] = {
 	'Allowed embeds': 'Allowed Embeds & Objects',
 	'Allowed videos': 'Allowed Videos',
 	'Allowed specials': 'Allowed Others',
+	'Allowed images': 'Allowed Images',
 	'Blocked scripts': 'Blocked Scripts',
 	'Blocked frames': 'Blocked Frames',
 	'Blocked embeds': 'Blocked Embeds & Objects',
 	'Blocked videos': 'Blocked Videos',
 	'Blocked specials': 'Blocked Others',
+	'Blocked images': 'Blocked Images',
 	'Block These': 'Block These',
 	'Allow These': 'Allow These',
 	'Excluding whitelisted items': 'Excluding whitelisted items',
@@ -302,13 +304,15 @@ Strings['en-us'] = {
 		'Gallery website for security reasons.',
 	'This data URI cannot be displayed.': 'This data URI cannot be displayed.',	
 	'Predefined rules cannot be edited.': 'Predefined rules cannot be edited. ',
-	'Update Failure': 'Information about the current webpage is outdated or unavailable. Reloading the page may resolve the issue.',
+	'Update Failure': 'Information about the current webpage is outdated or unavailable at this time. The webpage may not be fully loaded yet. If it is, reloading might resolve the issue.',
 	'Unable to view source of embedded items.': 'Unable to view source of embedded items.',
 
 	'Unblockable frame': 'This frame\'s source cannot be blocked because it is the result of a navigation event that occurred from ' +
-		'the original URL. The original URL may appear as "blank" or "about:blank"; blocking that instead may work.',
+		'the original URL. The original URL may appear as "blank" or "about:blank", though not always; blocking that instead may work.',
 	'{1} cannot function when its toolbar icon is hidden.': '{1} cannot function when its toolbar icon is hidden.',
 	'No rules exist for this domain.': 'No rules exist for this domain',
+	'Please click the flashing toolbar icon to continue': 'Your attention is required in order for JavaScript Blocker to continue functioning properly. ' +
+		'Please click the flashing toolbar icon to open the popover to continue.',
 	/** /ERRORS-ISH **/
 	
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
@@ -497,6 +501,9 @@ Strings['en-us'] = {
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
 	'Hide donator-only features': 'Hide extra features',
 	'Show the number of items blocked or allowed for each host': 'Show number of items blocked/allowed per host',
+	'Temporarily switch to expert mode when clicked': 'Temporarily switch to expert view when clicked',
+	'Resize blocked and allowed columns': 'Resize blocked and allowed item lists when collapsed',
+	'Resize blocked and allowed columns only in expert view': 'only in expert view',
 	'Show blocked and allowed resources in page list': 'Show number of blocked and allowed resources in page selector',
 	'Show whitelist and blacklist rules in the rule list': 'Show whitelist and blacklist rules in the rule list',
 	'Theme:': 'Theme:',
@@ -670,7 +677,8 @@ Strings['en-us'] = {
 	
 	'highlight help': 'Whitelist matches appear in green, blacklist matches in red, and standard rules in gray.',
 	'contextmenu_overrides help': 'Other extensions not being able to create custom menu items is an unfortunate side effect and cannot be prevented.',
-	'showPerHost help': 'With this option enabled, you will be able to click on the number next to the host to show each item associated with it.',
+	'showPerHost help': 'With this option enabled, you will be able to click on the number next to the host to show each item associated with it. If the setting ' +
+		'under it is checked, the view will be changed to expert mode instead.',
 	'showUnblocked help': 'Some scripts on webpages are embedded in the page itself rather than loaded from an external resource. These scripts cannot be blocked and will always execute.',
 	'alwaysBlock help': [
 		'<p>If you visit "www.example.com"…</p>',

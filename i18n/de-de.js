@@ -158,6 +158,7 @@ Strings['de-de'] = {
 	'Predefined rules cannot be edited.': 'Vordefinierte Regeln können nicht bearbeitet werden. ',
 	'Update Failure': 'Wegen eines Fehlers in Safari liegen für die aktuelle Seite keine Informationen vor. Ein erneutes Laden der Seite kann dies evt. beheben.',
 	'Unable to view source of embedded.': 'Kann die Quelle des eingebundenen nicht anzeigen.', 
+	'Please click the flashing toolbar icon to continue': 'Bitte klicken Sie auf das blinkende Symbol in der Symbolleiste, um fortzufahren.',
 	/** /ERRORS-ISH **/
 
     'Enter the pattern for the URL(s) you want to affect.': 'Gebe ein URL Muster ein, das angewendet werden soll.', 

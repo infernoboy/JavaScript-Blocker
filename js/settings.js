@@ -230,11 +230,15 @@ $.extend(Settings, {
 			Settings.make_setting('search', 'headerSearch', Settings.settings.search.headerSearch, ul);
 						
 			for (var section in Settings.settings)
-				if (section !== 'misc')
+				if (section !== 'misc') {
+					settingLoop:
 					for (var setting in Settings.settings[section]) {
 						set = $.extend({}, Settings.settings[section][setting]);
 
-						if (set.if_setting && Settings.current_value(set.if_setting[0]) !== set.if_setting[1]) continue;
+						if (set.if_setting)
+							for (var mustSet in set.if_setting)
+								if( Settings.current_value(mustSet) !== set.if_setting[mustSet])
+									continue settingLoop;
 						
 						if (typeof set.label === 'string' && val.length && ~set.label.toLowerCase().indexOf(val.toLowerCase())) {
 							if (!~placed_headers.indexOf(section)) {
@@ -248,6 +252,7 @@ $.extend(Settings, {
 							li.find('label').attr('for', inp.attr('id'));
 						}
 					}
+				}
 
 			var head = $('#setting-headerSearch .label').html(li ? _('Search Results') : _('No Results'));
 
@@ -292,15 +297,6 @@ $.extend(Settings, {
 		GlobalPage.message('setting_set', [setting, v]);
 		
 		this._current[setting] = v;
-		
-		for (var section in Settings.settings)
-			if (section !== 'misc')
-				for (var set in Settings.settings[section])
-					if (Settings.settings[section][set].if_setting && setting === Settings.settings[section][set].if_setting[0])
-						if (Settings.settings[section][set].if_setting[1] !== v)
-							$('#setting-' + set).slideUp(this.current_value('animations') ? 150 : 0.001);
-						else
-							$('#setting-' + set).slideDown(this.current_value('animations') ? 150 : 0.001);
 			
 		if ($('#toolbar li.selected#for-search').length)
 			$('#search').trigger('search');
@@ -311,6 +307,14 @@ $.extend(Settings, {
 			speedMultiplier = 1;
 		else if (setting === 'language' && !no_reload)
 			window.location.reload();
+
+		var ul = $('section.active').find('ul').empty(),
+				sec = ul.end().attr('id');
+		
+		for (var setting in Settings.settings[sec])
+			Settings.make_setting(sec, setting, Settings.settings[sec][setting], ul);
+
+		GlobalPage.message('aboutPage');
 	},
 	clear: function () {
 		GlobalPage.message('resetSettings');
@@ -328,7 +332,7 @@ $.extend(Settings, {
 		
 		current = Settings.current_value(setting);
 		current = setting_item.opposite ? !current : current;
-		
+
 		if (setting_item.extras)
 			$('<li class="extras" />').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
 
@@ -424,8 +428,12 @@ $.extend(Settings, {
 			
 		li.append('<br style="clear:both;" />')
 		
-		if (setting_item.if_setting && Settings.current_value(setting_item.if_setting[0]) != setting_item.if_setting[1])
-			li.hide();
+		if (setting_item.if_setting)
+			for (var mustSet in setting_item.if_setting)
+				if (Settings.current_value(mustSet) !== setting_item.if_setting[mustSet]) {
+					li.hide();
+					break;
+				}
 			
 		if (setting_item.label === false)
 			li.remove();

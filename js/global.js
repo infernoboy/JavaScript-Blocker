@@ -83,12 +83,11 @@ var Template = {
 		rule_actions: {}
 	},
 	commandKey: !1,
-	speedMultiplier: 1,
 	optionKey: false,
 	frames: {},
 	displayv: null,
 	bundleid: null,
-	update_attention_required: 138,
+	update_attention_required: 156,
 	beta_attention_required: 1,
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
 	longURL: 'http://api.longurl.org/v2/expand?user-agent=ToggleableJavaScriptBlocker&title=1&format=json&url=',
@@ -118,7 +117,7 @@ var Template = {
 				
 		if (!status || status === 777)
 			new Poppy($(this.popover.body).width() / 2, 0, [
-				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/240">' + this.displayv + '</a>']), '</p>',
+				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']), '</p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
 				'<p>', _('Please, if you can'), '</p>',
 				'<p>',
@@ -226,8 +225,16 @@ var Template = {
 					if ($.isEmptyObject(ruleSet[domain])) {
 						delete ruleSet[domain];
 						delete self.rules.cache[kind][domain];
+						delete self.rules.cache_nowlbl[kind][domain];
 					}
 				}, [domain, key, this.rules.rules[key], use_tracker_cache, this]);
+
+			for (var host in this.caches.rule_actions[key]) {
+				for (var action_item in this.caches.rule_actions[key][host]) {
+					if (this.caches.rule_actions[key][host][action_item].last_accessed < (+new Date() - 1000 * 60 * 30))
+						delete this.caches.rule_actions[key][host][action_item];
+				}
+			}
 		}
 		
 		this.utils.zero_timeout(function (rules, utc, uc) {
@@ -258,6 +265,32 @@ var Template = {
 		}
 	},
 	isBeta: 0,
+	get speedMultiplier() {
+		return this._speedMultiplier || 1;
+	},
+	set speedMultiplier(v) {
+		this._speedMultiplier = v;
+
+		$(this.popover.body).toggleClass('slow-animations', v > 1).toggleClass('no-animations', v < 1);
+	},
+	get temporaryExpertMode() {
+		return this._temporaryExpertMode;
+	},
+	set temporaryExpertMode(v) {
+		var prev = this._temporaryExpertMode;
+
+		this._temporaryExpertMode = v;
+
+		Popover.object().width = this.simpleMode && !v ? 460 : 560;
+		Popover.object().height = this.simpleMode && !v ? 350 : 400;
+
+		$(this.popover.body).toggleClass('simple', this.simpleMode && !v);
+
+		if (prev !== v)
+			this.utils.timer.timeout('readjust_columns', function (self) {
+				self.adjust_columns();
+			}, 500, [this]);
+	},
 	get disabled() {
 		return Settings.getItem('isDisabled');
 	},
@@ -873,7 +906,7 @@ var Template = {
 			return Settings.getItem('quickAdd');
 		},
 		get simplified() {
-			return this.simpleMode && Settings.getItem('simplifiedRules');
+			return this.simpleMode && Settings.getItem('simplifiedRules') && !this.temporaryExpertMode;
 		},
 		get data_types() {
 			return {
@@ -906,7 +939,7 @@ var Template = {
 			return rules;
 		},
 		get which () {
-			return this.simplified ? 'SimpleRules' : 'Rules';
+			return this.simpleMode && Settings.getItem('simplifiedRules') ? 'SimpleRules' : 'Rules';
 		},
 		use_tracker: {
 			_tracked: {},
@@ -964,6 +997,7 @@ var Template = {
 		},
 		warm_caches: function () {
 			this.cache = this.data_types;
+			this.cache_nowlbl = this.data_types;
 
 			return;
 
@@ -981,6 +1015,7 @@ var Template = {
 			this._loaded = false;
 
 			this.cache = this.data_types;
+			this.cache_nowlbl = this.data_types;
 			this.caches.rule_actions = this.data_types;
 		},
 		show_snapshots: function () {
@@ -1292,6 +1327,7 @@ var Template = {
 			if (d === '.*') {
 				this.caches.rule_actions = this.data_types;
 				this.cache[kind] = {};
+				this.cache_nowlbl[kind] = {};
 			} else if (d.charAt(0) === '.') {
 				var nodot = d.substr(1),
 						full_regexp = new RegExp(this.utils.escape_regexp(d) + '$', 'i'),
@@ -1306,9 +1342,14 @@ var Template = {
 				for (var c in this.cache[kind])
 					if (full_regexp.test(c))
 						delete this.cache[kind][c];
+
+				for (var c in this.cache_nowlbl[kind])
+					if (full_regexp.test(c))
+						delete this.cache_nowlbl[kind][c];
 			} else {
 				delete this.caches.rule_actions[kind][d];
 				delete this.cache[kind][d];
+				delete this.cache_nowlbl[kind][d];
 			}
 		},
 		easylist: function () {
@@ -1393,6 +1434,7 @@ var Template = {
 				if (el) processList(el);
 
 				JB.rules.cache = JB.rules.data_types;
+				JB.rules.cache_nowlbl = JB.rules.data_types;
 			}, lastUpdate = Settings.getItem('EasyListLastUpdate');
 
 			if (lastUpdate && Date.now() - lastUpdate < 432000000) {
@@ -1461,14 +1503,21 @@ var Template = {
 			return 0;
 		},
 		via_action_cache: function (kind, host, item) {
+			if (PrivateBrowsing()) return null;
+
 			if (host in this.caches.rule_actions[kind])
-				return this.caches.rule_actions[kind][host][item] || null;
+				return this.caches.rule_actions[kind][host][item];
 			return null;
 		},
 		add_to_action_cache: function (kind, host, item, action) {
+			if (PrivateBrowsing()) return;
+
 			if (!(host in this.caches.rule_actions[kind])) this.caches.rule_actions[kind][host] = {};
 
-			this.caches.rule_actions[kind][host][item] = action;
+			this.caches.rule_actions[kind][host][item] = {
+				action: action,
+				last_accessed: +new Date()
+			};
 		},
 		allowed: function (message) {
 			var kind = message[0];
@@ -1481,12 +1530,17 @@ var Template = {
 					proto = this.utils.active_protocol(message[2]), protos,
 					domains = this.for_domain(kind, host), action_cached = this.via_action_cache(kind, host, message[2]);
 
-			if (action_cached) return action_cached;
+			if (action_cached) {
+				action_cached.last_accessed = +new Date();
+
+				return action_cached.action;
+			}
 
 			var domain, rule,
 					alwaysFrom = Settings.getItem('alwaysBlock' + kind) || Settings.getItem('alwaysBlockscript'),
 					hider = ~kind.indexOf('hide_'), ignoreBL = Settings.getItem('ignoreBlacklist'), ignoreWL = Settings.getItem('ignoreWhitelist'),
-					sim = this.simplified;
+					sim = this.simplified,
+					catch_wl = null;
 
 			domainFor:
 			for (domain in domains) {
@@ -1505,12 +1559,18 @@ var Template = {
 							self.use_tracker.use(kind, domain, rule, rtype);
 						}, [this, kind, domain, rule, the_rule]);
 
-						break domainFor;
+						if (the_rule === 5) catch_wl = [rule_found, the_rule];
+						if (the_rule !== 4 && the_rule !== 5) break domainFor;
 					}
 				}
 			}
 
 			if (rule_found !== false) {
+				if (catch_wl && the_rule === 4) {
+					rule_found = catch_wl[0];
+					the_rule = catch_wl[1];
+				}
+
 				this.add_to_action_cache(kind, host, message[2], [rule_found, the_rule]);
 
 				return [rule_found, the_rule];
@@ -1553,17 +1613,19 @@ var Template = {
 		},
 		for_domain: function (kind, domain, one, hide_wlbl) {
 			if (!(kind in this.rules) || (kind !== 'script' && !this.donationVerified)) return {};
+
+			var cached = (hide_wlbl) ? this.cache_nowlbl : this.cache;
 					
-			if (domain in this.cache[kind]) {
+			if (domain in cached[kind]) {
 				var rules = {};
 			
 				if (one) {
-					if (domain in this.cache[kind][domain] && typeof this.cache[kind][domain][domain] === 'object')
-						rules[domain] = this.cache[kind][domain][domain];
+					if (domain in cached[kind][domain] && typeof cached[kind][domain][domain] === 'object')
+						rules[domain] = cached[kind][domain][domain];
 					else
 						rules[domain] = {};
 				} else
-					rules = this.cache[kind][domain];
+					rules = cached[kind][domain];
 
 				return rules;
 			}
@@ -1593,17 +1655,17 @@ var Template = {
 				o[c] = r;
 			}
 
-			if (!('.*' in this.cache[kind]))
-				this.cache[kind]['.*'] = { '.*': $.extend(true, {},
+			if (!('.*' in cached[kind]))
+				cached[kind]['.*'] = { '.*': $.extend(true, {},
 					(append_lists && !hide_wlbl ? JB.rules.blacklist[kind]['.*'] || {} : {}),
 					(append_lists && !hide_wlbl ? JB.rules.whitelist[kind]['.*'] || {} : {}),
 					this.rules[kind]['.*'] || {}) };
 
-			o['.*'] = this.cache[kind]['.*']['.*'];
+			o['.*'] = cached[kind]['.*']['.*'];
 
-			this.cache[kind][domain] = o;
+			cached[kind][domain] = o;
 
-			return this.for_domain(kind, domain, one);
+			return this.for_domain(kind, domain, one, hide_wlbl);
 		},
 		match: function (kind, rule, url, simplified) {
 			if (rule[0] !== '^' && simplified) {
@@ -1646,7 +1708,7 @@ var Template = {
 
 			this.collapsed('LastRuleWasTemporary', temporary);
 		
-			var rules = this.for_domain(kind, domain, true);
+			var rules = this.for_domain(kind, domain, true, true);
 
 			action = parseInt(action, 10);
 
@@ -1674,7 +1736,7 @@ var Template = {
 		remove: function (kind, domain, rule, delete_automatic) {
 			if ((kind !== 'script' && !this.donationVerified) || this.using_snapshot) return false;
 			
-			var rules = this.for_domain(kind, domain), key;
+			var rules = this.for_domain(kind, domain, false, true), key;
 
 			if (!(domain in rules)) return false;
 			
@@ -1802,6 +1864,8 @@ var Template = {
 		show: function () {
 			var self = this;
 
+			JB.temporaryExpertMode = false;
+
 			this.busy = 1;
 
 			$$('#edit-domains').removeClass('edit-mode');
@@ -1834,7 +1898,7 @@ var Template = {
 					ul.css({ marginTop: '-3px', marginBottom: '6px', opacity: 1 });
 
 					for (var domain in sorted)
-						ul.append($('> li', this.view(kind, domain, undefined, null, false)));
+						ul.append($('> li', this.view(kind, domain, undefined, null, true)));
 				}
 			}
 			
@@ -2008,7 +2072,7 @@ var Template = {
 			return new Poppy(left, top + 12, _('Donation Required'));
 		
 		if (~kind.indexOf('special'))
-			a.push(this.utils.fill(opt, [(!this.simpleMode ? '^' : '') + one_script[0] + (!this.simpleMode ? '$' : ''), hostname]));
+			a.push(this.utils.fill(opt, [one_script[0], hostname]));
 		else {
 			switch (hostname) {
 				case 'blank':
@@ -2069,6 +2133,40 @@ var Template = {
 		$$('#main .urls-inner').empty();
 		$$('#page-list').attr('title', null).removeData().find('optgroup').empty();
 		$$('.column > .info-container label ~ span').text(0).next().hide();
+		$$('#next-frame, #previous-frame, #frame-switcher .divider').addClass('disabled').filter('#previous-frame').find('.text').text(_('Main Page'));
+	},
+	adjust_columns: function (cb) {
+		var ac = $$('#allowed-column'), bc = $$('#blocked-column'),
+				buttons = '#block-domain, #allow-domain';
+
+		if (Settings.getItem('expandColumns') && ((!Settings.getItem('noExpandSimple') && this.simpleMode) || this.temporaryExpertMode)) {
+			ac.toggleClass('column-collapsed', ac.hasClass('hidden'));
+			bc.toggleClass('column-collapsed', bc.hasClass('hidden'));
+		} else {
+			ac.removeClass('column-collapsed expanded');
+			bc.removeClass('column-collapsed expanded')
+		}
+
+		var collapsed = $$('.column-collapsed');
+
+		if (collapsed.length === 1)
+			$$('.column:not(.column-collapsed)').addClass('expanded');
+		else if (collapsed.length === 2 || collapsed.length == 0)
+			$$('.column').removeClass('expanded');
+
+		var expanded = $$('.column.expanded'), id = expanded.attr('id');
+
+		if (expanded.length)
+			expanded.find(buttons).show(150 * this.speedMultiplier);
+
+		if (collapsed.length === 2 || collapsed.length === 0)
+			$$(buttons).show(150 * this.speedMultiplier);
+		else if (collapsed.length === 1)
+			collapsed.find(buttons).hide(150 * this.speedMultiplier);
+		else
+			collapsed.find(buttons).hide(150 * this.speedMultiplier);
+
+		$$('#allowed-blocked-columns').removeClass('blocked-column-expanded allowed-column-expanded none-expanded').addClass((id || 'none') + '-expanded');
 	},
 	bind_events: function(some, host) {
 		if (!this.popover) return;
@@ -2109,10 +2207,13 @@ var Template = {
 		
 			function codeify(data) {
 				function do_highlight (data, no_zoom) {
+					$$('#misc .misc-header').empty();
 					$$('#misc-content pre').remove();
+
+					$$('<a />').attr('href', t.text()).addClass('outside').text(t.text()).appendTo($$('#misc .misc-header'));
 					
 					$('<pre />').append('<code class="javascript"></code>').find('code').text(data).end().appendTo($$('#misc-content'));
-					if (!no_zoom) self.utils.zoom($$('#misc').find('.misc-header').text(t.text()).end());
+					if (!no_zoom) self.utils.zoom($$('#misc'));
 					var p = $$('#misc-content pre code');
 					p.data('unhighlighted', p.html());
 					self.hljs.highlightBlock(p[0]);
@@ -2134,7 +2235,7 @@ var Template = {
 			}
 			
 			function script_info () {
-				var host = encodeURI(self.simpleMode ? t.text() : self.utils.active_host(t.text()));
+				var host = encodeURI(self.simpleMode && !self.temporaryExpertMode? t.text() : self.utils.active_host(t.text()));
 				
 				new Poppy(left, off.top + 10, [
 					'<p class="misc-info">', _('Safety Information for {1}', [host]), '</p>',
@@ -2150,12 +2251,12 @@ var Template = {
 				var wh = t.parents('.urls-wrapper').is('#blocked-script-urls') ? 0 : 1,
 						sp = t.parent().data('script')[0];
 				new Poppy(left, off.top + 10, _(sp + ':' + wh, [self.special_enabled(sp)]));
-			} else if (self.simpleMode && (!pa.hasClass('by-rule') || pa.hasClass('unblockable'))) {
+			} else if (self.simpleMode && !self.temporaryExpertMode && (!pa.hasClass('by-rule') || pa.hasClass('unblockable'))) {
 				script_info();
 			} else 
 				new Poppy(left, off.top + 10, [
 					'<input type="button" value="', _('More Info'), '" id="script-info" /> ',
-					self.simpleMode || kind === 'embed' ? '' : '<input type="button" value="' + _('View ' + kind + ' Source') + '" id="view-script" /> ',
+					!self.temporaryExpertMode && (self.simpleMode || kind === 'embed') ? '' : '<input type="button" value="' + _('View ' + kind + ' Source') + '" id="view-script" /> ',
 					pa.hasClass('by-rule') && !pa.hasClass('unblockable') ? '<input type="button" value="' + _('Show Matched Rules') + '" id="matched-rules" />' : ''].join(''), function () {
 						$$('#poppy').find('#script-info').click(script_info).end().find('#matched-rules').click(function () {
 							var block_allow = !me.parents('div').attr('id').match(/blocked/),
@@ -2174,9 +2275,11 @@ var Template = {
 						}).end().find('#view-script').click(function () {
 							if (kind === 'image') {
 								new Poppy();
+								$$('#misc .misc-header').empty();
 								$$('#beautify-script').remove();
 								$$('#misc-content').html('<img src="' + t.html() + '" />');
-								self.utils.zoom($$('#misc').find('.misc-header').text(t.text()).end());
+								$$('<a />').attr('href', t.text()).addClass('outside').text(t.text()).appendTo($$('#misc .misc-header'));
+								self.utils.zoom($$('#misc'));
 								return false;
 							}
 							
@@ -2646,7 +2749,7 @@ var Template = {
 			if (li.hasClass('unblockable')) return new Poppy(left, off.top + 12, _('Unblockable ' + lid.kind));
 
 			if (self.rules.quick && !li.hasClass('ignore-quick-add')) {
-				var me = span, parts = self.utils.domain_parts(self.simpleMode ? url : self.utils.active_host(url)),
+				var me = span, parts = self.utils.domain_parts(self.simpleMode && !self.temporaryExpertMode ? url : self.utils.active_host(url)),
 						pi = 0, to_do = null, to_do_clean, special = ~lid.kind.indexOf('special'), span = $('> span', li),
 						host_parts = self.utils.domain_parts(self.host), use_host = self.host;
 
@@ -2665,7 +2768,7 @@ var Template = {
 				if (span.hasClass('SAFARI-EXTENSION')) parts = [parts[0]];
 
 				if (li.hasClass('pending')) {
-					if (self.simpleMode && !special) {
+					if (self.simpleMode && !special && !self.temporaryExpertMode) {
 						pi = lid.pending_index + 1;
 
 						if (pi < parts.length) {
@@ -2675,12 +2778,12 @@ var Template = {
 						}
 					}
 				} else
-					to_do = special || !self.simpleMode ? script[0] : parts[0];
+					to_do = special || !self.simpleMode || self.temporaryExpertMode ? script[0] : parts[0];
 
 				if (to_do) {
 					to_do_clean = self.utils.escape_regexp(to_do);
 
-					var rule = self.simpleMode ? ((pi > 0 ? '.' : '') + to_do) : '^' + to_do_clean + (!special ? '(\\?.*)?$' : '$');
+					var rule = self.simpleMode && !self.temporaryExpertMode ? ((pi > 0 ? '.' : '') + to_do) : '^' + to_do_clean + (!special ? '(\\?.*)?$' : '$');
 					rule = self.rules.simplified && !special ? (lid.protocol || '') + ':' + rule : rule;
 
 					li.addClass('pending')
@@ -2715,7 +2818,7 @@ var Template = {
 			
 			var page_parts = self.utils.domain_parts(self.host), n,
 					padd = self.poppies.add_rule.call({
-						url: '^' + (self.simpleMode ? self.utils.escape_regexp(script[0].substr(0, script[0].indexOf(url))) : '') + self.utils.escape_regexp(url) + (self.simpleMode ? '\\/.*' : '') + '$',
+						url: '^' + (self.simpleMode && !self.temporaryExpertMode ? self.utils.escape_regexp(script[0].substr(0, script[0].indexOf(url))) : '') + self.utils.escape_regexp(url) + (self.simpleMode && !self.temporaryExpertMode ? '\\/.*' : '') + '$',
 						e: $(this).siblings('span'),
 						li: $(this).parent(),
 						domain: self.host,
@@ -2786,7 +2889,7 @@ var Template = {
 							'<input type="button" value="', button, '" id="auto-restore" />',
 						'</div>'].join(''), function () {
 							$$('#poppy #auto-new').click(function () {
-								if (self.simpleMode || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
+								if ((self.simpleMode && !self.temporaryExpertMode) || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
 								else if (!self.donationVerified) return false;
 
 								new Poppy(left, off.top + 12, padd);
@@ -2802,7 +2905,7 @@ var Template = {
 				}
 			}
 
-			if (self.simpleMode || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
+			if ((self.simpleMode && !self.temporaryExpertMode) || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
 			else if (!self.donationVerified) return false;
 			
 			new Poppy(left, off.top + 12, padd);
@@ -3052,77 +3155,81 @@ var Template = {
 
 					parent.addClass('some-list');
 
+					var isHidden = $$((block ? '.allowed' : '.blocked') + '-label.hidden').length;
+
 					$$((block ? '.allowed' : '.blocked') + '-label.hidden').click();
 
-					for (var i = 0; ob[i]; i++) {
-						if (i % 2) continue;
+					self.utils.timer.timeout('show_some_list', function () {
+						for (var i = 0; ob[i]; i++) {
+							if (i % 2) continue;
 
-						var head = $(ob[i]), hosts = head.next().find('.main-wrapper > li'), li;
+							var head = $(ob[i]), hosts = head.next().find('.main-wrapper > li'), li;
 
-						if (head.css('display') === 'none') continue;
+							if (head.css('display') === 'none') continue;
 
-						for (var b = 0; (li = hosts[b]); b++) {
-							if (~li.className.indexOf('show-me-more') ||
-									(~li.className.indexOf('hidden-by-rule') && !~li.className.indexOf('show-for-now'))) {
-								$(li).remove();
-								continue;
+							for (var b = 0; (li = hosts[b]); b++) {
+								if (~li.className.indexOf('show-me-more') ||
+										(~li.className.indexOf('hidden-by-rule') && !~li.className.indexOf('show-for-now'))) {
+									$(li).remove();
+									continue;
+								}
+
+								var data = $.data(li), proto = self.utils.active_protocol(data.script[0]),
+										page_parts = data.kind === 'special' ? [data.url] : self.utils.domain_parts(data.url),
+										opts = self.add_rule_host($(li).find('*:first'), null, null, null, null, true), op = $(opts),
+										cl = $(li).clone(true).addClass('some-thing'), $li = $(li);
+
+								$li.show().slideUp(200 * self.speedMultiplier, function () {
+									$li.remove();
+								});
+
+								cl.html([
+									'<input type="checkbox" class="some-checkbox" /> ',
+									((self.simpleMode && !self.temporaryExpertMode) || data.kind === 'special' ? [
+										'<select class="', op.length === 1 ? 'single' : '', ' ', proto, '"', op.length === 1 ? ' tabindex="-1"' : '', '>', opts, '</select>'
+									] : [
+										'<textarea placeholder="Rule" wrap="off" class="rule-input">^', self.utils.escape_regexp(data.script[0]), '$</textarea>'
+									]).join('')
+								].join('')).hide().insertAfter(li).slideDown(200 * self.speedMultiplier)
+									.attr('title', op.length === 1 ? $(op[0]).html() : null);
+							}
+						}
+
+						new Poppy();
+
+						parent.prepend(c).parent().prev().slideUp(200 * self.speedMultiplier);
+						c.slideDown(200 * self.speedMultiplier);
+
+						parent.find('.which-type').change(function () {
+							$(this).toggleClass((block ? 'blocked' : 'allowed') + '-color', this.value !== '42');
+						}).end().find('select').mousedown(function () {
+							var ele = $(this).prev(), checked = ele.prop('checked');
+
+							ele.prop('checked', true);
+
+							if (checked && $(this).hasClass('single')) ele.prop('checked', false);
+						}).end().find('.save-some').click(function () {
+							var som = $('.main-wrapper li.some-thing', parent), item;
+
+							this.disabled = 1;
+
+							for (var c = 0; som[c]; c++) {
+								item = $(som[c]);
+
+								if (!item.find('input:checked').length) continue;
+
+								var rule = item.find('select, textarea').val(), kind = ($('.which-type', parent).val() === '42' ? 'hide_' : '') + item.data('kind');
+
+								self.rules.add(kind, $('.domain-picker', parent).val(), rule, $('.which-type', parent).val(), true, $('.domain-script-temporary', parent).is(':checked'));
 							}
 
-							var data = $.data(li), proto = self.utils.active_protocol(data.script[0]),
-									page_parts = data.kind === 'special' ? [data.url] : self.utils.domain_parts(data.url),
-									opts = self.add_rule_host($(li).find('*:first'), null, null, null, null, true), op = $(opts),
-									cl = $(li).clone(true).addClass('some-thing'), $li = $(li);
+							$$('.some-list').removeClass('some-list');
 
-							$li.show().slideUp(200 * self.speedMultiplier, function () {
-								$li.remove();
-							});
+							Tabs.messageActive('reload');
 
-							cl.html([
-								'<input type="checkbox" class="some-checkbox" /> ',
-								(self.simpleMode || data.kind === 'special' ? [
-									'<select class="', op.length === 1 ? 'single' : '', ' ', proto, '"', op.length === 1 ? ' tabindex="-1"' : '', '>', opts, '</select>'
-								] : [
-									'<textarea placeholder="Rule" wrap="off" class="rule-input">^', self.utils.escape_regexp(data.script[0]), '$</textarea>'
-								]).join('')
-							].join('')).hide().insertAfter(li).slideDown(200 * self.speedMultiplier)
-								.attr('title', op.length === 1 ? $(op[0]).html() : null);
-						}
-					}
-
-					new Poppy();
-
-					parent.prepend(c).parent().prev().slideUp(200 * self.speedMultiplier);
-					c.slideDown(200 * self.speedMultiplier);
-
-					parent.find('.which-type').change(function () {
-						$(this).toggleClass((block ? 'blocked' : 'allowed') + '-color', this.value !== '42');
-					}).end().find('select').mousedown(function () {
-						var ele = $(this).prev(), checked = ele.prop('checked');
-
-						ele.prop('checked', true);
-
-						if (checked && $(this).hasClass('single')) ele.prop('checked', false);
-					}).end().find('.save-some').click(function () {
-						var som = $('.main-wrapper li.some-thing', parent), item;
-
-						this.disabled = 1;
-
-						for (var c = 0; som[c]; c++) {
-							item = $(som[c]);
-
-							if (!item.find('input:checked').length) continue;
-
-							var rule = item.find('select, textarea').val(), kind = ($('.which-type', parent).val() === '42' ? 'hide_' : '') + item.data('kind');
-
-							self.rules.add(kind, $('.domain-picker', parent).val(), rule, $('.which-type', parent).val(), true, $('.domain-script-temporary', parent).is(':checked'));
-						}
-
-						$$('.some-list').removeClass('some-list');
-
-						Tabs.messageActive('reload');
-
-						$$('#page-list')[0].selectedIndex = 0;
-					})
+							$$('#page-list')[0].selectedIndex = 0;
+						});
+					}, 450 * self.speedMultiplier * (isHidden ? 1 : 0));
 				});
 			});
 		}).on('click', '#disable', function (event, ignore) {
@@ -3222,7 +3329,7 @@ var Template = {
 					new Poppy();
 
 					self.utils.zoom($$('#rules-list'), null, null, function () {
-						var parts = $$('#domain-filter').trigger('search').data('parts');
+						var parts = $$('#domain-filter').trigger('search').data('parts') || [];
 							
 						parts.forEach(function (part, i) {
 							$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + part + '"].hidden').click();
@@ -3263,6 +3370,10 @@ var Template = {
 				});
 			});
 		}).on('click', '#rules-list-back', function () {
+			$$('.some-list, .pending').removeClass('some-list pending');
+
+			Tabs.messageActive('updatePopoverNow');
+
 			var r = $$('#rules-list:not(.zoom-window-animating)');
 
 			if (r.length)
@@ -3274,32 +3385,44 @@ var Template = {
 				$$('#misc-content, p.misc-header').html('');
 			});
 		}).on('click', '.allowed-label, .blocked-label, .unblocked-label', function () {
-			var me = $(this), which = this.className.substr(0, this.className.indexOf('-')), e = $$('#' + which + '-script-urls .urls-inner');
+			var me = $(this), column = me.parents('.column'), which = this.className.substr(0, this.className.indexOf('-')), e = $$('#' + which + '-script-urls .urls-inner');
 			
-			if (e.is(':animated')) return false;
+			if (e.is(':animated') || column.is(':animated')) return false;
+
+			var adjuster = function (cb) {
+				self.adjust_columns();
+
+				if (cb) self.utils.timer.timeout('adjust_cb', cb, 200 * self.speedMultiplier * (Settings.getItem('expandColumns') && (((!Settings.getItem('noExpandSimple') && self.simpleMode) || self.temporaryExpertMode)) ? 1 : 0));
+			};
 
 			if (me.hasClass('hidden')) {
 				self.collapsed(which, 0);
 				
 				me.removeClass('hidden');
-								
-				e.show().css('marginTop', -e.height()).animate({
-					marginTop: 0
-				}, 200 * self.speedMultiplier, function () {
-					$('.kind-header', e).addClass('visible');
-				}).removeClass('was-hidden');
+				column.removeClass('hidden');
+				
+				adjuster(function () {
+					e.show().css('marginTop', -e.height()).animate({
+						marginTop: 0
+					}, 200 * self.speedMultiplier, function () {
+						$('.kind-header', e).addClass('visible');
+					}).removeClass('was-hidden');
+				});
 			} else {
 				self.collapsed(which, 1);
 				
 				me.addClass('hidden');
+				column.addClass('hidden');
+
 				$('.kind-header', e).removeClass('visible').css('opacity', 1).filter('.floater').remove();
 								
 				e.css('marginTop', 0).animate({
 					marginTop: -e.height()
 				}, 200 * self.speedMultiplier, function () {
+					adjuster();
 					e.hide();
 				}).addClass('was-hidden');
-			}
+			}		
 							
 			self.utils.timer.timeout('label_search', function (self) {
 				$$('#find-bar-search:visible').trigger('search');
@@ -3754,6 +3877,16 @@ var Template = {
 				});
 			});
 		}).on('click', '.show-scripts', function () {
+			if (Settings.getItem('temporaryExpertSwitch') && (self.donationVerified || self.trial_active()) && !$$('.some-list').length) {
+				self.temporaryExpertMode = true;
+
+				self.utils.timer.timeout('switch_to_expert', function () {
+					Tabs.messageActive('updatePopoverNow');
+				}, 10);
+
+				return;
+			}
+
 			var off = $(this).offset(), scripts = $(this.parentNode.parentNode).data('script').map(function (v) { return encodeURI(v); });
 
 			new Poppy(off.left + 2 + $(this).width() / 2, off.top + 10, [
@@ -3931,7 +4064,8 @@ var Template = {
 						if (disallow_predefined && ($(this).is('.rule-type-5') || $(this).is('.rule-type-4'))) return;
 
 						var data = $.data(this), proto = self.utils.active_protocol(data.script[0]).toUpperCase(),
-								rule = self.simpleMode && kind !== 'special' ? proto + ':' + data.url : data.script[0];
+								ind = data.script[0].indexOf('?'), rr = (~kind.indexOf('special')) ? data.script[0] : '^' + self.utils.escape_regexp(~ind ? data.script[0].substr(0, data.script[0].indexOf('?')) : data.script[0]) + '(\\?.*)?$',
+								rule = (self.simpleMode && !self.temporaryExpertMode && !~kind.indexOf('special')) ? proto + ':' + data.url : rr;
 
 						self.rules.add(kind, host, rule, allowed ? 0 : 1, false, temp);
 					});
@@ -3962,7 +4096,7 @@ var Template = {
 					.toggleClass('rule-type-' + type, type > -1)
 					.toggleClass('unblockable', kind !== 'special' && unblockable && text !== 'unblocked')
 					.find('span').text(use_url).addClass(protocol)
-					.attr('title', self.simpleMode && protocol ? (_(protocol) + ' (' + protocol + ')') : '').parent();
+					.attr('title', self.simpleMode && protocol && !self.temporaryExpertMode ? (_(protocol) + ' (' + protocol + ')') : '').parent();
 		}
 		
 		function add_item(index, kind, the_item) {
@@ -3974,7 +4108,7 @@ var Template = {
 			} else
 				protocol = self.utils.active_protocol(item);
 
-			if (text !== 'unblocked' && self.simpleMode) {
+			if (text !== 'unblocked' && self.simpleMode && !self.temporaryExpertMode) {
 				use_url = self.utils.active_host(item);
 				test_url = use_url + the_item[1];
 
@@ -4018,7 +4152,7 @@ var Template = {
 			ul.css('display', do_hide ? 'none' : 'block')
 				.parent().prev().toggleClass('collapsed', do_hide).toggleClass('visible', !do_hide).find('.toggle-main').html(_(do_hide ? 'Show' : 'Hide'));;
 
-			if (self.simpleMode && text !== 'unblocked') {		
+			if (self.simpleMode && text !== 'unblocked' && !self.temporaryExpertMode) {		
 				cn += jsblocker[text][key].unique.length;
 					
 				lab.html(cn);
@@ -4028,7 +4162,7 @@ var Template = {
 
 				lab.html(cn);
 			}
-				
+
 			if (jsblocker[text][key].all.length) {
 				ul.parent().show().prev().show();
 					
@@ -4078,7 +4212,7 @@ var Template = {
 			if ($('li:last', ul).is('.hidden-by-rule'))
 				$('li:not(.hidden-by-rule):last .divider', ul).addClass('invisible');
 		
-			if (this.simpleMode && Settings.getItem('showPerHost')) {
+			if (this.simpleMode && Settings.getItem('showPerHost') && !self.temporaryExpertMode) {
 				ul.addClass('show-per-host');
 				
 				for (var kind in shost_list)
@@ -4096,6 +4230,8 @@ var Template = {
 		}
 	},	
 	do_update_popover: function (event, index, badge_only) {
+		this.utils.timer.remove('timeout', 'deactivate_toolbar');
+
 		if (!this.trial_active() && !this.donationVerified && !badge_only && this.trialStart > -1)
 			return this.utils.timer.timeout('trial_expired', function (self) {
 				new Poppy($(self.popover.body).width() / 2, 0, [
@@ -4133,7 +4269,7 @@ var Template = {
 						count[act] += jsblocker[act][kind].all.length;
 			}
 
-			if (this.simpleMode) {
+			if (this.simpleMode && !self.temporaryExpertMode) {
 				for (var key in jsblocker.blocked) {
 					if (key === 'special' || !this.enabled(key)) continue;
 					
@@ -4148,7 +4284,7 @@ var Template = {
 				$('<optgroup />').attr('label', _('Main Page')).appendTo(page_list).append('<option />').find('option')
 					.attr('value', jsblocker.href)
 					.text(jsblocker.href)
-					.append(Settings.getItem('showPageListCount') ? ' — ' + _('{1} allowed, {2} blocked', [this.simpleMode ? main_items.allowed : count.allowed, this.simpleMode ? main_items.blocked : count.blocked]) : '');
+					.append(' — ' + _('{1} allowed, {2} blocked', [this.simpleMode && !self.temporaryExpertMode ? main_items.allowed : count.allowed, this.simpleMode ? main_items.blocked : count.blocked]));
 			}
 
 			if (jsblocker.href in this.frames) {
@@ -4170,7 +4306,7 @@ var Template = {
 							if (kind !== 'special' && this.enabled(kind)) {
 								frame_count[act] += xx[frame][act][kind].all.length;
 
-								if (!this.simpleMode)
+								if (!this.simpleMode || self.temporaryExpertMode)
 									this_one[act] += xx[frame][act][kind].all.length
 							}
 					}
@@ -4181,7 +4317,7 @@ var Template = {
 						frame_items.blocked += xx[frame].blocked[key].unique.length;
 						frame_items.allowed += xx[frame].allowed[key].unique.length;
 
-						if (this.simpleMode) {
+						if (this.simpleMode && !self.temporaryExpertMode) {
 							this_one.blocked += xx[frame].blocked[key].unique.length;
 							this_one.allowed += xx[frame].allowed[key].unique.length;
 						}
@@ -4192,7 +4328,7 @@ var Template = {
 					if (!badge_only)
 						$('<option />').addClass('frame-page').attr('value', xx[frame].href)
 							.text(d).appendTo(inline)
-							.append(Settings.getItem('showPageListCount') ? ' - ' + _('{1} allowed, {2} blocked', [this_one.allowed, this_one.blocked]) : '');
+							.append(' - ' + _('{1} allowed, {2} blocked', [this_one.allowed, this_one.blocked]));
 				}
 			}
 			
@@ -4200,7 +4336,7 @@ var Template = {
 
 			ToolbarItems.image(this.disabled ? 'images/toolbar-disabled.png' : 'images/toolbar.png');
 			
-			if (!self.simpleMode)
+			if (!self.simpleMode || self.temporaryExpertMode)
 				ToolbarItems.badge(Settings.getItem('toolbarDisplay') === 'allowed' ?
 						count.allowed + frame_count.allowed :
 						(Settings.getItem('toolbarDisplay') === 'blocked' ? count.blocked + frame_count.blocked : 0));
@@ -4216,7 +4352,7 @@ var Template = {
 				$$('.column .info-container').show();
 				$$('#toggle-hidden').addClass('disabled').removeClass('hidden-visible');	
 				$$('#previous-frame, #next-frame, #frame-switcher .divider').removeClass('disabled').filter('#previous-frame').find('.text').html(_('Main page'));
-				$$('#block-domain, #allow-domain').show();
+				$$('.column:not(.column-collapsed) #block-domain, .column:not(.column-collapsed) #allow-domain').show();
 				
 				var max = $('option', page_list).length - 1;
 			
@@ -4380,8 +4516,7 @@ var Template = {
 				} else if (this.installedBundle < this.update_attention_required || !this.methodAllowed) {
 					if (this.installedBundle < this.update_attention_required)
 						Tabs.messageActive('notification', [
-							'Your attention is required in order for JavaScript Blocker to continue functioning properly. ' +
-								'Please click the flashing toolbar icon to open the popover to continue.',
+							_('Please click the flashing toolbar icon to continue'),
 							'JavaScript Blocker Update'
 						]);
 					event.message = this.enabled(event.message[0]) ? [0, -84] : [1, -84];
@@ -4570,6 +4705,8 @@ var Template = {
 		var self = this;
 
 		if (event && ('type' in event) && event.type == 'popover') {
+			this.temporaryExpertMode = false;
+
 			/**
 			 * Fixes issues with mouse hover events not working
 			 */
@@ -4591,7 +4728,7 @@ var Template = {
 			new Poppy();
 		} else if (!event || (event && ('type' in event) && ~['beforeNavigate', 'close'].indexOf(event.type))) {
 			new Poppy();
-			new Poppy(true)
+			new Poppy(true);
 
 			if (event.target.url === event.url || event.type === 'close')
 				delete this.frames[event.target.url];
@@ -4650,7 +4787,7 @@ var Template = {
 								else
 									self.clear_ui();
 							}, 300, self, url);
-						}, 1000);
+						}, 300);
 					
 						Tabs.messageActive('updatePopover');
 					}
@@ -4662,21 +4799,17 @@ var Template = {
 		var self = this;
 
 		Tabs.active(function (tab) {
-			if (self.tab !== tab[0]) {
+			if (self.tab !== tab[0])
 				self.tab = tab.length ? tab[0] : {};
 
-				if (typeof callback === 'function') callback.call(self);
-			}
+			if (typeof callback === 'function')
+				callback.call(self);
 		});
 	},
 	validate: function (event) {
 		if (event && event.command && event.command !== 'jsBlockerMenu') return;
 
 		var self = this;
-
-		this.set_active_tab(function () {
-			Tabs.messageActive('updatePopoverNow');
-		});
 
 		this.utils.once('load', function () {
 			if (!Settings.getItem('persistDisabled') && this.disabled) this.disabled = false;
@@ -4725,7 +4858,6 @@ var Template = {
 
 				$(this.popover.body)
 					.toggleClass('simple', this.simpleMode)
-					.toggleClass('simplified', this.rules.simplified)
 					.toggleClass('highlight-matched', Settings.getItem('highlight'))
 					.toggleClass('disabled', this.disabled);
 
@@ -4792,10 +4924,8 @@ JB.rules.__proto__ = JB;
 JB.rules.use_tracker.__proto__ = JB;
 JB.utils.__proto__ = JB;
 
-for (var kind in JB.rules.data_types) {
-	JB.rules.blacklist[kind] = {};
-	JB.rules.whitelist[kind] = {};
-}
+JB.rules.blacklist = JB.rules.data_types;
+JB.rules.whitelist = JB.rules.data_types;
 
 $.ajax({
 	url: 'Info.plist',
@@ -4842,6 +4972,21 @@ window.onerror = function (d, p, l, c) {
 Events.addApplicationListener('contextmenu', JB.contextmenu, JB);
 Events.addApplicationListener('command', JB.command, JB);
 Events.addApplicationListener('close', JB.open_popover, JB);
+Events.addApplicationListener('activate', function () {
+	JB.set_active_tab(function () {
+		Tabs.messageActive('updatePopoverNow');
+
+		JB.utils.timer.timeout('deactivate_toolbar', function () {
+			ToolbarItems.badge(0); JB.clear_ui();
+		}, 400);
+	});
+});
+Events.addApplicationListener('navigate', function () {
+	new Poppy();
+	new Poppy(true);
+
+	Tabs.messageActive('updatePopover');
+}, JB);
 Events.addApplicationListener('beforeNavigate', JB.open_popover, JB);
 Events.addApplicationListener('beforeNavigate', JB.anonymize, JB);
 Events.addApplicationListener('popover', JB.open_popover, JB);

@@ -72,7 +72,7 @@ Settings.settings = {
 		simplifiedRules: {
 			label: 'Use simplified rules',
 			setting: true,
-			if_setting: ['allowDisablingSimplifiedRules', true],
+			if_setting: { allowDisablingSimplifiedRules: true },
 			help: 'simplifiedRules help',
 			default: true
 		},
@@ -93,18 +93,32 @@ Settings.settings = {
 			help: 'showUnblocked help',
 			default: false
 		},
-		showPageListCount: {
-			label: 'Show blocked and allowed resources in page list',
-			setting: true,
-			default: true
-		},
 		showPerHost: {
 			label: 'Show the number of items blocked or allowed for each host',
 			setting: true,
-			if_setting: ['simpleMode', true],
+			if_setting: { simpleMode: true },
 			help: 'showPerHost help',
+			default: true
+		},
+		temporaryExpertSwitch: {
+			label: 'Temporarily switch to expert mode when clicked',
+			setting: true,
+			if_setting: { showPerHost: true, simpleMode: true },
 			default: true,
-			divider: 1
+			extra: 1,
+			indent: 1
+		},
+		expandColumns: {
+			label: 'Resize blocked and allowed columns',
+			setting: true,
+			default: true
+		},
+		noExpandSimple: {
+			label: 'Resize blocked and allowed columns only in expert view',
+			setting: true,
+			default: false,
+			if_setting: { expandColumns: true, simpleMode: true },
+			indent: 1
 		},
 		filterBarVisibility: {
 			label: 'Show visibility filter bar',
@@ -187,14 +201,14 @@ Settings.settings = {
 		saveAutomatic: {
 			label: 'Create temporary rules for automatic actions',
 			setting: true,
-			if_setting: ['simpleMode', false],
+			if_setting: { simpleMode: false },
 			default: true,
 			extra: 1
 		},
 		savePrivate: {
 			label: '…even if Private Browsing is enabled',
 			setting: true,
-			if_setting: ['simpleMode', false],
+			if_setting: { simpleMode: false },
 			default: false,
 			extra: 1,
 			indent: 1
@@ -223,14 +237,14 @@ Settings.settings = {
 			label: 'Quick-add rules are temporary',
 			default: false,
 			setting: true,
-			if_setting: ['quickAdd', true]
+			if_setting: { quickAdd: true }
 		},
 		quickAddType: {
 			label: 'Create Quick Add rules for:',
 			default: '0',
 			setting: [[0, 'Same hostname as page host'], [1, 'Least domain of page host'], [2, 'All Domains']],
 			divider: 1,
-			if_setting: ['quickAdd', true]
+			if_setting: { quickAdd: true }
 		},
 		enablescript: {
 			label: 'Enable script blocker',
@@ -241,7 +255,7 @@ Settings.settings = {
 			label: 'Automatically block scripts from:',
 			setting: Settings._alwaysBlock.slice(0),
 			divider: 1,
-			if_setting: ['enablescript', true],
+			if_setting: { enablescript: true },
 			help: Settings._alwaysBlockHelp,
 			default: 'domain'
 		},
@@ -255,7 +269,7 @@ Settings.settings = {
 		showPlaceholderframe: {
 			label: 'Show a placeholder for blocked frames',
 			setting: true,
-			if_setting: ['enableframe', true],
+			if_setting: { enableframe: true },
 			default: true,
 			extra: 1
 		},
@@ -263,7 +277,7 @@ Settings.settings = {
 			label: 'Automatically block frames from:',
 			setting: Settings._alwaysBlock.slice(0),
 			divider: 1,
-			if_setting: ['enableframe', true],
+			if_setting: { enableframe: true },
 			help: Settings._alwaysBlockHelp,
 			default: 'domain',
 			extra: 1
@@ -277,7 +291,7 @@ Settings.settings = {
 		showPlaceholderembed: {
 			label: 'Show a placeholder for blocked embeds and objects',
 			setting: true,
-			if_setting: ['enableembed', true],
+			if_setting: { enableembed: true },
 			default: true,
 			extra: 1
 		},
@@ -285,7 +299,7 @@ Settings.settings = {
 			label: 'Automatically block embeds and objects from:',
 			setting: Settings._alwaysBlock.slice(0),
 			divider: 1,
-			if_setting: ['enableembed', true],
+			if_setting: { enableembed: true },
 			help: Settings._alwaysBlockHelp,
 			default: 'everywhere',
 			extra: 1
@@ -299,7 +313,7 @@ Settings.settings = {
 		showPlaceholdervideo: {
 			label: 'Show a placeholder for blocked videos',
 			setting: true,
-			if_setting: ['enablevideo', true],
+			if_setting: { enablevideo: true },
 			default: true,
 			extra: 1
 		},
@@ -307,7 +321,7 @@ Settings.settings = {
 			label: 'Automatically block videos from:',
 			setting: Settings._alwaysBlock.slice(0),
 			divider: 1,
-			if_setting: ['enablevideo', true],
+			if_setting: { enablevideo: true },
 			help: Settings._alwaysBlockHelp,
 			default: 'everywhere',
 			extra: 1
@@ -322,14 +336,14 @@ Settings.settings = {
 		showPlaceholderimage: {
 			label: 'Show a placeholder for blocked images',
 			setting: true,
-			if_setting: ['enableimage', true],
+			if_setting: { enableimage: true },
 			default: true,
 			extra: 1
 		},
 		alwaysBlockimage: {
 			label: 'Automatically block images from:',
 			setting: Settings._alwaysBlock.slice(0),
-			if_setting: ['enableimage', true],
+			if_setting: { enableimage: true },
 			help: Settings._alwaysBlockHelp,
 			default: 'nowhere',
 			extra: 1
@@ -357,14 +371,14 @@ Settings.settings = {
 			setting: true,
 			label: 'Create a snapshot when rules are modified',
 			extra: 1,
-			if_setting: ['enableSnapshots', true]
+			if_setting: { enableSnapshots: true }
 		},
 		snapshotIgnoreTemporaryRules: {
 			label: 'Ignore temporary rules when creating new snapshots',
 			setting: true,
 			default: false,
 			extra: 1,
-			if_setting: ['enableSnapshots', true]
+			if_setting: { enableSnapshots: true }
 		},
 		snapshotsLimit: {
 			default: 15,
@@ -374,7 +388,7 @@ Settings.settings = {
 			extra: 1,
 			min: 1,
 			max: 999,
-			if_setting: ['enableSnapshots', true]
+			if_setting: { enableSnapshots: true }
 		},
 	},
 	keyboard: {
@@ -532,7 +546,7 @@ Settings.settings = {
 			setting: 'Convert Rules',
 			divider: 1,
 			help: 'convertRules help',
-			if_setting: ['allowDisablingSimplifiedRules', true]
+			if_setting: { allowDisablingSimplifiedRules: true }
 		},
 		createBackup: {
 			label: 'Create a full backup:',

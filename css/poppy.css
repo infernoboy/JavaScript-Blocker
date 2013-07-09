@@ -99,7 +99,7 @@
 	.rule-input {
 		height: 16px;
 		width: 460px;
-		padding: 2px 3px 3px;
+		padding: 2px 3px 3px 3px;
 		margin-right: 3px;
 		margin-bottom: -7px;
 		overflow-x: scroll;
@@ -115,10 +115,7 @@
 				float: left;
 			}
 		body.simple .poppy #rule-input {
-			width: 360px;
-		}
-		body.simplified .poppy #rule-input {
-			width: 305px;
+			width: 300px;
 		}
 		body.windows .poppy #rule-input {
 			float: left !important;

@@ -352,7 +352,6 @@ JB.updater = function () {
 					self.updater();
 				});
 			}, null, null, true);
-
 		break;
 
 		case v < 151: // 3.2.9
@@ -364,9 +363,76 @@ JB.updater = function () {
 
 			JB.rules.easylist();
 
-			//self.installedBundle = 151;
+			self.installedBundle = 151;
 
-			self.donate();
+			self.updater();
+		break;
+
+		case v < 156: // 3.3.0
+			// Repairs a bug where blacklist/whitelist rules were being added to a user's custom rule set.
+
+			new Poppy($(this.popover.body).width() / 2, 0, [
+				'<p class="misc-info"><a class="outside" href="http://javascript-blocker.toggleable.com/change-log/330/">Update 3.3.0</a></p>',
+				'<p><b>Imporant Fix:</b> Repairs rules to prevent Safari from hanging when loading the rule list.</p>',
+				'<p><b>New:</b> Collapsing the allowed or blocked item lists will now expand the width the other column. You can ',
+					'adjust this feature from the <a href="', ExtensionURL('settings.html#for-ui'), '" class="outside"><b>User Interface</b> settings</a>.',
+				'<p><b>New:</b> You can now add regular expression rules directly from the main window even with expert features disabled. ',
+					'To do this, click the number next to a blocked/allowed item to temporarily switch the view to expert mode. Close and ',
+					'reopen the popover to switch back to simple view. A separate rule set is <b>not</b> required when adding a regular ',
+					'expression rule in this manner. You will still need to have unlocked all of JavaScript Blocker\'s features for this ',
+					'to work.',
+				'</p>',
+				'<p>If you want the classic list of items back, uncheck <b>Temporarily switch to expert mode when clicked</b> in the ',
+				'<a href="', ExtensionURL('settings.html#for-ui'), '" class="outside"><b>User Interface</b> settings</a>.</p>',
+				'<p>',
+					'<input type="button" id="rawr-ok" value="', _('Continue'), '" /> ',
+				'</p>'
+			].join(''), function () {
+				$$('#rawr-ok').click(function () {
+					var sr = Settings.getItem('SimpleRules'),
+							cr = Settings.getItem('Rules'),
+							simple_rules = sr ? JSON.parse(sr) : self.rules.data_types,
+							complex_rules = cr ? JSON.parse(cr) : self.rules.data_types,
+							simple_rules = $.extend(self.rules.data_types, simple_rules),
+							complex_rules = $.extend(self.rules.data_types, complex_rules),
+							kind, domain, rule, ref;
+
+					for (kind in self.rules.data_types) {
+						for (domain in simple_rules[kind]) {
+							for (rule in simple_rules[kind][domain]) {
+								ref =  simple_rules[kind][domain][rule];
+
+								if (ref[0] === 4 || ref[0] === 5)
+									delete simple_rules[kind][domain][rule];
+							}
+
+							if ($.isEmptyObject(simple_rules[kind][domain]))
+								delete simple_rules[kind][domain];
+						}
+
+						for (domain in complex_rules[kind]) {
+							for (rule in complex_rules[kind][domain]) {
+								ref =  complex_rules[kind][domain][rule];
+
+								if (ref[0] === 4 || ref[0] === 3)
+									delete complex_rules[kind][domain][rule];
+							}
+
+							if ($.isEmptyObject(complex_rules[kind][domain]))
+								delete complex_rules[kind][domain];
+						}
+					}
+
+					self.rules.reload();
+
+					Settings.setItem('SimpleRules', JSON.stringify(simple_rules));
+					Settings.setItem('Rules', JSON.stringify(complex_rules));
+
+					// self.installedBundle = 156;
+
+					self.donate();
+				});
+			}, null, null, true);
 		break;
 
 		case v < this.bundleid:
