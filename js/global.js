@@ -231,9 +231,12 @@ var Template = {
 
 			for (var host in this.caches.rule_actions[key]) {
 				for (var action_item in this.caches.rule_actions[key][host]) {
-					if (this.caches.rule_actions[key][host][action_item].last_accessed < (+new Date() - 1000 * 60 * 30))
+					if (this.caches.rule_actions[key][host][action_item].access < (+new Date() - 1000 * 60 * 20))
 						delete this.caches.rule_actions[key][host][action_item];
 				}
+
+				if ($.isEmptyObject(this.caches.rule_actions[key][host]))
+					delete this.caches.rule_actions[key][host];
 			}
 		}
 		
@@ -281,10 +284,10 @@ var Template = {
 
 		this._temporaryExpertMode = v;
 
+		$(this.popover.body).toggleClass('simple', this.simpleMode && !v);
+
 		Popover.object().width = this.simpleMode && !v ? 460 : 560;
 		Popover.object().height = this.simpleMode && !v ? 350 : 400;
-
-		$(this.popover.body).toggleClass('simple', this.simpleMode && !v);
 
 		if (prev !== v)
 			this.utils.timer.timeout('readjust_columns', function (self) {
@@ -1060,7 +1063,7 @@ var Template = {
 
 			this.using_snapshot = 0;
 
-			if (parseInt(id, 10)) {
+			if (parseInt(id, 10)) {				
 				var snapshot = this.snapshots.load(id);
 
 				if (snapshot) {
@@ -1352,8 +1355,8 @@ var Template = {
 				delete this.cache_nowlbl[kind][d];
 			}
 		},
-		easylist: function () {
-			var self = this, map = { '5': 'whitelist', '4': 'blacklist' },
+		easylist: function (cb) {
+			var self = this, map = { '5': 'whitelist', '4': 'blacklist' }, cb = cb || $.noop,
 					processList = function (list) {
 				var def = {}, split = list.split(/\n/), firstTwo = function (str) { return str[0] + str[1]; },
 						type_map = { script: 'script', image: 'image', object: 'embed' };
@@ -1371,6 +1374,8 @@ var Template = {
 
 					if ($check[1]) {
 						var args = $check[1].split(',');
+
+						if (~args.indexOf('xmlhttprequest')) return;
 
 						for (var z = 0; z < args.length; z++) {
 							if (args[z].match(/^domain=/)) domains = args[z].substr(7).split('|').map(function (v) { return '.' + v; });
@@ -1450,6 +1455,7 @@ var Template = {
 				Settings.setItem('EasyPrivacy', easyprivacy);
 
 				fromSettings('EasyPrivacy');
+
 				$.ajax({
 					url: 'https://easylist-downloads.adblockplus.org/easylist.txt',
 					async: false
@@ -1463,6 +1469,8 @@ var Template = {
 						Settings.setItem('alwaysBlockscript', 'nowhere');
 						Settings.setItem('alwaysBlockframe', 'nowhere');
 					}
+
+					cb();
 				}).error(function () {
 					fromSettings('EasyList');
 				});
@@ -1516,7 +1524,7 @@ var Template = {
 
 			this.caches.rule_actions[kind][host][item] = {
 				action: action,
-				last_accessed: +new Date()
+				access: +new Date()
 			};
 		},
 		allowed: function (message) {
@@ -1531,7 +1539,7 @@ var Template = {
 					domains = this.for_domain(kind, host), action_cached = this.via_action_cache(kind, host, message[2]);
 
 			if (action_cached) {
-				action_cached.last_accessed = +new Date();
+				action_cached.access = +new Date();
 
 				return action_cached.action;
 			}
@@ -1539,7 +1547,7 @@ var Template = {
 			var domain, rule,
 					alwaysFrom = Settings.getItem('alwaysBlock' + kind) || Settings.getItem('alwaysBlockscript'),
 					hider = ~kind.indexOf('hide_'), ignoreBL = Settings.getItem('ignoreBlacklist'), ignoreWL = Settings.getItem('ignoreWhitelist'),
-					sim = this.simplified,
+					sim = this.simplified || JB.temporaryExpertMode,
 					catch_wl = null;
 
 			domainFor:
@@ -1667,17 +1675,74 @@ var Template = {
 
 			return this.for_domain(kind, domain, one, hide_wlbl);
 		},
+		// replace_map: {
+		// 	'$HTTPS': function () {
+		// 		var v = JB.utils.escape_regexp(this.proto);
+
+		// 		return 'https' + (v === 'https' ? '' : '?');
+		// 	},
+		// 	'$PRIMARY_HOST': function () {
+		// 		var v = JB.utils.escape_regexp(this.host_parts[this.host_parts.length - 2]);
+
+		// 		return '(([^\\/]+\\.)?' + v + ')';
+		// 	},
+		// 	'$NOT_PRIMARY_HOST': function () {
+		// 		var v = JB.utils.escape_regexp(this.host_parts[this.host_parts.length - 2]);
+
+		// 		return '((?!([^\\/]+\\.)?' + v + ').)*';
+		// 	},
+		// 	'$HOST': function () {
+		// 		var v = JB.utils.escape_regexp(this.host_parts[0]);
+
+		// 		return v;
+		// 	},
+		// 	'$NOT_HOST': function () {
+		// 		var v = JB.utils.escape_regexp(this.host_parts[0]);
+
+		// 		return '((?!' + v + ').)*';
+		// 	},
+		// },
+		// match: function (kind, rule, url, simplified, host_url) {
+		// 	if (rule[0] !== '^' && simplified) {
+		// 		var rrule = this.with_protos(rule), parts = this.utils.domain_parts(this.utils.active_host(url));
+
+		// 		if (rrule.protos && !~rrule.protos.indexOf(this.utils.active_protocol(url))) return 0;
+
+		// 		if ((~kind.indexOf('special') && rrule.rule === url) ||
+		// 				(rrule.rule.indexOf('.') === 0 && ~parts.indexOf(rrule.rule.substr(1))) || 
+		// 				(parts[0] === rrule.rule))
+		// 			return 1;
+		// 		return 0;
+		// 	}
+
+		// 	if (host_url && host_url !== '.*') {
+		// 		var parts = this.utils.domain_parts(this.utils.active_host(host_url)),
+		// 				proto = this.utils.active_protocol(host_url);
+
+		// 		for (var key in this.replace_map)
+		// 			rule = rule.replace(key, this.replace_map[key].bind({
+		// 				host_parts: parts,
+		// 				proto: proto
+		// 			}));
+		// 	}
+
+		// 	var ref, matcher = (ref = this.caches.rule_regexp[rule]) ? ref : this.caches.rule_regexp[rule] = new RegExp(rule, 'i');
+
+		// 	try {
+		// 		return matcher.test(url);
+		// 	} catch (e) {
+		// 		console.error('Error:', rule)
+		// 	}
+		// },
 		match: function (kind, rule, url, simplified) {
 			if (rule[0] !== '^' && simplified) {
 				var rrule = this.with_protos(rule), parts = this.utils.domain_parts(this.utils.active_host(url));
 
 				if (rrule.protos && !~rrule.protos.indexOf(this.utils.active_protocol(url))) return 0;
 
-				if ((~kind.indexOf('special') && rrule.rule === url) ||
+				return ((~kind.indexOf('special') && rrule.rule === url) ||
 						(rrule.rule.indexOf('.') === 0 && ~parts.indexOf(rrule.rule.substr(1))) || 
 						(parts[0] === rrule.rule))
-					return 1;
-				return 0;
 			}
 
 			var ref, matcher = (ref = this.caches.rule_regexp[rule]) ? ref : this.caches.rule_regexp[rule] = new RegExp(rule, 'i');
@@ -1689,7 +1754,7 @@ var Template = {
 			}
 		},
 		with_protos: function (rule) {
-			if (!this.simplified || rule.charAt(0) === '^') {
+			if (this.which === 'Rules' || rule.charAt(0) === '^') {
 				return {
 					rule: rule,
 					protos: false
@@ -1726,7 +1791,7 @@ var Template = {
 			
 				rules = new_rules;
 			}
-		
+
 			this.recache(kind, domain);
 
 			this.rules[kind][domain] = rules[domain];
@@ -1766,7 +1831,7 @@ var Template = {
 
 					if ((rule[1][0] > 1 && rule[1][0] < 4) || rule[1][0] < 0) {
 						this.rules[kind][domain][rule[0]][0] *= -1;
-						this.rules[kind][domain][rule[0]][1] = rule[1][0] >= 1;
+						this.rules[kind][domain][rule[0]][1] = rule[1][0] < 0;
 					} else if (rule[1][0] > -1)
 						this.remove(kind, domain, rule[0]);
 				}
@@ -1871,7 +1936,7 @@ var Template = {
 			$$('#edit-domains').removeClass('edit-mode');
 
 			if (this.using_snapshot)
-				$$('.snapshot-info').show().data('id', this.using_snapshot);
+				$$('.snapshot-info').show();
 
 			for (var kind in this.data_types) {
 				if (!$$('#head-' + kind + '-rules').length)
@@ -2157,14 +2222,12 @@ var Template = {
 		var expanded = $$('.column.expanded'), id = expanded.attr('id');
 
 		if (expanded.length)
-			expanded.find(buttons).show(150 * this.speedMultiplier);
+			expanded.find(buttons).show(200 * this.speedMultiplier);
 
 		if (collapsed.length === 2 || collapsed.length === 0)
-			$$(buttons).show(150 * this.speedMultiplier);
-		else if (collapsed.length === 1)
-			collapsed.find(buttons).hide(150 * this.speedMultiplier);
+			$$(buttons).show(200 * this.speedMultiplier);
 		else
-			collapsed.find(buttons).hide(150 * this.speedMultiplier);
+			collapsed.find(buttons).hide(200 * this.speedMultiplier);
 
 		$$('#allowed-blocked-columns').removeClass('blocked-column-expanded allowed-column-expanded none-expanded').addClass((id || 'none') + '-expanded');
 	},
@@ -2823,7 +2886,7 @@ var Template = {
 						li: $(this).parent(),
 						domain: self.host,
 						is_new: 1,
-						header: _('Adding a Rule For {1}', [Template.create('domain_picker', { page_parts: page_parts, no_label: true })])
+						header: _('Adding a ' + lid.kind + ' Rule For {1}', [Template.create('domain_picker', { page_parts: page_parts, no_label: true })])
 				}, self),
 				matches = self.rules.matching_URLs(li.data('kind'), self.host, script, blocked);
 
@@ -3372,6 +3435,8 @@ var Template = {
 		}).on('click', '#rules-list-back', function () {
 			$$('.some-list, .pending').removeClass('some-list pending');
 
+			self.popover_current = null;
+
 			Tabs.messageActive('updatePopoverNow');
 
 			var r = $$('#rules-list:not(.zoom-window-animating)');
@@ -3881,6 +3946,8 @@ var Template = {
 				self.temporaryExpertMode = true;
 
 				self.utils.timer.timeout('switch_to_expert', function () {
+					self.popover_current = null;
+
 					Tabs.messageActive('updatePopoverNow');
 				}, 10);
 
@@ -3959,7 +4026,8 @@ var Template = {
 							$$('#rules-list').addClass('zoom-window-hidden')
 
 							var compare = self.rules.snapshots.compare(id, self.rules.current_rules), dir = this.getAttribute('data-type'), mes,
-									cache_id = self.rules.snapshots.add(compare[dir], 1, 'Comparison Cache (' + +new Date() + ')');
+									compare = $.extend(self.rules.data_types, compare[dir]),
+									cache_id = self.rules.snapshots.add(compare, 1, 'Comparison Cache ' + +new Date());
 
 							self.rules.use_snapshot(cache_id);
 
@@ -4043,6 +4111,8 @@ var Template = {
 					kind = split[1],
 					me = $(this), off = me.offset(), left = event.pageX, top = off.top + 12,
 					page_parts = self.utils.domain_parts(self.host);
+
+			if (self.rules.using_snapshot) return new Poppy(event.pageX, off.top + 12, _('Snapshot in use'));
 
 			new Poppy(left, top, [
 				'<p class="misc-info">', _((allowed ? 'Allowed' : 'Blocked') + ' ' + kind + 's'), '</p>',
@@ -4228,8 +4298,11 @@ var Template = {
 				$('.kind-header', ul).removeClass('visible');
 			}
 		}
-	},	
+	},
+	popover_current: null,
 	do_update_popover: function (event, index, badge_only) {
+		var cached_jsblocker = (typeof index !== 'undefined') ? null : JSON.stringify(this.caches.jsblocker[event.message.href]);
+
 		this.utils.timer.remove('timeout', 'deactivate_toolbar');
 
 		if (!this.trial_active() && !this.donationVerified && !badge_only && this.trialStart > -1)
@@ -4255,9 +4328,21 @@ var Template = {
 		
 		this.busy = 1;
 
-		if (this.tab.url === event.target.url) {			
+		if (this.tab.url === event.target.url) {
+			var jsblocker = event.message;
+
+			if (cached_jsblocker === JSON.stringify(jsblocker) && this.popover_current === cached_jsblocker && !badge_only) {
+				this.busy = 0;
+
+				return;
+			}
+
+			if (badge_only && this.temporaryExpertMode) this.temporaryExpertMode = false;
+
+			if (!badge_only) this.popover_current = cached_jsblocker;
+
 			var frame_count = { blocked: 0, allowed: 0 }, frame,
-					count = { blocked: 0, allowed: 0, unblocked: 0 }, self = this, jsblocker = event.message, toolbarItem = null,
+					count = { blocked: 0, allowed: 0, unblocked: 0 }, self = this, toolbarItem = null,
 					frame_items = { blocked: 0, allowed: 0 }, main_items = { blocked: 0, allowed: 0 };
 					
 			this.caches.jsblocker[event.message.href] = jsblocker;
@@ -4585,6 +4670,14 @@ var Template = {
 				SettingStore.setItem('openSettings', false);
 			break;
 
+			case 'updateEasyLists':
+				Settings.setItem('EasyListLastUpdate', 0);
+
+				JB.rules.easylist(function () {
+					Tabs.messageActive('easyListsUpdated');
+				});
+			break;
+
 			case 'updatePopover':
 				Tabs.active(function (tab) {
 					if (tab[0].url !== event.message.href ||
@@ -4614,9 +4707,10 @@ var Template = {
 					
 				this.frames[event.target.url][event.message[0]] = event.message[1];
 			
-				try {
-					Tabs.messageActive('updatePopover', event.message);
-				} catch(e) {}
+				if (!this.tab || event.target.url === this.tab.url)
+					try {
+						Tabs.messageActive('updatePopover', event.message);
+					} catch(e) {}
 			break;
 
 			case 'updateFrameData':
@@ -4705,6 +4799,7 @@ var Template = {
 		var self = this;
 
 		if (event && ('type' in event) && event.type == 'popover') {
+			this.popover_current = null;
 			this.temporaryExpertMode = false;
 
 			/**
@@ -4727,8 +4822,6 @@ var Template = {
 
 			new Poppy();
 		} else if (!event || (event && ('type' in event) && ~['beforeNavigate', 'close'].indexOf(event.type))) {
-			new Poppy();
-			new Poppy(true);
 
 			if (event.target.url === event.url || event.type === 'close')
 				delete this.frames[event.target.url];
@@ -4743,8 +4836,12 @@ var Template = {
 			}, 100, this, event);
 			
 			try {
-				if (event.target === this.tab && event.type === 'beforeNavigate')
+				if (event.target === this.tab && event.type === 'beforeNavigate') {
+					new Poppy();
+					new Poppy(true);
+
 					ToolbarItems.badge(0);
+				}
 			} catch (e) {}
 		}
 		
@@ -4788,7 +4885,7 @@ var Template = {
 									self.clear_ui();
 							}, 300, self, url);
 						}, 300);
-					
+
 						Tabs.messageActive('updatePopover');
 					}
 				}
@@ -4974,6 +5071,8 @@ Events.addApplicationListener('command', JB.command, JB);
 Events.addApplicationListener('close', JB.open_popover, JB);
 Events.addApplicationListener('activate', function () {
 	JB.set_active_tab(function () {
+		JB.popover_current = null;
+
 		Tabs.messageActive('updatePopoverNow');
 
 		JB.utils.timer.timeout('deactivate_toolbar', function () {
@@ -4981,11 +5080,13 @@ Events.addApplicationListener('activate', function () {
 		}, 400);
 	});
 });
-Events.addApplicationListener('navigate', function () {
-	new Poppy();
-	new Poppy(true);
-
-	Tabs.messageActive('updatePopover');
+Events.addApplicationListener('navigate', function (event) {	
+	if (!JB.tab || event.target.url === JB.tab.url)	{
+		new Poppy();
+		new Poppy(true);
+		
+		Tabs.messageActive('updatePopover');
+	}
 }, JB);
 Events.addApplicationListener('beforeNavigate', JB.open_popover, JB);
 Events.addApplicationListener('beforeNavigate', JB.anonymize, JB);

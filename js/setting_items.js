@@ -530,7 +530,11 @@ Settings.settings = {
 		easy_list_last_update: {
 			id: 'easy-list-update',
 			label: '',
-			classes: 'description',
+			classes: 'description'
+		},
+		easyListNow: {
+			label: 'Update lists now:',
+			setting: 'Update Now',
 			divider: 1
 		},
 		resetSettings: {

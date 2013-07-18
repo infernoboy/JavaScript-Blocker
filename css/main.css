@@ -40,6 +40,10 @@
 	}
 }
 
+html {
+	background: #fff;
+}
+
 body {
 	font: -webkit-control;
 	font-size: 10pt;
@@ -51,7 +55,7 @@ body {
 	width: 560px;
 	color: #3A3A3A;
 	overflow: hidden;
-	background: -webkit-linear-gradient(top, rgba(255,255,255,.6), rgba(247,247,247,.6));
+	background: -webkit-linear-gradient(top, rgba(255,255,255,.9), rgba(241,241,241,.9));
 	text-rendering: optimizeLegibility;
 }
 	body.simple {
@@ -604,6 +608,14 @@ label {
 .urls-wrapper {
 	margin-left: -1px;
 }
+	.urls-wrapper .no-items {
+		text-align: center;
+		font-size: 12pt;
+		white-space: nowrap;
+	}
+		.urls-wrapper .no-items.hidden {
+			display: none;
+		}
 
 .info-container {
 	position: relative;

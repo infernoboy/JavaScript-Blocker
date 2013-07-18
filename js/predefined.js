@@ -49,6 +49,9 @@ $.extend(true, JB.rules.whitelist, {
 			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.js(\\?.*)?$': [5,false],
 			'^(jQuery UI, the JavaScript framework to make things pretty)?.*\\/jquery(\\-ui|\\.ui)\\.([^.\\/]+)?\\.js$': [5,false],
 			'^(reCAPTCHA)?https?:\\/\\/www\\.google\\.com\\/recaptcha\\/api\\/.*$': [5,false]
+		},
+		'.docs.google.com': {
+			'^https?:\/\/docs\.google\.com\/static\/.*$': [5,false]
 		}
 	},
 	embed: {

@@ -328,7 +328,7 @@ JB.updater = function () {
 				$$('#rawr-ok').click(function () {
 					self.installedBundle = 138;
 
-					$.post(self.baseURL + 'user.php', { id: Settings.getItem('installID') });
+					// $.post(self.baseURL + 'user.php', { id: Settings.getItem('installID') });
 
 					self.updater();
 				});

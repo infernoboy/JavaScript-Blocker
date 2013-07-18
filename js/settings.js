@@ -155,6 +155,13 @@ $.extend(Settings, {
 					alert(_('All rules have been removed.'), null, 1);
 				break;
 
+				case 'easyListNow':
+					this.disabled = true;
+					this.value = _('Updating...');
+
+					GlobalPage.message('updateEasyLists');
+				break;
+
 				case 'createBackup':
 					if (Settings.extras_active()) {
 						alert(_('Donation Required'), null, 1);
@@ -464,6 +471,10 @@ Events.addTabListener('message', function (event) {
 		} catch (e) {}
 
 	switch (event.name) {
+		case 'easyListsUpdated':
+			window.location.reload();
+		break;
+
 		case 'gotAllSettings':
 			for (var setting in Settings.items)
 				Settings._current[setting] = event.message[setting];

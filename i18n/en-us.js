@@ -167,6 +167,9 @@ Strings['en-us'] = {
 	/*--*/ 'hide_image Rules': 'Hide-Image Rules',
 	/*--*/ 'hide_special Rules': 'Hide-Other Rules',
 
+	'Nothing has been allowed.': 'No Items Allowed',
+	'Nothing has been blocked.': 'No Items Blocked',
+
 	'Remove': 'Remove',
 	'Allow': 'Allow',
 	'Allow/Hide': 'Allow or Hide',
@@ -630,7 +633,9 @@ Strings['en-us'] = {
 	'EXPERIMENTAL: Enable full referer blocking':
 		'EXPERIMENTAL: Enable full referer blocking',
 	'blockReferrer help': 'This will only work on GET requests in the main window. Inline frames will not ' +
-		'have referer headers blocked due to a limitation of Safari. This setting may cause a loop when trying to navigate back/forward.',
+		'have referer headers blocked due to a limitation of Safari. This setting may cause a loop when trying to navigate back/forward. ' +
+		'It may also break any extensions that modify link or tab behavior. If you are experiencing any unexpected behavior, turn this ' +
+		'feature off.',
 
 	// Short URL stuff - NEW
 	'Confirm short URL redirects before they occur': 'Show a confirmation dialog before navigating to a shortened URL',
@@ -643,6 +648,10 @@ Strings['en-us'] = {
 
 	'These actions are permanent and cannot be undone. If you have a verified donation, backup your rules before proceeding.':
 		'These actions are permanent and cannot be undone. If you can, create a backup before proceeding.',
+
+	'Update lists now:': 'Update lists now:',
+	'Update Now': 'Update Now',
+	'Updating...': 'Updating...',
 	
 	'Reset all settings to their default values:': 'Reset settings to their default values:', // label
 	'Reset Settings': 'Reset Settings', // button

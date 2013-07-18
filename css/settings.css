@@ -202,6 +202,9 @@ textarea {
 			color: #eee !important;
 			background-image: -webkit-linear-gradient(top, rgb(190,30,0), rgb(240,50,0));
 		}
+	input[disabled] {
+		opacity: 0.5;
+	}
 select {
 	position: relative;
 	width: 203px;

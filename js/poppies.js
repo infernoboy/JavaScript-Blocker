@@ -157,15 +157,15 @@ JB.poppies = {
 				$$('#poppy #rule-proto-input').val(protos instanceof Array ? protos.join(',') : undefined);
 
 				$$('#poppy').keypress(function (e) {
-						if (e.which === 13 || e.which === 3) {
-							$(this).unbind('keypress');
-							zoo.save.call(i);
-							e.preventDefault();
-						}
-					}).find('#rule-save').click(function () {
+					if (e.which === 13 || e.which === 3) {
+						$(this).unbind('keypress');
 						zoo.save.call(i);
-						$(this).unbind('click');
-					});
+						e.preventDefault();
+					}
+				}).find('#rule-save').click(function () {
+					zoo.save.call(i);
+					$(this).unbind('click');
+				});
 			}
 		};
 		
@@ -255,7 +255,8 @@ JB.poppies = {
 					var si = $$('.snapshot-info'),
 							id = si.data('id'),
 							compare = JB.rules.snapshots.compare(id, JB.rules.current_rules), dir = this.getAttribute('data-type'), mes,
-							cache_id = JB.rules.snapshots.add(compare[dir], 1, 'Comparison Cache (' + +new Date() + ')'),
+							compare = $.extend(JB.rules.data_types, compare[dir]),
+							cache_id = JB.rules.snapshots.add(compare, 1, 'Comparison Cache ' + +new Date()),
 							fun = function () {
 								JB.rules.show();
 								JB.rules.snapshots.remove(cache_id);
