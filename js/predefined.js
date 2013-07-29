@@ -41,12 +41,12 @@ var wld = {
 $.extend(true, JB.rules.whitelist, {
 	script: {
 		'.*': {
-			'^(Google hosted JavaScript frameworks)?https?:\\/\\/ajax\\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js(\\?.*)?$': [5,false],
-			'^(Google hosted JavaScript frameworks)?https?:\\/\\/www\\.google\\.com\\/jsapi(\\?.*)?$': [5,false],
-			'^(Prototype, the JavaScript framework)?.*\\/prototype\\.js(\\?.*)?$': [5,false],
-			'^(jQuery, the JavaScript framework)?.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js(\\?.*)?$': [5,false],
-			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.[^.\\/]+\\.js(\\?.*)?$': [5,false],
-			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.js(\\?.*)?$': [5,false],
+			'^(Google hosted JavaScript frameworks)?https?:\\/\\/ajax\\.googleapis\\.com\\/ajax\\/libs\\/.*\\.js((\\?|#)+.*)?$': [5,false],
+			'^(Google hosted JavaScript frameworks)?https?:\\/\\/www\\.google\\.com\\/jsapi((\\?|#)+.*)?$': [5,false],
+			'^(Prototype, the JavaScript framework)?.*\\/prototype\\.js((\\?|#)+.*)?$': [5,false],
+			'^(jQuery, the JavaScript framework)?.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js((\\?|#)+.*)?$': [5,false],
+			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.[^.\\/]+\\.js((\\?|#)+.*)?$': [5,false],
+			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.js((\\?|#)+.*)?$': [5,false],
 			'^(jQuery UI, the JavaScript framework to make things pretty)?.*\\/jquery(\\-ui|\\.ui)\\.([^.\\/]+)?\\.js$': [5,false],
 			'^(reCAPTCHA)?https?:\\/\\/www\\.google\\.com\\/recaptcha\\/api\\/.*$': [5,false]
 		},
@@ -86,10 +86,15 @@ wl['.amazon.co.uk'] = wl['.amazon.com'];
 
 /* ====================BLACKLIST===================== */
 
-$.extend(true, JB.rules.whitelist, {
+$.extend(true, JB.rules.blacklist, {
 	script: {
 		'.*': {
-			'^.*google\\.[^\\/]+\\/.*\\/plusone\\.js(\\?.*)?$': [4,false]
+			'^.*google\\.[^\\/]+\\/.*\\/plusone\\.js((\\?|#)+.*)?$': [4,false],
+			'^https?:\\/\\/platform\.stumbleupon\\.com\\/.*\\/widgets\\.js((\\?|#)+.*)?$': [4,false],
+			'^https?:\\/\\/widgets\\.getpocket\\.com\\/.*\\/btn.js((\\?|#)+.*)?$': [4,false],
+			'^https?:\\/\\/assets\\.pinterest\\.com\\/js\\/pinit.js((\\?|#)+.*)?$': [4,false],
+			'^https?:\\/\\/([^\\/]+\\.)?addthis\\.com\\/.*widget\\.js((\\?|#)+.*)?$': [4,false],
+			'^https?:\\/\\/([^\\/]+\\.)?sharethis\\.com\\/button.*((\\?|#)+.*)?$': [4,false]
 		}
 	}
 });
@@ -135,7 +140,9 @@ var bld = {
 			['Marketing', 'marketo\\.(net|com)'],
 			['Tracks users', 'coremetrics\\.com'],
 			['Tracks users', 'serving\\-sys\\.com'],
-			['Advertisements', 'insightexpressai\\.com']
+			['Advertisements', 'insightexpressai\\.com'],
+			['Advertisements', 'googletagservices.com'],
+			['Layers', 'live.spokenlayer.com']
 		]
 	},
 	frame: {

@@ -56,6 +56,12 @@ Settings.settings = {
 		},
 		isDisabled: {
 			default: false
+		},
+		custompreScripts: {
+			default: '{}'
+		},
+		custompostScripts: {
+			default: '{}'
 		}
 	},
 	ui: {
@@ -93,21 +99,6 @@ Settings.settings = {
 			help: 'showUnblocked help',
 			default: false
 		},
-		showPerHost: {
-			label: 'Show the number of items blocked or allowed for each host',
-			setting: true,
-			if_setting: { simpleMode: true },
-			help: 'showPerHost help',
-			default: true
-		},
-		temporaryExpertSwitch: {
-			label: 'Temporarily switch to expert mode when clicked',
-			setting: true,
-			if_setting: { showPerHost: true, simpleMode: true },
-			default: true,
-			extra: 1,
-			indent: 1
-		},
 		expandColumns: {
 			label: 'Resize blocked and allowed columns',
 			setting: true,
@@ -120,31 +111,16 @@ Settings.settings = {
 			if_setting: { expandColumns: true, simpleMode: true },
 			indent: 1
 		},
-		filterBarVisibility: {
-			label: 'Show visibility filter bar',
-			setting: true,
-			default: true,
-			header: 'Rule List Filter Bars'
-		},
-		filterBarState: {
-			label: 'Show state filter bar',
-			setting: true,
-			default: true
-		},
 		filterBarAge: {
 			label: 'Show "Not Used In Past" filter bar',
 			setting: true,
-			default: false
+			default: false,
+			header: 'Rule List Filter Bars'
 		},
 		filterBarUsed: {
 			label: 'Show "Used In Past" filter bar',
 			setting: true,
-			default: false
-		},
-		filterBarDomain: {
-			label: 'Show domain filter bar',
-			setting: true,
-			default: true,
+			default: false,
 			divider: 1
 		},
 		language: {
@@ -185,7 +161,14 @@ Settings.settings = {
 					GlobalPage.message('convertSimpleToExpert');
 				}
 			}
-		}
+		},
+		temporaryExpertSwitch: {
+			label: 'Temporarily switch to expert mode when clicked',
+			setting: true,
+			if_setting: { simpleMode: true },
+			default: true,
+			extra: 1
+		},
 	},
 	predefined: {
 		ignoreWhitelist: {
@@ -197,21 +180,6 @@ Settings.settings = {
 			label: 'Ignore blacklist rules',
 			setting: true,
 			default: false
-		},
-		saveAutomatic: {
-			label: 'Create temporary rules for automatic actions',
-			setting: true,
-			if_setting: { simpleMode: false },
-			default: true,
-			extra: 1
-		},
-		savePrivate: {
-			label: '…even if Private Browsing is enabled',
-			setting: true,
-			if_setting: { simpleMode: false },
-			default: false,
-			extra: 1,
-			indent: 1
 		},
 		secureOnly: {
 			label: 'Resources on secure sites must also be secure',
@@ -460,18 +428,15 @@ Settings.settings = {
 			divider: 1,
 			default: false,
 			extra: 1,
-			help: 'blockReferrer help'
+			help: 'blockReferrer help',
+			confirm: function () {
+				return confirm(_('blockReferrer help'));
+			}
 		},
 		enable_special_alert_dialogs: {
 			label: 'Display alert() messages within the webpage instead of a popup dialog',
 			setting: true,
 			description: 'Once any of these features are active,',
-			default: false,
-			extra: 1
-		},
-		enable_special_confirm_dialogs: {
-			label: 'Disable confirm() popup dialogs and confirm actions automatically',
-			setting: true,
 			default: false,
 			extra: 1
 		},
@@ -508,6 +473,39 @@ Settings.settings = {
 			prompt: 'Enter a custom zoom level to use.',
 			setting: [[0, 'Webpage default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%'], ['other', 'Other…']],
 			default: '0',
+			extra: 1,
+			divider: 1
+		},
+		switchCustomTab: {
+			classes: 'single-click',
+			label: 'Create a custom injected script:',
+			setting: 'Create Script...'
+		}
+	},
+	custom: {
+		enablecustom: {
+			description: 'custom helper description',
+			extras: 1,
+		},
+		customPreContainer: {
+			header: 'Before Load',
+			description: 'before load description',
+		},
+		createCustomPre: {
+			classes: 'single-click',
+			setting: 'Create Script',
+			label: '',
+			extra: 1,
+			divider: 1
+		},
+		customPostContainer: {
+			header: 'After Load',
+			description: 'after load description'
+		},
+		createCustomPost: {
+			classes: 'single-click',
+			setting: 'Create Script',
+			label: '',
 			extra: 1
 		}
 	},
@@ -557,13 +555,15 @@ Settings.settings = {
 			setting: 'Create Backup',
 			extras: 1,
 			extra: 1,
-			description: 'Full backup description'
+			description: 'Full backup description',
+			classes: 'single-click'
 		},
 		importBackup: {
 			label: 'Import a full backup:',
 			setting: 'Import Backup',
 			extra: 1,
-			divider: 1
+			divider: 1,
+			classes: 'single-click'
 		},
 		clearSnapshots: {
 			label: 'Delete all snapshots:',

@@ -142,9 +142,86 @@ $.extend(Settings, {
 
 			Settings.set_value(setting, (this.type === 'checkbox') ? (Settings.settings[group][setting].opposite ? !this.checked : this.checked) : this.value);
 		}).on('click', 'input[type="button"]', function () {
-			if (!self.confirm_click(this)) return false;
+			if (!$(this).parents('li').hasClass('single-click') && !self.confirm_click(this)) return false;
+
+			if (this.className === 'edit-custom') {
+				var li = $(this).parent(),
+						scripts = JSON.parse(Settings.current_value('custom' + li.data('kind') + 'Scripts')),
+						name = prompt(_('Enter a name for the script.'), li.data('name'));
+
+				name = name ? $.trim(name) : '';
+				name = name.substr(0, 100);
+
+				if (name.length) {
+					var edited = prompt(_('Enter the contents of the script.'), scripts[li.data('id')].func);
+
+					edited = edited ? $.trim(edited) : '';
+
+					if (edited.length) {
+						GlobalPage.message('editCustomScript', [li.data('kind'), li.data('id'), name, edited]);
+
+						window.location.reload();
+					}
+				}
+			} else if (this.className === 'remove-custom') {
+				var li = $(this).parent();
+
+				GlobalPage.message('removeCustomScript', [li.data('kind'), li.data('id')]);
+
+				window.location.reload();
+			}
 			
 			switch (this.id.substr('button-'.length)) {
+				case 'switchCustomTab':
+					$('#for-custom').click();
+				break;
+
+				case 'createCustomPre':
+					var name = prompt(_('Enter a name for the script.'));
+
+					name = name ? $.trim(name) : '';
+					name = name.substr(0, 100);
+
+					if (name.length) {
+						name = name.replace(/[<>]+/g, '_');
+
+						var script = prompt(_('Enter the contents of the script.'));
+						
+						script = script ? $.trim(script) : '';
+
+						if (script.length) {
+							var id = 'custompre_' + +new Date();
+
+							GlobalPage.message('createCustomScript', ['pre', id, name, script]);
+
+							window.location.reload();
+						}
+					}
+				break;
+
+				case 'createCustomPost':
+					var name = prompt(_('Enter a name for the script.'));
+
+					name = name ? $.trim(name) : '';
+					name = name.substr(0, 100);
+
+					if (name.length) {
+						name = name.replace(/[<>]+/g, '_');
+
+						var script = prompt(_('Enter the contents of the script.'));
+						
+						script = script ? $.trim(script) : '';
+
+						if (script.length) {
+							var id = 'custompost_' + +new Date();
+
+							GlobalPage.message('createCustomScript', ['post', id, name, script]);
+
+							window.location.reload();
+						}
+					}
+				break;
+
 				case 'resetSettings':
 					Settings.clear();
 				break;
@@ -444,6 +521,40 @@ $.extend(Settings, {
 			
 		if (setting_item.label === false)
 			li.remove();
+
+		if (setting === 'customPostContainer' || setting === 'customPreContainer') {
+			var pre = JSON.parse(Settings.current_value(setting === 'customPostContainer' ? 'custompostScripts' : 'custompreScripts')),
+					ul = $('.setting', li).html('<ul class="small" />').find('ul'), has = false;
+
+			for (var key in pre) {
+				has = true;
+				break;
+			}
+
+			$([
+				'<li class="custom-header">',
+					_((has ? '' : 'No ') + 'User Defined Scripts'),
+				'</li>'
+			].join('')).appendTo(ul);
+
+			for (var key in pre) {
+				var str = [
+					'<li>',
+						'<span>', pre[key].name, '</span> ',
+						'<input type="button" class="remove-custom" value="Remove" /> <input type="button" class="edit-custom" value="Edit" />',
+						'<div class="divider small"></div>',
+					'</li>'
+				].join('');
+
+				$(str).data({
+					name: pre[key].name,
+					kind: setting === 'customPostContainer' ? 'post' : 'pre',
+					id: key
+				}).appendTo(ul);
+			}
+
+			ul.find('.divider:last').remove();
+		}
 		
 		return li;
 	}
@@ -456,6 +567,7 @@ Settings.toolbar_items = {
 	snapshots: 'Snapshots',
 	keyboard: 'Keyboard',
 	other: 'Other Features',
+	custom: 'Custom',
 	about: 'About',
 	search: '<input type="search" id="search" incremental="incremental" placeholder="' + 'Search' + '" results="10" autosave="setting_search" />'
 };
@@ -546,9 +658,11 @@ function settingsReady() {
 		$('<li />').attr('id', 'for-' + tool)
 				.html('<div class="left"></div><span>' + (tool !== 'search' ? _(Settings.toolbar_items[tool]) : Settings.toolbar_items[tool]) + '</span><div class="right"></div>').appendTo('#toolbar');
 	}
-		
-	if (window.location.hash.length > 1) $(window.location.hash).click();
-	else if (window.localStorage.tab) $('#' + window.localStorage.tab).click();
+
+	var ref;
+	
+	if (window.location.hash.length > 1 && (ref = $(window.location.hash)).length) ref.click();
+	else if (window.localStorage.tab && (ref = $('#' + window.localStorage.tab)).length) ref.click();
 	else $('#for-about').click();
 
 	GlobalPage.message('aboutPage');

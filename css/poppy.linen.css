@@ -3,6 +3,8 @@
 }
 
 #poppy-arrow-settings,
+#poppy-arrow-settings-secondary,
+#poppy-arrow-settings-secondary.flip,
 #poppy-arrow-settings.flip {
 	background-image: url(../images/linen.png);
 	background-color: #DFE1E3;

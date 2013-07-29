@@ -6,51 +6,13 @@ JB.updater = function () {
 	if (v === this.bundleid && !this.isBeta) return false;
 	
 	switch (true) {
-		case v < 53: // Too Old
+		case v < 54:
 			this.clear_ui();
 			
 			new Poppy($(this.popover.body).width() / 2, 0, [
 				'<p class="misc-info">Too Old</p>',
 				'<p>You are using an extremely outdated version of JavaScript Blocker. You must uninstall it and reinstall the latest version manually; ',
 					'updating will not work.'].join(''), null, null, null, true);
-		break;
-
-		case v < 54: // 2.3.0
-			if (!('Rules' in window.localStorage)) {
-				window.localStorage.removeItem('CollapsedDomains');
-				window.localStorage.removeItem('InstallID');
-			
-				var ex = ['CollapsedDomains', 'ExamineUpdateTime', 'InstalledBundleID', 'LastRuleWasTemporary', 'ERROR', 'Rules',
-						'allowedIsCollapsed', 'blockedIsCollapsed', 'unblockedIsCollapsed'], key, n = {};
-			
-				for (key in window.localStorage) {
-					if (~ex.indexOf(key)) continue;
-				
-					try {
-						n[key] = JSON.parse(window.localStorage[key]);
-					} catch (e) {
-						continue;
-					} finally {
-						window.localStorage.removeItem(key);
-					}
-				}
-			
-				window.localStorage.setItem('Rules', JSON.stringify(n));
-			}
-			
-			new Poppy($(this.popover.body).width() / 2, 0, [
-				'<p class="misc-info">Update 2.3.0</p>',
-				'<p>You can now enable the use of a larger display font.</p>',
-				'<p>A new option will let you block some referer headers. This utilizes the \'rel="noreferrer"\' attribute of anchors.</p>',
-				'<p><b>Donators only:</b> A more full-featured referrer blocker, including the ability to block even server-side redirect ones.</p>',
-				'<p><b>Donators only:</b> You can now create a backup of your rules.</p>',
-				'<p>Donations can now be made via Bitcoin! Send to: 1C9in5xaFcwi7aYLuK1soZ8mvJBiEN9MNA</p>',
-				'<p><input type="button" id="rawr-continue" value="', _('Understood'), '" /></p>'].join(''), function () {
-					$$('#rawr-continue').click(function () {
-						self.installedBundle = 54;
-						self.updater();
-					});
-			}, null, null, true);
 		break;
 		
 		case v < 59:
@@ -428,7 +390,110 @@ JB.updater = function () {
 					Settings.setItem('SimpleRules', JSON.stringify(simple_rules));
 					Settings.setItem('Rules', JSON.stringify(complex_rules));
 
-					// self.installedBundle = 156;
+					self.installedBundle = 156;
+
+					self.updater();
+				});
+			}, null, null, true);
+		break;
+
+		case v < 160: // 3.3.3-beta
+			if (this.isBeta && !localStorage.getItem('noShow333')) {
+				new Poppy($(this.popover.body).width() / 2, 0, [
+					'<p class="misc-info">Update 3.3.3-beta</p>',
+					'<p>You are using a beta version of JavaScript Blocker and this update is to try and figure out why jQuery 2 ',
+						'breaks the settings page for some people.</p>',
+					'<p>Try loading the settings page. If it\'s blank, look at the error console. Copy whatever is there ',
+					 	'and either comment on the issue at ',
+						'<a class="outside" href="https://github.com/infernoboy/JavaScript-Blocker/issues/17">GitHub</a> or just ',
+						'<a class="outside" href="mailto:travis@toggleable.com?subject=JavaScript Blocker settings page issue&body=">e-mail me</a>. ',
+						'If nothing appears in the console and the settings page is still blank, let me know about that too.</p>',
+					'<p><a href="javascript:void(0);">How to show the error console</a><ol style="display:none;">',
+						'<li>Enable the develop menu from the Advanced tab of Safari preferences.</li>',
+						'<li>Open the JSB settings page by clicking Settings from the popover.</li>',
+						'<li>While the settings page is active, click the Develop menu in the menu bar and then Show Error Console.</li></ol></p>',
+					'<p><input type="checkbox" id="no-show" /> <label for="no-show">Don\'t show this again</label></p>',
+					'<p><input type="button" id="rawr-ok" value="', _('Understood'), '" /></p>'
+				].join(''), function () {
+					$$('#no-show').change(function () {
+						localStorage.setItem('noShow333', this.checked);
+					});
+
+					$$('#rawr-ok').click(function () {
+						new Poppy();
+					});
+
+					$$('#poppy p a').click(function () {
+						$$('#poppy ol').show();
+					});
+				});
+			} else {
+				self.installedBundle = 160;
+
+				self.updater();
+			}
+		break;
+
+		case v < 161: // 3.4.0
+			var l = $.extend({}, window.localStorage);
+			delete l.Rules;
+			delete l.CollapsedDomains;
+			
+			var e = $.extend({}, SettingStore.all());
+			delete e.Rules;
+			delete e.SimpleRules;
+			delete e.CollapsedDomains;
+			delete e.Snapshots;
+			delete e.RulesUseTracker;
+			delete e.SimpleRulesUseTracker;
+			delete e.EasyList;
+			delete e.EasyPrivacy;
+			e.donationVerified = !!e.donationVerified;
+
+			new Poppy($(this.popover.body).width() / 2, 0, [
+				'<p class="misc-info">Update 3.4.0</p>',
+				'<p><b>Important for expert users:</b> Automatic rule creation feature has been removed. Any existing temporary automatic rules ',
+					'will be deleted. Disabled automatic rules will be converted into normal rules.</p>',
+				'<p><b>New:</b> You can now create custom scripts to inject into webpages. This can be done from the ',
+					'<a class="outside" href="', ExtensionURL('settings.html#for-custom'), '">Custom tab</a> of the settings page.</p>',
+				'<p>Changed: The confirm dialogs other feature has been removed.</p>',
+				'<p><input type="checkbox" id="submit-usage" checked> <a id="show-usage">Submit anonymous usage statistics</a></p>',
+				'<textarea id="usage-stats" style="width:400px; height: 50px;display:none;" readonly>',
+					'Beta: ', self.isBeta, "\n\n",
+					'User Agent: ', navigator.userAgent, "\n\n",
+					'Settings: ', JSON.stringify(e), "\n\n",
+				'</textarea>',
+				'<p><input type="button" id="rawr-ok" value="', _('Understood'), '" /></p>'
+			].join(''), function () {
+				$$('#show-usage').click(function () {
+					$$('#usage-stats').toggle();
+				});
+
+				$$('#rawr-ok').click(function () {
+					var submit = $$('#submit-usage').is(':checked');
+
+					new Poppy();
+
+					for (var domain in self.rules.rules.special)
+						self.rules.remove('special', domain, 'confirm_dialogs');
+
+					if (!self.simpleMode)
+						for (var kind in self.rules.rules) {
+							for (var domain in self.rules.rules[kind]) {
+								for (var rule in self.rules.rules[kind][domain]) {
+									if (self.rules.rules[kind][domain][rule][0] === 2 || self.rules.rules[kind][domain][rule][0] === 3)
+										self.rules.remove(kind, domain, rule);
+									else if (self.rules.rules[kind][domain][rule][0] < 0) {
+										self.rules.remove(kind, domain, rule);
+										self.rules.add(kind, domain, rule, 1);
+									}
+								}
+							}
+						}
+
+					if (submit) $.post(self.baseURL + 'usage.php', { id: Settings.getItem('installID'), data: $$('#usage-stats').text() });
+
+					// self.installedBundle = 161;
 
 					self.donate();
 				});

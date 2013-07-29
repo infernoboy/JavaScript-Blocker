@@ -1,9 +1,12 @@
 if (window.safari !== undefined) {
 var SAFARI = true, CHROME = false,
 		ToolbarItems = {
-			badge: function (number) {
+			badge: function (number, tab) {
 				safari.extension.toolbarItems.forEach(function (toolbarItem) {
-					toolbarItem.badge = number;
+					if (!toolbarItem.browserWindow) return;
+					
+					if (tab === null || tab === toolbarItem.browserWindow.activeTab)
+						toolbarItem.badge = number;
 				});
 				return this;
 			},
@@ -129,7 +132,7 @@ var SAFARI = true, CHROME = false,
 		},
 
 		MessageTarget = function (event, name, data) {
-			event.target.page.dispatchMessage(name, data);
+			if (event.target.page) event.target.page.dispatchMessage(name, data);
 		},
 
 		PrivateBrowsing = function () {
@@ -143,4 +146,6 @@ var SAFARI = true, CHROME = false,
 		ResourceCanLoad = function (beforeLoad, data) {
 			return safari.self.tab.canLoad(beforeLoad, data);
 		}
-};
+} else {
+	console.error('safari object is unavailable in a frame on this page. This is a bug with Safari that has existed ever since extentions were available. If you\'re an extension developer, please file a bug report at http://bugreport.apple.com/ The issue occurs when a frame\'s source is not originally a document, such as when it is javascript:"". Changing the source of the frame causes the newly loaded webpage to not have access to the safari object.')
+}

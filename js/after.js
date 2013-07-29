@@ -1,5 +1,8 @@
 "use strict";
 
+var disabled = typeof beforeLoad === 'undefined' ? false : ResourceCanLoad(beforeLoad, ['disabled']);
+
+if (!disabled) {
 var special_actions = {
 	zoom: function (v) {
 		document.addEventListener('DOMContentLoaded', function () {
@@ -152,9 +155,6 @@ var special_actions = {
 
 		return window.alert;
 	},
-	confirm_dialogs: function () {
-		window.confirm = window.alert.prototype.jsblocker ? function (c) { window.alert(c, 'confirm()'); return true; } : function () { return true; };
-	},
 	contextmenu_overrides: function () {
 		window.jsblocker_stop_cm = function (e) {
 			e.stopImmediatePropagation();
@@ -239,14 +239,11 @@ var special_actions = {
 		};
 	}
 },
-non_injected_special_actions = {};
+custom_special_actions = {};
 
-special_actions.alert_dialogs.prototype.args = [window.allowedToLoad || 1];
-special_actions.autocomplete_disabler.prototype.args = [window.bv || 0];
-
-function appendScript(script, v) {
+var appendScript = function (script, v) {
 	var script_string = script.toString(), p = script_string.split(/\{/), s = document.createElement('script');
-	p[1] = "\n" + '"use strict";' + "\n// JSBlocker Injected Helper Script" + p[1];
+	p[1] = "\n" + '"use strict";' + "\n// JSBlocker Injected Helper Script\n" + p[1];
 	script_string = p.join('{');
 	s.id = 'jsblocker-' + (+new Date());
 	s.innerHTML = [
@@ -258,33 +255,67 @@ function appendScript(script, v) {
 	document.documentElement.appendChild(s);
 }
 
-/*appendScript(function (base) {
-	window.jsblockerBaseURI = base;
-}, ExtensionURL());*/
-
-function doSpecial(do_append, n, action) {
-	var v = if_setting('enable_special_' + n), m;
+var doSpecial = function (do_append, n, action) {
+	var custom = n.indexOf('custom') === 0,
+			v = enabled_specials[n].value || custom, m;
 
 	if (v === true || parseInt(v, 10) || (typeof v === 'string' && v.length)) {
-		if (!(m = safari.self.tab.canLoad(beforeLoad, ['special', n, jsblocker.href]))) {
+		if (!(m = enabled_specials[n].allowed)) {
 			jsblocker.blocked.special.all.push(n);
-				
-			if (do_append) appendScript(action, v);
-			else action(v);
+			
+			if (!custom) {
+				if (do_append) appendScript(action, v);
+				else action(v);
+			}
 		} else
-			if (m !== 84)
+			if (m !== 84) {
 				jsblocker.allowed.special.all.push(n);
+
+				if (custom) appendScript(action, true);
+			}
 	}
 }
 
-if (typeof beforeLoad === 'undefined' || !ResourceCanLoad(beforeLoad, ['disabled'])) {
-	if (typeof if_setting === 'function') {
-		for (var n in special_actions)
-			doSpecial(1, n, special_actions[n]);
+var parseSpecials = function (pre) {
+	if (pre) {
+		for (var z in special_actions) {
+			doSpecial(1, z, special_actions[z]);
+		}
+	}
 
-		for (var b in non_injected_special_actions)
-			doSpecial(0, b, non_injected_special_actions[b]);
+	for (var n in custom_special_actions) {
+		if (pre && ~n.indexOf('custompost')) continue;
+		if (!pre && !~n.indexOf('custompost')) continue;
+
+		doSpecial(1, n, "function () {\n" + custom_special_actions[n].func + "\n}");
 	}
 }
 
-appendScript(special_actions.history_fix);
+special_actions.alert_dialogs.prototype.args = [window.allowedToLoad || 1];
+special_actions.autocomplete_disabler.prototype.args = [window.bv || 0];
+
+if (typeof beforeLoad !== 'undefined' && !disabled) {
+	var customScripts = ResourceCanLoad(beforeLoad, ['customScripts']);
+
+	for (var cp in customScripts.pre)
+		custom_special_actions[cp] = customScripts.pre[cp];
+
+	for (var pc in customScripts.post)
+		custom_special_actions[pc] = customScripts.post[pc];
+
+	var specials = [];
+
+	for (var w in special_actions) specials.push(w);
+	for (var q in custom_special_actions) specials.push(q);
+
+	var enabled_specials = ResourceCanLoad(beforeLoad, ['enabledSpecials', specials, jsblocker.href]);
+
+	parseSpecials(true);
+
+	document.addEventListener('DOMContentLoaded', function () {
+		parseSpecials(false);
+	}, true);
+
+	appendScript(special_actions.history_fix);
+}
+}

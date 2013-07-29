@@ -129,6 +129,9 @@ body {
 	-webkit-mask-image: -webkit-linear-gradient(left, rgba(0,0,0,0), rgba(0,0,0,1) 40%, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
 	clear: both;
 }
+	.divider.small {
+		margin: 5px auto 0px;
+	}
 input,
 select,
 button,
@@ -168,7 +171,7 @@ textarea {
 		width: 108px;
 	}
 	input[type="search"] {
-		width: 150px;
+		width: 140px;
 		padding: 2px;
 		-webkit-appearance: none;
 		-webkit-border-radius: 10px;
@@ -184,7 +187,7 @@ textarea {
 		}
 		100% {
 			background-color: rgba(190,30,0,0.8);
-			box-shadow: 0 0 1px rgba(255,0,0,0.8);
+			box-shadow: 0 0 2px rgba(255,0,0,0.8);
 		}
 	}
 	input[type="button"].confirm-click,
@@ -221,6 +224,7 @@ select {
 	select:active {
 		background: url(../images/select-arrows.png) no-repeat right 1px, -webkit-linear-gradient(top, rgb(235,235,235), rgb(235,235,235) 43%, rgb(232,232,232) 43%, rgb(223,223,223) 60%, rgb(219,219,219));
 		background-size: 20px 16px, auto auto;
+		box-shadow: none;
 	}
 section {
 	display: none;
@@ -266,7 +270,8 @@ section {
 			padding-left: 16px;
 		}
 		section li.extras,
-		section li.setting-header {
+		section li.setting-header,
+		.custom-header {
 			margin-bottom: 6px;
 			margin-top: -10px;
 			color: rgba(0,0,0,0.2);
@@ -355,3 +360,37 @@ a {
 #requirements {
 	display: block;
 }
+
+ul.small {
+	margin-bottom: 4px;
+	margin-left: -16px;
+}
+
+ul.small span {
+	display: inline-block;
+	overflow: auto;
+	max-width: 250px;
+}
+
+ul.small li {
+	width: 383px;
+	margin-bottom: 2px;
+	text-indent: 0;
+}
+
+input.edit-custom, input.remove-custom {
+	float: right;
+	width: 60px;
+	margin-left: 4px;
+}
+
+.custom-header {
+	font-weight: bold;
+	font-size: 11pt;
+	margin-top: 3px;
+	margin-bottom: 8px !important;
+	color: rgba(0,0,0,0.5);
+}
+	body.large .custom-header {
+		font-size: 13pt;
+	}

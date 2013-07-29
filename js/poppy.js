@@ -71,11 +71,13 @@ Poppy.prototype = {
 	e: '#poppy',
 	c: '#poppy-content',
 	a: '#poppy-arrow',
+	t: '#poppy-arrow-settings',
 	init: function () {
 		if (this.secondary) {
 			this.e += '-secondary';
 			this.c += '-secondary';
 			this.a += '-secondary';
+			this.t += '-secondary';
 		}
 
 		this._time *= JB.speedMultiplier;
@@ -89,7 +91,7 @@ Poppy.prototype = {
 		if (this.removeOnly) {
 			$$('#modal').fadeOut(this._time * 1000);
 
-			$(this.e, this.p).css({
+			$(this.e, this.p).attr('id', this.e.substr(1) + '-hiding').css({
 				opacity: 0,
 				WebkitTransitionDuration: (this._time * .3) + 's'
 			}).one('webkitTransitionEnd', { s: this, c: onshowstart }, function (event) {
@@ -104,7 +106,7 @@ Poppy.prototype = {
 		} else {
 			if (!this.modal) $$('#modal').fadeOut(this._time * 1000);
 
-			$(this.e, this.p).css({
+			$(this.e, this.p).attr('id', this.e.substr(1) + '-hiding').css({
 				opacity: 0,
 				WebkitTransitionDuration: this._time + 's'
 			}).one('webkitTransitionEnd', function (event) {				
@@ -176,7 +178,7 @@ Poppy.prototype = {
 			}, [d.m]);
 		});
 
-		$$('#poppy-arrow-settings').toggleClass('flip', $(this.a, m).hasClass('flip'));
+		$$(this.t).toggleClass('flip', $(this.a, m).hasClass('flip'));
 
 		this.createArrow();
 	},
@@ -241,7 +243,7 @@ Poppy.prototype = {
 		return o;
 	},
 	createArrow: function () {
-		var set = $$('#poppy-arrow-settings'), com = window.getComputedStyle(set[0]),
+		var set = $$(this.t), com = window.getComputedStyle(set[0]),
 				shd = 'rgba(0,0,0,0.15)', bg = com.backgroundColor, brd = com.borderTopColor,
 				img = com.backgroundImage, ig, trans, trans_flip,
 				ctx = JB.popover.getCSSCanvasContext('2d', 'poppy-arrow', 30, 22),

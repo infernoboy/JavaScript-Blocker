@@ -5,6 +5,8 @@
 }
 
 #poppy-arrow-settings,
+#poppy-arrow-settings-secondary,
+#poppy-arrow-settings-secondary.flip,
 #poppy-arrow-settings.flip {
 	background-image: url(../images/texture.png);
 	background-size: 98px 98px;

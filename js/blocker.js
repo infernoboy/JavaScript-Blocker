@@ -10,7 +10,7 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 		random = +new Date(),
 		blank = window.location.href === 'about:blank',
 		allowedToLoad = 'al' + Math.random() * 1000000000000000000,
-		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '&about:blank:' + random) : false,
+		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '&about:blank') : false,
 		disabled = ResourceCanLoad(beforeLoad, ['disabled']);
 
 function pageHost(not_real) {
@@ -150,7 +150,8 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 			allowed: {},
 			blocked: {},
 			unblocked: {},
-			href: pageHost()
+			href: pageHost(),
+			host: blank ? 'blank' : window.location.host || 'blank'
 		}, readyTimeout = [null, null], lastAddedFrameData = false, jsonBlocker = false, zero = [], settings = {},
 		ph = function (kind, allowed, host, url) {
 			if (!allowed)
@@ -170,13 +171,14 @@ kinds.VIDEO = ['video', ph];
 kinds.IMG = ['image', ph];
 
 for (var kind in kinds) {
-	jsblocker.allowed[kinds[kind][0]] = { all: [], unique: [] }
-	jsblocker.blocked[kinds[kind][0]] = { all: [], unique: [] }
-	jsblocker.unblocked[kinds[kind][0]] = { all: [], unique: [] }
+	jsblocker.allowed[kinds[kind][0]] = { all: [], hosts: [] }
+	jsblocker.blocked[kinds[kind][0]] = { all: [], hosts: [] }
+	jsblocker.unblocked[kinds[kind][0]] = { all: [], hosts: [] }
 }
 
-if (window !== window.top && blank)
-	jsblocker.display = 'about:blank (' + random + ')';
+jsblocker.allowed.injected = { all: [], hosts: [] };
+jsblocker.blocked.injected = { all: [], hosts: [] };
+jsblocker.unblocked.injected = { all: [], hosts: [] };
 
 function zero_timeout(fn, args) {
 	zero.push([fn, args]);
@@ -255,7 +257,7 @@ function canLoad(event) {
 			
 			jsblocker[mo][kind].all.push([use_source, allo[1], !!event.unblockable]);
 		
-			if (!~jsblocker[mo][kind].unique.indexOf(host)) jsblocker[mo][kind].unique.push(host);
+			if (!~jsblocker[mo][kind].hosts.indexOf(host)) jsblocker[mo][kind].hosts.push(host);
 
 			if (kinds[node][1] && event.preventDefault) kinds[node][1].call(event.target, kind, isAllowed, host, use_source);
 		} else if ((!source || source.length === 0) && !event.target) {
@@ -306,10 +308,8 @@ function ready(event) {
 		}
 			
 		try {
-			if (window === window.top) {
-				GlobalPage.message('setActiveTab', jsblocker);
+			if (window === window.top)
 				GlobalPage.message('updatePopover', jsblocker);
-			}
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
@@ -330,28 +330,6 @@ function messageHandler(event) {
 		case 'reload': window.location.reload(); break;
 		case 'updatePopover': ready(event); break;
 		case 'updatePopoverNow': ready(event); break;
-		case 'validateFrame':
-			var validateFrame = function (f) {
-				for (var y = 0; y < f.length; y++) {
-					if (f[y].src === event.message) {
-						a.push(f[y].src);
-						break;
-					}
-				}
-			};
-
-			var a = [pageHost(), jsblocker], sr;
-			
-			validateFrame(document.getElementsByTagName('iframe'));
-			
-			if (a.length < 3) {
-				validateFrame(document.getElementsByTagName('frame'));
-				
-				if (a.length < 3) a.push(-1);
-			}
-				
-			GlobalPage.message('addFrameData', a);
-		break;
 
 		case 'setting':
 			settings[event.message[0]] = event.message[1];

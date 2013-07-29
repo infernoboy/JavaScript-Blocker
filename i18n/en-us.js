@@ -29,15 +29,15 @@ Strings['en-us'] = {
 	/*--*/ 'JavaScript Blocker': 'JavaScript Blocker',
 	/**--------*/
 	/**/
-	/**/ 'Page:': 'Page:', // Label for page selector
+	/**/ 'Page:': 'Host:', // Label for page selector
 	/***** Navigation on the right of the page selector.
-	/****/ 'Main page': 'Main page',
-	/****/ 'Prev. frame': 'Prev. frame',
-	/****/ 'Next frame': 'Next frame',
+	/****/ 'Main page': 'Main host',
+	/****/ 'Prev. frame': 'Prev. host',
+	/****/ 'Next frame': 'Next host',
 	/**/
 	/*** Displayed in the page selector as an optgroup.
-	/**/ 'Main Page': 'Main Page',
-	/**/ 'Inline Frame Pages': 'Inline Frame Pages',
+	/**/ 'Main Page': 'Main Host',
+	/**/ 'Inline Frame Pages': 'Inline Frame Hosts',
 	/**/
 	/*** Displayed in the page selector when a frame does not have a URL.
 	/**/ 'Custom Frame': '(Non-URL Based Frame)',
@@ -58,6 +58,7 @@ Strings['en-us'] = {
 	/**/
 	/*** Appears in a poppy when clicking the ? to the left of a Blocked or Allowed item when expert
 	/*** features are disabled.
+	/**/ 'No information available.': 'No information available.',
 	/**/ 'More Info': 'Safety Info',
 	/****/ 'Safety Information for {1}': 'Safety Information for {1}', // {1} = domain (www.google.com)
 	/**/ 'View script Source': 'View Script Source',
@@ -216,6 +217,7 @@ Strings['en-us'] = {
 	'Maybe Later': 'Maybe Later',
 	'I\'ve Donated!': 'I\'ve Contributed',
 	'Temporary rule': 'Make this a temporary rule',
+	'Options...': 'Options...',
 	'Use large font': 'Use large font',
 	'Allowed scripts': 'Allowed Scripts',
 	'Allowed frames': 'Allowed Frames',
@@ -231,8 +233,10 @@ Strings['en-us'] = {
 	'Blocked images': 'Blocked Images',
 	'Block These': 'Block These',
 	'Allow These': 'Allow These',
-	'Excluding whitelisted items': 'Excluding whitelisted items',
-	'Excluding blacklisted items': 'Excluding blacklisted items',
+	'Exclude whitelist': 'Exclude whitelisted items',
+	'Exclude blacklist': 'Exclude blacklisted items',
+
+	'This view contains outdated information. Scroll to the top to have it updated.': 'Outdated information might be displayed. Scroll to the top to have it updated.',
 
 	'scripts': 'scripts',
 	'frames': 'frames',
@@ -315,7 +319,7 @@ Strings['en-us'] = {
 	'{1} cannot function when its toolbar icon is hidden.': '{1} cannot function when its toolbar icon is hidden.',
 	'No rules exist for this domain.': 'No rules exist for this domain',
 	'Please click the flashing toolbar icon to continue': 'Your attention is required in order for JavaScript Blocker to continue functioning properly. ' +
-		'Please click the flashing toolbar icon to open the popover to continue.',
+		'Please click the flashing toolbar icon to open the popover for more details.',
 	/** /ERRORS-ISH **/
 	
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
@@ -441,6 +445,9 @@ Strings['en-us'] = {
 		'rel_referer:1': 'Referer information will be sent. Anchor tags are unchanged.',
 		'rel_referer:0': 'Referer information will try to be hidden. Anchor tags are modified with "rel=noreferrer".',
 
+	'Injected pre Script: {1}': 'Before Load: {1}',
+	'Injected post Script: {1}': 'After Load: {1}',
+
 	/** /SPECIALS **/
 			
 	/** DONATION STUFF **/
@@ -488,6 +495,7 @@ Strings['en-us'] = {
 	'User Interface': 'User Interface',
 	'Keyboard': 'Keyboard',
 	'Other Features': 'Other Features',
+	'Custom': 'Custom',
 	'Search': 'Search',
 	'About': 'About',
 	
@@ -504,36 +512,36 @@ Strings['en-us'] = {
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
 	'Hide donator-only features': 'Hide extra features',
 	'Show the number of items blocked or allowed for each host': 'Show number of items blocked/allowed per host',
-	'Temporarily switch to expert mode when clicked': 'Temporarily switch to expert view when clicked',
+	'Temporarily switch to expert mode when clicked': 'Temporarily switch to expert view upon clicking number of allowed/blocked hosts',
 	'Resize blocked and allowed columns': 'Resize blocked and allowed item lists when collapsed',
 	'Resize blocked and allowed columns only in expert view': 'only in expert view',
 	'Show blocked and allowed resources in page list': 'Show number of blocked and allowed resources in page selector',
 	'Show whitelist and blacklist rules in the rule list': 'Show whitelist and blacklist rules in the rule list',
 	'Theme:': 'Theme:',
-	'Enable expert features to block individual items instead of full hosts': 'Enable expert features to block individual items instead of full hosts',
+	'Enable expert features to block individual items instead of full hosts': 'Enable expert mode to allow/block items using regexp',
 	'A different rule set will be used in this mode.': 'A different rule set will be used in this mode. Would you like to convert your existing rules ' +
 		'to be compatible? Some rules may not be able to be converted automatically.',
 	'Ignore whitelist rules': 'Ignore whitelist rules',
 	'Ignore blacklist rules': 'Ignore blacklist rules',
 	'Resources on secure sites must also be secure': 'Resources on secure sites must also be secure<br/><span class="aside">This will only affect items that have a blocker enabled.</span>',
-	'Automatically allow resources from other extensions': 'Automatically allow resources from other extensions',
+	'Automatically allow resources from other extensions': 'Allow resources from other extensions',
 	'Prevent links on webpages from sending referer information': 'Prevent links on webpages from sending referer information',
-	'Automatically block scripts from:': 'Automatically block scripts from:',
+	'Automatically block scripts from:': 'Block scripts from:',
 	'Create temporary rules for automatic actions': 'Create temproary rules for automatic actions',
 	'…even if Private Browsing is enabled': 'even if Private Browsing is enabled',
 	'Enable script blocker': 'Enable script blocker',
 	'Enable frame blocker': 'Enable frame blocker',
 	'Show a placeholder for blocked frames': 'Show a placeholder for blocked frames',
-	'Automatically block frames from:': 'Automatically block frames from:',
+	'Automatically block frames from:': 'Block frames from:',
 	'Enable embed and object blocker': 'Enable embed and object blocker',
 	'Show a placeholder for blocked embeds and objects': 'Show a placeholder for blocked embeds & objects',
-	'Automatically block embeds and objects from:': 'Automatically block embeds & objects from:',
+	'Automatically block embeds and objects from:': 'Block embeds & objects from:',
 	'Enable video blocker': 'Enable video blocker',
 	'Show a placeholder for blocked videos': 'Show a placeholder for blocked videos',
-	'Automatically block videos from:': 'Automatically block videos from:',
+	'Automatically block videos from:': 'Block videos from:',
 	'Enable DOM image blocker': 'Enable DOM image blocker',
 	'Show a placeholder for blocked images': 'Show a placeholder for blocked images',
-	'Automatically block images from:': 'Automatically block images from:',
+	'Automatically block images from:': 'Block images from:',
 	'Display alert() messages within the webpage instead of a popup dialog': 'Display alert() messages within the webpage instead of a popup dialog<br/><span class="aside">Modal alert dialogs</span>', // alert() is a function in javascript; do not localize.
 	'Disable confirm() popup dialogs and confirm actions automatically': 'Disable confirm() popup dialogs and confirm actions automatically<br/><span class="aside">Confirm dialogs</span>', // confirm() is a function in javascript; do not localize.
 	'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items': 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items<br/><span class="aside">Context menu overrides</span>',
@@ -542,6 +550,24 @@ Strings['en-us'] = {
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
 	'Disabled mode persist across Safari restarts': 'Disabled mode persist across Safari restarts',
+
+	'Enter a name for the script.': 'Enter a name to use for the script. This will be displayed in the popover under allowed/blocked.',
+	'Enter the contents of the script.': 'Enter the contents of the script. You can use option+return to make a new line.',
+	'User Defined Scripts': 'User Defined Scripts',
+	'No User Defined Scripts': 'No User Defined Scripts',
+	'Create a custom injected script:': 'Create a custom injected script:',
+	'Create Script...': 'Create Script...',
+	'Create Script': 'Create Script',
+	'Before Load': 'Before Load',
+	'After Load': 'After Load',
+
+	'Enable custom injected scripts': 'Enable custom injected scripts',
+
+	'custom helper description': 'This section allows you to create custom scripts that are injected into a webpage. They will appear ' +
+		'under the <b>OTHER</b> section of the main window and rule list. Once a new script is created, you can create rules ' +
+		'to enable it on a per-site basis or create a rule to enable it everywhere.',
+	'before load description': 'These scripts will be injected into the webpage before the DOM and other scripts are loaded.',
+	'after load description': 'These scripts will be injected once the content of the webpage is ready to be manipulated.',
 
 	'The short URL—{1}—is redirecting you to: {2} {3} Do you want to continue?':
 		"The short URL—{1}—is redirecting you to:\n\n{2}\n{3}\n\nDo you want to continue?",
@@ -552,7 +578,7 @@ Strings['en-us'] = {
 	'Other…': 'Other…', // Generic option
 
 	// Quick Add
-	'Enable Quick Add—lets you add rules with a single click': 'Enable Quick Add—add rules with a single click',
+	'Enable Quick Add—lets you add rules with a single click': 'Enable Quick Add—allow/block items with one click',
 		'Quick-add rules are temporary': 'Quick Add rules are temporary',
 	'Create Quick Add rules for:': 'Create Quick Add rules for:',
 	'Same hostname as page host': 'Same domain as page host',
@@ -686,8 +712,6 @@ Strings['en-us'] = {
 	
 	'highlight help': 'Whitelist matches appear in green, blacklist matches in red, and standard rules in gray.',
 	'contextmenu_overrides help': 'Other extensions not being able to create custom menu items is an unfortunate side effect and cannot be prevented.',
-	'showPerHost help': 'With this option enabled, you will be able to click on the number next to the host to show each item associated with it. If the setting ' +
-		'under it is checked, the view will be changed to expert mode instead.',
 	'showUnblocked help': 'Some scripts on webpages are embedded in the page itself rather than loaded from an external resource. These scripts cannot be blocked and will always execute.',
 	'alwaysBlock help': [
 		'<p>If you visit "www.example.com"…</p>',

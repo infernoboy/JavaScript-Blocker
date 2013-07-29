@@ -89,10 +89,12 @@ header a {
 	font-size: 8pt;
 }
 
-.poppy #rule-input {
+.poppy #rule-input,
+.poppy #rule-options {
 	width: 435px;
 }
-	body.simple .poppy #rule-input {
+	body.simple .poppy #rule-input,
+	body.simple .poppy #rule-options {
 		width: 335px;
 	}
 

@@ -13,7 +13,6 @@ var globalPage = GlobalPage.page(),
 	setTimeout(function () {
 		globalPage.JB.bind_events();
 		globalPage.JB.load_language(true);
-		globalPage.JB.open_popover({ type: 'popover' });
 	}, 1000);
 	
 	var all = document.body.querySelectorAll('*');

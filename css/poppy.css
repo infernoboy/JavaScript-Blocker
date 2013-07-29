@@ -26,14 +26,16 @@
 	100% { -webkit-transform: translateX(0); }
 }
 
-#poppy-arrow-settings {
+#poppy-arrow-settings,
+#poppy-arrow-settings-secondary {
 	height: 30px;
 	width: 30px;
 	border: 1px solid;
 	background-color: rgba(244,244,244,.99);
 	border-color: rgba(160,160,160,0.75);
 }
-	#poppy-arrow-settings.flip {
+	#poppy-arrow-settings.flip,
+	#poppy-arrow-settings-secondary.flip {
 		background-color: rgba(255,255,255,.99);
 	}
 .poppy {
@@ -53,7 +55,7 @@
 	-webkit-transform: scale(0);
 	opacity: 0.25;
 }
-	#poppy-secondary {
+	#poppy-secondary, #poppy-secondary-hiding {
 		z-index: 10001;
 	}
 	.poppy.shake {

@@ -124,6 +124,7 @@ JB.poppies = {
 					'<p id="rules-temp">',
 						'<input id="rule-temporary" type="checkbox"', main.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
 						'<label for="rule-temporary">&thinsp;', _('Temporary rule'), '</label> ',
+						this.real_url ? ['<input type="button" id="rule-options-link" value="', _('Options...'), '" />'].join('') : '',
 					'</p>',
 					'<div class="inputs">',
 						main.rules.simplified && !~this.li.data('kind').indexOf('special') ? '<textarea id="rule-proto-input" wrap="off" placeholder="Protocol" class="rule-input"></textarea> ' : '',
@@ -155,6 +156,27 @@ JB.poppies = {
 						protos = zoo.main.rules.with_protos(zoo.me.url).protos;
 				
 				$$('#poppy #rule-proto-input').val(protos instanceof Array ? protos.join(',') : undefined);
+
+				$$('#poppy #rule-options-link').click(function (event) {
+					var off = $(this).offset(),
+							rules = [
+						zoo.main.rules.generate(RULE_FULL_HOST, zoo.me.real_url),
+						zoo.main.rules.generate(RULE_FULL_HOST + RULE_QUERY, zoo.me.real_url),
+						zoo.main.rules.generate(RULE_FULL_HOST + RULE_PATH, zoo.me.real_url),
+						zoo.main.rules.generate(RULE_TOP_HOST, zoo.me.real_url),
+						zoo.me.url
+					],	content = ['<ul id="rule-options">', '<li>', '<a href="javascript:void(0);">'];
+
+					content.push(rules.join('</a><div class="divider" style="margin-top:5px;"></div></li><li><a href="javascript:void(0);">'), '</a></li>', '</ul>');
+
+					new Poppy(off.left + $(this).outerWidth() / 2, off.top + 12, content.join(''), function () {
+						$$('#poppy-secondary a').click(function () {
+							new Poppy(true);
+
+							$$('#poppy #rule-input').val(this.innerText).focus();
+						})
+					}, null, null, null, true);
+				})
 
 				$$('#poppy').keypress(function (e) {
 					if (e.which === 13 || e.which === 3) {
