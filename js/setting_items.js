@@ -12,6 +12,9 @@ Settings.settings = {
 		enablespecial: {
 			default: true
 		},
+		enabledisable: {
+			default: true
+		},
 		enablehide_script: {
 			default: true
 		},
@@ -39,9 +42,6 @@ Settings.settings = {
 		trialStart: {
 			default: 0
 		},
-		allowDisablingSimplifiedRules: {
-			default: 0
-		},
 		Snapshots: {
 			default: '{}'
 		},
@@ -62,6 +62,15 @@ Settings.settings = {
 		},
 		custompostScripts: {
 			default: '{}'
+		},
+		unblockedSwitch: {
+			default: 1
+		},
+		popoverSimpleHeight: {
+			default: 350
+		},
+		popoverHeight: {
+			default: 400
 		}
 	},
 	ui: {
@@ -74,13 +83,6 @@ Settings.settings = {
 			label: 'Use a large font',
 			setting: true,
 			default: false
-		},
-		simplifiedRules: {
-			label: 'Use simplified rules',
-			setting: true,
-			if_setting: { allowDisablingSimplifiedRules: true },
-			help: 'simplifiedRules help',
-			default: true
 		},
 		highlight: {
 			label: 'Highlight items that matched a rule',
@@ -107,7 +109,7 @@ Settings.settings = {
 		noExpandSimple: {
 			label: 'Resize blocked and allowed columns only in expert view',
 			setting: true,
-			default: false,
+			default: true,
 			if_setting: { expandColumns: true, simpleMode: true },
 			indent: 1
 		},
@@ -139,20 +141,13 @@ Settings.settings = {
 			divider: 1,
 			default: 'blocked'
 		},
-		theme: {
-			label: 'Theme:',
-			setting: [['default', 'Default'], ['metal', 'Textured Metal'], ['lion', 'OS X Lion'], ['linen', 'Blue Linen']],
-			extras: 1,
-			default: 'default',
-			extra: 1,
-			divider: 1
-		},
 		simpleMode: {
 			label: 'Enable expert features to block individual items instead of full hosts',
 			setting: true,
 			opposite: 1,
 			default: true,
 			help: 'simpleMode help',
+			extras: 1,
 			extra: 1,
 			ask: {
 				checked: true,
@@ -193,13 +188,16 @@ Settings.settings = {
 			divider: 1
 		},
 		quickAdd: {
-			label: 'Enable Quick Add—lets you add rules with a single click',
+			label: 'Enable Quick Add',
+			default: true,
+			setting: true
+		},
+		quickAddSimpleOnly: {
+			label: 'only in simple view',
+			if_setting: { quickAdd: true },
+			indent: 1,
 			default: false,
-			setting: true,
-			help: 'quickAdd help',
-			confirm: function () {
-				return confirm(_('quickAdd help'));
-			}
+			setting: true
 		},
 		quickAddTemporary: {
 			label: 'Quick-add rules are temporary',
@@ -398,7 +396,7 @@ Settings.settings = {
 			label: 'Prevent links on webpages from sending referer information',
 			setting: true,
 			help: 'simpleReferrer help',
-			default: false
+			default: true
 		},
 		confirmShortURL: {
 			label: 'Confirm short URL redirects before they occur',
@@ -425,7 +423,6 @@ Settings.settings = {
 			label: 'EXPERIMENTAL: Enable full referer blocking',
 			setting: true,
 			extras: 1,
-			divider: 1,
 			default: false,
 			extra: 1,
 			help: 'blockReferrer help',
@@ -433,11 +430,20 @@ Settings.settings = {
 				return confirm(_('blockReferrer help'));
 			}
 		},
+		focusNewTab: {
+			label: 'When a new tab opens, make it active',
+			setting: true,
+			default: true,
+			extra: 1,
+			divider: 1,
+			indent: 1,
+			if_setting: { blockReferrer: true }
+		},
 		enable_special_alert_dialogs: {
 			label: 'Display alert() messages within the webpage instead of a popup dialog',
 			setting: true,
 			description: 'Once any of these features are active,',
-			default: false,
+			default: true,
 			extra: 1
 		},
 		enable_special_contextmenu_overrides: {
@@ -455,6 +461,12 @@ Settings.settings = {
 		},
 		enable_special_autocomplete_disabler: {
 			label: 'Prevent webpages from disabling autocomplete',
+			setting: true,
+			default: true,
+			extra: 1
+		},
+		enable_special_ajax_intercept: {
+			label: 'Show a prompt when an AJAX request tries to POST or GET information',
 			setting: true,
 			default: false,
 			extra: 1
@@ -479,7 +491,8 @@ Settings.settings = {
 		switchCustomTab: {
 			classes: 'single-click',
 			label: 'Create a custom injected script:',
-			setting: 'Create Script...'
+			setting: 'Create Script...',
+			extra: 1
 		}
 	},
 	custom: {
@@ -542,13 +555,13 @@ Settings.settings = {
 		removeRules: {
 			label: 'Remove all rules:',
 			setting: 'Remove Rules',
+			divider: 1
 		},
-		convertRules: {
-			label: 'Convert non-simplified rules:',
-			setting: 'Convert Rules',
-			divider: 1,
-			help: 'convertRules help',
-			if_setting: { allowDisablingSimplifiedRules: true }
+		showWelcome: {
+			label: 'Show welcome:',
+			setting: 'Show Welcome',
+			classes: 'single-click',
+			divider: 1
 		},
 		createBackup: {
 			label: 'Create a full backup:',
@@ -583,7 +596,7 @@ Settings.settings = {
 Settings.items = {};
 
 for (var section in Settings.settings) {
-	if (section === 'about') continue;
+	if (section === 'about' || section === 'welcome') continue;
 
 	for (var setting in Settings.settings[section])
 		Settings.items[setting] = {

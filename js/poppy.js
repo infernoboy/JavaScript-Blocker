@@ -17,6 +17,8 @@
  * @param {number|null|undefined} time Animation speed of popover in seconds
  */
 var Poppy = function (x, y, content, onshowstart, onshowend, time, modal, secondary) {
+	if (!Popover.visible()) return;
+
 	if (!ToolbarItems.visible()) {
 		if (BrowserWindows.all().length && !JB.toolbar_notified) {
 			JB.toolbar_notified = 1;
@@ -45,6 +47,7 @@ var Poppy = function (x, y, content, onshowstart, onshowend, time, modal, second
 	this.onshowend = (onshowend && typeof onshowend == 'function') ? onshowend : $.noop;
 	this.popover = Popover.window().document;
 	this.p = $(this.popover.body);
+	this.container = $$('#container')
 	this.secondary = !!secondary || x === true;
 	
 	this._time = typeof time === 'number' ? time : 0.22;
@@ -80,30 +83,34 @@ Poppy.prototype = {
 			this.t += '-secondary';
 		}
 
-		this._time *= JB.speedMultiplier;
+		if (this._time > 0.01)
+			this._time *= JB.speedMultiplier;
 
-		if ($(this.e, this.p).length)
-			return this.remove((this.removeOnly !== false) ? $.noop : this.create);
-				
-		return (this.removeOnly !== false) ? false : JB.utils.zero_timeout($.proxy(this.create, this));
+		return this.remove((this.removeOnly !== false) ? $.noop : this.create);
 	},
 	remove: function (onshowstart) {
 		if (this.removeOnly) {
 			$$('#modal').fadeOut(this._time * 1000);
 
-			$(this.e, this.p).attr('id', this.e.substr(1) + '-hiding').css({
-				opacity: 0,
-				WebkitTransitionDuration: (this._time * .3) + 's'
-			}).one('webkitTransitionEnd', { s: this, c: onshowstart }, function (event) {
-				var d = event.data;
-				
-				$(this).remove();
-				
-				JB.utils.zero_timeout($.proxy(d.c, d.s));
-				JB.utils.zero_timeout(d.s.onshowstart);
-				JB.utils.zero_timeout(d.s.onshowend);
-			});
-		} else {
+			if ($(this.e, this.p).length) {
+				$(this.e, this.p).attr('id', this.e.substr(1) + '-hiding').css({
+					opacity: 0,
+					WebkitTransitionDuration: (this._time * .3) + 's'
+				}).one('webkitTransitionEnd', { s: this, c: onshowstart }, function (event) {
+					var d = event.data;
+					
+					$(this).remove();
+					
+					JB.utils.zero_timeout($.proxy(d.c, d.s));
+					JB.utils.zero_timeout(d.s.onshowstart);
+					JB.utils.zero_timeout(d.s.onshowend);
+				});
+			} else {
+				JB.utils.zero_timeout(onshowstart);
+				JB.utils.zero_timeout(this.onshowstart);
+				JB.utils.zero_timeout(this.onshowend);
+			}
+		} else if ($(this.e, this.p).length) {
 			if (!this.modal) $$('#modal').fadeOut(this._time * 1000);
 
 			$(this.e, this.p).attr('id', this.e.substr(1) + '-hiding').css({
@@ -114,7 +121,11 @@ Poppy.prototype = {
 			});
 
 			JB.utils.zero_timeout(this.create.bind(this));
+		} else {
+			JB.utils.zero_timeout($.proxy(this.create, this));
 		}
+
+		onshowstart = undefined;
 	},
 	create: function () {		
 		var mo = $$('#modal'),
@@ -140,13 +151,13 @@ Poppy.prototype = {
 			
 		var points = this.calcPoints(), left;
 		
-		if (points.arrow.bottom == 'auto') $(this.a, m).addClass('flip');
+		$(this.a, m).toggleClass('flip', points.arrow.bottom === 'auto');
 		
 		m.css({
 			WebkitTransitionDuration: this._time + 's',
-			WebkitTransform: JB.speedMultiplier < 1 ? 'scale(1)' : 'scale(1.22)',
+			WebkitTransform: this._time < 0.01 ? 'scale(1)' : 'scale(1.22)',
 			WebkitTransformOrigin: (points.arrow.left + 15) + 'px ' + ((points.main.bottom === 'auto') ? '-5%' : '105%'),
-			opacity: JB.speedMultiplier < 1 ? 1 : 0.3,
+			opacity: this._time < 0.01 ? 1 : 0.3,
 			left: points.main.left,
 			bottom: points.main.bottom,
 			top: points.main.top,
@@ -181,6 +192,8 @@ Poppy.prototype = {
 		$$(this.t).toggleClass('flip', $(this.a, m).hasClass('flip'));
 
 		this.createArrow();
+
+		mo = eC = cC = aC = self = points = m = undefined;
 	},
 	calcPoints: function () {
 		var o = {
@@ -244,7 +257,7 @@ Poppy.prototype = {
 	},
 	createArrow: function () {
 		var set = $$(this.t), com = window.getComputedStyle(set[0]),
-				shd = 'rgba(0,0,0,0.15)', bg = com.backgroundColor, brd = com.borderTopColor,
+				shd = 'rgba(0,0,0,0.1)', bg = com.backgroundColor, brd = com.borderTopColor,
 				img = com.backgroundImage, ig, trans, trans_flip,
 				ctx = JB.popover.getCSSCanvasContext('2d', 'poppy-arrow', 30, 22),
 				ctx_flip = JB.popover.getCSSCanvasContext('2d', 'poppy-arrow-flip', 30, 22);
@@ -256,7 +269,7 @@ Poppy.prototype = {
 			ctx_flip.clearRect(0, 0, 30, 22)
 		
 		  ctx.shadowOffsetX = 0;
-		  ctx.shadowOffsetY = 3;
+		  ctx.shadowOffsetY = 1;
 		  ctx.shadowBlur = 9;
 		  ctx.shadowColor = shd;
 
@@ -273,13 +286,15 @@ Poppy.prototype = {
 			ctx.beginPath();
 			ctx.moveTo(3, 0);
 			ctx.lineTo(15, 12);
+			ctx.stroke();
+			ctx.beginPath()
 			ctx.moveTo(15, 12)
 			ctx.lineTo(27, 0);
-			ctx.closePath();
 			ctx.stroke();
+			ctx.closePath();
 
 		  ctx_flip.shadowOffsetX = 0;
-		  ctx_flip.shadowOffsetY = 3;
+		  ctx_flip.shadowOffsetY = 1;
 		  ctx_flip.shadowBlur = 9;
 		  ctx_flip.shadowColor = shd;
 
@@ -295,10 +310,12 @@ Poppy.prototype = {
 			ctx_flip.beginPath();
 			ctx_flip.moveTo(3, 22);
 			ctx_flip.lineTo(15, 10);
+			ctx_flip.stroke();
+			ctx_flip.beginPath();
 			ctx_flip.moveTo(15, 10);
 			ctx_flip.lineTo(27, 22);
-			ctx_flip.closePath();
 			ctx_flip.stroke();
+			ctx_flip.closePath();
 		}
 			
 		if (img) {
@@ -325,5 +342,7 @@ Poppy.prototype = {
 			ig.src = img;
 		} else
 			triangle();
+
+		ctx = ctx_flip = ig = undefined;
 	}
 }

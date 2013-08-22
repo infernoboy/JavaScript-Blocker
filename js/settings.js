@@ -183,8 +183,6 @@ $.extend(Settings, {
 					name = name.substr(0, 100);
 
 					if (name.length) {
-						name = name.replace(/[<>]+/g, '_');
-
 						var script = prompt(_('Enter the contents of the script.'));
 						
 						script = script ? $.trim(script) : '';
@@ -206,8 +204,6 @@ $.extend(Settings, {
 					name = name.substr(0, 100);
 
 					if (name.length) {
-						name = name.replace(/[<>]+/g, '_');
-
 						var script = prompt(_('Enter the contents of the script.'));
 						
 						script = script ? $.trim(script) : '';
@@ -224,6 +220,10 @@ $.extend(Settings, {
 
 				case 'resetSettings':
 					Settings.clear();
+				break;
+
+				case 'showWelcome':
+					$('#for-welcome').click();
 				break;
 				
 				case 'removeRules':
@@ -344,6 +344,8 @@ $.extend(Settings, {
 			else head.parent().show();
 			
 			ul.find('.extras:gt(0)').remove().end().find('.description').remove().end().find('.divider').remove();
+
+			if (val === 'welcome') $('#for-welcome').click();
 		}).keydown(function (e) {
 			if (e.which === 16) speedMultiplier = !Settings.current_value('animations') ? 0.001 : 20;
 		}).keyup(function (e) {
@@ -540,7 +542,7 @@ $.extend(Settings, {
 			for (var key in pre) {
 				var str = [
 					'<li>',
-						'<span>', pre[key].name, '</span> ',
+						'<span>', pre[key].name.replace(/&/g, '&amp;').replace(/</g, '&lt;'), '</span> ',
 						'<input type="button" class="remove-custom" value="Remove" /> <input type="button" class="edit-custom" value="Edit" />',
 						'<div class="divider small"></div>',
 					'</li>'
@@ -569,12 +571,13 @@ Settings.toolbar_items = {
 	other: 'Other Features',
 	custom: 'Custom',
 	about: 'About',
+	welcome: 'Show Welcome',
 	search: '<input type="search" id="search" incremental="incremental" placeholder="' + 'Search' + '" results="10" autosave="setting_search" />'
 };
 
 if (window == window.top) delete Settings.toolbar_items.close;
 
-appendScript(special_actions.alert_dialogs, true);
+appendScript(special_actions.alert_dialogs, 'alert_dialogs', true);
 
 Events.addTabListener('message', function (event) {
 	if (event.message) 
@@ -648,7 +651,7 @@ function settingsReady() {
 		$('<script />').attr('src', 'i18n/' + load_language + '.js').appendTo(document.head);
 	
 	for (section in Settings.settings)
-		if (section !== 'misc')
+		if (section !== 'misc' && section !== 'welcome')
 			$('<section />').attr('id', section).appendTo('#content').append('<ul class="settings"></ul>');
 	
 	for (setting in Settings.settings.about)

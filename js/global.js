@@ -17,9 +17,8 @@ var RULE_TOP_HOST = 1,
 		RULE_PATH = 4,
 		RULE_QUERY = 8,
 		RULE_HTTP = 16,
-		RULE_HTTPS = 32;
-
-var Template = {
+		RULE_HTTPS = 32,
+		Template = {
 			cache: { },
 			create: function(str, data) {
 				// Simple JavaScript Templating
@@ -50,6 +49,8 @@ var Template = {
 							.split("%>").join("p.push('")
 							.split("\r").join("\\'") +
 						"');return p.join('');");
+
+				str = undefined;
 	
 				return data ? fn(data) : fn;
 			}
@@ -99,24 +100,8 @@ var Template = {
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
 	longURL: 'http://api.longurl.org/v2/expand?user-agent=ToggleableJavaScriptBlocker&title=1&format=json&url=',
 	
-	set_theme: function (theme) {
+	set_theme: function () {
 		$('#main-large-style', this.popover.head).attr('href', Settings.getItem('largeFont') ? 'css/main.large.css' : '');
-		
-		if (!this.donationVerified) {
-			if (theme !== 'default') {
-				this.theme = 'default';
-				this.set_theme(this.theme);
-			}
-
-			return;
-		}
-		
-		var t = $('#poppy-theme-style', this.popover.head);
-		
-		if (!(new RegExp('\\.' + theme + '\\.')).test(t.attr('href'))) {
-			t.attr('href', 'css/poppy.' + theme + '.css');
-			$('#main-theme-style', this.popover.head).attr('href', 'css/main.' + theme + '.css');
-		}
 	},
 
 	donate: function () {
@@ -155,7 +140,7 @@ var Template = {
 		this.installedBundle = this.bundleid;		
 	},
 	load_language: function (css) {
-		function set_popover_css (self, load_language, f) {
+		function set_popover_css (self, load_language, css) {
 			if (self.popover && $$('#lang-css-' + load_language).length === 0) {
 				$('<link />').appendTo(self.popover.head).attr({
 						href: 'i18n/' + load_language + '.css',
@@ -164,21 +149,23 @@ var Template = {
 						id: 'lang-css-' + load_language,
 				}).addClass('language-css');
 			} else
-				self.utils.zero_timeout(f, [self, load_language, f]);
+				self.load_language(css);
 		}
 		
 		var load_language = (Settings.getItem('language') !== 'Automatic') ?
 				Settings.getItem('language') : window.navigator.language.toLowerCase();
 	
 		if (css)
-			this.utils.zero_timeout(set_popover_css, [this, load_language, set_popover_css]);
+			set_popover_css(this, load_language, css);
 		else if (load_language !== 'en-us' && !(load_language in Strings))
 			$.getScript('i18n/' + load_language + '.js', function (data, status) { });
+
+		css = undefined;
 	},
 	special_enabled: function (special) {
 		if (!this.donationVerified) return false;
 
-		if (special.indexOf('custom') === 0) return 1;
+		if (special.indexOf('customp') === 0) return 1;
 
 		var s = Settings.getItem('enable_special_' + special);
 
@@ -189,7 +176,7 @@ var Template = {
 
 		if (kind === 'special') {
 			for (var item in Settings.settings.other)
-				if ((~item.indexOf('enable_special_') || item.indexOf('custom') === 0) && this.special_enabled(item.substr('enable_special_'.length)))
+				if ((~item.indexOf('enable_special_') || item.indexOf('customp') === 0) && this.special_enabled(item.substr('enable_special_'.length)))
 					return true;
 
 			return false;
@@ -224,6 +211,8 @@ var Template = {
 		this.caches.domain_parts = {};
 
 		var use_tracker_cache = {};
+
+		new_frames = new_jsblocker = undefined;
 		
 		for (key in this.rules.data_types) {
 			use_tracker_cache[key] = [];
@@ -256,7 +245,7 @@ var Template = {
 
 			for (var kind in uc._tracked) {
 				for (var used in uc._tracked[kind])
-					if (!~use_tracker_cache[kind].indexOf(used))
+					if (!~utc[kind].indexOf(used))
 						delete uc._tracked[kind][used];
 
 				if ($.isEmptyObject(uc._tracked[kind])) delete uc._tracked[kind];
@@ -277,6 +266,8 @@ var Template = {
 
 			this.collapsedDomains(new_collapsed);
 		}
+
+		use_tracker_cache = new_collapsed = undefined;
 	},
 	isBeta: 0,
 	get speedMultiplier() {
@@ -297,21 +288,26 @@ var Template = {
 
 		$(this.popover.body).toggleClass('simple', this.simpleMode && !v);
 
-		this.utils.timer.timeout('set_tempexpert' + v.toString(), function (self) {
+		this.utils.timer.timeout('set_tempexpert' + v.toString(), function (self, prev, v) {
 			Popover.object().width = self.simpleMode && !v ? 460 : 560;
-			Popover.object().height = self.simpleMode && !v ? 350 : 400;
+			Popover.object().height = self.simpleMode && !v ? Settings.getItem('popoverSimpleHeight') : Settings.getItem('popoverHeight');
 
 			if (prev !== v)
 				self.utils.timer.timeout('readjust_columns', function (self) {
 					self.adjust_columns();
 				}, 500, [self]);
-		}, 120, [this]);
+		}, 120, [this, prev, v]);
+
+		v = undefined;
 	},
 	get disabled() {
 		return Settings.getItem('isDisabled');
 	},
 	set disabled(v) {
 		Settings.setItem('isDisabled', v);
+	},
+	useSimpleMode: function () {
+		return this.simpleMode && !this.temporaryExpertMode;
 	},
  	get simpleMode() {
 		return Settings.getItem('simpleMode');
@@ -327,12 +323,6 @@ var Template = {
 	},
 	get useAnimations() {
 		return Settings.getItem('animations');
-	},
-	set theme(value) {
-		Settings.setItem('theme', value);
-	},
-	get theme() {
-		return Settings.getItem('theme');
 	},
 	get busy() {
 		return $(this.popover.body).hasClass('busy');
@@ -397,8 +387,8 @@ var Template = {
 		return this.active_host($$('#page-list').val());
 	},
 	collapsed: function (k, v) {
-		if (v !== undefined) Settings.setItem(k + 'IsCollapsed', v ? 1 : 0);
-		else return Settings.getItem(k + 'IsCollapsed') == '1';
+		if (v !== undefined) Settings.setItem(k + 'Switch', v ? 1 : 0);
+		else return Settings.getItem(k + 'Switch') == '1';
 	},
 	collapsedDomains: function (v) {
 		if (!v) {
@@ -424,23 +414,23 @@ var Template = {
 		}
 	},
 	utils: {
-		throttle: function (fn, delay) {
+		throttle: function (fn, delay, extra) {
 			var timeout = null, last = 0
 
 			return function () {
-				var elapsed = Date.now() - last, args = arguments;
+				var elapsed = Date.now() - last, args = $.merge($.makeArray(arguments), extra);
 
 				var execute = function () {
-					last = Date.now()
-					fn.apply(JB, args);
+					last = Date.now();
+					fn.apply(this, args);
 				}
 
 				clearTimeout(timeout);
 
 				if (elapsed > delay)
-					execute()
+					execute.call(this)
 				else
-					timeout = setTimeout(execute, delay - elapsed);
+					timeout = setTimeout(execute.bind(this), delay - elapsed);
 			};
 		},
 		_onces: {},
@@ -474,7 +464,7 @@ var Template = {
 				num /= divisor;
 			}
 
-			return (Math.round(num * 100) / 100) + ' ' + power + (divisor === 1024 ? 'i' : '') + (power.length ? 'B' : ('byte' + (num === 1 ? '' : 's')));
+			return (Math.round(num * 100) / 100) + ' ' + power + (divisor === 1024 && power.length ? 'i' : '') + (power.length ? 'B' : ('byte' + (num === 1 ? '' : 's')));
 		},
 		date: function (date, type) {
 			var h, m, s, time = '';
@@ -542,35 +532,28 @@ var Template = {
 			['D', 3]
 		]*/
 		make_object: function (a) {
-			var m, i, o = {}, self = this;
+			var m, i, o = {};
 
-			if (a instanceof Array)
-				a.forEach(function (m) {
-					o[m[0]] = m[1] instanceof Array && m[2] || !(m[1] instanceof Array) ? m[1] : self.make_object(m[1]);
-				});
+			for (i = 0; i < a.length; i++)
+				o[a[i][0]] = a[i][1] instanceof Array && a[i][2] || !(a[i][1] instanceof Array) ? a[i][1] : this.make_object(a[i][1]);
 
 			return o;
 		},
 		floater: function (scroller, to_float, related, off) {
-			var sc = $$(scroller), self = this;
-
-			if (!sc.length)
-				return this.timer.timeout('floater_' + scroller + to_float, function (self, scroller, to_float, related, off) {
-					self.floater(scroller, to_float, related, off);
-				}, 5000, [self, scroller, to_float, related, off]);
-
-			var fb = sc.data('floater_bound') || [];
+			var sc = $$(scroller), self = this,
+					fb = sc.data('floater_bound') || [];
 
 			if (~fb.indexOf(to_float)) return false;
 			
 			fb.push(to_float);
-			
+
 			sc.data('floater_bound', fb)
-				.scroll({ scroller: sc, to_float: to_float, related: related, off: off }, self.utils.throttle(function (event) {
-					var d = event.data, off = typeof d.off === 'function' ? d.off.call(JB) : d.off || 0,
+				.scroll(self.utils.throttle(function (event, data) {
+					var d = data, off = typeof d.off === 'function' ? d.off.call(JB) : d.off || 0,
 							all = $(d.to_float, d.scroller).not('.floater'),
+							find_offset = ($$('#find-bar:visible').outerHeight(true) || 0),
 							current_header = all.filter(function () {
-								return $(this).offset().top <= off;
+								return $(this).offset().top <= off + find_offset;
 							}).filter(':last'),
 							next_header = all.eq(all.index(current_header) + 1);
 
@@ -601,16 +584,18 @@ var Template = {
 					}
 
 					current_header_clone.css({
-						top: top + ($$('#find-bar:visible').outerHeight(true) || 0),
+						top: top + find_offset,
 						zIndex: 999 - off,
 						width: current_header.width()
 					}).append('<div class="divider floater-divider"></div>');
-			}, 300));
+			}, 50, [{ scroller: sc, to_float: to_float, related: related, off: off }]));
+			
+			scroller = to_float = related = off = undefined;
 		},
 		fill: function (string, args) {
-			args.forEach(function (v, i) {
-				string = string.replace(new RegExp('\\{' + i + '\\}', 'g'), v);
-			});
+			for (var i = 0; i < args.length; i++)
+				string = string.replace(new RegExp('\\{' + i + '\\}', 'g'), args[i]);
+
 			return string;
 		},
 		_zero_timeouts: [],
@@ -631,7 +616,7 @@ var Template = {
 			return s;
 		},
 		escape_html: function (text) {
-			return text.replace(/</g, '&lt;');
+			return text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 		},
 		escape_regexp: function (text) {
 			if (!text || !text.length) return text;
@@ -647,11 +632,13 @@ var Template = {
 			var j = $(e);
 
 			if (!j.hasClass('confirm-click')) {
-				j.data('confirm_timeout', setTimeout(function () {
+				j.data('confirm_timeout', setTimeout(function (j) {
 					j.removeClass('confirm-click');
-				}, 3000));
+				}, 3000, j));
 
 				j.addClass('confirm-click');
+
+				j = undefined;
 
 				return false;
 			}
@@ -671,88 +658,94 @@ var Template = {
 		 * @param {function} cb Callback function to call once zoom window execution is completed.
 		 */
 		zoom: function (e, onshow, onstart, onhide) {
-			var t = 0.5 * this.speedMultiplier, self = this,
-					hide = e.is('.zoom-window-open') ? $$('.zoom-window-hidden:last') : $$('.whoop').filter(':visible'),
-					start_value, end_value, start_hide_zoom, end_hide_zoom, c;
+			new Poppy(null, null, null, (function (e, onshow, onstart, onhide) {
+				var t = 0.43 * this.speedMultiplier, self = this,
+						hide = e.is('.zoom-window-open') ? $$('.zoom-window-hidden:last') : $$('.whoop').filter(':visible'),
+						start_value, end_value, start_hide_zoom, end_hide_zoom, c;
 
-			if (e.data('isAnimating') || hide.data('isAnimating')) return false;
+				if (e.data('isAnimating') || hide.data('isAnimating')) return false;
 
-			e.data('isAnimating', true).addClass('zoom-window-animating').removeClass('zoom-window-hidden');
+				e.data('isAnimating', true).addClass('zoom-window-animating').removeClass('zoom-window-hidden');
 
-			(onstart || $.noop).call(JB);
-			
-			hide = hide || $('<div />');
-			
-			hide.addClass('zoom-window-animating zoom-window-hidden');
+				(onstart || $.noop).call(JB);
+				
+				hide = hide || $('<div />');
+				
+				hide.addClass('zoom-window-animating zoom-window-hidden');
 
-			hide.find('*:focus').blur();
-			e.find('*:focus').blur();
-			
-			start_value = !e.hasClass('zoom-window') ? 0.7 : 1;
-			end_value = start_value === 1 ? 0.7 : 1;
-					
-			start_hide_zoom = start_value === 1 ? 1.2 : 1;
-			end_hide_zoom = start_hide_zoom === 1 ? 1.2 : 1;
-					
-			if (start_value !== 1) {
-				e.addClass('zoom-window').css('zIndex', 999);
-				hide.data('scrollTop', hide.scrollTop());
-			} else {
-				hide.css('zIndex', 0).removeClass('zoom-window-hidden');
-				e.removeClass('zoom-window-open');
-			}
-			
-			c = {
-				display: 'block',
-				WebkitTransitionProperty: '-webkit-transform, opacity',
-				WebkitTransitionDuration: t + 's',
-				WebkitTransitionTimingFunction: 'ease'
-			};
-			
-			e.css(c);
-			hide.css(c);
-					
-			e.css({
-				WebkitTransform: 'scale(' + (start_value & 1) + ')',
-				opacity: start_value
-			});
-					
-			hide.css({
-				WebkitTransform: 'scale(' + start_hide_zoom + ')',
-				opacity: end_value & 1,
-				WebkitTransitionDuration: t + 's, ' + (t * 0.8) + 's, ' + t + 's'
-			});
-					
-			if (start_value === 1) hide.scrollTop(hide.data('scrollTop'));	
-			
-			this.zero_timeout(function (hide, e, end_value, start_value, end_hide_zoom, onshow, t, onhide) {
-				hide.css({
-					WebkitTransform: 'scale(' + end_hide_zoom + ')',
+				hide.find('*:focus').blur();
+				e.find('*:focus').blur();
+				
+				start_value = !e.hasClass('zoom-window') ? 0.85 : 1;
+				end_value = start_value === 1 ? 0.85 : 1;
+						
+				start_hide_zoom = start_value === 1 ? 1.2 : 1;
+				end_hide_zoom = start_hide_zoom === 1 ? 1.2 : 1;
+						
+				if (start_value !== 1) {
+					e.addClass('zoom-window').css('zIndex', 999);
+					hide.data('scrollTop', hide.scrollTop());
+				} else {
+					hide.css('zIndex', 0).removeClass('zoom-window-hidden');
+					e.removeClass('zoom-window-open');
+				}
+				
+				c = {
+					display: 'block',
+					WebkitTransitionProperty: '-webkit-transform, opacity',
+					WebkitTransitionDuration: t + 's',
+					WebkitTransitionTimingFunction: 'ease-' + (start_value & 1) ? 'out' : 'in'
+				};
+				
+				e.css(c);
+				hide.css(c);
+						
+				e.css({
+					WebkitTransform: 'scale(' + (start_value) + ')',
 					opacity: start_value & 1
 				});
-								
-				e.css({
-					WebkitTransform: 'scale(' + (end_value & 1) + ')',
-					opacity: (end_value & 1) === 0 ? end_value * 0.7 : end_value
-				}).one('webkitTransitionEnd', { e: e, s: start_value, h: hide, onshow: onshow, onhide: onhide }, function (event) {
-					this.scrollTop = 0;
-
-					var d = event.data;
-										
-					if (d.s !== 1){
-						d.h.hide().css('zIndex', 0);
-						d.e.addClass('zoom-window-open');
-						(d.onhide || $.noop).call(JB);
-					} else {
-						d.e.hide().removeClass('zoom-window zoom-window-open');
-						d.h.css('zIndex', 999);
-						(d.onshow || $.noop).call(JB);
-					}
-
-					d.e.data('isAnimating', false).removeClass('zoom-window-animating').css('webkitTransform', '');
-					d.h.removeClass('zoom-window-animating').css('webkitTransform', '');
+						
+				hide.css({
+					WebkitTransform: 'scale(' + start_hide_zoom + ')',
+					opacity: end_value & 1,
+					WebkitTransitionDuration: t + 's, ' + (t * 0.8) + 's, ' + t + 's'
 				});
-			}, [hide, e, end_value, start_value, end_hide_zoom, onshow, t, onhide]);
+						
+				if (start_value === 1) hide.scrollTop(hide.data('scrollTop'));	
+				
+				self.zero_timeout(function (hide, e, end_value, start_value, end_hide_zoom, onshow, t, onhide) {
+					hide.css({
+						WebkitTransform: 'scale(' + end_hide_zoom + ')',
+						opacity: start_value & 1
+					});
+									
+					e.css({
+						WebkitTransform: 'scale(' + (end_value) + ')',
+						opacity: (end_value & 1)
+					}).one('webkitTransitionEnd', { e: e, s: start_value, h: hide, onshow: onshow, onhide: onhide }, function (event) {
+						this.scrollTop = 0;
+
+						var d = event.data;
+											
+						if (d.s !== 1){
+							d.h.hide().css('zIndex', 0);
+							d.e.addClass('zoom-window-open');
+							(d.onhide || $.noop).call(JB);
+						} else {
+							d.e.hide().removeClass('zoom-window zoom-window-open');
+							d.h.css('zIndex', 999);
+							(d.onshow || $.noop).call(JB);
+						}
+
+						d.e.data('isAnimating', false).removeClass('zoom-window-animating').css('webkitTransform', '');
+						d.h.removeClass('zoom-window-animating').css('webkitTransform', '');
+					});
+				}, [hide, e, end_value, start_value, end_hide_zoom, onshow, t, onhide]);
+
+				hide = e = end_value = start_value = end_hide_zoom = onshow = t = onhide = undefined;
+			}).bind(this, e, onshow, onstart, onhide));
+
+			e = onshow = onstart = onhide = undefined;
 		},
 		timer: {
 			timers: { intervals: {}, timeouts: {} },
@@ -762,26 +755,32 @@ var Template = {
 			timeout: function () {
 				return this.create.apply(this, ['timeout'].concat($.makeArray(arguments)));
 			},
+			_run_interval: function (interval) {
+				if (!this.timers.intervals[interval]) return this.remove('run_interval_' + interval);
+
+				this.timers.intervals[interval].script.apply(JB, this.timers.intervals[interval].args);
+
+				this.timeout('run_interval_' + interval, this._run_interval.bind(this, interval), this.timers.intervals[interval].time);
+			},
 			create: function (type, name, script, time, args) {
 				if (type != 'interval' && type != 'timeout') return false;
 				
 				if (typeof args !== 'object') args = [];
 
-				var self = this;
-
 				this.remove(type, name);
 
-				var ww = type == 'interval' ? window.setInterval : window.setTimeout,
-						timer_func = ww.apply(null, [script, time].concat(args));
+				var timer_func = window.setTimeout.apply(null, [script, time].concat(args));
 
 				if (type == 'timeout' && !name.match(/_auto_delete$/))
-					this.create('timeout', name + '_auto_delete', function () {
+					this.create('timeout', name + '_auto_delete', function (self, type, name) {
 						self.remove(type, name);
-					}, time + 100);
+					}, time + 100, [this, type, name]);
 
-				this.timers[type + 's'][name] = { name: name, timer: timer_func, script: script, time: time };
+				this.timers[type + 's'][name] = { name: name, timer: timer_func, args: args, time: time, script: script };
 
-				return this.timers[type + 's'][name];
+				if (type === 'interval') this._run_interval(name);
+
+				type = name = script = time = args = undefined;
 			},
 			remove: function () {
 				var args = $.makeArray(arguments), type = args[0] + 's', name;
@@ -804,8 +803,7 @@ var Template = {
 						if (args[0] == 'timeout') {
 							clearTimeout(this.timers[type][name].timer);
 							clearTimeout(this.timers[type][name + '_auto_delete'].timer);
-						} else if (args[0] == 'interval')
-							clearInterval(this.timers[type][name].timer);
+						}
 
 						delete this.timers[type][name];
 						delete this.timers[type][name + '_auto_delete'];
@@ -841,6 +839,8 @@ var Template = {
 										
 					ToolbarItems.image(self.disabled ? 'images/toolbar-disabled.png' : 'images/toolbar.png');
 				}, 1100);
+
+				self = mode = undefined;
 				
 				return false;
 			}
@@ -855,6 +855,8 @@ var Template = {
 					.image(self._attention ? 'images/toolbar-attn.png' : (self.disabled ? 'images/toolbar-disabled.png' : 'images/toolbar.png'))
 					.badge(self._attention ? 1 : 0, null);
 			}, 1000);
+
+			self = mode = undefined;
 		}
 	},
 	
@@ -932,8 +934,6 @@ var Template = {
 			Settings.setItem('custom' + type + 'Scripts', JSON.stringify(scripts));
 
 			Strings['en-us'][id] = _('Injected ' + type + ' Script: {1}', [name]);
-
-			if (!edit) JB.rules.add('special', '.*', id, 0, true);
 		},
 		remove: function (type, id) {
 			var scripts = this[type]();
@@ -959,16 +959,13 @@ var Template = {
 	rules: {
 		blacklist: {},
 		whitelist: {},
-		get quick() {
-			return Settings.getItem('quickAdd');
-		},
 		get simplified() {
-			return this.simpleMode && Settings.getItem('simplifiedRules') && !this.temporaryExpertMode;
+			return this.simpleMode && !this.temporaryExpertMode;
 		},
 		get data_types() {
 			return {
-				script: {}, frame: {}, embed: {}, video: {}, image: {}, special: {},
-				hide_script: {}, hide_frame: {}, hide_embed: {}, hide_video: {}, hide_image: {}, hide_special: {}
+				disable: {}, script: {}, frame: {}, embed: {}, video: {}, image: {}, special: {},
+				hide_disable: {}, hide_script: {}, hide_frame: {}, hide_embed: {}, hide_video: {}, hide_image: {}, hide_special: {}
 			};
 		},
 		_loaded: false,
@@ -989,14 +986,11 @@ var Template = {
 			this.save();
 		},
 		get current_rules() {
-			var c = Settings.getItem(this.which),
-					rules = c ? JSON.parse(c) : this.data_types;
-					rules = $.extend(this.data_types, rules);
-
-			return rules;
+			var c = Settings.getItem(this.which);
+			return c ? $.extend(this.data_types, JSON.parse(c)) : this.data_types;
 		},
 		get which () {
-			return this.simpleMode && Settings.getItem('simplifiedRules') ? 'SimpleRules' : 'Rules';
+			return this.simpleMode ? 'SimpleRules' : 'Rules';
 		},
 		use_tracker: {
 			_tracked: {},
@@ -1089,7 +1083,7 @@ var Template = {
 				$([
 					'<li id="snapshot-', id, '" class="', id === this.using_snapshot ? 'using' : '', snapshots[id].keep ? ' kept' : '', '">',
 						'<a class="', Settings.getItem('traverseSnapshots') ? 'selectable' : '', ' snapshot-date" data-id="', id, '">', snapshots[id].name ? self.utils.escape_html(snapshots[id].name) : this.snapshots.date(id), '</a> ',
-						'<input type="button" value="', self.using_snapshot === id ? _('Close Snapshot') : _('Open Preview'), '" class="preview-snapshot" /> ',
+						'<input type="button" value="', self.using_snapshot === id ? _('Close Snapshot') : _('Open Preview'), '" class="preview-snapshot purple" /> ',
 						'<div class="divider"></div>',
 					'</li>'].join('')).appendTo(snapshots[id].keep ? ul_kept : ul_unkept);
 
@@ -1105,6 +1099,8 @@ var Template = {
 
 			ul_kept.find('.divider:last').addClass('invisible');
 			ul_unkept.find('.divider:last').addClass('invisible');
+
+			snapshots = ul = ul_unkept = ul_kept = self = compared = undefined;
 		},
 		get using_snapshot() {
 			return Settings.getItem('usingSnapshot');
@@ -1137,12 +1133,11 @@ var Template = {
 		},
 		convert: function () {
 			var from = JSON.parse(Settings.getItem('Rules')), kind, domain, rule, totest, conv, un = {}, has_unconvert = 0,
-					simbefore = this.simpleMode, rulebefore = Settings.getItem('simplifiedRules');;
+					simbefore = this.simpleMode;
 
 			this.reload();
 
 			Settings.setItem('simpleMode', true);
-			Settings.setItem('simplifiedRules', true);
 
 			for (kind in from) {
 				if (!(kind in un)) un[kind] = {};
@@ -1205,7 +1200,6 @@ var Template = {
 			}
 
 			Settings.setItem('simpleMode', simbefore);
-			Settings.setItem('simplifiedRules', rulebefore);
 
 			JB.reloaded = false;
 
@@ -1220,7 +1214,7 @@ var Template = {
 
 			this.reload();
 
-			this.snapshots = new Snapshots('Rules', Settings.getItem('enableSnapshots') ? Settings.getItem('snapshotsLimit') : 0);
+			this.snapshots = new Snapshots('Rules', Settings.getItem('enableSnapshots') && this.donationVerified ? Settings.getItem('snapshotsLimit') : 0);
 
 			this.snapshots.add(this.rules);
 
@@ -1289,13 +1283,17 @@ var Template = {
 									}
 								});
 							}
-						}, [snapshots, filtered_rules, self])
+						}, [snapshots, filtered_rules, self]);
 					}
 
 					if (!self.using_snapshot)
 						Settings.setItem(which, JSON.stringify(rules));
+
+					rules = snapshots = which = self = no_snapshot = filtered_rules = kind = undefined;
 				} catch (e) { }
 			}, 1000, [this.rules, this.snapshots, this.which, this, no_snapshot]);
+
+			no_snapshot = undefined;
 		},
 		export: function () {
 			if (!this.donationVerified) return '';
@@ -1397,88 +1395,89 @@ var Template = {
 				delete this.cache_nowlbl[kind][d];
 			}
 		},
-		easylist: function (cb) {
-			var self = this, cb = cb || $.noop,
-					processList = function (list) {
-				var def = {}, split = list.split(/\n/), firstTwo = function (str) { return str[0] + str[1]; },
-						type_map = { script: 'script', image: 'image', object: 'embed' };
+		_firstTwo: function (str) { return str[0] + str[1]; },
+		_process_list: function (list) {
+			var def = {}, split = list.split(/\n/),
+					type_map = { script: 'script', image: 'image', object: 'embed' }, whole;
 
-				var processItem = function (whole) {
-					var fTwo = firstTwo(whole);
+			JB.rules.rules.script['rawr'] = {};
 
-					if (fTwo === '##' || ~whole.indexOf('#@#')) return;
+			mainFor:
+			for (var i = 0, b = split.length; i < b; i++) {
+				var whole = split[i], fTwo = this._firstTwo(whole);
 
-					var mode = fTwo === '@@' ? 5 : 4,
-							whole = mode === 5 ? whole.substr(2) : whole,
-							dollar = whole.indexOf('$'),
-							rule = whole.substr(0, ~dollar ? dollar : 999), regexp, $check = whole.split(/\$/),
-							use_type = false, domains = ['.*'];
+				if (fTwo === '##' || ~whole.indexOf('#@#')) continue;
 
-					if ($check[1]) {
-						var args = $check[1].split(',');
+				var mode = fTwo === '@@' ? 5 : 4,
+						whole = mode === 5 ? whole.substr(2) : whole,
+						dollar = whole.indexOf('$'),
+						rule = whole.substr(0, ~dollar ? dollar : 999), regexp, $check = whole.split(/\$/),
+						use_type = false, domains = ['.*'];
 
-						if (~args.indexOf('xmlhttprequest')) return;
+				if ($check[1]) {
+					var args = $check[1].split(',');
 
-						for (var z = 0; z < args.length; z++) {
-							if (args[z].match(/^domain=/)) domains = args[z].substr(7).split('|').map(function (v) { return '.' + v; });
-							else if (args[z] in type_map) use_type = type_map[args[z]];
-						}
-					}
+					if (~args.indexOf('xmlhttprequest')) continue;
 
-					if (whole[0] === '!' || whole[0] === '[' || ~whole.indexOf('##')) return;
-
-					rule = rule.replace(/\//g, '\\/')
-						.replace(/\+/g, '\\+')
-						.replace(/\?/g, '\\?')
-						.replace(/\^/g, '([^a-zA-Z0-9_\.%-]+|$)')
-						.replace(/\./g, '\\.')
-						.replace(/\*/g, '.*');
-
-					if (firstTwo(whole) === '||') rule = rule.replace('||', 'https?:\\/\\/([^\\/]+\\.)?');
-					else if (whole[0] === '|') rule = rule.replace('|', '');
-					else rule = '.*' + rule;
-
-					if (rule.match(/\|[^$]/)) return;
-
-					rule = '^' + rule
-
-					if (rule[rule.length - 1] === '|') rule = rule.substr(0, rule.length - 1) + '.*$';
-					else rule += '.*$';
-
-					rule = rule.replace(/\.\*\.\*/g, '.*');
-
-					for (var s = 0; s < domains.length; s++) {
-						if (firstTwo(domains[s]) === '.~') return;
-
-						var list = JB.rules[mode === 5 ? 'whitelist' : 'blacklist'];
-
-						if (use_type) {
-							if (!(use_type in list)) list[use_type] = {};
-							if (!(domains[s] in list[use_type])) list[use_type][domains[s]] = {};
-
-							list[use_type][domains[s]][rule] = [mode, false];
-						} else {
-							for (var kind in JB.rules.data_types) {
-								if (!(kind in list)) list[kind] = {};
-
-								if (~kind.indexOf('hide_') || kind === 'special') continue;
-
-								if (!(domains[s] in list[kind])) list[kind][domains[s]] = {};
-
-								list[kind][domains[s]][rule] = [mode, false];
-							}
-						}
+					for (var z = 0; z < args.length; z++) {
+						if (args[z].match(/^domain=/)) domains = args[z].substr(7).split('|').map(function (v) { return '.' + v; });
+						else if (args[z] in type_map) use_type = type_map[args[z]];
 					}
 				}
 
-				for (var i = 0, b = split.length; i < b; i++)
-					processItem(split[i]);
-			};
+				if (whole[0] === '!' || whole[0] === '[' || ~whole.indexOf('##')) continue;
 
+				rule = rule.replace(/\//g, '\\/')
+					.replace(/\+/g, '\\+')
+					.replace(/\?/g, '\\?')
+					.replace(/\^/g, '([^a-zA-Z0-9_\.%-]+|$)')
+					.replace(/\./g, '\\.')
+					.replace(/\*/g, '.*');
+
+				if (this._firstTwo(whole) === '||') rule = rule.replace('||', 'https?:\\/\\/([^\\/]+\\.)?');
+				else if (whole[0] === '|') rule = rule.replace('|', '');
+				else rule = '.*' + rule;
+
+				if (rule.match(/\|[^$]/)) continue;
+
+				rule = '^' + rule
+
+				if (rule[rule.length - 1] === '|') rule = rule.substr(0, rule.length - 1) + '.*$';
+				else rule += '.*$';
+
+				rule = rule.replace(/\.\*\.\*/g, '.*');
+
+				for (var s = 0; s < domains.length; s++) {
+					if (this._firstTwo(domains[s]) === '.~') continue mainFor;
+
+					var list = JB.rules[mode === 5 ? 'whitelist' : 'blacklist'];
+
+					if (use_type) {
+						if (!(use_type in list)) list[use_type] = {};
+						if (!(domains[s] in list[use_type])) list[use_type][domains[s]] = {};
+
+						list[use_type][domains[s]][rule] = [mode, false];
+					} else {
+						for (var kind in JB.rules.data_types) {
+							if (!(kind in list)) list[kind] = {};
+
+							if (~kind.indexOf('hide_') || kind === 'special') continue;
+
+							if (!(domains[s] in list[kind])) list[kind][domains[s]] = {};
+
+							list[kind][domains[s]][rule] = [mode, false];
+						}
+					}
+				}
+			}
+
+			def = split = type_map = whole = fTwo =  mode = dollar = rule = regexp = $check = use_type = domains = args = z = list = i = b = undefined;
+		}, 
+		easylist: function () {
 			var fromSettings = function (which) {
 				var el = Settings.getItem(which);
 
-				if (el) processList(el);
+				if (el) JB.rules._process_list(el);
 
 				JB.rules.cache = JB.rules.data_types;
 				JB.rules.cache_nowlbl = JB.rules.data_types;
@@ -1507,12 +1506,10 @@ var Template = {
 
 					fromSettings('EasyList');
 
-					if (!self.setupDone) {
+					if (!JB.setupDone) {
 						Settings.setItem('alwaysBlockscript', 'nowhere');
 						Settings.setItem('alwaysBlockframe', 'nowhere');
 					}
-
-					cb();
 				}).error(function () {
 					fromSettings('EasyList');
 				});
@@ -1536,7 +1533,7 @@ var Template = {
 			this.save();
 		},
 		special_allowed: function (special, url) {
-			if (!this.donationVerified || !this.special_enabled(special)) return 1;
+			if (!this.donationVerified || !this.special_enabled(special)) return -1;
 			
 			var host = this.active_host(url),
 					domains = this.for_domain('special', host), domain, rule, spec;
@@ -1549,8 +1546,10 @@ var Template = {
 						}, [this, domain, spec, domains[domain][spec][0]]);
 						return domains[domain][spec][0];
 					}
+
+			special = url = host = domains = domain = rule = spec = undefined;
 					
-			return special.indexOf('custom') === 0;
+			return -2;
 		},
 		via_action_cache: function (kind, host, item) {
 			if (PrivateBrowsing()) return null;
@@ -1568,6 +1567,32 @@ var Template = {
 				action: action,
 				access: +new Date()
 			};
+		},
+		disabled: function (url) {
+			if (!url) return false;
+
+			var host = this.active_host(url),
+					action_cached = this.via_action_cache('disable', host, '*');
+
+			if (action_cached) {
+				action_cached.access = +new Date();
+
+				return action_cached.action[0];
+			}
+
+			var domains = this.for_domain('disable', this.active_host(url), false, true);
+
+			for (var domain in domains)
+				for (var rule in domains[domain])
+					if (domains[domain][rule][0] === 2 || domains[domain][rule][0] === 3) {
+						this.add_to_action_cache('disable', host, '*', [!(domains[domain][rule][0] % 2), domains[domain][rule][0]]);
+
+						return !(domains[domain][rule][0] % 2);
+					}
+
+			this.add_to_action_cache('disable', host, '*', [0, 2]);
+
+			return false;
 		},
 		allowed: function (message) {
 			var kind = message[0];
@@ -1605,9 +1630,7 @@ var Template = {
 						rule_found = domains[domain][rule][0] % 2;
 						the_rule = domains[domain][rule][0];
 						
-						this.utils.zero_timeout(function (self, kind, domain, rule, rtype) {
-							self.use_tracker.use(kind, domain, rule, rtype);
-						}, [this, kind, domain, rule, the_rule]);
+						this.use_tracker.use(kind, domain, rule, the_rule);
 
 						if (the_rule === 5) catch_wl = [rule_found, the_rule];
 						if (the_rule !== 4 && the_rule !== 5) break domainFor;
@@ -1672,7 +1695,7 @@ var Template = {
 					else
 						rules[domain] = {};
 				} else {
-					rules = cached[kind][domain];
+					rules = $.extend(true, {}, cached[kind][domain]);
 
 					rules['.*'] = cached[kind]['.*']['.*'];
 				}
@@ -1709,83 +1732,21 @@ var Template = {
 
 			return this.for_domain(kind, domain, one, hide_wlbl);
 		},
-		// replace_map: {
-		// 	'$HTTPS': function () {
-		// 		var v = JB.utils.escape_regexp(this.proto);
-
-		// 		return 'https' + (v === 'https' ? '' : '?');
-		// 	},
-		// 	'$PRIMARY_HOST': function () {
-		// 		var v = JB.utils.escape_regexp(this.host_parts[this.host_parts.length - 2]);
-
-		// 		return '(([^\\/]+\\.)?' + v + ')';
-		// 	},
-		// 	'$NOT_PRIMARY_HOST': function () {
-		// 		var v = JB.utils.escape_regexp(this.host_parts[this.host_parts.length - 2]);
-
-		// 		return '((?!([^\\/]+\\.)?' + v + ').)*';
-		// 	},
-		// 	'$HOST': function () {
-		// 		var v = JB.utils.escape_regexp(this.host_parts[0]);
-
-		// 		return v;
-		// 	},
-		// 	'$NOT_HOST': function () {
-		// 		var v = JB.utils.escape_regexp(this.host_parts[0]);
-
-		// 		return '((?!' + v + ').)*';
-		// 	},
-		// },
-		// match: function (kind, rule, url, simplified, host_url) {
-		// 	if (rule[0] !== '^' && simplified) {
-		// 		var rrule = this.with_protos(rule), parts = this.utils.domain_parts(this.utils.active_host(url));
-
-		// 		if (rrule.protos && !~rrule.protos.indexOf(this.utils.active_protocol(url))) return 0;
-
-		// 		if ((~kind.indexOf('special') && rrule.rule === url) ||
-		// 				(rrule.rule.indexOf('.') === 0 && ~parts.indexOf(rrule.rule.substr(1))) || 
-		// 				(parts[0] === rrule.rule))
-		// 			return 1;
-		// 		return 0;
-		// 	}
-
-		// 	if (host_url && host_url !== '.*') {
-		// 		var parts = this.utils.domain_parts(this.utils.active_host(host_url)),
-		// 				proto = this.utils.active_protocol(host_url);
-
-		// 		for (var key in this.replace_map)
-		// 			rule = rule.replace(key, this.replace_map[key].bind({
-		// 				host_parts: parts,
-		// 				proto: proto
-		// 			}));
-		// 	}
-
-		// 	var ref, matcher = (ref = this.caches.rule_regexp[rule]) ? ref : this.caches.rule_regexp[rule] = new RegExp(rule, 'i');
-
-		// 	try {
-		// 		return matcher.test(url);
-		// 	} catch (e) {
-		// 		console.error('Error:', rule)
-		// 	}
-		// },
 		match: function (kind, rule, url, simplified) {
 			if (rule[0] !== '^' && simplified) {
 				var rrule = this.with_protos(rule), parts = this.utils.domain_parts(this.utils.active_host(url));
 
 				if (rrule.protos && !~rrule.protos.indexOf(this.utils.active_protocol(url))) return 0;
 
-				return ((~kind.indexOf('special') && rrule.rule === url) ||
+				return (rrule.rule === '*' ||
+						(~kind.indexOf('special') && rrule.rule === url) ||
 						(rrule.rule.indexOf('.') === 0 && ~parts.indexOf(rrule.rule.substr(1))) || 
 						(parts[0] === rrule.rule))
 			}
 
-			var ref, matcher = (ref = this.caches.rule_regexp[rule]) ? ref : this.caches.rule_regexp[rule] = new RegExp(rule, 'i');
+			var ref;
 
-			try {
-				return matcher.test(url);
-			} catch (e) {
-				console.error('Error:', rule)
-			}
+			return ((ref = this.caches.rule_regexp[rule]) ? ref : this.caches.rule_regexp[rule] = new RegExp(rule, 'i')).test(url);
 		},
 		with_protos: function (rule) {
 			if (this.which === 'Rules' || rule.charAt(0) === '^') {
@@ -1804,6 +1765,8 @@ var Template = {
 		},
 		add: function (kind, domain, pattern, action, add_to_beginning, temporary) {
 			if (!pattern.length || (kind !== 'script' && !this.donationVerified) || this.using_snapshot) return false;
+
+			JB.lockUpdate = false;
 
 			this.collapsed('LastRuleWasTemporary', temporary);
 		
@@ -1832,8 +1795,10 @@ var Template = {
 		
 			this.save();
 		},
-		remove: function (kind, domain, rule, delete_automatic) {
+		remove: function (kind, domain, rule) {
 			if ((kind !== 'script' && !this.donationVerified) || this.using_snapshot) return false;
+
+			JB.lockUpdate = false;
 			
 			var rules = this.for_domain(kind, domain, false, true), key;
 
@@ -1842,11 +1807,7 @@ var Template = {
 			this.recache(kind, domain);
 
 			try {
-				if (!delete_automatic && rules[domain][rule][0] > 1 && rules[domain][rule][0] < 4) {
-					this.rules[kind][domain][rule][0] *= -1;
-					this.rules[kind][domain][rule][1] = false;
-				} else
-					delete this.rules[kind][domain][rule];
+				delete this.rules[kind][domain][rule];
 			} catch(e) { }
 
 			if ($.isEmptyObject(this.rules[kind][domain]))
@@ -1878,7 +1839,7 @@ var Template = {
 				for (rule in rules[domain]) {
 					rtype = rules[domain][rule][0];
 
-					if ((!!(rtype % 2) !== block_allow) ||
+					if ((block_allow !== null && !!(rtype % 2) !== block_allow) ||
 							(!show_wlbl && (rtype === 4 || rtype === 5))) continue;
 
 					for (var i = 0; i < urls.length; i++) {		
@@ -1899,49 +1860,72 @@ var Template = {
 			delete this.rules[kind][domain];
 			this.save();
 		},
-		generate: function (mode, url) {
+		generate: function (mode, url, smple) {
 			var rule = ['^'], host = this.utils.active_host(url), parts = this.utils.domain_parts(host),
 					parse = document.createElement('a');
 
 			parse.href = url;
 
-			if (mode & RULE_HTTP) rule.push('http');
-			else if (mode & RULE_HTTPS) rule.push('https');
-			else rule.push('https?');
+			switch (parse.protocol) {
+				case 'data:':
+				case 'javascript:':
+					rule = simple ? [parse.protocol.toUpperCase(), '*'] : ['^', parse.protocol, '.*$'];
+				break;
 
-			rule.push(':\\/\\/');
+				default:
+					if (mode & RULE_HTTP) rule.push('http');
+					else if (mode & RULE_HTTPS) rule.push('https');
+					else rule.push('https?');
 
-			if (mode & RULE_TOP_HOST) rule.push('([^\\/]+\\.)?', this.utils.escape_regexp(parts[parts.length - 2]));
-			else if (mode & RULE_FULL_HOST) rule.push(this.utils.escape_regexp(parts[0]));
+					rule.push(':\\/\\/');
 
-			if (mode & RULE_PATH) rule.push(this.utils.escape_regexp(parse.pathname), '((\\?|#)+.*)?');
-			else if (mode & RULE_QUERY) rule.push(this.utils.escape_regexp(parse.pathname), this.utils.escape_regexp(parse.search), this.utils.escape_regexp(parse.hash))
-			else rule.push('\\/.*');
+					if (mode & RULE_TOP_HOST) rule.push('([^\\/]+\\.)?', this.utils.escape_regexp(parts[parts.length - 2]));
+					else if (mode & RULE_FULL_HOST) rule.push(this.utils.escape_regexp(parts[0]));
 
-			rule.push('$');
+					if (mode & RULE_PATH) rule.push(this.utils.escape_regexp(parse.pathname), '((\\?|#)+.*)?');
+					else if (mode & RULE_QUERY) rule.push(this.utils.escape_regexp(parse.pathname), this.utils.escape_regexp(parse.search), this.utils.escape_regexp(parse.hash))
+					else rule.push('\\/.*');
+
+					rule.push('$');
+				break;
+			}
 
 			parse = undefined;
 
 			return rule.join('');
 		},
-		make_message: function (kind, rule, rtype, temp) {
-			var cache_check = [kind, rule, rtype, temp].join(), simp = this.simplified.toString();
+		make_message: function (kind, rule, rtype, temp, no_html) {
+			var cache_check = [kind, rule, rtype, temp, no_html].join(), simp = this.simplified.toString();
 
 			if (cache_check in this.caches.messages[simp]) return this.caches.messages[simp][cache_check];
 
-			var um = ~kind.indexOf('hide_') ? 'Hide' : (rtype % 2 ? 'Allow' : 'Block'),
+			cache_check = undefined;
+
+			var html = !no_html,
+					mapper = function (v) {
+				var tr = _(v);
+
+				if (~tr.indexOf(':NOT_LOCALIZED')) tr = v;
+
+				return html ? ('<span class="' + v + '">' + tr + '</span>') : tr;
+			},	um = ~kind.indexOf('hide_') ? 'Hide' : (rtype % 2 ? 'Allow' : 'Block'),
 					um = temp ? um.toLowerCase() : um,
 					message = temp ? [_('Temporarily'), _(um)] : [_(um)],
 					ukind = ~kind.indexOf('hide_') ? kind.substr(5) : kind,
 					proto = this.simplified ? this.with_protos(rule).protos : false,
 					rule = this.with_protos(rule).rule,
-					unique = ['^data:.*$', '^javascript:.*$', '^.*$'];
+					unique = ['^.*$'];
 
-			if (ukind === 'special') {
-				if (rule === unique[2]) message.push('all others')
-				else {
-					if (rule.charAt(0) === '^') message.push('others matching');
-					message.push('<b>' + (rule.charAt(0) === '^' ? rule : _(rule).toLowerCase()) + '</b>');
+			if (ukind === 'disable') {
+				message = temp ? [_('Temporarily'), _((rtype % 2 ? 'Enable' : 'Disable') + ' JavaScript Blocker').toLowerCase()] : [_((rtype % 2 ? 'Enable' : 'Disable') + ' JavaScript Blocker')];
+				message.push(_('JavaScript Blocker'));
+			} else if (ukind === 'special') {
+				if (rule.length) {
+					if (rule === '^.*$' || rule === '*') message.push('all others')
+					else {
+						if (rule.charAt(0) === '^') message.push('others matching');
+						message.push((html ? '<b>' : '') + this.utils.escape_html(rule.charAt(0) === '^' ? rule : _(rule).toLowerCase()) + (html ? '</b>' : ''));
+					}
 				}
 			} else {
 				if (proto) {
@@ -1950,7 +1934,7 @@ var Template = {
 
 								if (~tr.indexOf(':NOT_LOCALIZED')) tr = v;
 
-								return '<span class="' + v + '">' + tr + '</span>';
+								return html ? ('<span class="' + v + '">' + tr + '</span>') : tr;
 							},
 							gfirst = proto.slice(0, proto.length - 1).map(mapper),
 							glast = proto.slice(proto.length - 1).map(mapper),
@@ -1967,15 +1951,70 @@ var Template = {
 
 				message.push(_(ukind + 's'));
 
-				if (!~unique.indexOf(rule)) {
+				if (!~unique.indexOf(rule) && rule !== '*') {
 					message.push(rule.charAt(0) === '.' ? 'within' : (rule.charAt(0) === '^' ? 'matching' : 'from'));
-					message.push('<b>' + (rule.charAt(0) === '.' ? rule.substr(1) : rule) + '</b>');
+					message.push((html ? '<b>' : '') + this.utils.escape_html(rule.charAt(0) === '.' ? rule.substr(1) : rule) + (html ? '</b>' : ''));
 				}
 			}
 
 			this.caches.messages[simp][cache_check] = message;
 
+			simp = html = undefined;
+
 			return message;
+		},
+		_remove_domain: function (event) {
+			event.stopPropagation();
+			
+			var li = $(this.parentNode), d = li.data('domain');
+		
+			if (!JB.utils.confirm_click(this) || li.is(':animated')) return false;
+																
+			JB.rules.remove_domain(li.data('kind'), d);
+			
+			li.animate({
+				right: -li.outerWidth(),
+				padding: 0,
+				top: li.height() - parseInt(li.css('marginTop'), 10),
+				marginTop: -li.outerHeight(true),
+				marginBottom: 0,
+				opacity: 0
+			}, 200 * self.speedMultiplier, function () {
+				$(this).next().remove();
+				$(this).remove()
+				$$('#domain-filter').trigger('search');
+			});
+		},
+		_recover_domain: function (event) {
+			event.stopPropagation();
+
+			var off = JB.utils.position_poppy(this, 0, 14), li;
+
+			new Poppy(off.left, off.top, [
+				'<p class="misc-info">', _('Recover')	, '</p>',
+				'<input class="purple" type="button" id="recover-domain-merge" value="', _('Merge'), '" /> ',
+				'<input class="purple" type="button" id="recover-domain-replace" value="', _('Replace'), '" />'].join(''), (function (li, kind, domain, off, left, top) {
+					$$('#recover-domain-merge').click((function (left, top, kind, domain) {
+						if (!(domain in this.rules.current_rules[kind]))
+							this.rules.current_rules[kind][domain] = this.rules.rules[kind][domain];
+						else
+							for (var rule in this.rules.rules[kind][domain])
+								this.rules.current_rules[kind][domain][rule] = this.rules.rules[kind][domain][rule];
+
+						Settings.setItem(this.which, JSON.stringify(this.rules.current_rules));
+
+						new Poppy(left, top, _('Domain merged with current rule set.'));
+					}).bind(this, left, top, kind, domain)).siblings('#recover-domain-replace').click((function (left, top, kind, domain) {
+						this.rules.current_rules[kind][domain] = this.rules.rules[kind][domain];
+						Settings.setItem(this.which, JSON.stringify(this.rules.current_rules));
+
+						new Poppy(left, top, _('Domain replaced in current rule set.'));
+					}).bind(this, left, top, kind, domain));
+
+					li = kind = domain = off = left = top = undefined
+			}).bind(JB, (li = $(this.parentNode)), li.data('kind'), li.data('domain'), off, off.left, off.top));
+
+			li = off = undefined;
 		},
 		show: function () {
 			var self = this;
@@ -1983,99 +2022,36 @@ var Template = {
 			JB.temporaryExpertMode = false;
 
 			this.busy = 1;
-
+			
+			$$('#show-temporary-rules').removeClass('using');
 			$$('#edit-domains').removeClass('edit-mode');
 
 			if (this.using_snapshot)
 				$$('.snapshot-info').show();
 
-			for (var kind in this.data_types) {
-				if (!$$('#head-' + kind + '-rules').length)
-					$$('#rule-container').append(Template.create('rule_wrapper', {
-						kind: kind,
-						local: _(kind + ' Rules')
-					}));
-				
-				var head = $$('#head-' + kind + '-rules').show(), wrap = $$('#rules-list-' + kind + 's').parent().show();
-				
-				if (!this.enabled(kind)) {
-					head.hide();
-					wrap.hide();
-				} else {
-					head.show();
-					wrap.show();
-				}
+			var ul = $$('#rule-container ul').empty(), dul, cl = this.collapsedDomains(), rules;
 
-				var ul = $$('#rules-list #data ul#rules-list-' + kind + 's').empty().css({ marginTop: '-3px', marginBottom: '6px', opacity: 1 });
-				
-				if (kind in this.rules) {
+			for (var kind in this.data_types) {				
+				if ((kind in this.rules) && this.enabled(kind)) {
 					var sorted = this.utils.sort_object(this.rules[kind]);
 
-					ul.css({ marginTop: '-3px', marginBottom: '6px', opacity: 1 });
+					for (var domain in sorted) {
+						rules = this.view(kind, domain, undefined, null, true);
+						dul = $$('#rule-container li.domain-rules[data-value="' + domain + '"] ul');
 
-					for (var domain in sorted)
-						ul.append($('> li', this.view(kind, domain, undefined, null, true)));
+						if (dul.length)
+							dul.append(rules.find('.domain-rules ul').contents());
+						else
+							ul.append(rules.contents());
+					}
 				}
 			}
-			
-			function remove_domain (event) {
-				event.stopPropagation();
-				
-				var li = $(this.parentNode), d = li.data('domain');
-				
-				if (!self.utils.confirm_click(this) || li.is(':animated')) return false;
-																	
-				self.remove_domain(li.data('kind'), d);
-				
-				li.animate({
-					right: -li.outerWidth(),
-					padding: 0,
-					top: li.height() - parseInt(li.css('marginTop'), 10),
-					marginTop: -li.outerHeight(true),
-					marginBottom: 0,
-					opacity: 0
-				}, 200 * self.speedMultiplier, function () {
-					$(this).next().remove();
-					$(this).remove()
-					$$('#domain-filter').trigger('search');
-				});
-			}
 
-			function recover_domain(event) {
-				event.stopPropagation();
-
-				var li = $(this.parentNode), kind = li.data('kind'), domain = li.data('domain'),
-						current_rules = self.current_rules, off = self.utils.position_poppy(this, 0, 14),
-						left = off.left, top = off.top;
-
-				new Poppy(left, top, [
-					'<p class="misc-info">', _('Recover')	, '</p>',
-					'<input type="button" id="recover-domain-merge" value="', _('Merge'), '" /> ',
-					'<input type="button" id="recover-domain-replace" value="', _('Replace'), '" />'].join(''), function () {
-						$$('#recover-domain-merge').click(function () {
-							if (!(domain in current_rules[kind]))
-								current_rules[kind][domain] = self.rules[kind][domain];
-							else
-								for (var rule in self.rules[kind][domain])
-									current_rules[kind][domain][rule] = self.rules[kind][domain][rule];
-
-							Settings.setItem(self.which, JSON.stringify(current_rules));
-
-							new Poppy(left, top, _('Domain merged with current rule set.'));
-						}).siblings('#recover-domain-replace').click(function () {
-							current_rules[kind][domain] = self.rules[kind][domain];
-							Settings.setItem(self.which, JSON.stringify(current_rules));
-
-							new Poppy(left, top, _('Domain replaced in current rule set.'));
-						});
-				});
-			}
-			
+			$$('#rule-container li.domain-rules[data-value=".*"]').prev().andSelf().prependTo(ul);
+						
 			$$('.rules-wrapper .domain-name')
-				.prepend('<div class="divider"></div><input type="button" value="' + (this.using_snapshot ? _('Recover') : _('Remove')) + '" />')
-				.find('input').click(this.using_snapshot ? recover_domain : remove_domain);
-
-			$$('#filter-state-all').siblings('li').removeClass('selected').end().addClass('selected');
+				.prepend('<input type="button" value="' + (this.using_snapshot ? _('Recover') : _('Delete')) + '" class="' + (!this.using_snapshot ? 'delete' : 'purple' ) + '" />')
+				.find('input').click(this.using_snapshot ? this._recover_domain : this._remove_domain);
 
 			$$('#filter-type-used li.selected').click();
 
@@ -2100,17 +2076,17 @@ var Template = {
 				allowed = allowed[domain];
 
 				var i, j = this.collapsedDomains(),
-						domain_name = (domain.charAt(0) === '.' && domain !== '.*' ? domain : (domain === '.*' ? _('All Domains') : domain)),
+						domain_name = domain === '.*' ? _('All Domains') : domain,
 						settings = {
 							ignoreBL: Settings.getItem('ignoreBlacklist'),
 							ignoreWL: Settings.getItem('ignoreWhitelist')
 						}, sim = this.simplified,
-						_recover = _('Recover'), _disable = _('Disable'), _delete = _('Delete');
+						_recover = _('Recover'), _delete = _('Delete');
 			
 				newul = ul.append(Template.create('rule_wrapper_inner', {
 					selectable: Settings.getItem('traverseRulesDomains') ? 'selectable' : '',
-					domain: self.utils.escape_html(domain_name),
-					domain_display: domain === '.*' ? _('All Domains') : domain
+					domain: domain,
+					domain_display: self.utils.escape_html(domain_name)
 				})).find('.domain-name').data({ domain: domain, kind: kind }).end().find('.domain-rules ul');
 			
 				for (rule in allowed) {
@@ -2132,9 +2108,10 @@ var Template = {
 					
 					newul.append(Template.create('rule_item', {
 						rtype: rtype,
-						text: sim ? this.make_message(kind, rule, rtype, temp).join(' ') : rule,
+						text: sim ? this.make_message(kind, rule, rtype, temp).join(' ') : self.utils.escape_html(rule),
 						temp: temp,
 						button: this.using_snapshot ? _recover : _delete,
+						is_delete: !this.using_snapshot
 					})).find('li:last').data({
 						rule: rule,
 						domain: domain,
@@ -2173,14 +2150,85 @@ var Template = {
 			return ul;
 		}
 	},
+	add_disable_rule: function (host, left, top, already, force_new) {
+		if (this.rules.using_snapshot) return new Poppy(left, top, _('Snapshot in use'));
+
+		var self = this, matches = this.rules.matching_URLs('disable', host, ['*'], !already), rs = [], wrapper = $('<div><ul class="rules-wrapper"></ul></div>');
+
+		for (d in matches) {
+			rs.push(matches[d].length);
+
+			$('.rules-wrapper', wrapper).append(self.rules.view('disable', d, ['*'], true, false).find('> li').find('input').remove().end());
+		}
+
+		if (rs.length && !force_new) {		
+			var d, para = _('Would you like to delete ' + (rs.length === 1 ? 'it' : 'them') + ', or add a new one?'),
+					button = _('Delete Rule' + (rs.length === 1 ? '' : 's'));
+
+			$('li.domain-name', wrapper).removeClass('hidden').addClass('no-disclosure');
+
+			new Poppy(left, top, [
+				'<p>', _('The following rule' + (rs.length === 1 ? ' is' : 's are') + ' affecting JavaScript Blocker on this host:'), '</p>',
+				wrapper.html(),
+				'<p>', para, '</p>',
+				'<div class="inputs">',
+					'<input class="orange" type="button" value="', _('New Rule'), '" id="auto-new" /> ',
+					'<input class="delete" type="button" value="', button, '" id="auto-restore" />',
+				'</div>'].join(''), function () {
+					$$('#auto-new').click(function () {
+						self.add_disable_rule(host, left, top, already, true);
+					}).siblings('#auto-restore').click(function () {
+						new Poppy();
+
+						self.rules.remove_matches('disable', matches);
+
+						Tabs.messageActive('reload');
+					});
+				});
+			return;
+		}
+
+		new Poppy(left, top, [
+			'<p class="misc-info">', _('Adding a disable Rule'), '</p>',
+			'<p>',
+				'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+				'<label for="domain-script-temporary">&thinsp;', _('Temporary rule'), '</label> ',
+			'</p>',
+			'<p>',
+				Template.create('domain_picker', { page_parts: this.utils.domain_parts(host) }),
+			'</p>',
+			'<p>',
+				'<select id="which-type" class="blocked-color">',
+					'<option value="2">', _('Disable JavaScript Blocker'), '</option>',
+					'<option value="3">', _('Enable JavaScript Blocker'), '</option>',
+				'</select>',
+				' <select id="domain-script" class="kind-disable single">',
+					'<option>', _('JavaScript Blocker'), '</option>',
+				'</select>',
+				' <input class="orange" id="domain-script-continue" type="button" value="', _('Save'), '" />',
+			'<p>'
+		].join(''), function () {
+			$$('#which-type').change(function () {
+				$(this).toggleClass('blocked-color', this.value === '2');
+				$(this).toggleClass('allowed-color', this.value === '3');
+			}).siblings('#domain-script-continue').click(function () {
+				new Poppy();
+
+				self.rules.add('disable', $$('#domain-picker').val(), '*', $$('#which-type').val(), true,$$('#domain-script-temporary').is(':checked'));
+
+				Tabs.messageActive('reload');
+			});
+		});
+	},
 	add_rule_host: function (me, url, left, top, allow, return_a) {
 		var self = this,
 				hostname = me.parent().data('url'), rule,
 				one_script = me.parent().data('script'),
 				kind = me.parent().data('kind'),
 				proto = self.utils.active_protocol(one_script[0]),
+				for_host = me.parents('.host-section').attr('data-host'),
 				parts = ~['HTTP', 'HTTPS', 'FTP'].indexOf(proto) ? self.utils.domain_parts(hostname) : [hostname, '*'], a = [],
-				page_parts = self.utils.domain_parts(self.host), n,
+				page_parts = self.utils.domain_parts(for_host), n,
 				opt = '<option value="{0}">{1}</option>';
 				
 		if (kind !== 'script' && !this.donationVerified)
@@ -2191,11 +2239,11 @@ var Template = {
 		else {
 			switch (hostname) {
 				case 'blank':
-					a.push(this.utils.fill(opt, ['blank', 'blank'])); break;
+					a.push(this.utils.fill(opt, ['ABOUT:blank', 'blank'])); break;
 				case 'Data URI':
-					a.push(this.utils.fill(opt, ['^data:.*$', 'Data URI'])); break;
+					a.push(this.utils.fill(opt, ['DATA:*', 'Data URI'])); break;
 				case 'JavaScript Protocol':
-					a.push(this.utils.fill(opt, ['^javascript:.*$', 'JavaScript Protocol'])); break;
+					a.push(this.utils.fill(opt, ['JAVASCRIPT:*', 'JavaScript Protocol'])); break;
 				default:
 					for (var x = 0; x < parts.length - 1; x++)
 						if (this.rules.simplified)
@@ -2211,7 +2259,7 @@ var Template = {
 
 		var cs = [
 			'<option value="', allow ? 1 : 0, '">', allow ? _('Allow') : _('Block'), '</option>',
-			'<option value="42">', _('Hide'), '</option>'
+			'<option value="42">', _('Hide'), '</option>',
 		];
 			
 		new Poppy(left, top + 12, [
@@ -2226,7 +2274,7 @@ var Template = {
 				'<p>',
 					'<select id="which-type" class="', allow ? 'allowed' : 'blocked', '-color">', cs.join(''), '</select> ',
 					'<select id="domain-script" class="', proto, ' kind-', kind, a.length === 1 ? ' single' : '', '"', a.length === 1 ? ' tabindex="-1"' : '', '>', a.join(''), '</select> ',
-					'<input id="domain-script-continue" type="button" value="', _('Save'), '" />',
+					'<input class="orange" id="domain-script-continue" type="button" value="', _('Save'), '" />',
 				'</p>'].join(''), function () {
 					$$('#domain-script-continue').click(function () {
 						var	h = $$('#domain-picker').val(),
@@ -2236,56 +2284,57 @@ var Template = {
 						self.rules.add((hider ? 'hide_' : '') + kind, h, $$('#domain-script').val(), hider ? 42 : (allow ? 1 : 0), true, temp, proto);
 							
 						Tabs.messageActive('reload');
-
-						$$('#page-list')[0].selectedIndex = 0;
 					}).siblings('#which-type').change(function () {
 						$(this).toggleClass((allow ? 'allowed' : 'blocked') + '-color', this.value !== '42');
 					});
 		});
 	},
 	clear_ui: function () {
+		$$('.whoop').scrollTop(0);
+		$$('.some-list, .pending').removeClass('some-list pending');
+		$$('#host-sections').empty();
 		$$('#toggle-hidden').addClass('disabled');
-		$$('#main .urls-inner').empty();
-		$$('#page-list').removeData().find('optgroup').empty();
-		$$('.column > .info-container label ~ span').text(0).next().hide();
-		$$('#next-frame, #previous-frame, #frame-switcher .divider').addClass('disabled').filter('#previous-frame').find('.text').text(_('Main Page'));
+		this.lockUpdate = false;
 	},
-	adjust_columns: function (cb) {
-		var ac = $$('#allowed-column'), bc = $$('#blocked-column'),
-				buttons = '#block-domain, #allow-domain';
+	adjust_columns: function (no_animation) {
+		var self = this;
 
-		if (Settings.getItem('expandColumns') && ((!Settings.getItem('noExpandSimple') && this.simpleMode) || this.temporaryExpertMode)) {
+		if (!Settings.getItem('expandColumns') || (this.simpleMode && Settings.getItem('noExpandSimple') && !this.temporaryExpertMode)) return;
+
+		$(this.popover.body).toggleClass('no-animations', !!no_animation || this.speedMultiplier < 1);
+
+		$$('.host-section').each(function () {
+			var ac = $('.allowed-column', this), bc = $('.blocked-column', this),
+					expande = (Settings.getItem('noExpandSimple') && !self.simpleMode) || !self.simpleMode;
 			ac.toggleClass('column-collapsed', ac.hasClass('hidden'));
 			bc.toggleClass('column-collapsed', bc.hasClass('hidden'));
-		} else {
-			ac.removeClass('column-collapsed expanded');
-			bc.removeClass('column-collapsed expanded')
-		}
 
-		var collapsed = $$('.column-collapsed');
+			var collapsed = $('.column-collapsed', this);
 
-		if (collapsed.length === 1)
-			$$('.column:not(.column-collapsed)').addClass('expanded');
-		else if (collapsed.length === 2 || collapsed.length == 0)
-			$$('.column').removeClass('expanded');
+			if (collapsed.length === 1)
+				$('.column:not(.column-collapsed)', this).addClass('expanded');
+			else if (collapsed.length === 2 || collapsed.length == 0)
+				$('.column', this).removeClass('expanded');
 
-		var expanded = $$('.column.expanded'), id = expanded.attr('id');
+			var expanded = $('.column.expanded', this), id = expanded.length ? (expanded.hasClass('blocked-column') ? 'blocked-column' : 'allowed-column') : null;
 
-		if (expanded.length)
-			expanded.find(buttons).show(200 * this.speedMultiplier);
+			$('.allowed-blocked-columns', this).removeClass('blocked-column-expanded allowed-column-expanded none-expanded').addClass((id || 'none') + '-expanded');
 
-		if (collapsed.length === 2 || collapsed.length === 0)
-			$$(buttons).show(200 * this.speedMultiplier);
-		else
-			collapsed.find(buttons).hide(200 * this.speedMultiplier);
+			setTimeout(function (bc, ac) {
+				bc.css('minHeight', '');
+				ac.css('minHeight', '');
+			}, 405 * (no_animation ? 0.025 : self.speedMultiplier), bc, ac);
 
-		$$('#allowed-blocked-columns').removeClass('blocked-column-expanded allowed-column-expanded none-expanded').addClass((id || 'none') + '-expanded');
+			self.utils.timer.timeout('remove_no_animation', function () {
+				$(self.popover.body).removeClass('no-animations');
+			}, 100);
+		});
 	},
 	bind_events: function(some, host) {
 		if (!this.popover) return;
 
 		var add_rule, remove_rule, self = this,
-				alblspan = '#allowed-script-urls ul li:not(.show-me-more) span, #blocked-script-urls ul li:not(.show-me-more) span';
+				alblspan = '.allowed-script-urls ul li:not(.show-me-more) span, .blocked-script-urls ul li:not(.show-me-more) span';
 		
 		function toggle_find_bar (show_only) {
 			var f = $$('#find-bar'),
@@ -2351,9 +2400,9 @@ var Template = {
 			}
 			
 			function script_info () {
-				var host = encodeURI(self.simpleMode && !self.temporaryExpertMode? t.text() : self.utils.active_host(t.text()));
+				var host = encodeURI(self.useSimpleMode()? t.text() : self.utils.active_host(t.text()));
 				
-				new Poppy(left, off.top + 10, [
+				new Poppy(left, off.top + 11, [
 					'<p class="misc-info">', _('Safety Information for {1}', [host]), '</p>',
 					'<p><a class="outside" href="https://www.mywot.com/en/scorecard/', host, '">WOT Scorecard</a></p>',
 					'<div class="divider" style="margin-bottom: 2px;margin-top: 3px;"></div>',
@@ -2364,7 +2413,7 @@ var Template = {
 			}
 			
 			if (kind === 'special') {
-				var wh = t.parents('.urls-wrapper').is('#blocked-script-urls') ? 0 : 1,
+				var wh = t.parents('.urls-wrapper').is('.blocked-script-urls') ? 0 : 1,
 						sp = t.parent().data('script')[0];
 
 				if (~sp.indexOf('customp')) {
@@ -2372,31 +2421,30 @@ var Template = {
 					codeify(self.customScripts[which]()[sp].func, true);
 					self.utils.zoom($$('#misc'));
 				} else
-					new Poppy(left, off.top + 10, _(sp + ':' + wh, [self.special_enabled(sp)]));
-			} else if (self.simpleMode && !self.temporaryExpertMode && (!pa.hasClass('by-rule') || pa.hasClass('unblockable'))) {
+					new Poppy(left, off.top + 11, _(sp + ':' + wh, [self.special_enabled(sp)]));
+			} else if (self.useSimpleMode() && (!pa.hasClass('by-rule') || pa.hasClass('unblockable'))) {
 				script_info();
 			} else 
-				new Poppy(left, off.top + 10, [
+				new Poppy(left, off.top + 11, [
 					'<input type="button" value="', _('More Info'), '" id="script-info" /> ',
 					!self.temporaryExpertMode && (self.simpleMode || kind === 'embed') ? '' : '<input type="button" value="' + _('View ' + kind + ' Source') + '" id="view-script" /> ',
-					pa.hasClass('by-rule') && !pa.hasClass('unblockable') ? '<input type="button" value="' + _('Show Matched Rules') + '" id="matched-rules" />' : ''].join(''), function () {
+					pa.hasClass('by-rule') && !pa.hasClass('unblockable') ? '<input class="orange" type="button" value="' + _('Show Matched Rules') + '" id="matched-rules" />' : ''].join(''), function () {
 						$$('#poppy').find('#script-info').click(script_info).end().find('#matched-rules').click(function () {
-							var block_allow = !me.parents('div').attr('id').match(/blocked/),
-									matches = self.rules.matching_URLs(pa.data('kind'), self.host, pa.data('script'), block_allow, true), d,
+							var block_allow = !me.parents('.column').hasClass('blocked-column'),
+									matches = self.rules.matching_URLs(pa.data('kind'), me.parents('.host-section').attr('data-host'), pa.data('script'), block_allow, true), d,
 									con = $('<div />'),
 									wrapper = $('<ul class="rules-wrapper" />').appendTo(con);
 							
-							con.prepend('<p class="misc-info">' + _('Matched ' + me.parents('.main-wrapper').attr('id').substr(14) + ' Rules') + '</p>');
+							con.prepend('<p class="misc-info">' + _('Matched ' + me.parents('.main-wrapper').attr('data-kind') + ' Rules') + '</p>');
 
 							for (d in matches)
 								wrapper.append(self.rules.view(pa.data('kind'), d, pa.data('script'), true, false, block_allow ? 1 : 0).find('> li').find('input').remove().end());
 
 							$('li.domain-name', wrapper).removeClass('hidden').addClass('no-disclosure');
 
-							new Poppy(left, off.top + 10, con);
+							new Poppy(left, off.top + 11, con);
 						}).end().find('#view-script').click(function () {
 							if (kind === 'image') {
-								new Poppy();
 								$$('#misc .misc-header').empty();
 								$$('#beautify-script').remove();
 								$$('#misc-content').html('<img src="' + t.html() + '" />');
@@ -2413,9 +2461,9 @@ var Template = {
 									codeify(unescape(dd[4]));
 									new Poppy();
 								} else
-									new Poppy(left, off.top + 10, '<p>' + _('This data URI cannot be displayed.') + '</p>');
+									new Poppy(left, off.top + 11, '<p>' + _('This data URI cannot be displayed.') + '</p>');
 							} else {
-								new Poppy(left, off.top + 10, '<p>' + _('Loading ' + kind) + '</p>', $.noop, function () {
+								new Poppy(left, off.top + 11, '<p>' + _('Loading ' + kind) + '</p>', $.noop, function () {
 									try {
 										$.ajax({
 											dataType: 'text',
@@ -2425,11 +2473,11 @@ var Template = {
 												new Poppy();
 											},
 											error: function (req) {
-												new Poppy(left, off.top + 10, '<p>' + req.statusText + '</p>');
+												new Poppy(left, off.top + 11, '<p>' + req.statusText + '</p>');
 											}
 										});
 									} catch (er) {
-										new Poppy(left, off.top + 10, '<p>' + er + '</p>');
+										new Poppy(left, off.top + 11, '<p>' + er + '</p>');
 									}
 								}, 0.1);
 							}
@@ -2501,7 +2549,12 @@ var Template = {
 				break;
 			
 				case 16: // SHIFT
-					self.speedMultiplier = !self.useAnimations ? 0.001 : 20; break;
+					self.speedMultiplier = !self.useAnimations ? 0.001 : 20;
+
+					self.utils.timer.timeout('no_more_shift', function () {
+						self.speedMultiplier = !self.useAnimations ? 0.001 : 1;
+					}, 3000);
+				break;
 			
 				case 93:
 				case 91: // COMMAND/CONTROL
@@ -2595,7 +2648,50 @@ var Template = {
 		});
 
 		$$('#main').scroll(function (e) {
-			self.lockUpdate = $(this).scrollTop() > 10;
+			self.lockUpdate = this.scrollTop > 10;
+		});
+
+		$(Popover.window()).on('mousemove', function (event) {
+			if (self.doResize) {
+				var height = (event.pageY > self.resizeStartPosition) ? self.doResize + (event.pageY - self.resizeStartPosition) : self.doResize - (self.resizeStartPosition - event.pageY);
+
+				height = Math.max(200, height);
+
+				Popover.object().height = height;
+
+				var sel = Popover.window().getSelection();
+				sel.removeAllRanges();
+
+				self.utils.timer.timeout('unset_resize', function (height) {
+					self.doResize = false;
+
+					Settings.setItem(self.useSimpleMode() ? 'popoverSimpleHeight' : 'popoverHeight', height);
+				}, 400, [height]);
+			}
+		}).on('blur', function () {
+			var lis = $$('#main li.pending');
+
+			lis.each(function () {
+				var li = $(this), lid = $.data(li[0]), rtype = li.parents('.urls-wrapper').is('.blocked-script-urls'),
+						use_host = li.parents('.host-section').attr('data-host'),
+						host_parts = self.utils.domain_parts(use_host);
+
+				switch (Settings.getItem('quickAddType')) {
+					case '0':
+						use_host = host_parts[0]; break;
+					case '1':
+						use_host = (host_parts.length > 2 ? '.' : '') + host_parts[host_parts.length - 2]; break;
+					case '2':
+						use_host = '.*'; break;
+				}
+
+				self.rules.add(lid.kind, use_host, lid.pending_data, rtype ? 1 : 0, true, Settings.getItem('quickAddTemporary'));
+
+				self.utils.timer.timeout('quick_add_reload', function (lis) {
+					lis.addClass('allow-update').removeClass('pending');
+					Tabs.messageActive('reload');
+				}, 50, [lis]);
+			});
 		});
 		
 		$(this.popover).on('click', '.rules-wrapper li input', function () {	
@@ -2617,53 +2713,46 @@ var Template = {
 
 			if (!self.utils.confirm_click(this)) return false;
 
-			if (this.value === _('Restore')) {
-				self.rules.add(li.data('kind'), li.data('domain'), li.data('rule'), li.data('type') * -1, false, true);
-				this.value = _('Disable');
-				span.addClass(span[0].className.substr(span[0].className.indexOf('type')).replace('--', '-'))
-					.removeClass('type--2').addClass('temporary').siblings('.bubble').addClass('temporary bubble-2').removeClass('bubble--2');
-			} else {
-				self.rules.remove(li.data('kind'), li.data('domain'), li.data('rule'));
+			self.rules.remove(li.data('kind'), li.data('domain'), li.data('rule'));
+						
+			li.animate({
+				top: li.height() - parseInt(li.css('marginTop')),
+				right: -li.outerWidth(),
+				opacity: 0,
+				padding: 0,
+				marginTop: -li.height()
+			}, 200 * self.speedMultiplier, function () {
+				$(this).remove();
 				
-				if (is_automatic) {
-					this.value = _('Restore');
-					span.addClass(span[0].className.substr(span[0].className.indexOf('type')).replace('-', '--'))
-						.removeClass('type-2 temporary').siblings('.bubble').removeClass('temporary bubble-2').addClass('bubble--2');
+				$('.divider:last', parent).addClass('invisible');
+				
+				if ($('li', parent).length === 0) {
+					parent.parent().prev().hide(200 * self.speedMultiplier, function () {
+						$(this).remove();
+					});
+
+					parent.parent().hide(200 * self.speedMultiplier, function () {
+						$(this).remove();
+
+						$$('#domain-filter').trigger('search');
+					});
 				}
-			}
-			
-			if (!is_automatic) {
-				li.animate({
-					top: li.height() - parseInt(li.css('marginTop')),
-					right: -li.outerWidth(),
-					opacity: 0,
-					padding: 0,
-					marginTop: -li.height()
-				}, 200 * self.speedMultiplier, function () {
-					$(this).remove();
-					
-					$('.divider:last', parent).addClass('invisible');
-					
-					if ($('li', parent).length === 0) {
-						parent.parent().prev().remove();
-						parent.parent().remove();
-					}
-					
-					$$('#domain-filter').trigger('search');
-				});
-			}
+				
+				$$('#domain-filter').trigger('search');
+			});
 		}).on('click', '.rules-wrapper li:not(.domain-name) span:not(.nodbl).rule', function (e) {
 			var t = $(this), off = t.offset();
 
 			if (self.rules.using_snapshot) return new Poppy(e.pageX, off.top + 12, _('Snapshot in use'));
 
-			new Poppy(e.pageX || 40, off.top + 12, [t.hasClass('type-4') || t.hasClass('type-5') ?
+			new Poppy(e.pageX || 40, off.top + 12, t.hasClass('type-2') || t.hasClass('type-3') ? 
+					_('Disable rules cannot be modified.') : ([t.hasClass('type-4') || t.hasClass('type-5') ?
 					_('Predefined rules cannot be edited.') :
-					!t.hasClass('type-900') ? '<input type="button" value="' + _('Edit Rule') + '" id="rule-edit" /> ' : '',
-					'<button id="rule-new">' + _('New Rule') + '</button>'].join(''), function () {
+					!t.hasClass('type-900') ? '<input class="orange" type="button" value="' + _('Edit Rule') + '" id="rule-edit" /> ' : '',
+					'<button class="orange" id="rule-new">' + _('New Rule') + '</button>'].join('')), function () {
 				var domain = t.parent().data('domain'), dv = self.utils.escape_html(domain);
 				$$('#poppy #rule-edit, #poppy #rule-new').filter('#rule-new')
-						.html(_('New rule for {1}', [(domain === '.*' ? _('All Domains') : dv)])).end().click(function () {
+						.html(_('New ' + t.parent().data('kind') + ' rule for {1}', [(domain === '.*' ? _('All Domains') : dv)])).end().click(function () {
 					var is_new = this.id === 'rule-new',
 							hider = ~t.parent().data('kind').indexOf('hide_'),
 							u = is_new ? '' : t.parent().data('rule'),
@@ -2693,7 +2782,7 @@ var Template = {
 									a = $('<input />').attr({
 										type: 'text',
 										id: 'domain-picker',
-										'class': 'domain-picker',
+										'class': 'domain-picker orange',
 										placeholder: padd.me.domain === '.*' ? _('All Domains') : padd.me.domain
 									}).width(w);
 
@@ -2757,10 +2846,7 @@ var Template = {
 			var ul = $('ul', t);
 			
 			if (ul.is(':animated')) return;
-			
-			me.toggleClass('hidden');
-			x.toggleClass('hidden');
-			
+					
 			t.css('display', 'block');
 			
 			if (me.hasClass('floater') && !hid)
@@ -2769,14 +2855,24 @@ var Template = {
 			var c = self.collapsedDomains(),
 					dex = c.indexOf(d),
 					rulesList = $$('#rules-list'),
-					hid = !me.hasClass('hidden'),
+					hid = me.hasClass('hidden'),
 					o = t.outerHeight(true),
 					h = t.height(),
 					height;
+
+			if (hid) {
+				me.toggleClass('hidden');
+				x.toggleClass('hidden');
+			}
 										
 			ul.css({ marginTop: hid ? -o : 0 }).animate({
 				marginTop: hid ? 0 : -o
 			}, 200 * self.speedMultiplier, function () {
+				if (!hid) {
+					me.toggleClass('hidden');
+					x.toggleClass('hidden');
+				}
+
 				if (!me.hasClass('hidden')) {
 					if (dex > -1) c.splice(dex, 1);
 				} else {
@@ -2791,7 +2887,7 @@ var Template = {
 				rulesList.trigger('scroll');
 			});
 						
-			if (!~this.className.indexOf('hidden')) {
+			if (hid) {
 				var offset = t.offset(),
 						bottomView = offset.top + h;
 				
@@ -2819,8 +2915,6 @@ var Template = {
 			}, 50, [$(this), e]);
 		}).on('enter', '.domain-name', function (e) {
 			$(this).click();
-		}).on('enter', '#next-frame, #previous-frame', function (e) {
-			$(this).click().toggleClass('current-selection', !~this.className.indexOf('disabled'));
 		}).on('enter', '#main .actions-bar li', function (e) {
 			self.utils.timer.timeout('trigger_action', function (me) {
 				me.trigger('click', 1);
@@ -2831,6 +2925,21 @@ var Template = {
 			$(this).trigger('click', { pageX: 30 });
 		}).on('enter', '.rules-wrapper span', function (e) {
 			$(this).trigger('click', { pageX: 30 });
+		}).on('click', '#apply-quick-add', function () {
+			this.disabled = true;
+
+			$$(Popover.window()).trigger('blur');
+		}).on('click', '#clear-quick-add', function () {
+			this.disabled = true;
+
+			self.popover_current = null;
+			self.lockUpdate = false;
+
+			$$('li.pending').addClass('allow-update').removeClass('pending');
+
+			$$('#quick-add-info').slideUp(200 * self.speedMultiplier);
+
+			if (!$$('.some-list').length) Tabs.messageActive('updatePopover');
 		}).on('mousedown', alblspan, function (e, t) {
 			var span = $(this);
 
@@ -2857,102 +2966,140 @@ var Template = {
 		}).on('click', alblspan, function (e, t) {
 			if (self.disabled) return false;
 
+			if(!e.isTrigger) {
+				e.stopImmediatePropagation();
+
+				new Poppy(true);
+			}
+
 			e = t || e;
 			
 			var span = $(this),
-					blocked = !$(this).parents('.urls-wrapper').is('#blocked-script-urls'),
+					blocked = !$(this).parents('.urls-wrapper').is('.blocked-script-urls'),
 					li = $(this).parent(),
 					lid = $.data(li[0]),
 					off = $(this).offset(),
 					left = e.pageX,
 					url = lid.url,
-					script = lid.script;
+					script = lid.script,
+					allow = li.parents('.column').is('.allowed-column');
 
 			clearTimeout($(this).data('quick_add_ignore_timeout'));
 
 			if (span.hasClass('triggered')) return span.removeClass('triggered');
 			if (self.rules.using_snapshot) return new Poppy(left, off.top + 12, _('Snapshot in use'));
-			if (li.hasClass('unblockable')) return new Poppy(left, off.top + 12, _('Unblockable ' + lid.kind));
+			if (li.hasClass('unblockable')) {
+				var proto = self.utils.active_protocol(lid.unblockable),
+						text = self.useSimpleMode() ? self.utils.active_host(lid.unblockable) : lid.unblockable;
 
-			if (self.rules.quick && !li.hasClass('ignore-quick-add')) {
-				var me = span, parts = self.utils.domain_parts(self.simpleMode && !self.temporaryExpertMode ? url : self.utils.active_host(url)),
-						pi = 0, to_do = null, to_do_clean, special = ~lid.kind.indexOf('special'), span = $('> span', li),
-						host_parts = self.utils.domain_parts(self.host), use_host = self.host;
+				return new Poppy(left, off.top + 12, _('Unblockable ' + lid.kind, [proto, text]));
+			}
 
-				switch (Settings.getItem('quickAddType')) {
-					case '0':
-						use_host = host_parts[0]; break;
-					case '1':
-						use_host = (host_parts.length > 2 ? '.' : '') + host_parts[host_parts.length - 2]; break;
-					case '2':
-						use_host = '.*'; break;
-				}
+			var	for_host = span.parents('.host-section').attr('data-host');
+
+			if (Settings.getItem('quickAdd') && !li.hasClass('ignore-quick-add') && (self.useSimpleMode() || (!self.useSimpleMode() && !Settings.getItem('quickAddSimpleOnly')))) {
+				var me = span, parts = self.utils.domain_parts(self.useSimpleMode() ? url : self.utils.active_host(url)),
+						pi = 0, special = ~lid.kind.indexOf('special'), span = $('> span', li);
 
 				parts.splice(-1);
 				span.text(url);
 
 				if (span.hasClass('SAFARI-EXTENSION')) parts = [parts[0]];
 
-				if (li.hasClass('pending')) {
-					if (self.simpleMode && !special && !self.temporaryExpertMode) {
-						pi = lid.pending_index + 1;
+				parts = special || !self.simpleMode || self.temporaryExpertMode ? script : parts;
 
-						if (pi < parts.length) {
-							li.data('pending_index', pi);
+				if (!li.hasClass('pending')) {
+					$$('#apply-quick-add, #clear-quick-add').prop('disabled', false);
 
-							to_do = parts[pi];
-						}
+					var rule, begin = $$('<span />'), select = $$('<select />').attr('id', 'quick-add-select'),
+							begin_message = self.rules.make_message(lid.kind, self.useSimpleMode() ? (lid.kind === 'special' ? '' : (lid.protocol + ':' + '*')) : '^$', !allow, Settings.getItem('quickAddTemporary')),
+							end_message;
+
+					for (var rr = 0; parts[rr]; rr++) {
+						end_message = [];
+						rule = self.useSimpleMode() ? ((rr > 0 ? '.' : '') + parts[rr]) : '^' + self.utils.escape_regexp(parts[rr]) + (!special ? '((\\?|#)+.*)?$' : '$')
+
+						if (self.rules.simplified && !special) {
+							switch (lid.protocol) {
+								case 'DATA':
+								case 'JAVASCRIPT':
+									rule = lid.protocol + ':*'
+								break;
+
+								case null:
+								case undefined:
+								case false:
+									rule = ':' + rule;
+								break;
+
+								default:
+									end_message.push(rr === 0 ? _('from') : _('within'), rr === 0 ? rule : rule.substr(1));
+									rule = lid.protocol + ':' + rule
+								break;
+							}
+						} else if (self.useSimpleMode() && special)
+							end_message.push(_(rule).toLowerCase());
+						else if (!self.useSimpleMode())
+							begin_message[begin_message.length - 1] = self.utils.escape_html(rule);
+
+						$('<option />')
+							.val(rule)
+							.attr('data-part', parts[rr])
+							.text(end_message.join(' '))
+							.appendTo(select)
 					}
-				} else
-					to_do = special || !self.simpleMode || self.temporaryExpertMode ? script[0] : parts[0];
 
-				if (to_do) {
-					to_do_clean = self.utils.escape_regexp(to_do);
+					begin.append(begin_message.join(' '));
 
-					var rule = self.simpleMode && !self.temporaryExpertMode ? ((pi > 0 ? '.' : '') + to_do) : '^' + to_do_clean + (!special ? '((\\?|#)+.*)?$' : '$');
-					rule = self.rules.simplified && !special ? (lid.protocol || '') + ':' + rule : rule;
+					select.toggleClass('single', select.find('option').length === 1);
+					
+					new Poppy(left, off.top + 12, [
+						'<p class="quick-add-more">', _('Press and hold for more options.'), '</p>',
+						'<p id="quick-add-rule"><span class="bubble bubble-', allow ? 0 : 1, Settings.getItem('quickAddTemporary') ? ' temporary' : '', '"></span>', begin[0].outerHTML, ' ', select[0].outerHTML, '</p>'].join(''), function () {
+						$$('#quick-add-rule select').change(function () {
+							li.data('pending_index', this.selectedIndex).data('pending_data', this.value);
+
+							var to_do = $(this).find('option:selected').attr('data-part');
+
+							span.html(url.replace(new RegExp((special ? url : self.utils.escape_regexp(to_do)) + '$', 'i'), '<mark class="quick-add">' + self.utils.escape_html(special ? url : to_do) + '</mark>'));
+						})
+					}, null, 0.15);
+
+					var first = select.find('option:first'), to_do = first.attr('data-part');
 
 					li.addClass('pending')
-						.data('pending_index', pi)
-						.data('pending_data', rule)
+						.data('pending_index', 0)
+						.data('pending_data', first.val())
 						.find('.info-link').text('+');
 
-					span.html(url.replace(new RegExp((pi > 0 ? '\\.' : '') + (special ? url : to_do_clean) + '$', 'i'), '<mark class="quick-add">' + (pi > 0 ? '.' : '') + (special ? url : to_do) + '</mark>'));
-				} else
+					span.html(url.replace(new RegExp((special ? url : self.utils.escape_regexp(to_do)) + '$', 'i'), '<mark class="quick-add">' + self.utils.escape_html(special ? url : to_do) + '</mark>'));
+				} else {
+					new Poppy();
+
 					li.removeClass('pending').removeData('pending_index').find('.info-link').text('?');
+				}
 
-				self.utils.timer.timeout('quick_add', function (self, host) {
-					var lis = $$('#main li.pending');
-
-					lis.each(function () {
-						var li = $(this), lid = $.data(li[0]), rtype = li.parents('.urls-wrapper').is('#blocked-script-urls');
-
-						self.rules.add(lid.kind, host, lid.pending_data, rtype ? 1 : 0, true, Settings.getItem('quickAddTemporary'));
-
-						self.utils.timer.timeout('quick_add_reload', function (lis) {
-							lis.addClass('allow-update');
-							$$('#page-list')[0].selectedIndex = 0;
-							Tabs.messageActive('reload');
-						}, 200, [lis]);
-					});
-				}, 1200, [self, use_host]);
+				if ($$('li.pending').length) $$('#quick-add-info').slideDown(200 * self.speedMultiplier);
+				else $$('#quick-add-info').slideUp(200 * self.speedMultiplier);
 
 				return;
 			}
 
 			li.removeClass('ignore-quick-add');
+
+			$$('#quick-add-info').slideUp(200 * self.speedMultiplier);
 			
-			var page_parts = self.utils.domain_parts(self.host), n,
+			var page_parts = self.utils.domain_parts(for_host), n,
 					padd = self.poppies.add_rule.call({
-						real_url: script[0],
-						url: '^' + (self.simpleMode && !self.temporaryExpertMode ? self.utils.escape_regexp(script[0].substr(0, script[0].indexOf(url))) : '') + self.utils.escape_regexp(url) + (self.simpleMode && !self.temporaryExpertMode ? '\\/.*' : '') + '$',
+						real_url: ~['HTTP', 'HTTPS', 'FTP'].indexOf(self.utils.active_protocol(script[0])) ? script[0] : null,
+						url: '^' + (self.useSimpleMode() ? self.utils.escape_regexp(script[0].substr(0, script[0].indexOf(url))) : '') + self.utils.escape_regexp(url) + (self.useSimpleMode() ? '\\/.*' : '') + '$',
 						e: $(this).siblings('span'),
 						li: $(this).parent(),
-						domain: self.host,
+						domain: for_host,
 						is_new: 1,
 						header: _('Adding a ' + lid.kind + ' Rule For {1}', [Template.create('domain_picker', { page_parts: page_parts, no_label: true })])
 				}, self),
-				matches = self.rules.matching_URLs(li.data('kind'), self.host, script, blocked);
+				matches = self.rules.matching_URLs(li.data('kind'), for_host, script, blocked);
 
 			padd.onshowend = function () {
 				$$('#select-type-' + (blocked ? 'block' : 'allow')).click();
@@ -2986,11 +3133,11 @@ var Template = {
 						wrapper.html(),
 						'<p>', para, '</p>',
 						'<div class="inputs">',
-							'<input type="button" value="', _('New Rule'), '" id="auto-new" /> ',
-							'<input type="button" value="', button, '" id="auto-restore" />',
+							'<input class="orange" type="button" value="', _('New Rule'), '" id="auto-new" /> ',
+							'<input class="delete" type="button" value="', button, '" id="auto-restore" />',
 						'</div>'].join(''), function () {
 							$$('#poppy #auto-new').click(function () {
-								if ((self.simpleMode && !self.temporaryExpertMode) || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
+								if ((self.useSimpleMode()) || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
 								else if (!self.donationVerified) return false;
 
 								new Poppy(left, off.top + 12, padd);
@@ -3006,12 +3153,12 @@ var Template = {
 				}
 			}
 
-			if ((self.simpleMode && !self.temporaryExpertMode) || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
+			if ((self.useSimpleMode()) || ~li.data('kind').indexOf('special')) return self.add_rule_host(span, script, left, off.top, !blocked);
 			else if (!self.donationVerified) return false;
 			
 			new Poppy(left, off.top + 12, padd);
-		}).on('click', '#allowed-script-urls .info-link, #blocked-script-urls .info-link', url_display)
-			.on('click', '#unblocked-script-urls li:not(.show-me-more) span', function() {
+		}).on('click', '.allowed-script-urls .info-link, .blocked-script-urls .info-link', url_display)
+			.on('click', '.unblocked-script-urls li:not(.show-me-more) span', function() {
 			var t = $(this).text();
 			
 			function do_highlight (t, no_zoom) {
@@ -3150,9 +3297,11 @@ var Template = {
 						}, 50, [self]);
 					}, [self]);
 			}, [self]);
-		}).on('click', '#allow-domain, #block-domain', function () {
-			var page_parts = self.utils.domain_parts(self.host), n, off = self.utils.position_poppy(this, 0, 14),
-					me = this, kinds = [], block = this.id === 'block-domain',
+		}).on('click', 'a.scripts-count, a.all-action-link', function () {
+			if (~this.className.indexOf('all-action-link')) return $(this).prev().click();
+
+			var page_parts = self.utils.domain_parts($(this).parents('.host-section').attr('data-host')), n, off = self.utils.position_poppy(this, -1, 13),
+					me = this, kinds = [], block = !~this.className.indexOf('block'),
 					left = off.left, top = off.top;
 
 			if (self.rules.using_snapshot) return new Poppy(left, top, _('Snapshot in use'));
@@ -3175,7 +3324,7 @@ var Template = {
 							'</p>',
 							'<p>',
 								Template.create('domain_picker', { page_parts: page_parts }),
-								' <input id="domain-script-continue" type="button" value="', _('Save'), '" />',
+								' <input class="orange" id="domain-script-continue" type="button" value="', _('Save'), '" />',
 							'</p>'].join(''), function () {
 							$$('#which-type').change(function () {
 								$(this).toggleClass((!block ? 'allowed' : 'blocked') + '-color', this.value !== '42');
@@ -3201,15 +3350,13 @@ var Template = {
 								}
 								
 								Tabs.messageActive('reload');
-
-								$$('#page-list')[0].selectedIndex = 0;
 							});
 						});	
 					}
 			
 			if (self.donationVerified)
 				for (var kind in self.rules.data_types) {
-					if (!Settings.getItem('enable' + kind) || ~kind.indexOf('hide_')) continue;
+					if (!Settings.getItem('enable' + kind) || ~kind.indexOf('hide_') || kind === 'disable') continue;
 							
 					kinds.push(['<input class="ba-kind" id="ba-kind-', kind, '" type="checkbox" ', (!self.collapsed(kind + 'Unchecked') ? 'checked' : ''), ' />',
 							'<label for="ba-kind-', kind, '">&nbsp;', _(kind.charAt(0).toUpperCase() + kind.substr(1) + 's'), '</label>'].join(''));
@@ -3248,7 +3395,7 @@ var Template = {
 										'<option value="', block ? 0 : 1, '">', block ? _('Block') : _('Allow'), '</option>',
 										'<option value="42">', _('Hide'), '</option>',
 									'</select>'].join('')]),
-								' <input type="button" class="save-some" id="save-some-', block ? 0 : 1, '" value="', _('Save'), '" />',
+								' <input type="button" class="save-some orange" id="save-some-', block ? 0 : 1, '" value="', _('Save'), '" />',
 							'</p>',
 							'<div class="divider"></div>',
 						'</div>'
@@ -3256,11 +3403,15 @@ var Template = {
 
 					parent.addClass('some-list');
 
+					$$('#clear-quick-add:visible:not([disabled])').click();
+
 					var isHidden = $$((block ? '.allowed' : '.blocked') + '-label.hidden').length;
 
-					$$((block ? '.allowed' : '.blocked') + '-label.hidden').click();
+					$$((block ? '.allowed' : '.blocked') + '-label.hidden:first').click();
 
-					self.utils.timer.timeout('show_some_list', function () {
+					new Poppy();
+
+					self.utils.timer.timeout('show_some_list', function (ob, parent) {
 						for (var i = 0; ob[i]; i++) {
 							if (i % 2) continue;
 
@@ -3286,17 +3437,15 @@ var Template = {
 
 								cl.html([
 									'<input type="checkbox" class="some-checkbox" /> ',
-									((self.simpleMode && !self.temporaryExpertMode) || data.kind === 'special' ? [
+									((self.useSimpleMode()) || data.kind === 'special' ? [
 										'<select class="', op.length === 1 ? 'single' : '', ' ', proto, '"', op.length === 1 ? ' tabindex="-1"' : '', '>', opts, '</select>'
 									] : [
-										'<textarea placeholder="Rule" wrap="off" class="rule-input">^', self.utils.escape_regexp(data.script[0]), '$</textarea>'
+										'<textarea placeholder="Rule" wrap="off" class="rule-input orange">^', self.utils.escape_regexp(data.script[0]), '$</textarea>'
 									]).join('')
 								].join('')).hide().insertAfter(li).slideDown(200 * self.speedMultiplier)
 									.attr('title', op.length === 1 ? $(op[0]).html() : null);
 							}
 						}
-
-						new Poppy();
 
 						parent.prepend(c).parent().prev().slideUp(200 * self.speedMultiplier);
 						c.slideDown(200 * self.speedMultiplier);
@@ -3327,10 +3476,8 @@ var Template = {
 							$$('.some-list').removeClass('some-list');
 
 							Tabs.messageActive('reload');
-
-							$$('#page-list')[0].selectedIndex = 0;
 						});
-					}, 450 * self.speedMultiplier * (isHidden ? 1 : 0));
+					}, 450 * self.speedMultiplier * (isHidden ? 1 : 0), [ob, parent]);
 				});
 			});
 		}).on('click', '#disable', function (event, ignore) {
@@ -3376,38 +3523,59 @@ var Template = {
 					else
 						$(this).parent().hide().prev().hide();
 			});
+		}).on('click', '#show-active-rules', function () {
+			var hosts = $$('.section-host').map(function () { return this.getAttribute('data-host'); }), host, active = '', all_parts = [];
+
+			if (!~this.className.indexOf('using')) {
+				for (var i = 0; host = hosts[i]; i++) {
+					var parts = self.domain_parts(host),
+							x = parts.slice(0, 1),
+							y = parts.slice(1);
+
+					x.push(x[0]);
+
+					parts = x.concat(y);
+					parts = parts.slice(0, -1);
+
+					$.merge(all_parts, parts);
+
+					parts = parts.map(function (v) { return self.utils.escape_regexp(v); })
+
+					active += '^' + parts.join('$|^\\.') + '$|';
+				}
+
+				active += '^' + _('All Domains') + '$';
+			}
+						
+			$$('#domain-filter').val(active).data({
+				parts: all_parts,
+				active: active.length ? active : false
+			}).trigger('search');
 		}).on('click', '#view-rules', function (e) {
 			if (!self.methodAllowed) return false;
 			
-			var offset = self.utils.position_poppy(this, 0, 14),
+			var offset = self.utils.position_poppy(this, 0, 17),
 					left = offset.left,
 					top = offset.top;
 			
 			new Poppy(left, top, [
 				'<p class="misc-info">', _('Active Temporary Rules'), '</p>',
-				'<input type="button" value="', _('Make Permanent'), '" id="rules-make-perm" /> ',
-				'<input type="button" value="', _('Revoke'), '" id="rules-remove-temp" /> ',
-				'<input type="button" value="', _('Show'), '" id="rules-show-temp" />',
+				'<input class="orange" type="button" value="', _('Make Permanent'), '" id="rules-make-perm" /> ',
+				'<input class="orange" type="button" value="', _('Revoke'), '" id="rules-remove-temp" /> ',
+				'<input class="orange" type="button" value="', _('Show'), '" id="rules-show-temp" />',
 				'<div class="divider" style="margin:7px 0 6px;"></div>',
-				'<input type="button" value="', _('Show All'), '" id="view-all" /> ',
-				'<input type="button" value="', _('Show Active'), '" id="view-domain" /> ',
-				self.donationVerified ? ['<input type="button" value="', _('Backup'), '" id="rules-backup" />'].join('') : '',
+				'<input class="orange" type="button" value="', _('Show All'), '" id="view-all" /> ',
+				'<input class="orange" type="button" value="', _('Show Active'), '" id="view-domain" /> ',
+				self.donationVerified ? ['<input class="orange" type="button" value="', _('Backup'), '" id="rules-backup" />'].join('') : '',
 				self.rules.using_snapshot ? [
-					' <input type="button" value="', _('Snapshot'), '" id="current-snapshot" />'].join('') : ''
-				].join(''), function () {
+					' <input class="purple" type="button" value="', _('Snapshot'), '" id="current-snapshot" />'].join('') : ''
+				].join(''), (function (left, top) {
 				$$('#current-snapshot').click(function () {
 					var pop = self.poppies.current_snapshot(!self.rules.snapshots.exist(self.rules.using_snapshot));
 
-					pop.onshowend = function () {
-						$$('#snapshots-show').off('click').on('click', function () {
-							new Poppy();
-
-							self.utils.zoom($$('#snapshots'));
-
-							self.rules.show_snapshots();
-						});
-					};
 					new Poppy(left, top, pop);
+
+					left = top = undefined;
 				});
 
 				$$('#view-domain').click(function () {
@@ -3415,6 +3583,8 @@ var Template = {
 					
 					$$('#view-all').click();
 					$$('#show-active-rules').removeClass('using').click();
+
+					left = top = undefined;
 				}).siblings('#view-all').click(function (event) {
 					if (this.disabled) return false;
 
@@ -3427,55 +3597,63 @@ var Template = {
 
 					self.rules.show();
 
-					new Poppy();
-
-					self.utils.zoom($$('#rules-list'), null, null, function () {
+					self.utils.zoom($$('#rules-list'), null, null, function() {
 						var parts = $$('#domain-filter').trigger('search').data('parts') || [];
-							
-						parts.forEach(function (part, i) {
-							$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + part + '"].hidden').click();
-						});
-					});		
+						
+						for (var i = 0; i < parts.length; i++)
+							$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + parts[i] + '"].hidden').click();
+					});
+
+					left = top = undefined;
 				}).siblings('#rules-make-perm, #rules-remove-temp').click(function () {
 					if (self.rules.using_snapshot) {
 						var off = self.utils.position_poppy(this, 0, 14);
 						return new Poppy(off.left, off.top, _('Snapshot in use'), null, null, null, null, true);
 					}
 
-					for (var key in self.rules.data_types) {
-						var rules = self.rules.for_domain(key, self.host), domain, rule, make_perm = this.id === 'rules-make-perm';
+					$$('.host-section').each(function () {
+						for (var key in self.rules.data_types) {
+							var rules = self.rules.for_domain(key, this.getAttribute('data-host')), domain, rule, make_perm = this.id === 'rules-make-perm';
 
-						for (domain in rules)
-							for (rule in rules[domain])
-								if (rules[domain][rule][1]) {
-									if (make_perm)
-										self.rules.add(key, domain, rule, rules[domain][rule][0], true, false);
-									else
-										self.rules.remove(key, domain, rule);
-								}
-					}
+							for (domain in rules)
+								for (rule in rules[domain])
+									if (rules[domain][rule][1]) {
+										if (make_perm)
+											self.rules.add(key, domain, rule, rules[domain][rule][0], true, false);
+										else
+											self.rules.remove(key, domain, rule);
+									}
+						}
+					});
 					
 					if (this.id === 'rules-remove-temp') {
 						Tabs.messageActive('reload');
-						$$('#page-list')[0].selectedIndex = 0;
 					} else
 						new Poppy();
+
+					left = top = undefined;
 				}).siblings('#rules-show-temp').click(function () {
 					$$('#view-domain').click();
-					$$('#filter-temporary').click();
+					$$('#show-temporary-rules').click();
+
+					left = top = undefined;
 				}).siblings('#rules-backup').click(function () {
 					new Poppy(left, top, self.poppies.backup.call({
 							left: left,
 							top: top
 					}));
-				});
-			});
-		}).on('click', '#rules-list-back', function () {
-			$$('.some-list, .pending').removeClass('some-list pending');
 
+					left = top = undefined;
+				});
+			}).bind(this, left, top));
+
+			left = top = e = undefined;
+		}).on('click', '#rules-list-back', function () {
 			self.popover_current = null;
 
-			Tabs.messageActive('updatePopoverNow');
+			Tabs.messageActive('updatePopover');
+
+			$$('.some-list, .pending').removeClass('some-list pending');
 
 			var r = $$('#rules-list:not(.zoom-window-animating)');
 
@@ -3485,10 +3663,11 @@ var Template = {
 				});
 		}).on('click', '#misc-close', function() {
 			self.utils.zoom($$('#misc'), function () {
-				$$('#misc-content, p.misc-header').html('');
+				$$('#misc-content, p.misc-header').empty();
 			});
 		}).on('click', '.allowed-label, .blocked-label, .unblocked-label', function () {
-			var me = $(this), column = me.parents('.column'), which = this.className.substr(0, this.className.indexOf('-')), e = $$('#' + which + '-script-urls .urls-inner');
+			var me = $(this),  which = this.className.substr(0, this.className.indexOf('-')),
+					e = $$('.' + which + '-script-urls .urls-inner'), column = $$('.' + which + '-column');
 			
 			if (e.is(':animated') || column.is(':animated')) return false;
 
@@ -3500,6 +3679,8 @@ var Template = {
 
 			if (me.hasClass('hidden')) {
 				self.collapsed(which, 0);
+
+				$$('.' + which + '-label').removeClass('hidden');
 				
 				me.removeClass('hidden');
 				column.removeClass('hidden');
@@ -3507,24 +3688,22 @@ var Template = {
 				adjuster(function () {
 					e.show().css('marginTop', -e.height()).animate({
 						marginTop: 0
-					}, 200 * self.speedMultiplier, function () {
-						$('.kind-header', e).addClass('visible');
-					}).removeClass('was-hidden');
+					}, 200 * self.speedMultiplier);
 				});
 			} else {
 				self.collapsed(which, 1);
+
+				$$('.' + which + '-label').addClass('hidden');
 				
 				me.addClass('hidden');
 				column.addClass('hidden');
-
-				$('.kind-header', e).removeClass('visible').css('opacity', 1).filter('.floater').remove();
 								
 				e.css('marginTop', 0).animate({
 					marginTop: -e.height()
 				}, 200 * self.speedMultiplier, function () {
 					adjuster();
 					e.hide();
-				}).addClass('was-hidden');
+				});
 			}		
 							
 			self.utils.timer.timeout('label_search', function (self) {
@@ -3546,19 +3725,35 @@ var Template = {
 				}));
 			
 			self.busy = 0;
-		}).on('click', '#show-active-rules', function () {
-			var parts = self.domain_parts(self.host),
+		}).on('click', '.section-host', function (event) {
+			var parts = self.domain_parts(this.getAttribute('data-host')),
 					x = parts.slice(0, 1),
 					y = parts.slice(1), active;
+
+			return self.add_disable_rule(this.getAttribute('data-host'), event.pageX, $(this).offset().top + 12, ~this.className.indexOf('disabled'));
 
 			x.push(x[0]);
 
 			parts = x.concat(y);
-			parts = parts.slice(0, -1);
+			parts = parts.slice(0, -1).map(function (v) { return self.utils.escape_regexp(v); });
 
-			active = ~this.className.indexOf('using') ? '' : '^' + parts.join('$|^.') + '$|^' + _('All Domains') + '$';
+			active = '^' + parts.join('$|^\\.') + '$|^' + _('All Domains') + '$';
 						
-			$$('#domain-filter').val(active).data('parts', parts).data('active', active.length ? active : null).trigger('search');
+			$$('#domain-filter').val(active).data('parts', parts);
+
+			self.rules.show();
+
+			self.utils.zoom($$('#rules-list'), null, function () {
+				setTimeout(function () {
+					var parts = $$('#domain-filter').trigger('search').data('parts') || [];
+				}, 50)
+			}, function() {
+				var parts = $$('#domain-filter').trigger('search').data('parts') || [];
+				
+				parts.forEach(function (part, i) {
+					$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + part + '"].hidden').click();
+				});
+			});
 		}).on('click', '#edit-domains', function () {
 			$(this).toggleClass('edit-mode');
 						
@@ -3569,18 +3764,17 @@ var Template = {
 			$$('#rules-list .rules-wrapper').each(function () {
 				$('.domain-name:visible .divider', this).removeClass('invisible').filter(':visible:first').addClass('invisible');
 			});
-		}).on('click', '#time-machine', function () {
+		}).on('click', '#time-machine', function (event) {
 			var off = self.utils.position_poppy(this, 2, 12);
 
+			if (!self.donationVerified) return new Poppy(off.left, off.top, _('Donation Required'));
 			if (!Settings.getItem('enableSnapshots')) return new Poppy(off.left, off.top, _('Snapshots disabled'));
 
-			if (self.rules.using_snapshot && !~this.className.indexOf('force-open')) {
+			if (self.rules.using_snapshot) {
 				new Poppy(off.left, off.top, self.poppies.current_snapshot(!self.rules.snapshots.exist(self.rules.using_snapshot)));
 
 				return;
 			}
-
-			$(this).removeClass('force-open');
 
 			self.utils.zoom($$('#snapshots'));
 
@@ -3626,7 +3820,7 @@ var Template = {
 			
 			$$('.rules-wrapper').find('span.temporary, .bubble.temporary').removeClass('temporary');
 
-			$$('#filter-type-state li.selected').click();
+			$$('#filter-type-collapse li.selected').click();
 			
 			new Poppy(2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('All temporary rules are now permanent.') + '</p>');
 		}).on('click', '#remove-all-temp', function () {
@@ -3641,7 +3835,7 @@ var Template = {
 					if (domain in rules)
 						for (rule in rules[domain])
 							if (rules[domain][rule][1])
-								self.rules.remove(key, domain, rule, true);
+								self.rules.remove(key, domain, rule);
 				}
 			
 			var l = $$('.rules-wrapper');
@@ -3649,22 +3843,17 @@ var Template = {
 			if (l.is(':visible'))
 				l.find('span.temporary').removeClass('temporary type-2').addClass('type-1').siblings('input').click().click();
 
-			$$('#filter-type-state li.selected').click();
+			$$('#filter-type-collapse li.selected').click();
 			
 			new Poppy(-2 + off.left + $(this).width() / 2, off.top + 12, '<p>' + _('All temporary rules have been removed.') + '</p>');
 		}).on('search', '#domain-filter', function () {
 			self.busy = 1;
 
+			$$('#rules-list li.odd, #rules-list li.even').removeClass('odd even');
+
 			$$('#show-active-rules').toggleClass('using', $(this).data('active') === this.value);
 
 			var d = $$('.domain-name:not(.visibility-hidden,.state-hidden,.visibility-hidden) span'), v;
-
-			switch (this.value) {
-				case 'mimic-upgrade-89':
-					self.installedBundle = 89;
-					self.reloaded = false;
-				break;
-			}
 			
 			try {
 				v = new RegExp(this.value, 'i');
@@ -3676,35 +3865,25 @@ var Template = {
 				$(this.parentNode).toggleClass('domain-filter-hidden', !v.test(this.innerHTML));
 			});
 			
-			for (var key in self.rules.data_types) {
-				var head = $$('#head-' + key + '-rules').show(), rs = $$('#rules-list-' + key + 's'), wrap = rs.parent().show(),
-						a = self.collapsed(rs.attr('id'));
-				
-				if (a) head.find('a').html(_('Show'));
-				
-				if (!self.enabled(key) || !rs.find('.domain-name:not(.domain-filter-hidden,.state-hidden,.visibility-hidden)').length) {
-					head.hide();
-					wrap.hide();
-				}
-				
-				rs.css({
-					opacity: a ? 0 : 1,
-					marginBottom: a ? 0 : '6px',
-					marginTop: a ? -(rs.outerHeight() * 2) : -3,
-					display: a ? 'none' : 'block'
-				}).toggleClass('visible', !a);
-			}
+			$$('#rules-list .domain-rules').each(function () {
+				$('li', this).find('.divider').removeClass('invisible').end()
+					.not('.used-none, .old-none, .none').filter(':last')
+					.find('.divider').addClass('invisible');
+			});
+			
+			$$('li.domain-name').next().each(function () {
+				$(this).prev().toggleClass('state-hidden', $('ul li.none, ul li.old-none, ul li.used-none', this).length === $('ul li', this).length);
+			});
 
-			var d = $$('#rules-list .domain-name:visible').length,
+			var visi, d = (visi = $$('#rules-list .domain-name:visible')).length,
 					r = $$('#rules-list .domain-name:visible + li > ul li:not(.none,.old-none,.used-none) span.rule:not(.hidden,.type-900)').length;
+
+			visi.filter(':odd').next().andSelf().addClass('odd');
+			visi.filter(':even:not(:first)').next().andSelf().addClass('even');
 			
 			$$('#rule-counter').html(
 					_('{1} domain' + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
-			).removeData('orig_html');		
-
-			$$('.rules-wrapper').each(function () {
-				$('.domain-name:not(.state-hidden,.domain-filter-hidden,.visibility-hidden) .divider', this).removeClass('invisible').filter(':visible:first').addClass('invisible');
-			});
+			).removeData('orig_html');
 
 			self.busy = 0;
 		}).on('click', '#filter-type-collapse li:not(.label)', function () {
@@ -3727,43 +3906,18 @@ var Template = {
 			}
 			
 			$$('#domain-filter').trigger('search');
-		}).on('click', '#filter-type-state li:not(.label)', function () {
+		}).on('click', '#show-temporary-rules', function () {
 			self.busy = 1;
 			
-			var me = this;
-			
-			$(this).siblings('li').removeClass('selected').end().addClass('selected');
-			
+			var me = $(this);
+
+			me.toggleClass('using');
+						
 			$$('.rule').removeClass('hidden').parent().removeClass('none');
 			
-			switch (this.id) {
-				case 'filter-state-all':
-				break;
-				
-				case 'filter-enabled':
-					$$('.rule').removeClass('hidden').not('.rule.type--2').parent().removeClass('none');
-					$$('.rule.type--2').addClass('hidden').parent().addClass('none');
-				break;
-				
-				case 'filter-disabled':
-					$$('.rule').not('.type--2').addClass('hidden').parent().addClass('none');
-				break;
-				
-				case 'filter-temporary':
-					$$('.rule').not('.temporary').addClass('hidden').parent().addClass('none');
-				break;
-			}
-
-			$$('#rules-list .domain-rules').each(function () {
-				$('li', this).find('.divider').removeClass('invisible').end()
-					.not('.used-none, .old-none, .none').filter(':last')
-					.find('.divider').addClass('invisible');
-			});
-			
-			$$('li.domain-name').next().each(function () {
-				$(this).prev().toggleClass('state-hidden', $('ul li.none, ul li.old-none, ul li.used-none', this).length === $('ul li', this).length);
-			});
-			
+			if (me.hasClass('using'))
+				$$('.rule').not('.temporary').addClass('hidden').parent().addClass('none');
+		
 			$$('#domain-filter').trigger('search');
 		}).on('click', '.age-filter li:not(.label)', function () {
 			self.busy = 1;
@@ -3812,73 +3966,52 @@ var Template = {
 			});
 			
 			if (usedInPast) $$('#filter-type-not-used .selected').click();
-			else $$('#filter-type-state .selected').click();
+			else $$('#filter-type-collapse .selected').click();
 		}).on('click', '.outside', function (e) {
 			e.preventDefault();
 			self.utils.open_url(this.href);
+		}).on('click', '#scroll-to-top', function (event) {
+			event.preventDefault();
+
+			self.lockUpdate = false;
+
+			$$('#main').scrollTop(0);
+			$$('#update-warn').slideUp(200 * self.speedMultiplier);
+		}).on('mousedown', '#resize-handler', function (event) {
+			self.doResize = parseInt(Popover.object().height);
+			self.resizeStartPosition = event.pageY;
+		}).on('mouseup dblclick', '#resize-handler', function (event) {
+			self.doResize = false;
+
+			if (event.type === 'mouseup') return;
+
+			Settings.removeItem('popoverHeight');
+			Settings.removeItem('popoverSimpleHeight');
+
+			self.temporaryExpertMode = self.temporaryExpertMode;
 		}).on('click', '#unlock', function () {
-			var off = self.utils.position_poppy(this, 1, 14),
+			var off = self.utils.position_poppy(this, 1, 17),
 					pop = self.poppies.verify_donation.call([off.left, off.top, 0], self);
 			
 			new Poppy(off.left, off.top, pop);
 		}).on('click', '#js-help', function () {
-			self.utils.open_url('http://javascript-blocker.toggleable.com/help');
+			self.utils.open_url(ExtensionURL('help/index.html'));
 		}).on('click', '#js-settings', function () {
 			Popover.hide();
 			self.utils.open_url(ExtensionURL('settings.html'));
-		}).on('click', '.toggle-rules', function () {
-			var e = $(this).parent().nextAll('.rules-list-container:first').find('.rules-wrapper').show(),
-					a = e.css('opacity') === '1',
-					o = e.outerHeight(), oT = e.outerHeight(true);
-										
-			if (e.is(':animated')) return false;
-										
-			this.innerHTML = a ? _('Show') : _('Hide');
-			
-			if ($(this).parent().hasClass('floater')) $(this).parent().next().find('a').html(this.innerHTML);
-					
-			self.collapsed(e.attr('id'), a);
-			
-			e.find('li.domain-name:not(.floater)').toggleClass('header-hidden', a);
-								
-			e.css({ opacity: 1, marginTop: !a ? -o : -3 }).animate({
-				marginTop: a ? -oT : -3,
-				marginBottom: a ? 0 : '6px'
-			}, {
-				duration: 200 * self.speedMultiplier,
-				complete: function () {
-					this.style.display = a ? 'none' : 'block';
-					this.style.opacity = a ? 0 : 1;
-					this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
-				
-					$(this).toggleClass('visible', !a);
-					
-					$$('#rules-list').trigger('scroll');
-
-					setTimeout(function () {
-						$$('#filter-type-used .selected').click();
-					}, 100);
-				},
-				step: function (now) {
-					$$('#rules-list').trigger('scroll');
-				}
-			});
 		}).on('click', '.toggle-main', function (event) {
-			var me = $(this),
-					head = me.parent(),
-					pos = me.hasClass('floater') ? me.next().attr('id') : this.id,
+			var pos = this.className.substr(0, this.className.indexOf(' ')),
+					me = $$('.' + pos), head = me.parent(),
 					e = me.parent().next().find('.main-wrapper').show();
-			
+
 			if (!e.length) e = me.parent().next().next().find('.main-wrapper');
 			
 			var o = e.outerHeight(), oT = e.outerHeight(true), a = e.css('opacity') === '1';
 						
 			if (e.is(':animated')) return false;
 					
-			this.innerHTML = a ? _('Show') : _('Hide');
-						
-			if (head.hasClass('floater')) head.next().find('a').html(this.innerHTML);
-							
+			me.text(a ? _('Show') : _('Hide'));
+													
 			self.collapsed(pos, a);
 			
 			if (!a) head.removeClass('collapsed');
@@ -3913,7 +4046,7 @@ var Template = {
 				this.style.opacity = a ? 0 : 1;
 				this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
 			});
-		}).on('dblclick', '#page-lists-label', function () {
+		}).on('dblclick', '.host-section:first-child .host-section-host .label', function () {
 			var l = $.extend({}, window.localStorage);
 			delete l.Rules;
 			delete l.CollapsedDomains;
@@ -3946,25 +4079,20 @@ var Template = {
 				var t = $$('#debug-info')[0];
 				t.selectionStart = 0;
 				t.selectionEnd = t.innerHTML.length;
+				t.focus();
+				t.scrollTop = 0
 			});
-		}).on('click', '#next-frame, #previous-frame', function () {
-			var page = $$('#page-list'), index = page[0].selectedIndex, max = $('option', page).length - 1;
-			
-			if (this.id === 'next-frame') {
-				if (index < max)
-					page[0].selectedIndex++;
-			} else {
-				if (index > 0)
-					page[0].selectedIndex--;
-			}
-			
-			page.trigger('change');
 		}).on('dblclick', '#jsblocker-name', function () {
 			var off = self.utils.position_poppy(this, 9, 14);
 
 			new Poppy(off.left, off.top, [
 				'<ul class="jsoutput"></ul>',
-				'<div class="inputs"><input id="clear-console" value="Clear" type="button" /></div>'
+				'<div class="inputs">',
+					'<input id="clear-rule-actions" value="Clear Actions Cache" type="button" /> ',
+					'<input id="run-cleanup" value="Run Cleanup" type="button" /> ',
+					'<input id="dump-cache-size" value="Cache Size" type="button" /> ',
+					'<input id="clear-console" value="Clear" type="button" />',
+				'</div>'
 			].join(''), function () {
 				var l = $$('#jsconsolelogger'), ol = $$('.jsoutput').html(l.hide().html());
 				
@@ -3977,22 +4105,30 @@ var Template = {
 				$$('#clear-console').click(function () {
 					$('li:not(#console-header)', l).remove();
 					$$('#jsblocker-name').trigger('dblclick');
+				}).siblings('#dump-cache-size').click(function () {
+					var c = JSON.stringify(JB.caches).length, b = JSON.stringify(JB.rules.cache).length;
+
+					_d('General cache size:', JB.utils.bsize(c));
+					_d('Rule cache size:', JB.utils.bsize(b))
+
+					$$('#jsblocker-name').dblclick();
+				}).siblings('#run-cleanup').click(function () {
+					JB._cleanup();
+				}).siblings('#clear-rule-actions').click(function () {
+					JB.caches.rule_actions = JB.rules.data_types;
 				});
 			});
 		}).on('click', '.show-scripts', function () {
 			if (Settings.getItem('temporaryExpertSwitch') && (self.donationVerified || self.trial_active()) && !$$('.some-list').length) {
+				$$('.show-scripts').hide();
+
 				self.temporaryExpertMode = true;
 
 				self.utils.timer.timeout('switch_to_expert', function () {
 					self.popover_current = null;
 					self.lockUpdate = false;
 
-					var i = $$('#page-list')[0].selectedIndex;
-
-					self.utils.timer.timeout('test', function (i) {
-						$$('#page-list')[0].selectedIndex = i;
-						$$('#page-list').trigger('change');
-					}, 100, [i]);
+					Tabs.messageActive('updatePopover');
 				}, 10);
 
 				return;
@@ -4025,15 +4161,15 @@ var Template = {
 					id = me.attr('data-id');
 
 			new Poppy(left, top, [
-				'<input type="button" value="', _('Name'), '" id="name-snapshot" /> ',
-				'<input type="button" value="', _('Compare'), '" id="compare-snapshot" /> ',
-				'<input type="button" value="', _(snapshots[id].keep ? 'Unkeep' : 'Keep'), '" id="keep-snapshot" /> ',
-				'<input type="button" value="', _('Delete'), '" id="delete-snapshot" />',
+				'<input class="purple" type="button" value="', _('Name'), '" id="name-snapshot" /> ',
+				'<input class="purple" type="button" value="', _('Compare'), '" id="compare-snapshot" /> ',
+				'<input class="purple" type="button" value="', _(snapshots[id].keep ? 'Unkeep' : 'Keep'), '" id="keep-snapshot" /> ',
+				'<input class="delete" type="button" value="', _('Delete'), '" id="delete-snapshot" />',
 			].join(''), function () {
 				$$('#name-snapshot').click(function () {
 					new Poppy(left, top, [
-						'<input type="text" id="snapshot-name" value="', self.rules.snapshots.name(id), '" /> ',
-						'<input type="button" id="save-name" value="', _('Save'), '" class="onenter" />'
+						'<input class="purple" type="text" id="snapshot-name" value="', self.rules.snapshots.name(id), '" /> ',
+						'<input type="button" id="save-name" value="', _('Save'), '" class="onenter purple" />'
 					].join(''), function () {
 						$$('#snapshot-name').focus().keypress(function (e) {
 							if (e.which === 13 || e.which === 3) $$('#save-name').click();
@@ -4060,13 +4196,11 @@ var Template = {
 				}).siblings('#compare-snapshot').click(function () {
 					new Poppy(left, top, [
 						'<p class="misc-info">', _('Show Rules'), '</p>',
-						'<input type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
-						'<input type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
-						'<input type="button" value="', _('In Both'), '" id="compare-both" data-type="both" />'
+						'<input class="purple" type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
+						'<input class="purple" type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
+						'<input class="purple" type="button" value="', _('In Both'), '" id="compare-both" data-type="both" />'
 					].join(''), function () {
 						$$('#poppy input').click(function () {
-							new Poppy();
-
 							$$('#rules-list').addClass('zoom-window-hidden')
 
 							var compare = self.rules.snapshots.compare(id, self.rules.current_rules), dir = this.getAttribute('data-type'), mes,
@@ -4092,11 +4226,8 @@ var Template = {
 				}).siblings('#keep-snapshot').click(function () {
 					if (this.value === _('Keep'))
 						self.rules.snapshots.keep(id);
-					else {
-						if (!self.utils.confirm_click(this)) return false;
-
+					else
 						self.rules.snapshots.unkeep(id);
-					}
 
 					self.rules.show_snapshots();
 
@@ -4126,8 +4257,6 @@ var Template = {
 				});
 			});
 		}).on('click', '.preview-snapshot', function () {
-			new Poppy();
-
 			var id = $(this).prev().attr('data-id'), me = this;
 
 			$$('#rules-list').addClass('zoom-window-hidden');
@@ -4143,18 +4272,18 @@ var Template = {
 				for (var i = 0; i < parts.length; i++)
 					$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + parts[i] + '"].hidden').click();
 			});
-		}).on('mousedown', 'body > *:not(#poppy,#poppy-secondary,#modal)', function (event) {
+		}).on('click', 'body > *:not(#poppy,#poppy-secondary,#modal)', function (event) {
 			if (event.isTrigger) return;
 			new Poppy();
-		}).on('mousedown', 'body > *:not(#poppy-secondary,#modal)', function (event) {
+		}).on('click', 'body > *:not(#poppy-secondary,#modal)', function (event) {
 			if (event.isTrigger) return;
 			new Poppy(null, null, null, null, null, null, false, true);
-		}).on('click', '#allowed-blocked-columns .urls-inner h3', function (event) {
-			var split = this.id.split('-'),
+		}).on('click', '.allowed-blocked-columns .urls-wrapper h3', function (event) {
+			var split = this.className.split('-'),
 					allowed = split[0] === 'allowed',
 					kind = split[1],
 					me = $(this), off = me.offset(), left = event.pageX, top = off.top + 12,
-					page_parts = self.utils.domain_parts(self.host);
+					page_parts = self.utils.domain_parts($(this).parents('.host-section').attr('data-host'));
 
 			if (self.rules.using_snapshot) return new Poppy(event.pageX, off.top + 12, _('Snapshot in use'));
 
@@ -4168,18 +4297,18 @@ var Template = {
 					'<label for="domain-script-temporary">&nbsp;', _('Make these temporary rules'), '</label>',
 				'</p>',
 				'<p>', Template.create('domain_picker', { page_parts: page_parts, no_all: true }), '</p>',
-				'<div class="inputs"><input id="allow-these" type="button" value="', _((allowed ? 'Block' : 'Allow') +' These'), '" /></div>',
+				'<div class="inputs"><input class="orange" id="allow-these" type="button" value="', _((allowed ? 'Block' : 'Allow') +' These'), '" /></div>',
 			].join(''), function () {
-				$$('#allow-these, #temporary-these').click(function () {
+				$$('#allow-these').click(function () {
 					var temp = $$('#domain-script-temporary').is(':checked'),
 							host = $$('#domain-picker').val(), disallow_predefined = $$('#excluding-list').is(':checked');
 
-					$$('#' + (allowed ? 'allowed' : 'blocked') + '-items-' + kind).find('li').each(function () {
+					me.parent().next().find('li').each(function () {
 						if (disallow_predefined && ($(this).is('.rule-type-5') || $(this).is('.rule-type-4'))) return;
 
 						var data = $.data(this), proto = self.utils.active_protocol(data.script[0]).toUpperCase(),
 								ind = data.script[0].indexOf('?'), rr = (~kind.indexOf('special')) ? data.script[0] : '^' + self.utils.escape_regexp(~ind ? data.script[0].substr(0, data.script[0].indexOf('?')) : data.script[0]) + '((\\?|#)+.*)?$',
-								rule = (self.simpleMode && !self.temporaryExpertMode && !~kind.indexOf('special')) ? proto + ':' + data.url : rr;
+								rule = (self.useSimpleMode() && !~kind.indexOf('special')) ? proto + ':' + (~['DATA', 'JAVASCRIPT'].indexOf(proto) ? '*' : data.url) : rr;
 
 						self.rules.add(kind, host, rule, allowed ? 0 : 1, false, temp);
 					});
@@ -4190,8 +4319,8 @@ var Template = {
 		});
 	},
 
-	merger: function (jsblocker) {
-		var new_jsblocker = { allowed: {}, blocked: {}, unblocked: {} }, kind, frame, ref;
+	merger: function (jsblocker, here) {
+		var new_jsblocker = { allowed: {}, blocked: {}, unblocked: {} }, kind, frame, ref, sref, hold, holder, held, l;
 
 		for (kind in this.rules.data_types) {
 			if (~kind.indexOf('hide_')) continue;
@@ -4202,26 +4331,37 @@ var Template = {
 
 			for (frame in jsblocker) {
 				ref = jsblocker[frame];
+				sref = here && (ref.host === here.host || ref.host === 'blank') ? here : new_jsblocker;
 
-				new_jsblocker.href = jsblocker[frame].href;
-				new_jsblocker.host = jsblocker[frame].host;
+				if (sref !== here) {
+					sref.href = jsblocker[frame].href;
+					sref.host = jsblocker[frame].host;
+				}
 
-				$.merge(new_jsblocker.allowed[kind].all, ref.allowed[kind].all);
-				$.merge(new_jsblocker.blocked[kind].all, ref.blocked[kind].all);
-				$.merge(new_jsblocker.unblocked[kind].all, ref.unblocked[kind].all);
+				$.merge(sref.allowed[kind].all, ref.allowed[kind].all);
+				$.merge(sref.blocked[kind].all, ref.blocked[kind].all);
+				$.merge(sref.unblocked[kind].all, ref.unblocked[kind].all);
 
-				$.merge(new_jsblocker.allowed[kind].hosts, ref.allowed[kind].hosts);
-				$.merge(new_jsblocker.blocked[kind].hosts, ref.blocked[kind].hosts);
-				$.merge(new_jsblocker.unblocked[kind].hosts, ref.unblocked[kind].hosts);
+				$.merge(sref.allowed[kind].hosts, ref.allowed[kind].hosts);
+				$.merge(sref.blocked[kind].hosts, ref.blocked[kind].hosts);
+				$.merge(sref.unblocked[kind].hosts, ref.unblocked[kind].hosts);
 
-				new_jsblocker.allowed[kind].hosts = new_jsblocker.allowed[kind].hosts.unique();
-				new_jsblocker.blocked[kind].hosts = new_jsblocker.blocked[kind].hosts.unique();
-				new_jsblocker.unblocked[kind].hosts = new_jsblocker.unblocked[kind].hosts.unique();
+				sref.allowed[kind].hosts = sref.allowed[kind].hosts.unique();
+				sref.blocked[kind].hosts = sref.blocked[kind].hosts.unique();
+				sref.unblocked[kind].hosts = sref.unblocked[kind].hosts.unique();
 
 				if (kind === 'special') {
-					new_jsblocker.allowed[kind].all = new_jsblocker.allowed[kind].all.unique();
-					new_jsblocker.blocked[kind].all = new_jsblocker.blocked[kind].all.unique();
-					new_jsblocker.unblocked[kind].all = new_jsblocker.unblocked[kind].all.unique();
+					hold = { allowed: {}, blocked: {}, unblocked: {} };
+
+					for (holder in hold) {
+						for (l = 0; l < sref[holder][kind].all.length; l++)
+							hold[holder][sref[holder][kind].all[l][0]] = sref[holder][kind].all[l][1];
+
+						sref[holder][kind].all = [];
+
+						for (held in hold[holder])
+							sref[holder][kind].all.push([held, hold[holder][held]]);
+					}					
 				}
 			}
 		}
@@ -4229,27 +4369,46 @@ var Template = {
 		return new_jsblocker;
 	},
 	
-	make_list: function (text, button, jsblocker) {
-		var self = this, el = $$('#' + text + '-script-urls .urls-inner').empty(), use_url, test_url, protocol, poopy,
-				shost_list = {}, lab = $$('#' + text + '-scripts-count'), cn = 0, key;
+	make_list: function (text, button, jsblocker, host_host, id) {
+		var is_main = !!jsblocker.host;
 
-		if (!jsblocker.host) jsblocker = this.merger(jsblocker);
+		if (!is_main)
+			jsblocker = this.merger(jsblocker);
+
+		var self = this, sections = $$('#host-sections'), section = $$('#host-section-' + id), disabled = this.rules.disabled(jsblocker.href);
+
+		if (!section.length)
+			section = $(Template.create('host_section', {
+				id: id,
+				is_main: is_main,
+				type: text,
+				href: jsblocker.href,
+				host: jsblocker.host,
+				host_host: host_host,
+				disabled: disabled
+			})).appendTo(sections);
+
+		if (disabled) return;
+		
+		var el = $('.' + text + '-script-urls .urls-inner', section).empty(), use_url, test_url, protocol, poopy,
+				shost_list = {}, lab = $('.' + text + '-scripts-count', section), cn = 0, key;
 
 		for (key in this.rules.data_types)
 			shost_list[key] = {};
 			
 		function append_url(index, kind, ul, use_url, script, type, button, protocol, unblockable) {
-			if (~use_url.indexOf('customp')) use_url = 'Injected Script: ' + use_url;
+			if (~use_url.indexOf('customp') && kind === 'special') use_url = 'Injected Script: ' + use_url;
 
 			return ul.append('<li>' + (text !== 'unblocked' ? '<div class="info-link">?</div>' : '') + '<span></span> <small></small><div class="divider"></div></li>')
-					.find('li:last').attr('id', text.toLowerCase() + '-' + kind + '-' + index)
+					.find('li:last').attr('id', text.toLowerCase() + '-' + kind + '-' + index + '-' + id)
 					.data({
 						url: use_url,
 						script: [script],
 						kind: kind,
-						protocol: protocol
+						protocol: protocol,
+						unblockable: unblockable
 					}).addClass('visible kind-' + kind).toggleClass('selectable', Settings.getItem('traverseMainItems'))
-					.toggleClass('by-rule', typeof type !== 'string' && type !== -1)
+					.toggleClass('by-rule', typeof type !== 'string' && type > -1)
 					.toggleClass('rule-type-' + type, type > -1)
 					.toggleClass('unblockable', kind !== 'special' && unblockable && text !== 'unblocked')
 					.find('span').text(use_url).addClass(protocol)
@@ -4265,7 +4424,7 @@ var Template = {
 			} else
 				protocol = self.utils.active_protocol(item);
 
-			if (text !== 'unblocked' && self.simpleMode && !self.temporaryExpertMode) {
+			if (text !== 'unblocked' && self.useSimpleMode()) {
 				use_url = self.utils.active_host(item);
 				test_url = use_url + the_item[1];
 
@@ -4280,7 +4439,7 @@ var Template = {
 					try {
 						$('li#' + shost_list[kind][protocol][test_url][1], ul).data('script').push(item);
 					} catch (e) {
-						return self.make_list(text, button, jsblocker);
+						return self.make_list(text, button, jsblocker, host_host, id);
 					}
 				}
 			} else
@@ -4290,26 +4449,23 @@ var Template = {
 		}
 
 		var cn = 0;
-			
+		
 		for (var key in this.rules.data_types) {
 			if (!this.enabled(key) || ~key.indexOf('hide_')) continue;
 			
 			var ki = _(key + 's'),
 					do_hide = this.collapsed('toggle-' + key + '-' + text + '-items'),
-					ul = $$('#' + text + '-items-' + key),
-					li, ccheck, show_me = $('<div />');
-			
-			if (!ul.length)
-				ul = $(Template.create('main_wrapper', {
-					local: ki,
-					which: text,
-					kind: key
-				})).appendTo(el).filter('div').find('ul');
+					li, ccheck, show_me = $('<div />'),
+					ul = $(Template.create('main_wrapper', {
+						local: ki,
+						which: text,
+						kind: key
+					})).appendTo(el).filter('div').find('ul');
 			
 			ul.css('display', do_hide ? 'none' : 'block')
 				.parent().prev().toggleClass('collapsed', do_hide).toggleClass('visible', !do_hide).find('.toggle-main').html(_(do_hide ? 'Show' : 'Hide'));;
 
-			if (self.simpleMode && text !== 'unblocked' && !self.temporaryExpertMode) {
+			if (self.useSimpleMode() && text !== 'unblocked') {
 				cn += jsblocker[text][key].hosts.length;
 					
 				lab.html(cn);
@@ -4322,17 +4478,17 @@ var Template = {
 
 			if (jsblocker[text][key].all.length) {
 				ul.parent().show().prev().show();
-					
+				
 				for (var i = 0, b = jsblocker[text][key].all.length; i < b; i++) {
 					var jitem = jsblocker[text][key].all[i];
 
-					if (key === 'special' && !this.special_enabled(jitem)) continue;
+					if (key === 'special' && !this.special_enabled(jitem[0])) continue;
 					
-					li = ~key.indexOf('special') ? append_url(i, key, ul, _(jitem), jitem, -1, button, key.toUpperCase()) :
+					li = ~key.indexOf('special') ? append_url(i, key, ul, _(jitem[0]), jitem[0], jitem[1], button, key.toUpperCase()) :
 							add_item(i, key, jitem);
 
 					if (text !== 'unblocked' && !~key.indexOf('hide_')) {
-						var al = self.rules.allowed(['hide_' + key, jsblocker.href, key === 'special' ? jitem : jitem[0], false]);
+						var al = self.rules.allowed(['hide_' + key, jsblocker.href, jitem[0], false]);
 
 						if (al[1] === 42) {
 							li.addClass('hidden-by-rule');
@@ -4369,7 +4525,7 @@ var Template = {
 			if ($('li:last', ul).is('.hidden-by-rule'))
 				$('li:not(.hidden-by-rule):last .divider', ul).addClass('invisible');
 		
-			if (this.simpleMode && !self.temporaryExpertMode) {
+			if (self.useSimpleMode()) {
 				ul.addClass('show-per-host');
 				
 				for (var kind in shost_list)
@@ -4381,53 +4537,59 @@ var Template = {
 			}
 				
 			if (self.collapsed(text)) {
-				$$('.' + text + '-label:not(.hidden)').click();
-				$('.kind-header', ul).removeClass('visible');
+				$$('.' + text + '-label,' + '.' + text + '-column').addClass('hidden');
+				$$('.' + text + '-script-urls .urls-inner').hide();
+				$('.kind-header', ul).removeClass('visible');				
 			}
 		}
 	},
 	lockUpdate: false,
 	popover_current: null,
-	do_update_popover: function (event, index, badge_only) {
+	do_update_popover: function (event) {
 		if (event.message.href === 'reading-list://') return console.log('Reading list ignored.');
 
-		var cached_jsblocker = (typeof index !== 'undefined') ? null : JSON.stringify(this.caches.jsblocker[event.message.href]), 
-				jshost = this.utils.active_host(event.message.href);
+		var cached_jsblocker = JSON.stringify(this.caches.jsblocker[event.message.href]), 
+				jshost = this.utils.active_host(event.message.href), badge_only = !Popover.visible();
 
 		this.utils.timer.remove('timeout', 'deactivate_toolbar');
 
 		if (!this.trial_active() && !this.donationVerified && !badge_only && this.trialStart > -1)
 			return this.utils.timer.timeout('trial_expired', function (self) {
 				new Poppy($(self.popover.body).width() / 2, 0, [
+					'<p class="misc-info">', _('JavaScript Blocker'), '</p>',
 					'<p>', _('Free trial expired', ['JavaScript Blocker']), '</p>',
 					'<p><input type="button" id="click-understood" value="', _('Understood'), '" /></p>'
 				].join(''), function () {
 					$$('#click-understood').click(function () {
 						self.trialStart = -1;
-						new Poppy();
-						Popover.window().location.reload();
+
+						$$('#unlock').click();
 					});
 				}, null, null, true);
 			}, 1000, [this]);
 		
 		if (!this.methodAllowed || this.disabled) return false;
 
-		if (($$('.poppy').is(':visible') || $$('.some-list').length || $$('li.pending:not(.allow-update)').length || (this.lockUpdate && this.popover_current)) && Popover.visible()) {
-			if (this.lockUpdate) $$('#update-warn').slideDown(200 * this.speedMultiplier);
+		if (this.lockUpdate && $$('#main').scrollTop() <= 10) this.lockUpdate = false;
 
-			return this.utils.timer.timeout('do_update_popover', function (self, event, index, badge_only) {
-				self.do_update_popover(event, index, badge_only);
-			}, 1000, [this, event, index, badge_only]);
+		if (($$('.poppy').length || $$('.some-list').length || $$('li.pending:not(.allow-update)').length || (this.lockUpdate && this.popover_current)) && Popover.visible()) {
+			if (this.lockUpdate && !$$('li.pending').length) $$('#update-warn').slideDown(200 * this.speedMultiplier);
+
+			return this.utils.timer.timeout('do_update_popover', function (self, event) {
+				self.do_update_popover(event);
+			}, 1000, [this, event]);
 		}
 
-		$$('#update-warn').slideUp(200 * this.speedMultiplier);
+		$$('#update-warn, #quick-add-info').slideUp(200 * this.speedMultiplier);
 		
 		this.busy = 1;
 
-		if ((this.tab.url === event.target.url && (!index || this.tab.url === event.message.href)) || badge_only) {
+		if ((this.tab.url === event.target.url && this.tab.url === event.message.href) || badge_only) {
 			var jsblocker = event.message;
 
 			if (cached_jsblocker === JSON.stringify(jsblocker) && this.popover_current === cached_jsblocker && !badge_only) {
+				delete this.frames[jsblocker.href];
+
 				this.busy = 0;
 
 				return;
@@ -4452,7 +4614,7 @@ var Template = {
 						count[act] += jsblocker[act][kind].all.length;
 			}
 
-			if (this.simpleMode && !self.temporaryExpertMode) {
+			if (this.useSimpleMode()) {
 				for (var key in jsblocker.blocked) {
 					if (key === 'special' || !this.enabled(key)) continue;
 					
@@ -4461,14 +4623,8 @@ var Template = {
 				}
 			}
 
-			if (!badge_only) {
-				var page_list = $$('#page-list').empty().blur();
-
-				$('<optgroup />').attr('label', _('Main Page')).appendTo(page_list).append('<option />').find('option')
-					.attr('value', jshost)
-					.text(jshost)
-					.append(' — ' + _('{1} allowed, {2} blocked', [this.simpleMode && !self.temporaryExpertMode ? main_items.allowed : count.allowed, this.simpleMode && !self.temporaryExpertMode ? main_items.blocked : count.blocked]));
-			}
+			if (!badge_only)
+				$$('#host-sections').empty();
 
 			if (jsblocker.href in this.frames) {
 				var frame_host, frame, inline, frame, rel = this.frames[jsblocker.href], merged, d;
@@ -4477,13 +4633,6 @@ var Template = {
 					frame = this.merger(rel[frame_host]);
 						
 					var this_one = { blocked: 0, allowed: 0 };
-
-					if (!badge_only) {
-						if (page_list.find('optgroup').length == 1)
-							inline = $('<optgroup />').attr('label', _('Inline Frame Pages')).appendTo(page_list);
-						else
-							inline = page_list.find('optgroup:eq(1)');
-					}
 
 					for (var act in frame) {
 						if (act === 'href') continue;
@@ -4502,22 +4651,10 @@ var Template = {
 						frame_items.blocked += frame.blocked[key].hosts.length;
 						frame_items.allowed += frame.allowed[key].hosts.length;
 
-						if (this.simpleMode && !self.temporaryExpertMode) {
+						if (this.useSimpleMode()) {
 							this_one.blocked += frame.blocked[key].hosts.length;
 							this_one.allowed += frame.allowed[key].hosts.length;
 						}
-					}
-
-					d = frame.host.toString();
-
-					if (d === 'blank') d = jsblocker.host;
-				
-					if (!badge_only) {
-						$$('option.frame-page[value="' + d + '"]').remove();
-
-						$('<option />').addClass('frame-page').attr('value', d)
-							.text(~['blank', jsblocker.host].indexOf(d) ? 'blank/' + d : d).appendTo(inline)
-							.append(' — ' + _('{1} allowed, {2} blocked', [this_one.allowed, this_one.blocked]));
 					}
 				}
 			}
@@ -4540,51 +4677,44 @@ var Template = {
 				$$('#main:visible').scrollTop(0);
 				$$('.some-helper').remove();
 				$$('.column .info-container').show();
-				$$('#toggle-hidden').addClass('disabled').removeClass('hidden-visible');	
-				$$('#previous-frame, #next-frame, #frame-switcher .divider').removeClass('disabled').filter('#previous-frame').find('.text').html(_('Main page'));
-				$$('.column:not(.column-collapsed) #block-domain, .column:not(.column-collapsed) #allow-domain').show();
-				
-				var max = $('option', page_list).length - 1;
-			
-				if (typeof index == 'number' && index > 0) {
-					page_list[0].selectedIndex = index;
-					
-					if (index === 0)
-						$$('#previous-frame').addClass('disabled').removeClass('current-selection');
-					else if (index > 1)
-						$$('#previous-frame .text').html(_('Prev. frame'));
-					
-					try {
-						jsblocker = this.frames[jsblocker.href][page_list.val()];
-					} catch (e) {}
-				} else
-					$$('#previous-frame').addClass('disabled').removeClass('current-selection');
-				
-				if ($$('#next-frame').toggleClass('disabled', max === 0 || index === max).hasClass('current-selection'))
-					$$('#next-frame').toggleClass('current-selection', !(max === 0 || index === max))
+				$$('#toggle-hidden').addClass('disabled').removeClass('hidden-visible');
+				$$('.column:not(.column-collapsed) .block-domain, .column:not(.column-collapsed) .allow-domain').show();
 
-				$$('#frame-switcher .divider').toggleClass('disabled', $$('#next-frame.disabled, #previous-frame.disabled').length === 2);
-				
-				page_list.off('change').one('change', function () {
-					new Poppy();
-					$$('.some-list').removeClass('some-list');
-					self.do_update_popover(event, this.selectedIndex);
-				});
+				var id = +new Date();
 
-				this.make_list('blocked', _('Allow'), jsblocker);
-				this.make_list('allowed', _('Block'), jsblocker);
+				if (this.frames[jsblocker.href] && (jsblocker.host in this.frames[jsblocker.href]))
+					this.merger(this.frames[jsblocker.href][jsblocker.host], jsblocker);
+
+				this.make_list('blocked', _('Allow'), jsblocker, null, id);
+				this.make_list('allowed', _('Block'), jsblocker, null, id);
 				
 				if (Settings.getItem('showUnblocked'))
-					this.make_list('unblocked', _('View'), jsblocker);
+					this.make_list('unblocked', _('View'), jsblocker, null, id);
+
+				if (this.frames[jsblocker.href]) {
+					for (var host in this.frames[jsblocker.href]) {
+						if (host === jsblocker.host || host === 'blank') continue;
+
+						id = +new Date();
+
+						this.make_list('blocked', _('Allow'), this.frames[jsblocker.href][host], jsblocker.host, id);
+						this.make_list('allowed', _('Block'), this.frames[jsblocker.href][host], jsblocker.host, id);
+						
+						if (Settings.getItem('showUnblocked'))
+							this.make_list('unblocked', _('View'), this.frames[jsblocker.href][host], jsblocker.host, id);
+					}
+				}
+
+				this.adjust_columns(1);
 			}
 		}
 		
 		this.busy = 0;
 	},
 	setting_changed: function (event) {
-		if (event.key === 'simpleMode' || event.key === 'simplifiedRules') {
+		if (event.key === 'simpleMode') {
 			this.utils.zero_timeout(function (rules) {
-				rules.snapshots = new Snapshots(rules.which, Settings.getItem('enableSnapshots') ? Settings.getItem('snapshotsLimit') : 0);
+				rules.snapshots = new Snapshots(rules.which, Settings.getItem('enableSnapshots') && this.donationVerified ? Settings.getItem('snapshotsLimit') : 0);
 			}, [this.rules]);
 
 			this.rules.use_snapshot(0);
@@ -4594,16 +4724,12 @@ var Template = {
 		if (event.key === 'openSettings' && event.newValue) {
 			Settings.setItem('openSettings', false);
 			this.utils.open_url(ExtensionURL('settings.html'));
-		} else if (event.key === 'language' || event.key === 'theme')
+		} else if (event.key === 'language')
 			this.reloaded = false;
-		else if (event.key === 'theme' && event.newValue !== 'default' && !this.donationVerified)
-			Settings.setItem('theme', 'default');
 		else if (event.key === 'simpleMode' && !event.newValue && !this.donationVerified)
 			Settings.setItem('simpleMode', true);
 		else if (event.key === 'blockReferrer' && event.newValue && !this.donationVerified)
 			Settings.setItem('blockReferrer', false);
-		else if (event.key === 'simplifiedRules')
-			this.rules.reload();
 		else if (event.key === 'snapshotsLimit' && event.newValue > 999)
 			Settings.setItem('snapshotsLimit', 999);
 		else if (event.key === 'snapshotsLimit' && event.newValue < 1 && event.newValue)
@@ -4640,6 +4766,8 @@ var Template = {
 			if (event.target.url in this.anonymous.newTab) {
 				delete this.anonymous.newTab[event.target.url];
 				this.utils.open_url(event.url);
+
+				if (!Settings.getItem('focusNewTab')) event.target.activate();
 			} else {
 				this.anonymous.pages[event.target.url] = event.url;
 				this.anonymous.previous[event.url] = event.target.url;
@@ -4650,8 +4778,6 @@ var Template = {
 		}
 	},
 	handle_message: function (event) {
-		var self = this;
-
 		theSwitch:
 		switch (event.name) {
 			case 'canLoad':
@@ -4696,7 +4822,7 @@ var Template = {
 						break theSwitch;
 
 						case 'disabled':
-							event.message = this.disabled;
+							event.message = this.disabled || this.rules.disabled(event.message[1]);
 						break theSwitch;
 
 						case 'customScripts':
@@ -4711,7 +4837,7 @@ var Template = {
 
 								result[specials[i]] = {
 									value: enabled,
-									allowed: enabled ? this.rules.special_allowed(specials[i], event.message[2]) : false
+									allowed: enabled ? this.rules.special_allowed(specials[i], event.message[2]) : -2
 								}
 							}
 
@@ -4723,11 +4849,16 @@ var Template = {
 					event.message = [1, -84];
 					break theSwitch;
 				} else if (this.installedBundle < this.update_attention_required || !this.methodAllowed) {
-					if (this.installedBundle < this.update_attention_required)
+					if (this.installedBundle < this.update_attention_required) {
+						setTimeout(function () {
+							ToolbarItems.showPopover();
+						}, 50);
+
 						Tabs.messageActive('notification', [
 							_('Please click the flashing toolbar icon to continue'),
 							'JavaScript Blocker Update'
 						]);
+					}
 					event.message = this.enabled(event.message[0]) ? [0, -84] : [1, -84];
 					break theSwitch;
 				}
@@ -4763,19 +4894,19 @@ var Template = {
 
 			case 'setting_set':
 				var dl = ['donationVerified', 'trialStart', 'installID', 'installedBundle', 'enablespecial', 'setupDone'],
-						swith = Settings.getItem('simplifiedRules');
+						swith = Settings.getItem('simpleMode');
 				
 				if (event.message[1] === null) {
 					if (!~dl.indexOf(event.message[0]))
 						SettingStore.removeItem(event.message[0]);
 				} else if (event.message[0] === 'Rules') {
-					Settings.setItem('simplifiedRules', false);
+					Settings.setItem('simpleMode', false);
 					this.rules.import(event.message[1]);
-					Settings.setItem('simplifiedRules', swith);
+					Settings.setItem('simpleMode', swith);
 				} else if (event.message[0] === 'SimpleRules') {
-					Settings.setItem('simplifiedRules', true);
+					Settings.setItem('simpleMode', true);
 					this.rules.import(event.message[1]);
-					Settings.setItem('simplifiedRules', swith);
+					Settings.setItem('simpleMode', swith);
 				} else if (!~dl.indexOf(event.message[0]))
 					Settings.setItem(event.message[0], event.message[1]);
 			break;
@@ -4799,13 +4930,14 @@ var Template = {
 			break;
 
 			case 'updatePopover':
-				if ((Popover.visible() && $$('#page-list')[0].selectedIndex > 0 && this.popover_current)) return;
-					
-				this.utils.timer.timeout('update_popover', function (event, self) {
-					self.do_update_popover(event, undefined, !Popover.visible());
-				}, 10, [event, self]);
+				delete this.frames[event.target.url];
+				MessageTarget(event, 'getFrameData');
+
+				this.utils.timer.timeout('update_popover', function (event) {
+					JB.do_update_popover(event);
+				}, 120, [event]);
 			break;
-			
+
 			case 'updateReady':
 				if (event.target != this.tab) break;
 					
@@ -4823,41 +4955,7 @@ var Template = {
 				if (!(host in this.frames[event.target.url]))
 					this.frames[event.target.url][host] = {}
 
-				this.frames[event.target.url][host][event.message[1].href] = event.message[1]
-								
-				// if (host in this.frames[event.target.url]) {
-				// 	var ref = this.frames[event.target.url][host][event.message[1].href] = event.message[1];
-
-				// 	for (var kind in this.rules.data_types) {
-				// 		if (!(kind in ref.allowed)) continue;
-
-				// 		$.merge(ref.allowed[kind].all, event.message[1].allowed[kind].all);
-				// 		$.merge(ref.blocked[kind].all, event.message[1].blocked[kind].all);
-				// 		$.merge(ref.unblocked[kind].all, event.message[1].unblocked[kind].all);
-
-				// 		$.merge(ref.allowed[kind].hosts, event.message[1].allowed[kind].hosts);
-				// 		$.merge(ref.blocked[kind].hosts, event.message[1].blocked[kind].hosts);
-				// 		$.merge(ref.unblocked[kind].hosts, event.message[1].unblocked[kind].hosts);
-
-				// 		ref.allowed[kind].hosts = ref.allowed[kind].hosts.unique();
-				// 		ref.blocked[kind].hosts = ref.blocked[kind].hosts.unique();
-				// 		ref.unblocked[kind].hosts = ref.unblocked[kind].hosts.unique();
-
-				// 		if (kind === 'special') {
-				// 			ref.allowed[kind].all = ref.allowed[kind].all.unique();
-				// 			ref.blocked[kind].all = ref.blocked[kind].all.unique();
-				// 			ref.unblocked[kind].all = ref.unblocked[kind].all.unique();
-				// 		}
-				// 	}
-				// } else {
-				// 	this.frames[event.target.url][host] = {};
-				// 	this.frames[event.target.url][host][event.message[1].href] = event.message[1];
-				// }
-			
-				if (!this.tab || event.target.url === this.tab.url)
-					try {
-						Tabs.messageActive('updatePopover', event.message);
-					} catch(e) {}
+				this.frames[event.target.url][host][event.message[1].href] = event.message[1];
 			break;
 
 			case 'updateFrameData':
@@ -4872,7 +4970,7 @@ var Template = {
 
 			case 'anonymousNewTab':
 				if (!this.donationVerified) break;
-			
+
 				if (event.message)
 					this.anonymous.newTab[event.target.url] = 1;
 				else
@@ -4906,6 +5004,10 @@ var Template = {
 
 			case 'removeCustomScript':
 				this.customScripts.remove(event.message[0], event.message[1]);
+			break;
+
+			case 'notification':
+				MessageTarget(event, 'notification', [event.message[0], event.message[1]]);
 			break;
 			
 			case 'doNothing': break;
@@ -4965,6 +5067,12 @@ var Template = {
 			 * Fixes issues with mouse hover events not working
 			 */
 			if (!this.reloaded) {
+				setTimeout(function () {
+					Popover.hide();
+
+					ToolbarItems.showPopover();
+				}, 10);
+
 				this.rules.use_snapshot(0);
 
 				if (this.popover) {
@@ -4979,11 +5087,12 @@ var Template = {
 
 			$$('#find-bar-done:visible').click();
 
-			new Poppy();
-			new Poppy(true);
+			setTimeout(function () {
+				new Poppy();
+				new Poppy(true);
+			}, 10);
 		} else if (!event || (event && ('type' in event) && ~['beforeNavigate', 'close'].indexOf(event.type))) {
-
-			if (event.target.url === event.url || event.type === 'close')
+			if (event.type === 'close')
 				delete this.frames[event.target.url];
 
 			if (event.type === 'close')
@@ -5014,9 +5123,9 @@ var Template = {
 		
 		try {
 			if (event.type === 'popover') {
-				$$('#page-list')[0].selectedIndex = 0;
-				$$('.whoop').scrollTop(0);
-				$$('.some-list, .pending').removeClass('some-list pending');
+				this.speedMultiplier = this.useAnimations ? 1 : 0.001;
+
+				this.clear_ui();
 
 				var url = this.tab.url || '';
 				
@@ -5040,16 +5149,15 @@ var Template = {
 								else
 									message = ['<p>', _('Update Failure'), '</p>'];
 
-								new Poppy($(self.popover.body).width() / 2, 0, message.join(''));
-
-								if (url in self.caches.jsblocker)
-										self.do_update_popover({ message: self.caches.jsblocker[url], target: { url: url } });
-								else
+								if (url in self.caches.jsblocker) {
+									new Poppy($(self.popover.body).width() / 2, 0, message.join(''));
+									self.do_update_popover({ message: self.caches.jsblocker[url], target: { url: url } });
+								} else {
 									self.clear_ui();
-							}, 400, self, url);
-						}, 400);
-
-						this.clear_ui();
+									$$('#host-sections').html('<div style="padding:0 15px;">' + message.join('') + '</div>').hide().fadeIn(200 * self.speedMultiplier);
+								}
+							}, 500, self, url);
+						}, 500);
 
 						Tabs.messageActive('updatePopover');
 					}
@@ -5088,15 +5196,17 @@ var Template = {
 
 			this.rules.use_tracker.load();
 			this.rules.warm_caches();
-			this.rules.snapshots = new Snapshots(this.rules.which, Settings.getItem('enableSnapshots') ? Settings.getItem('snapshotsLimit') : 0);
+			this.rules.snapshots = new Snapshots(this.rules.which, Settings.getItem('enableSnapshots') && this.donationVerified ? Settings.getItem('snapshotsLimit') : 0);
 
 			if (!this.setupDone) {
 				this.collapsed('allowed-script-urls-image', 1);
 
+				this.rules.easylist();
+
 				this.setupDone = 1;				
 				this.installedBundle = self.bundleid;
 
-				this.utils.open_url(ExtensionURL('settings.html#for-about'));
+				this.utils.open_url(ExtensionURL('settings.html#for-welcome'));
 
 				if (this.trialStart === 0)
 					this.trialStart = +new Date();
@@ -5116,15 +5226,12 @@ var Template = {
 
 			var pop = Popover.window();
 
-			if (pop) {
+			if (pop.document && pop.document.body) {
 				this.popover = pop.document;
-				this.set_theme(this.theme);
-				this.utils.floater('#rules-list', '.rules-header:visible');
-
-				if (SAFARI) {
-					Popover.object().width = this.simpleMode ? 460 : 560;
-					Popover.object().height = this.simpleMode ? 350 : 400;
-				}
+				this.set_theme();
+				this.utils.floater('#main', '.host-section-host', function (e) {
+					return e.next();
+				});
 
 				$(this.popover.body)
 					.toggleClass('simple', this.simpleMode)
@@ -5132,9 +5239,9 @@ var Template = {
 					.toggleClass('disabled', this.disabled);
 
 				if (Settings.getItem('showUnblocked'))
-					$$('#unblocked-script-urls').show().prev().show();
+					$$('.unblocked-script-urls').show().prev().show();
 				else
-					$$('#unblocked-script-urls').hide().prev().hide();
+					$$('.unblocked-script-urls').hide().prev().hide();
 					
 				var verc = Settings.getItem('donationVerified'),
 						ver = (verc === 1 || verc === 777 || verc === true || (typeof verc === 'string' && verc.length));
@@ -5145,7 +5252,6 @@ var Template = {
 
 				$$('#main .actions-bar li:not(#jsblocker-name)').toggleClass('selectable', Settings.getItem('traverseMainActions'));
 				$$('#rules-list .filter-bar:not(.actions-bar) li:not(.label,.li-text-filter)').toggleClass('selectable', Settings.getItem('traverseRulesFilter'));
-				$$('#previous-frame, #next-frame').toggleClass('selectable', Settings.getItem('traverseMainItems'));
 
 				if (!Settings.getItem('filterBarAge')) $$('#filter-type-not-used').addClass('hidden').next().remove();
 				if (!Settings.getItem('filterBarUsed')) $$('#filter-type-used').addClass('hidden').next().remove();
@@ -5156,8 +5262,6 @@ var Template = {
 			} else
 				this.utils.once_again('load');
 		}, this);
-
-		this.speedMultiplier = this.useAnimations ? 1 : 0.001;
 
 		if (this.installedBundle < this.update_attention_required) this.utils.attention(1);
 		if (this.disabled) ToolbarItems.image('images/toolbar-disabled.png');
@@ -5246,14 +5350,14 @@ Events.addApplicationListener('activate', function (event) {
 	JB.set_active_tab(function (tab) {
 		JB.popover_current = null;
 
-		MessageTarget({ target: tab }, 'updatePopoverNow');
+		MessageTarget({ target: tab }, 'updatePopover');
 
 		JB.utils.timer.timeout('deactivate_toolbar', function () {
 			ToolbarItems.badge(0, JB.tab);
 		}, 400);
 	});
 });
-Events.addApplicationListener('navigate', function (event) {	
+Events.addApplicationListener('navigate', function (event) {
 	JB.set_active_tab(function (tab) {
 		if (event.target === tab)
 			MessageTarget(event, 'updatePopover');

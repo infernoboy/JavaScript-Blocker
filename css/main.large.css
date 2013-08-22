@@ -5,29 +5,6 @@ p.misc-info select {
 	font-size: 11pt;
 }
 
-
-#page-list {
-	width: 412px;
-}
-	body.simple #page-list {
-		width: 312px;
-	}
-	#previous-frame,
-	#next-frame {
-		font-size: 9pt;
-	}
-	#frame-switcher {
-		width: 85px;
-	}
-	#frame-switcher .divider {
-		margin-bottom: -3px;
-	}
-#allowed-blocked-columns {
-	min-height: 327px;
-}
-	body.simple #allowed-blocked-columns {
-		min-height: 277px;
-	}
 #domain-script,
 #domain-picker {
 	max-width: 310px;
@@ -69,17 +46,6 @@ p.misc-header,
 	font-size: 10pt;
 }
 
-#main .actions-bar li {
-	font-size: 8pt;
-}
-
-#main .actions-bar #jsblocker-name {
-	font-size: 6pt;
-}
-	#main .actions-bar #jsblocker-name span {
-		margin-top: 2px;
-	}
-
 header h3,
 header a {
 	font-size: 13px;
@@ -91,11 +57,11 @@ header a {
 
 .poppy #rule-input,
 .poppy #rule-options {
-	width: 435px;
+	width: 400px;
 }
 	body.simple .poppy #rule-input,
 	body.simple .poppy #rule-options {
-		width: 335px;
+		width: 300px;
 	}
 
 #main .item-list-container select {
@@ -108,3 +74,26 @@ header a {
 #main .some-helper {
 	font-size: 9pt;
 }
+
+#main .filter-bar li {
+	font-size: 9pt;
+}
+
+#main .filter-bar {
+	font-size: 10pt;
+}
+
+#jsblocker-name {
+	display: none;
+}
+
+.host-section-host {
+	font-size: 10pt;
+}
+
+body.simple #main ul.show-per-host li span {
+	max-width: 82%;
+}
+	body.simple #main .column.expanded ul.show-per-host li span {
+		max-width: 91%;
+	}

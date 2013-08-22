@@ -1,6 +1,8 @@
 "use strict";
 
-var disabled = typeof beforeLoad === 'undefined' ? false : ResourceCanLoad(beforeLoad, ['disabled']);
+var disabled = typeof beforeLoad === 'undefined' ? false : disabled;
+
+// POSSIBLE MEMORY LEAK HERE.
 
 if (!disabled) {
 var special_actions = {
@@ -10,14 +12,13 @@ var special_actions = {
 		}, true);
 	},
 	window_resize: function () {
-		var wo = 'window_open_' + +new Date();
+		var window_open = window.open;
 
 		window.resizeBy = function () {};
 		window.resizeTo = function () {};
 		window.moveTo = function () {};
-		window[wo] = window.open;
 		window.open = function (URL, name, specs, replace) {
-			return window[wo](URL, name, undefined, replace);
+			return window_open(URL, name, undefined, replace);
 		};
 	},
 	alert_dialogs: function (enabled, args) {
@@ -33,8 +34,8 @@ var special_actions = {
 			ht.innerHTML = [
 				'<div class="jsblocker-alert-inner">',
 					'<a href="javascript:void(0);" class="jsblocker-close"></a>',
-					'<div class="jsblocker-alert-bg">', (text ? text.replace(/</g, '&lt;') : 'alert()'), '</div>',
-					'<div class="jsblocker-alert-text">', (!text || html_allowed !== html_verify ? a.replace(/</g, '&lt;') : a), '</div>',
+					'<div class="jsblocker-alert-bg">', (text ? text.replace(/&/g, '&amp;').replace(/</g, '&lt;') : 'alert()'), '</div>',
+					'<div class="jsblocker-alert-text">', (!text || html_allowed !== html_verify ? a.replace(/&/g, '&amp;').replace(/</g, '&lt;') : a), '</div>',
 				'</div>'].join('');
 			ht.className = 'jsblocker-alert';
 			ht.id = 'jsblocker-alert-' + (+new Date());
@@ -156,34 +157,34 @@ var special_actions = {
 		return window.alert;
 	},
 	contextmenu_overrides: function () {
-		window.jsblocker_stop_cm = function (e) {
+		var jsblocker_stop_cm = function (e) {
 			e.stopImmediatePropagation();
 			e.stopPropagation();
-		};
-		window.jsblocker_stop_md = function (e) {
+		},
+			jsblocker_stop_md = function (e) {
 			if (e.which && e.which === 3) {
 				e.stopImmediatePropagation();
 				e.stopPropagation();
 			}
-		};
-		window.jsblocker_block_context_override = function () {
+		},
+			jsblocker_block_context_override = function () {
 			window.oncontextmenu = null;
 			document.oncontextmenu = null;
 			
-			window.removeEventListener('contextmenu', window.jsblocker_stop_cm);
-			window.removeEventListener('mousedown', window.jsblocker_stop_md);
-			document.removeEventListener('contextmenu', window.jsblocker_stop_cm);
-			document.removeEventListener('mousedown', window.jsblocker_stop_md);
+			window.removeEventListener('contextmenu', jsblocker_stop_cm);
+			window.removeEventListener('mousedown', jsblocker_stop_md);
+			document.removeEventListener('contextmenu', jsblocker_stop_cm);
+			document.removeEventListener('mousedown', jsblocker_stop_md);
 			
-			window.addEventListener('contextmenu', window.jsblocker_stop_cm, true);
-			window.addEventListener('mousedown', window.jsblocker_stop_md, true);
-			document.addEventListener('contextmenu', window.jsblocker_stop_cm, true);
-			document.addEventListener('mousedown', window.jsblocker_stop_md, true);
+			window.addEventListener('contextmenu', jsblocker_stop_cm, true);
+			window.addEventListener('mousedown', jsblocker_stop_md, true);
+			document.addEventListener('contextmenu', jsblocker_stop_cm, true);
+			document.addEventListener('mousedown', jsblocker_stop_md, true);
 		};
 		
-		setInterval(window.jsblocker_block_context_override, 1500);
+		setInterval(jsblocker_block_context_override, 1500);
 		
-		window.jsblocker_block_context_override();
+		jsblocker_block_context_override();
 	},
 	autocomplete_disabler: function (v, args) {
 		var bv = parseInt(args[0], 10);
@@ -223,35 +224,74 @@ var special_actions = {
 		document.documentElement.appendChild(s);
 	},
 	history_fix: function () {
-		window.history.jsbpushState = window.history.pushState
-		window.history.jsbreplaceState = window.history.replaceState
+		var my_history = {
+			pushState: window.history.pushState,
+			replaceState: window.history.replaceState
+		};
 
 		window.history.pushState = function () {
-			window.history.jsbpushState.apply(window.history, arguments);
+			my_history.pushState.apply(window.history, arguments);
 
 			window.postMessage('history-state-change', '*');
 		};
 
 		window.history.replaceState = function () {
-			window.history.jsbreplaceState.apply(window.history, arguments);
+			my_history.replaceState.apply(window.history, arguments);
 
 			window.postMessage('history-state-change', '*');
 		};
+	},
+	ajax_intercept: function () {
+		var ajax = {
+			open: XMLHttpRequest.prototype.open,
+			send: XMLHttpRequest.prototype.send
+		};
+
+		XMLHttpRequest.prototype.open = function () {
+			this.intercept = arguments;
+
+			ajax.open.apply(this, arguments);
+		}
+
+		XMLHttpRequest.prototype.send = function () {
+			var str = 'This page wants to ', allow = false;
+
+			switch(this.intercept[0]) {
+				case 'POST':
+					str += 'POST the following information to ' + this.intercept[1] + ":\n\n" + decodeURIComponent(Array.prototype.slice.call(arguments).join(' '));
+				break;
+
+				case 'GET':
+					str += 'GET ' + this.intercept[1];
+				break;
+
+				default:
+					allow = true;
+				break;
+			}
+
+			var confirmed = allow ? true : confirm(str + "\n\nDo you want to allow this?");
+
+			if (confirmed)
+				ajax.send.apply(this, arguments);
+		}
 	}
 },
 custom_special_actions = {};
 
-var appendScript = function (script, v) {
+var appendScript = function (script, which, v) {
 	var script_string = script.toString(), p = script_string.split(/\{/), s = document.createElement('script');
 	p[1] = "\n" + '"use strict";' + "\n// JSBlocker Injected Helper Script\n" + p[1];
 	script_string = p.join('{');
 	s.id = 'jsblocker-' + (+new Date());
-	s.innerHTML = [
-		'(', script_string, ')',
+	s.setAttribute('data-ignore', window.allowedToLoad);
+	s.setAttribute('data-special', which);
+	s.src = ['data:text/javascript,',
+		encodeURI(['(', script_string, ')',
 		'(',
 			v !== undefined ? (typeof v === 'string' ? '"' + v + '"' : v) : '',
 			script.prototype && script.prototype.args ? ',' + JSON.stringify(script.prototype.args) : '',
-		');'].join('');
+		');'].join(''))].join('');
 	document.documentElement.appendChild(s);
 }
 
@@ -260,18 +300,18 @@ var doSpecial = function (do_append, n, action) {
 			v = enabled_specials[n].value || custom, m;
 
 	if (v === true || parseInt(v, 10) || (typeof v === 'string' && v.length)) {
-		if (!(m = enabled_specials[n].allowed)) {
-			jsblocker.blocked.special.all.push(n);
+		if (!((m = enabled_specials[n].allowed) % 2)) {
+			jsblocker.blocked.special.all.push([n, m]);
 			
 			if (!custom) {
-				if (do_append) appendScript(action, v);
+				if (do_append) appendScript(action, n, v);
 				else action(v);
 			}
 		} else
 			if (m !== 84) {
-				jsblocker.allowed.special.all.push(n);
+				jsblocker.allowed.special.all.push([n, m]);
 
-				if (custom) appendScript(action, true);
+				if (custom) appendScript(action, n, true);
 			}
 	}
 }
@@ -316,6 +356,6 @@ if (typeof beforeLoad !== 'undefined' && !disabled) {
 		parseSpecials(false);
 	}, true);
 
-	appendScript(special_actions.history_fix);
+	appendScript(special_actions.history_fix, 'history_fix');
 }
 }

@@ -3,6 +3,8 @@
 var Snapshots = function (store, purge) {
 	this.purge = purge ? purge : 10;
 
+	if (this.purge > 0) --this.purge;
+
 	var snapshots = Settings.getItem('Snapshots');
 
 	this.snapshots = JSON.parse(snapshots)
@@ -151,16 +153,8 @@ Snapshots.prototype = {
 		return id !== undefined ? JSON.stringify(this.store[id] || {}).length : JSON.stringify(this.snapshots).length;
 	},
 	compare: function (left, right) {
-		var left_str = JSON.stringify(left), right_str = JSON.stringify(right);
-
-		if (left_str in this.hash_table) {
-			if (right_str in this.hash_table[left_str])
-				return this.hash_table[left_str][right_str];
-		} else if (right_str in this.hash_table)
-			if (left_str in this.hash_table[right_str])
-				return this.hash_table[right_str][left_str];
-
-		var compare = {
+		var left_str = JSON.stringify(left), right_str = JSON.stringify(right),
+				compare = {
 					left: left in this.store ? this.store[left].data : left,
 					right: right in this.store ? this.store[right].data : right
 				}, swap = { left: 'right', right: 'left' },
@@ -260,14 +254,6 @@ Snapshots.prototype = {
 		}
 
 		var result = { left: diff.left, right: diff.right, both: both, score: score, equal: score.left === score.right };
-
-		if (!(left_str in this.hash_table)) this.hash_table[left_str] = {};
-		
-		this.hash_table[left_str][right_str] = result;
-
-		if (!(right_str in this.hash_table)) this.hash_table[right_str] = {};
-
-		this.hash_table[right_str][left_str] = this.hash_table[left_str][right_str];
 		
 		return result;
 	}

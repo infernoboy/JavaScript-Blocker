@@ -22,6 +22,7 @@ Strings['en-us'] = {
 	/*--*/ 'Contribute': 'Contribute',
 	/*--*/ 'Enable JavaScript Blocker': 'Enable',
 	/*--*/ 'Disable JavaScript Blocker': 'Disable',
+	/*--*/ 'Disable JavaScript Blocker on': 'Disable JavaScript Blocker',
 	/*--*/ 'Help': 'Help',
 	/*--*/ 'Settings': 'Settings',
 	/*--*/ 'Rules': 'Rules',
@@ -38,6 +39,8 @@ Strings['en-us'] = {
 	/*** Displayed in the page selector as an optgroup.
 	/**/ 'Main Page': 'Main Host',
 	/**/ 'Inline Frame Pages': 'Inline Frame Hosts',
+	/**/ 'Main host': 'Main',
+	/**/ 'Frame host': 'Frame',
 	/**/
 	/*** Displayed in the page selector when a frame does not have a URL.
 	/**/ 'Custom Frame': '(Non-URL Based Frame)',
@@ -126,7 +129,7 @@ Strings['en-us'] = {
 	/*----*/ 'Any': 'Any',
 	/*----*/ 'Enabled': 'Enabled',
 	/*----*/ 'Disabled': 'Disabled',
-	/*----*/ 'Temporary': 'Temporary',
+	/*----*/ 'Show Temporary': 'Show Temporary',
 	/*--*/
 	/*--*/ 'Visibility:': 'Visibility:',
 	/*------ 'Any'
@@ -208,7 +211,16 @@ Strings['en-us'] = {
 	'Reinstall Whitelist and Blacklist': 'Reinstall Whitelist and Blacklist',
 	'Back': 'Back',
 	'Continue': 'Continue',
-	'New rule for {1}': 'New rule for <b>{1}</b>', // {1} = domain name
+	'New script rule for {1}': 'New script rule for <b>{1}</b>', // {1} = domain name
+	'New frame rule for {1}': 'New frame rule for <b>{1}</b>', // {1} = domain name
+	'New embed rule for {1}': 'New embed & object rule for <b>{1}</b>', // {1} = domain name
+	'New video rule for {1}': 'New video rule for <b>{1}</b>', // {1} = domain name
+	'New special rule for {1}': 'New other rule for <b>{1}</b>', // {1} = domain name
+	'New hide_script rule for {1}': 'New hide-script rule for <b>{1}</b>', // {1} = domain name
+	'New hide_frame rule for {1}': 'New hide-frame rule for <b>{1}</b>', // {1} = domain name
+	'New hide_embed rule for {1}': 'New hide-embed-&-object rule for <b>{1}</b>', // {1} = domain name
+	'New hide_video rule for {1}': 'New hide-video rule for <b>{1}</b>', // {1} = domain name
+	'New hide_special rule for {1}': 'New hide-other rule for <b>{1}</b>', // {1} = domain name
 	'Show {1} more': 'Show {1} more', // {1} = number of hidden items in main window.
 	'Understood': 'Understood',
 	'Reset JS Blocker': 'Reset JS Blocker',
@@ -236,7 +248,42 @@ Strings['en-us'] = {
 	'Exclude whitelist': 'Exclude whitelisted items',
 	'Exclude blacklist': 'Exclude blacklisted items',
 
-	'This view contains outdated information. Scroll to the top to have it updated.': 'Outdated information might be displayed. Scroll to the top to have it updated.',
+	'This script will be allowed': 'This script will be allowed.',
+	'This frame will be allowed': 'This frame will be allowed.',
+	'This embed will be allowed': 'This embed/object will be allowed.',
+	'This video will be allowed': 'This video will be allowed.',
+	'This other will be allowed': 'This other feature will be allowed.',
+	'This script will be blocked': 'This script will be blocked.',
+	'This frame will be blocked': 'This frame will be blocked.',
+	'This embed will be blocked': 'This embed/object will be blocked.',
+	'This video will be blocked': 'This video will be blocked.',
+	'This other will be blocked': 'This other feature will be blocked.',
+	'script from {1} will be allowed': 'Allow scripts {3} <span class="{1}"><b>{2}</b></span>',
+	'frame from {1} will be allowed': 'Allow frames {3} <span class="{1}"><b>{2}</b></span>',
+	'embed from {1} will be allowed': 'Allow fmbeds & objects {3} <span class="{1}"><b>{2}</b></span>',
+	'video from {1} will be allowed': 'Allow videos {3} <span class="{1}"><b>{2}</b></span>',
+	'special from {1} will be allowed': 'Allow <b>{2}</b>',
+	'script from {1} will be blocked': 'Block scripts {3} <span class="{1}"><b>{2}</b></span>',
+	'frame from {1} will be blocked': 'Block frames {3} <span class="{1}"><b>{2}</b></span>',
+	'embed from {1} will be blocked': 'Block embeds & objects {3} <span class="{1}"><b>{2}</b></span>',
+	'video from {1} will be blocked': 'Block videos {3} <span class="{1}"><b>{2}</b></span>',
+	'special from {1} will be blocked': 'Block <b>{2}</b>',
+	'Apply Changes': 'Apply Changes',
+	'Clear Selection': 'Clear Selection',
+	'Closing the popover will apply changes.': 'Closing the popover will apply changes.',
+	'Press and hold for more options.': 'Press and hold for more options.',
+	'Click again to allow {1} {2}': 'Click to allow within <b>{2}</b> instead.',
+	'Click again to block {1} {2}': 'Click to block within <b>{2}</b> instead.',
+	'Click again to leave this allowed.': 'Click to leave this allowed.',
+	'Click again to leave this blocked.': 'Click to leave this blocked.',
+
+	'{1} item is about to be allowed': '{1} item is about to be allowed.',
+	'{1} item is about to be blocked': '{1} item is about to be blocked.',
+	'{1} items are about to be allowed': '{1} items are about to be allowed.',
+	'{1} items are about to be blocked': '{1} items are about to be blocked.',
+
+	'This view contains outdated information. Scroll to the top to have it updated.':
+		'Outdated information might be displayed. <a id="scroll-to-top">Scroll to the top</a> to have it updated.',
 
 	'scripts': 'scripts',
 	'frames': 'frames',
@@ -311,17 +358,26 @@ Strings['en-us'] = {
 		'Gallery website for security reasons.',
 	'This data URI cannot be displayed.': 'This data URI cannot be displayed.',	
 	'Predefined rules cannot be edited.': 'Predefined rules cannot be edited. ',
+	'Disable rules cannot be modified.': 'Disable/enable rules cannot be modified.',
 	'Update Failure': 'Information about the current webpage is outdated or unavailable at this time. The webpage may not be fully loaded yet. If it is, reloading might resolve the issue.',
 	'Unable to view source of embedded items.': 'Unable to view source of embedded items.',
 
-	'Unblockable frame': 'This frame\'s source cannot be blocked because it is the result of a navigation event that occurred from ' +
-		'the original URL. The original URL may appear as "blank" or "about:blank", though not always; blocking that instead may work.',
+	'Unblockable frame': 'This frame\'s source cannot be blocked because it\'s the result of a navigation event that occurred from ' +
+		'the original URL. It may appear as "<span class="{1}">{2}</span>"; blocking that instead may work.',
 	'{1} cannot function when its toolbar icon is hidden.': '{1} cannot function when its toolbar icon is hidden.',
 	'No rules exist for this domain.': 'No rules exist for this domain',
 	'Please click the flashing toolbar icon to continue': 'Your attention is required in order for JavaScript Blocker to continue functioning properly. ' +
-		'Please click the flashing toolbar icon to open the popover for more details.',
+		'All sources will be blocked by default until you click the flashing toolbar icon to complete the update',
 	/** /ERRORS-ISH **/
 	
+	'Adding a simple rule help':
+		'<p>If editing an existing rule, changing the domain will cause it to be moved, not copied.</p>' +
+		'<p><b>Protocol</b> - Enter the protocols you want to affect separated by a comma (,). Leave this blank to affect all protocols. If adding a regular expression rule, this is ignored.</p>' +
+		'<p><b>Rule</b> - Enter a domain, *, or a regular expression pattern. Placing a period (.) in front of a domain will match all sub-domains also. ' +
+		'To add a regular expression rule, enter a pattern starting with <b>^</b> and ending with <b>$</b>.</p>',
+	'Adding an expert rule help':
+		'<p>If editing an existing rule, changing the domain will cause it to be moved, not copied.</p>' +
+		'<p><b>Rule</b> - Enter a regular expression pattern that matches the item you wish to allow/block. Click the <b>Options...</b> button to reveal some pre-defined patterns.</p>',
 	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
 	'Adding a Rule For {1}': 'Adding a Rule For {1}', // {1} = domain name
 	'Editing a Rule For {1}': 'Editing a Rule For {1}', // *
@@ -331,6 +387,7 @@ Strings['en-us'] = {
 	'Adding a video Rule': 'Adding a Video Rule',
 	'Adding a image Rule': 'Adding an Image Rule',
 	'Adding a special Rule': 'Adding a Rule',
+	'Adding a disable Rule': 'Adding a Disable/Enable Rule',
 	'Adding a hide_script Rule': 'Adding a Hide-Script Rule',
 	'Adding a hide_frame Rule': 'Adding a Hide-Frame Rule',
 	'Adding a hide_embed Rule': 'Adding a Hide-Embed-&-Object Rule',
@@ -366,6 +423,7 @@ Strings['en-us'] = {
 
 	/** MISC HEADERS **/
 	'JavaScript Blocker is disabled.': 'JavaScript Blocker is disabled.',
+	'JavaScript Blocker is disabled on this host.': 'JavaScript Blocker is disabled on this host.',
 	/** /MISC **/
 	
 	/** INFO ABOUT REMOVING RULES **/
@@ -373,6 +431,8 @@ Strings['en-us'] = {
 	'The following rules are allowing this item:': 'The following rules are allowing this item:',
 	'The following rule is blocking this item:': 'The following rule is blocking this item:',
 	'The following rules are blocking this item:': 'The following rules are blocking this item:',
+	'The following rule is affecting JavaScript Blocker on this host:': 'The following rule is affecting JavaScript Blocker on this host:',
+	'The following rules are affecting JavaScript Blocker on this host:': 'The following rules are affecting JavaScript Blocker on this host:',
 	
 	'Would you like to delete it, or add a new one?': 'Would you like to delete it, or add a new one?',
 	'Would you like to delete them, or add a new one?': 'Would you like to delete them, or add a new one?',
@@ -441,9 +501,9 @@ Strings['en-us'] = {
 	'font': 'Default webpage font',
 		'font:0': 'Custom font is set to {1}',
 		'font:1': 'Webpage will use its own font.',
-	'rel_referer': 'Referer on navigation',
-		'rel_referer:1': 'Referer information will be sent. Anchor tags are unchanged.',
-		'rel_referer:0': 'Referer information will try to be hidden. Anchor tags are modified with "rel=noreferrer".',
+	'ajax_intercept': 'AJAX POST/GET requests',
+		'ajax_intercept:0': 'AJAX POST/GET requests will be intercepted and you will be prompted to allow the action.',
+		'ajax_intercept:1': 'All AJAX requests are allowed automatically.',
 
 	'Injected pre Script: {1}': 'Before Load: {1}',
 	'Injected post Script: {1}': 'After Load: {1}',
@@ -455,7 +515,10 @@ Strings['en-us'] = {
 	'Trial remaining {1} days, {2} hours, and {3} minutes': 'You have {1} days, {2} hours, and {3} minutes remaining in your free trial.', // TO BE DELETED
 	'Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>': 'You have {1} days, {2} hours, and {3} minutes remaining in your trial of the {4}',
 		'donator-only features.': 'extra features.',
-	'Free trial expired': 'Your free trial has expired. You can make a contribution and have it verified to continue using the extra features of {1}.',
+	'Free trial expired':
+		'Your free trial of JavaScript Blocker\'s extra features has expired. To see what what you\'ll be missing out on, browse around the ' +
+		'<a class="outside" href="' + ExtensionURL('settings.html#for-other') + '">settings page</a>. You can make a contribution and have ' +
+		'it verified to continue using those features.',
 	'Remember for free': 'If you are unable to make a contribution (or just don\'t want to), click <b>Unlock</b> in the JavaScript Blocker popup, then <b>Unlock Without Contributing</b>. ' +
 		'You will then have access to all of the extra features for free.',
 	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
@@ -475,7 +538,7 @@ Strings['en-us'] = {
 	'You may unlock {1}': 'You may unlock JavaScript Blocker on {1} more copies of Safari.',
 	'Thanks for your support!': 'Thanks for your support!',
 	'All features are already unlocked.': 'All features are already unlocked.',
-	'Donation Required': 'A verified contribution is required to use that feature. Click "Unlock All Features Permanently" from the main window to do so.',
+	'Donation Required': 'A verified contribution is required to use that feature. Click <b>Unlock</b> at the top-left of the main window to do so.',
 	"Unlock Without Contributing": "Unlock Without Contributing",
 	'What donation?': 'What extra features are there?',
 	'You cannot use JavaScript Blocker': 'You cannot use JavaScript Blocker with expert features enabled until you have made a contribution and had it verified.',
@@ -547,6 +610,7 @@ Strings['en-us'] = {
 	'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items': 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items<br/><span class="aside">Context menu overrides</span>',
 	'Prevent webpages from resizing the window and creating new windows with a custom size': 'Prevent webpages from resizing the window and creating new windows with a custom size<br/><span class="aside">Window resize functions</span>',
 	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete<br/><span class="aside">Autocomplete disablers</span>',
+	'Show a prompt when an AJAX request tries to POST or GET information': 'Let me confirm when an AJAX request is allowed to POST or GET information<br/><span class="aside">AJAX POST/GET requests</span>',
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
 	'Disabled mode persist across Safari restarts': 'Disabled mode persist across Safari restarts',
@@ -564,7 +628,7 @@ Strings['en-us'] = {
 	'Enable custom injected scripts': 'Enable custom injected scripts',
 
 	'custom helper description': 'This section allows you to create custom scripts that are injected into a webpage. They will appear ' +
-		'under the <b>OTHER</b> section of the main window and rule list. Once a new script is created, you can create rules ' +
+		'under the <b>OTHER</b> section of the main window. Once a new script is created, you can create rules ' +
 		'to enable it on a per-site basis or create a rule to enable it everywhere.',
 	'before load description': 'These scripts will be injected into the webpage before the DOM and other scripts are loaded.',
 	'after load description': 'These scripts will be injected once the content of the webpage is ready to be manipulated.',
@@ -578,8 +642,9 @@ Strings['en-us'] = {
 	'Other…': 'Other…', // Generic option
 
 	// Quick Add
-	'Enable Quick Add—lets you add rules with a single click': 'Enable Quick Add—allow/block items with one click',
-		'Quick-add rules are temporary': 'Quick Add rules are temporary',
+	'Enable Quick Add': 'Enable Quick Add',
+	'only in simple view': 'only in simple view',
+	'Quick-add rules are temporary': 'Quick Add rules are temporary',
 	'Create Quick Add rules for:': 'Create Quick Add rules for:',
 	'Same hostname as page host': 'Same domain as page host',
 	'Least domain of page host': 'Root domain of page host',
@@ -634,7 +699,7 @@ Strings['en-us'] = {
 	 // Snapshots
 	 'Snapshots description': 'Snapshots keeps track of all changes made to your rules. It lets you easily revert to different ' +
 	 		'rule sets, or recover just a few. You\'ll never have to worry about messing up your rules again.',
-	 'Snapshots disabled': 'Snapshots are disabled.',
+	 'Snapshots disabled': 'Rule snapshots is currently disabled. You can enable it from the <a href="' + ExtensionURL('settings.html#for-snapshots') + '" class="outside">Snapshots tab</a> of the settings page.',
 	 'Enable rule snapshots': 'Enable rule snapshots',
 	 'Do you want to remove snapshots that exist?': 'Do you want to remove all existing snapshots?',
 	 'Create a snapshot when rules are modified': 'Create a snapshot when rules are modified',
@@ -662,6 +727,7 @@ Strings['en-us'] = {
 		'have referer headers blocked due to a limitation of Safari. This setting may cause a loop when trying to navigate back/forward. ' +
 		'It may also break any extensions that modify link or tab behavior. If you are experiencing any unexpected behavior, turn this ' +
 		'feature off.',
+	'When a new tab opens, make it active': 'When a new tab opens, make it active',
 
 	// Short URL stuff - NEW
 	'Confirm short URL redirects before they occur': 'Show a confirmation dialog before navigating to a shortened URL',
@@ -681,6 +747,9 @@ Strings['en-us'] = {
 	
 	'Reset all settings to their default values:': 'Reset settings to their default values:', // label
 	'Reset Settings': 'Reset Settings', // button
+
+	'Show welcome:': 'Show welcome page:',
+	'Show Welcome': 'Show Welcome',
 	
 	'Remove all rules:': 'Remove all rules:', // label
 	'Remove Rules': 'Remove Rules', // button
@@ -721,9 +790,6 @@ Strings['en-us'] = {
 		'<p><b>Blacklist only</b> will allow anything not blocked by the blacklist.</p>',
 		'<p><b>Anywhere</b> will allow nothing.</p>'].join(''),
 	
-	'quickAdd help': 'Quick Add lets you add rules with a single click. Successive clicks with expert features disabled will select different parts of the host. ' +
-		'You will have a second to click multiple items or multiple times until you reach your desired result. You can press-and-hold on an item ' +
-		'to bypass Quick Add and bring up the standard rule creator.',
 	'simpleMode help': 'When enabled, a different rule set will be used.',
 	'simpleReferrer help': 'Adds the attribute <b>rel="noreferrer"</b> to anchor tags.', // <b>rel="noreferrer"</b> = do not localize.
 	'enableimage help': 'This will <b>not</b> prevent the network request from being made on images. It will only hide it in the DOM. ' +

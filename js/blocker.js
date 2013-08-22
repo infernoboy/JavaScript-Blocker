@@ -10,8 +10,9 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 		random = +new Date(),
 		blank = window.location.href === 'about:blank',
 		allowedToLoad = 'al' + Math.random() * 1000000000000000000,
-		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '&about:blank') : false,
-		disabled = ResourceCanLoad(beforeLoad, ['disabled']);
+		bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
+		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '&about:blank' + +new Date()) : false,
+		disabled = ResourceCanLoad(beforeLoad, ['disabled', pageHost()]);
 
 function pageHost(not_real) {
 	if (parentURL) return parentURL;
@@ -69,21 +70,20 @@ function fitFont(e, f) {
 	});
 }
 
-function createPlaceholder(e, host, url) {
+function createPlaceholder(e, url) {
 	if (!e.parentNode || !url) return false;
 		
-	var pl, st, pl, i, p, w, pw, pB, p2, t, o, proto = activeProtocol(url), ex = /^https?/.test(proto) ? 3 : 1,
+	var pl, st, pl, i, p, w, pw, pB, p2, t, o, parsed = parseURL(url), proto = activeProtocol(url), host = parsed.host,
 			pr = ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
-			pa = url.substr(proto.length + host.length + ex).replace(/</g, '&lt;').replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&(?!lt;)/g, '&<wbr />').replace(/=/g, '=<wbr />'),
-			proto = proto + (ex === 3 ? '://' : ':'),
+			pa = parsed.pathname.replace(/</g, '&lt;').replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&(?!lt;)/g, '&<wbr />').replace(/=/g, '=<wbr />'),
 			place =  [
 				'<div class="jsblocker-node-wrap">',
 					'<p class="jsblocker-node">', e.nodeName.toLowerCase(), '</p>',
 					'<p class="jsblocker-node-two">', e.nodeName.toLowerCase(), '</p>',
 				'</div>',
 				'<p class="jsblocker-url">',
-					'<span class="jsblocker-protocol">', proto, '</span>',
-					'<span class="jsblocker-host">', host.replace(/\./g, '.<wbr />'), '<wbr /></span>',
+					'<span class="jsblocker-protocol">', proto, ~['about', 'javascript', 'data'].indexOf(proto) ? ':' : '://', '</span>',
+					'<span class="jsblocker-host">', ~['about', 'javascript', 'data'].indexOf(proto) ? '' : host.replace(/\./g, '.<wbr />'), '<wbr /></span>',
 					'<span class="jsblocker-path">', pa, '</span>',
 				'</p>'].join(''),
 			pl = document.createElement('div');	
@@ -141,10 +141,10 @@ function createPlaceholder(e, host, url) {
 	});
 }
 
-var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
-		alwaysAllow = [],
+var alwaysDo = {},
 		kinds = {
-			special: ['special']
+			special: ['special'],
+			disable: ['disable']
 		},
 		jsblocker = {
 			allowed: {},
@@ -152,11 +152,11 @@ var bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 			unblocked: {},
 			href: pageHost(),
 			host: blank ? 'blank' : window.location.host || 'blank'
-		}, readyTimeout = [null, null], lastAddedFrameData = false, jsonBlocker = false, zero = [], settings = {},
+		}, readyTimeout = {}, zero = [], settings = {},
 		ph = function (kind, allowed, host, url) {
 			if (!allowed)
 				if_setting('showPlaceholder' + kind, true, function (t) {
-					createPlaceholder(t, host, url);
+					createPlaceholder(t, url);
 				}, function (t) {
 					if (t.parentNode) t.parentNode.removeChild(t);
 				}, [this]);
@@ -212,16 +212,21 @@ function activeHost(url, real) {
 	return 'ERROR';
 }
 
+function parseURL(url) {
+	var a = document.createElement('a');
+	a.href = url;
+	return a;
+}
+
 function activeProtocol(url) {
-	return url.substr(0, url.indexOf(':'));
+	var p = parseURL(url).protocol;
+	return p.substr(0, p.length - 1);
 }
 
 function getAbsoluteURL(url) {
 	if (!url) return '';
-	
-	var a = document.createElement('a');
-	a.href = url;
-	return a.href;
+
+	return parseURL(url).href;
 }
 
 function canLoad(event) {
@@ -233,8 +238,10 @@ function canLoad(event) {
 	var source = getAbsoluteURL(event.url), pathname, host, at, arr, use_source, did_something = 0, kind = kinds[node][0];
 
 	if (!el[allowedToLoad]) {
-		if (~alwaysAllow.indexOf(kind)) return 1;
-		else if (event.target) {									
+		if (kind in alwaysDo) {
+			if (!alwaysDo[kind] && event.preventDefault) event.preventDefault();
+			return alwaysDo[kind];
+		} else if (event.target) {									
 			if (source && source.length)
 				use_source = source, host = activeHost(source, 1);
 			else if (node !== 'OBJECT')
@@ -242,20 +249,31 @@ function canLoad(event) {
 			else
 				return 1;
 
+			if (el.getAttribute('data-ignore') === window.allowedToLoad) {
+				el.setAttribute('data-jsblocker_added', 1);
+
+				jsblocker.unblocked[kind].all.push('JSBlocker Injected Script (' + el.getAttribute('data-special') + '): ' + el.src);
+
+				el.removeAttribute('data-ignore');
+				return 1;
+			}
+
+			if (node === 'IFRAME' || node === 'FRAME') el.setAttribute('data-jsblocker_url', use_source);
+
 			var allo = ResourceCanLoad(event, [kind, jsblocker.href, use_source, !(window == window.top)]),
 					isAllowed = allo[0],
 					mo = isAllowed || !event.preventDefault ? 'allowed' : 'blocked';
 
 			if (allo[1] === -84) {
-				alwaysAllow.push(kind);
-				return 1;
+				alwaysDo[kind] = isAllowed;
+				return isAllowed;
 			}
 
 			did_something = 1;
 
 			if (!isAllowed && event.preventDefault)	event.preventDefault();
 			
-			jsblocker[mo][kind].all.push([use_source, allo[1], !!event.unblockable]);
+			jsblocker[mo][kind].all.push([use_source, allo[1], event.unblockable || false]);
 		
 			if (!~jsblocker[mo][kind].hosts.indexOf(host)) jsblocker[mo][kind].hosts.push(host);
 
@@ -280,14 +298,11 @@ function canLoad(event) {
 function ready(event) {
 	if (disabled) return false;
 
-	if (window === window.top)
-		GlobalPage.message('updateReady');
+	var l = event.type === 'DOMContentLoaded';
+			
+	clearTimeout(readyTimeout[l]);
 		
-	var t = event.type === 'DOMContentLoaded' ? 1 : 0;
-	
-	clearTimeout(readyTimeout[t]);
-		
-	readyTimeout[t] = setTimeout(function (event) {
+	readyTimeout[l] = setTimeout(function (event) {
 		if (event.type === 'DOMContentLoaded') {
 			var script_tags = document.getElementsByTagName('script'), i, b = script_tags.length;
 			for (i = 0; i < b; i++) {
@@ -301,15 +316,10 @@ function ready(event) {
 				}
 			}
 		}
-
-		if (window !== window.top && lastAddedFrameData !== (jsonBlocker = JSON.stringify(jsblocker))) {
-			lastAddedFrameData = jsonBlocker;
-			GlobalPage.message('addFrameData', [jsblocker.href, jsblocker]);
-		}
 			
 		try {
 			if (window === window.top)
-				GlobalPage.message('updatePopover', jsblocker);
+				GlobalPage.message(event.name && ~event.name.indexOf('updatePopover') ? event.name : 'updatePopover', jsblocker);
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
@@ -317,7 +327,7 @@ function ready(event) {
 						'Reloading the page should fix things.')
 			}
 		}
-	}, (event.name && event.name === 'updatePopoverNow') ? 100 : 300, event);
+	}, 250, event);
 }
 
 function messageHandler(event) {
@@ -327,9 +337,18 @@ function messageHandler(event) {
 		} catch (e) {}
 
 	switch (event.name) {
-		case 'reload': window.location.reload(); break;
-		case 'updatePopover': ready(event); break;
-		case 'updatePopoverNow': ready(event); break;
+		case 'reload':
+			if (window === window.top) window.location.reload();
+		break;
+
+		case 'updatePopover':
+			if (window === window.top) {
+				hashUpdate();
+				
+				GlobalPage.message('updateReady');
+				GlobalPage.message(event.name, jsblocker);
+			}
+		break;
 
 		case 'setting':
 			settings[event.message[0]] = event.message[1];
@@ -387,6 +406,11 @@ function messageHandler(event) {
 				pls[i].dispatchEvent(ev);
 			}
 		break;
+
+		case 'getFrameData':
+			if (window !== window.top)
+				GlobalPage.message('addFrameData', [jsblocker.href, jsblocker]);
+		break;
 	}
 }
 
@@ -394,10 +418,10 @@ function hashUpdate(event) {
 	var ohref = jsblocker.href.toString();
 	
 	jsblocker.href = pageHost();
-		
+
 	GlobalPage.message('updateFrameData', [jsblocker.href, jsblocker, ohref]);
 	
-	ready(event);
+	if (event) ready(event);
 }
 
 function prepareAnchors(event, anchors, forms) {
@@ -424,6 +448,10 @@ function prepareAnchor(anchor, i) {
 	}
 
 	if (anchor.nodeName && anchor.nodeName.toUpperCase() === 'A') {
+		if (anchor.getAttribute('data-jsbprepared') === window.allowedToLoad) return;
+
+		anchor.setAttribute('data-jsbprepared', window.allowedToLoad);
+
 		if_setting('simpleReferrer', true, function (anchor) {
 			if (anchor.getAttribute('href') && anchor.getAttribute('href').length && anchor.getAttribute('href').charAt(0) !== '#')
 				if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length))
@@ -469,13 +497,13 @@ function prepareFrames() {
 }
 
 function prepareFrame(frame) {
-	var fr = frame.target ? frame.target : frame;
+	var fr = frame.target ? frame.target : frame, id;
 
 	if (!~['FRAME', 'IFRAME'].indexOf(fr.nodeName.toUpperCase())) return false;
 
-	if (!fr.getAttribute('id')) fr.setAttribute('id', 'frame-' + +new Date());
+	id = fr.getAttribute('id');
 
-	fr.setAttribute('data-jsblocker_url', fr.src);
+	if (!id || !id.length) fr.setAttribute('id', 'frame-' + +new Date());
 
 	fr.addEventListener('load', function () {
 		this.contentWindow.postMessage('mayIPleaseKnowYourURL:' + this.id, '*');
@@ -512,13 +540,14 @@ function windowMessenger(event) {
 		fr[allowedToLoad] = 0;
 
 		if (old !== url) {
-			var t = beforeLoad;
+			var t = JSON.parse(JSON.stringify(beforeLoad));
 			t.target = fr;
 			t.url = url;
-			t.unblockable = 1;
+			t.unblockable = old;
 			canLoad(t);
 			fr.setAttribute('data-jsblocker_url', url);
-		}
+		} else
+			fr.setAttribute('data-jsblocker_url', url);
 	}
 }
 

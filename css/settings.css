@@ -52,7 +52,7 @@ body {
 }
 	#toolbar li {
 		position: relative;
-		padding: 5px 3px 0;
+		padding: 5px 2px 0 3px;
 		float: left;
 		list-style-type: none;
 		-webkit-user-select: none;
@@ -70,6 +70,9 @@ body {
 		#toolbar li:active {
 			color: #333;
 			text-shadow: none;
+		}
+		#toolbar #for-welcome {
+			display: none;
 		}
 		#toolbar #for-close {
 			width: 12px;
@@ -113,7 +116,7 @@ body {
 			#toolbar li .right {
 				float: right;
 				left: auto;
-				right: -3px;
+				right: -2px;
 				background: -webkit-linear-gradient(right, rgba(0,0,0,0.5), rgba(0,0,0,0));
 			}
 			#toolbar li.selected .left,
@@ -394,3 +397,21 @@ input.edit-custom, input.remove-custom {
 	body.large .custom-header {
 		font-size: 13pt;
 	}
+
+#welcome {
+	padding-bottom: 10px;
+	text-shadow: 0 1px 0 rgba(255,255,255,0.9);
+}
+
+#welcome .logo {
+	margin-left: 15px;
+}
+
+#welcome h3 {
+	margin: 0 15px 10px;
+}
+
+#welcome p {
+	text-indent: 17px;
+	padding: 4px 15px 3px;
+}

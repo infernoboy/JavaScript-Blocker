@@ -24,6 +24,14 @@ var SAFARI = true, CHROME = false,
 					toolbarItem.disabled = enabled;
 				});
 				return this;
+			},
+			showPopover: function () {
+				safari.extension.toolbarItems.forEach(function (toolbarItem) {
+					if (!toolbarItem.browserWindow) return;
+					
+					if (toolbarItem.browserWindow === BrowserWindows.active())
+						toolbarItem.showPopover();
+				});
 			}
 		},
 

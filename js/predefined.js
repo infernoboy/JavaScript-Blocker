@@ -4,8 +4,6 @@
  * @package JavaScript Blocker (http://javascript-blocker.toggleable.com)
  ***************************************/
 
- var kinds = { script: 1, frame: 1, embed: 1, video: 1, image: 1 };
-
 /* ====================WHITELIST===================== */
 
 var wld = {
@@ -47,7 +45,7 @@ $.extend(true, JB.rules.whitelist, {
 			'^(jQuery, the JavaScript framework)?.*\\/jquery(\\-ui)?\\-[1-9]\\.[0-9]+\\.[0-9]+(\\.min)?\\.js((\\?|#)+.*)?$': [5,false],
 			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.[^.\\/]+\\.js((\\?|#)+.*)?$': [5,false],
 			'^(jQuery, the JavaScript framework)?.*\\/jquery\\.js((\\?|#)+.*)?$': [5,false],
-			'^(jQuery UI, the JavaScript framework to make things pretty)?.*\\/jquery(\\-ui|\\.ui)\\.([^.\\/]+)?\\.js$': [5,false],
+			'^(jQuery UI, the JavaScript framework to make things pretty)?.*\\/jquery(\\-ui|\\.ui)(\\.[^.\\/]+)?\\.js$': [5,false],
 			'^(reCAPTCHA)?https?:\\/\\/www\\.google\\.com\\/recaptcha\\/api\\/.*$': [5,false]
 		},
 		'.docs.google.com': {
@@ -94,7 +92,11 @@ $.extend(true, JB.rules.blacklist, {
 			'^https?:\\/\\/widgets\\.getpocket\\.com\\/.*\\/btn.js((\\?|#)+.*)?$': [4,false],
 			'^https?:\\/\\/assets\\.pinterest\\.com\\/js\\/pinit.js((\\?|#)+.*)?$': [4,false],
 			'^https?:\\/\\/([^\\/]+\\.)?addthis\\.com\\/.*widget\\.js((\\?|#)+.*)?$': [4,false],
-			'^https?:\\/\\/([^\\/]+\\.)?sharethis\\.com\\/button.*((\\?|#)+.*)?$': [4,false]
+			'^https?:\\/\\/([^\\/]+\\.)?sharethis\\.com\\/button.*((\\?|#)+.*)?$': [4,false],
+			'^https?:\\/\\/([^\\/]+\\.)?platform\\.linkedin\\.com\\/in\\.js.*((\\?|#)+.*)?$': [4,false]
+		},
+		'.thepiratebay.sx': {
+			'^https?:\\/\\/([^\\/]+\\.)?thepiratebay\\.sx\\/static\\/js\\/((?!tpb).)*\\.js((\\?|#)+.*)?$': [4,false]
 		}
 	}
 });
@@ -142,7 +144,8 @@ var bld = {
 			['Tracks users', 'serving\\-sys\\.com'],
 			['Advertisements', 'insightexpressai\\.com'],
 			['Advertisements', 'googletagservices.com'],
-			['Layers', 'live.spokenlayer.com']
+			['Layers', 'live.spokenlayer.com'],
+			['Tracks users', 'linksalpha.com']
 		]
 	},
 	frame: {
@@ -152,7 +155,9 @@ var bld = {
 			['Google social media tracking', 'plusone\\.google\\.(com|ca|co\\.uk)'],
 			'ads\\.[^\\.]+\\..*',
 			['Tracks users', 'mediaplex\\.com'],
-			['Advertisements', 'legolas\\-media\\.com']
+			['Advertisements', 'legolas\\-media\\.com'],
+			['Adds a "reddit-this" button on webpages', 'reddit.com'],
+			['Tracks users', 'linksalpha.com']
 		]
 	}
 };

@@ -56,6 +56,10 @@ JB.poppies = {
 							setTimeout(function () {
 								try {
 									Popover.window().location.reload();
+									
+									setTimeout(function () {
+										Tabs.messageActive('updatePopover');
+									}, 1000);
 								} catch (e) {}
 							}, 3000);
 						} else
@@ -87,6 +91,9 @@ JB.poppies = {
 							JB.donationVerified = 777;
 							try {
 								Popover.window().location.reload();
+								setTimeout(function () {
+									Tabs.messageActive('updatePopover');
+								}, 1000);
 							} catch (e) {}
 						});
 					});
@@ -112,11 +119,12 @@ JB.poppies = {
 			main: main,
 			content: [
 				'<div>',
+					'<div class="info-link orange">?</div>',
 					'<p class="misc-info">', this.header, '</p>',
 					'<p id="rules-radios">',
-						'<input id="select-type-block" type="radio" name="select-type" value="0" ', !this.hider ? (this.is_new || !(this.rtype % 2) ? 'checked' : '') : (!this.is_new ? 'disabled' : ''), '/>',
+						'<input id="select-type-block" type="radio" name="select-type" value="0" ', !this.hider ? (this.is_new || !(this.rtype % 2) ? 'checked' : '') : 'disabled' , '/>',
 						'<label for="select-type-block"> ', _('Block'),' &nbsp;</label>',
-						'<input id="select-type-allow" type="radio" name="select-type" value="1" ', this.hider && !this.is_new ? 'disabled' : (!this.hider &&  (this.is_new || this.rtype % 2) ? 'checked' : ''), '/>',
+						'<input id="select-type-allow" type="radio" name="select-type" value="1" ', this.hider ? 'disabled' : (!this.hider &&  (this.is_new || this.rtype % 2) ? 'checked' : ''), '/>',
 						'<label for="select-type-allow"> ', _('Allow'), ' &nbsp;</label>',
 						'<input id="select-type-hide" type="radio" name="select-type" value="42" ', this.hider ? 'checked' : (!this.is_new ? 'disabled' : ''), '/>',
 						'<label for="select-type-hide"> ', _('Hide'), '</label>',
@@ -124,12 +132,12 @@ JB.poppies = {
 					'<p id="rules-temp">',
 						'<input id="rule-temporary" type="checkbox"', main.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
 						'<label for="rule-temporary">&thinsp;', _('Temporary rule'), '</label> ',
-						this.real_url ? ['<input type="button" id="rule-options-link" value="', _('Options...'), '" />'].join('') : '',
+						this.real_url ? ['<input class="orange" type="button" id="rule-options-link" value="', _('Options...'), '" /> '].join('') : ' ',
 					'</p>',
 					'<div class="inputs">',
-						main.rules.simplified && !~this.li.data('kind').indexOf('special') ? '<textarea id="rule-proto-input" wrap="off" placeholder="Protocol" class="rule-input"></textarea> ' : '',
-						'<textarea id="rule-input" wrap="off" placeholder="Rule"></textarea> ',
-						'<input type="button" value="', _('Save'), '" id="rule-save" class="onenter" />',
+						main.rules.simplified && !~this.li.data('kind').indexOf('special') ? '<textarea id="rule-proto-input" wrap="off" placeholder="Protocol" class="rule-input orange"></textarea> ' : '',
+						'<textarea class="orange" id="rule-input" wrap="off" placeholder="Rule"></textarea> ',
+						'<input type="button" value="', _('Save'), '" id="rule-save" class="onenter orange" />',
 					'</div>',
 				'</div>'].join(''),
 			save: function (no_refresh) {
@@ -157,7 +165,14 @@ JB.poppies = {
 				
 				$$('#poppy #rule-proto-input').val(protos instanceof Array ? protos.join(',') : undefined);
 
-				$$('#poppy #rule-options-link').click(function (event) {
+				$$('#poppy .info-link').click(function () {
+					var off = $(this).offset(),
+							help = zoo.main.simpleMode && !zoo.main.temporaryExpertMode ? _('Adding a simple rule help') : _('Adding an expert rule help');
+
+					new Poppy(off.left + $(this).outerWidth() / 2 - 1, off.top + 12, help, null, null, null, null, true);
+				})
+
+				$$('#poppy #rule-options-link').click(function (event) {				
 					var off = $(this).offset(),
 							rules = [
 						zoo.main.rules.generate(RULE_FULL_HOST, zoo.me.real_url),
@@ -170,7 +185,9 @@ JB.poppies = {
 					content.push(rules.join('</a><div class="divider" style="margin-top:5px;"></div></li><li><a href="javascript:void(0);">'), '</a></li>', '</ul>');
 
 					new Poppy(off.left + $(this).outerWidth() / 2, off.top + 12, content.join(''), function () {
-						$$('#poppy-secondary a').click(function () {
+						$$('#poppy-secondary a').click(function (event) {
+							event.stopImmediatePropagation();
+
 							new Poppy(true);
 
 							$$('#poppy #rule-input').val(this.innerText).focus();
@@ -198,38 +215,38 @@ JB.poppies = {
 			me: this,
 			content: [
 				'<p class="misc-info">', _('Current ' + (comparison ? 'Comparison' : 'Snapshot')), '</p>',
-				'<input type="button" value="', _('Merge With Current Rules'), '" id="snapshot-merge" /> ',
-				'<input type="button" value="', _('Replace Current Rules'), '" id="snapshot-replace" /> ',
+				'<input class="purple" type="button" value="', _('Merge With Current Rules'), '" id="snapshot-merge" /> ',
+				'<input class="purple" type="button" value="', _('Replace Current Rules'), '" id="snapshot-replace" /> ',
 				!comparison ? [
-					'<input type="button" value="', _('Keep'), '" id="snapshot-keep" /> ',
-					'<input type="button" value="', _('Delete'), '" id="snapshot-delete" />'
+					'<input class="purple" type="button" value="', _('Keep'), '" id="snapshot-keep" /> ',
+					'<input class="delete" type="button" value="', _('Delete'), '" id="snapshot-delete" />'
 				].join('') : '',
 				'<div class="divider" style="margin:7px 0 6px;"></div>',
-				'<input type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
-				'<input type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
-				'<input type="button" value="', _('In Both'), '" id="compare-both" data-type="both" /> ',
-				'<input type="button" value="', _('All in Snapshot'), '" id="all-rules" />',
+				'<input class="purple" type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
+				'<input class="purple" type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
+				'<input class="purple" type="button" value="', _('In Both'), '" id="compare-both" data-type="both" /> ',
+				'<input class="purple" type="button" value="', _('All in Snapshot'), '" id="all-rules" />',
 				'<div class="divider" style="margin:7px 0 3px;"></div>',
 				'<div class="inputs">',
-					'<input type="button" value="', _('Close ' + (comparison ? 'Comparison' : 'Snapshot')), '" id="snapshots-current" /> ',
-					'<input type="button" value="', _('Show Snapshots'), '" id="snapshots-show" />',
+					'<input class="purple" type="button" value="', _('Close ' + (comparison ? 'Comparison' : 'Snapshot')), '" id="snapshots-current" /> ',
+					'<input class="purple" type="button" value="', _('Show Snapshots'), '" id="snapshots-show" />',
 				'</div>'].join(''),
 			onshowstart: function () {
 				var kept = JB.rules.snapshots.kept(JB.rules.using_snapshot);
 
 				$$('#snapshot-keep').val(kept ? 'Unkeep' : 'Keep');
 
-				$$('#poppy input:not(#snapshot-delete,#snapshot-keep)').click(function () {
-					new Poppy();
-				});
-
 				$$('#snapshot-replace').click(function () {
+					new Poppy();
+
 					Settings.setItem(JB.rules.which, JSON.stringify(JB.rules.rules));
 					JB.rules.use_snapshot(0);
 
 					if ($$('#rules-list').is(':visible'))
 						JB.rules.show();
 				}).siblings('#snapshot-merge').click(function () {
+					new Poppy();
+
 					var rules = JB.rules.current_rules;
 
 					for (var kind in JB.rules.rules) {
@@ -253,8 +270,7 @@ JB.poppies = {
 					if (this.value === _('Keep'))
 						JB.rules.snapshots.keep(JB.rules.using_snapshot);
 					else
-						if (!JB.utils.confirm_click(this)) return false;
-						else JB.rules.snapshots.unkeep(JB.rules.using_snapshot);
+						JB.rules.snapshots.unkeep(JB.rules.using_snapshot);
 
 					$$('#snapshots a[data-id="' + id + '"]').val(this.value === _('Keep') ? _('Unkeep') : _('Keep'));
 
@@ -272,8 +288,6 @@ JB.poppies = {
 				});
 
 				$$('#compare-left, #compare-right, #compare-both').click(function () {
-					new Poppy();
-
 					var si = $$('.snapshot-info'),
 							id = si.data('id'),
 							compare = JB.rules.snapshots.compare(id, JB.rules.current_rules), dir = this.getAttribute('data-type'), mes,
@@ -288,8 +302,10 @@ JB.poppies = {
 
 					if ($$('#main').is(':visible'))
 						JB.utils.zoom($$('#rules-list'), null, fun);
-					else
+					else {
+						new Poppy();
 						fun();
+					}
 
 					if (dir === 'left') mes = 'Rules Only in Snapshot: {1}';
 					else if (dir === 'right') mes = 'Rules Not in Snapshot: {1}';
@@ -306,17 +322,23 @@ JB.poppies = {
 
 					if ($$('#main').is(':visible'))
 						JB.utils.zoom($$('#rules-list'), null, fun);
-					else
+					else {
+						new Poppy();
 						fun();
+					}
 				});
 
 				$$('#snapshots-current').click(function () {
+					new Poppy();
+					
 					JB.rules.use_snapshot(0);
 
 					if ($$('#rules-list').is(':visible'))
 						JB.rules.show();
 				}).siblings('#snapshots-show').click(function () {
-					$$('#time-machine').addClass('force-open').click();
+					JB.utils.zoom($$('#snapshots'));
+
+					JB.rules.show_snapshots();
 				})
 			}
 		};
@@ -338,12 +360,12 @@ JB.poppies = {
 			me: this,
 			content: [
 				'<p class="misc-info">', _('Backup'), '</p>',
-				'<input type="button" value="', _('Export'), '" id="backup-e"> ',
-				'<input type="button" value="', _('Import'), '" id="backup-i">'].join(''),
+				'<input class="orange" type="button" value="', _('Export'), '" id="backup-e"> ',
+				'<input class="orange" type="button" value="', _('Import'), '" id="backup-i">'].join(''),
 			onshowstart: function () {
 				$$('#backup-e').click(function () {
 					new Poppy(zoo.me.left, zoo.me.top, [
-						'<textarea id="backup-export" readonly="readonly">' + JB.rules.export() + '</textarea>',
+						'<textarea class="orange" id="backup-export" readonly="readonly">' + JB.rules.export() + '</textarea>',
 						'<p>', _('Copy above'), '</p>'].join(''), function () {
 						var t = $$('#poppy textarea');
 						t[0].selectionStart = 0;
@@ -353,10 +375,10 @@ JB.poppies = {
 					if (JB.rules.using_snapshot) return new Poppy(zoo.me.left, zoo.me.top, _('Snapshot in use'));
 
 					new Poppy(zoo.me.left, zoo.me.top, [
-						'<textarea id="backup-import"></textarea>',
+						'<textarea class="orange" id="backup-import"></textarea>',
 						'<p>', _('Paste your backup'), '</p>',
 						'<dlv class="inputs">',
-							'<input type="button" value="', _('Restore'), '" id="backup-restore" />',
+							'<input class="orange" type="button" value="', _('Restore'), '" id="backup-restore" />',
 						'</dlv>'].join(''), function () {
 						$$('#backup-import').focus();
 						$$('#backup-restore').click(function () {

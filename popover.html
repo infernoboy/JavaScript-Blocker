@@ -15,9 +15,7 @@
 	<title></title>
 		
 	<link rel="stylesheet" href="css/poppy.css" type="text/css" id="poppy-style" />
-	<link rel="stylesheet" href="" type="text/css" id="poppy-theme-style" />
 	<link rel="stylesheet" href="css/main.css" type="text/css" id="main-style"/>
-	<link rel="stylesheet" href="" type="text/css" id="main-theme-style"/>
 	<link rel="stylesheet" href="" type="text/css" id="main-large-style"/>
 	<link rel="stylesheet" href="css/highlight.css" />
 	
@@ -35,6 +33,14 @@
 	<header class="main-header"><h1 data-i18n="JavaScript Blocker"><span class="console-unread"> 0</span></h1></header>
 	
 	<div id="container">
+		<div id="quick-add-info">
+			<p>
+				<input class="orange" type="button" id="apply-quick-add" data-i18n="Apply Changes" value=" " />
+				<input type="button" id="clear-quick-add" data-i18n="Clear Selection" value=" " />
+				<span class="label" data-i18n="Closing the popover will apply changes."></span>
+			</p>
+		</div>
+
 		<div id="find-bar">
 			<input type="button" id="find-bar-done" value=" " data-i18n="Done" />
 			<input type="search" id="find-bar-search" incremental="incremental" results="10" autosave="find_on" />
@@ -49,7 +55,7 @@
 				<p data-i18n="JavaScript Blocker is disabled."></p>
 			</div>
 
-			<div class="filter-bar actions-bar">
+			<div class="filter-bar actions-bar" id="top-most">
 				<ul>
 					<li id="unlock" data-i18n="Unlock"></li>
 					<li id="disable" data-i18n="Disable JavaScript Blocker" class="divider"></li>
@@ -63,105 +69,49 @@
 			</div>
 
 			<p class="misc-info snapshot-info"></p>
-	
-			<div id="page-lists">
-				<label id="page-lists-label" data-i18n="Page:"></label>
-				<select id="page-list">
-					<optgroup label="Main Page" data-i18n="Main Page">
-						<option>http://javascript-blocker.toggleable.com</option>
-					</optgroup>
-					<optgroup label="Inline Frame Pages" data-i18n="Inline Frame Pages">
-						<option>http://example.com</option>
-					</optgroup>
-				</select>
-				<div id="frame-switcher">
-					<a href="javascript:void(0)" id="previous-frame" class="disabled"><span class="arrow"></span> <span class="text" data-i18n="Main page"></span></a>
-					<div class="divider disabled"></div>
-					<a href="javascript:void(0)" id="next-frame" class="disabled"><span class="arrow"></span> <span class="text" data-i18n="Next frame"></span></a>
-				</div>
-			</div>
-			
-			<div id="allowed-blocked-columns">
-				<div id="allowed-column" class="column">
-					<div class="info-container" id="allowed-container">
-						<label class="allowed-label" data-i18n="Allowed:"></label> <span id="allowed-scripts-count">0</span>
-						<input type="button" value=" " id="block-domain" data-i18n="Block…" />
-					</div>
-	
-					<div id="allowed-script-urls" class="urls-wrapper">
-						<div class="urls-inner"></div>
-					</div>
-				</div>
-								
-				<div id="blocked-column" class="column">
-					<div class="info-container" id="blocked-container">
-						<label class="blocked-label" data-i18n="Blocked:"></label> <span id="blocked-scripts-count">0</span>
-						<input type="button" value=" " id="allow-domain" data-i18n="Allow…" />
-					</div>
-	
-					<div id="blocked-script-urls" class="urls-wrapper">
-						<div class="urls-inner"></div>
-					</div>
-				</div>
 				
-				<br style="clear:both;" />
-			</div>
-			
-			<div class="info-container" id="unblocked-container">
-				<label class="unblocked-label" data-i18n="Unblocked:"></label> <span id="unblocked-scripts-count">0</span>
-			</div>
-	
-			<div id="unblocked-script-urls" class="urls-wrapper">
-				<div class="urls-inner"></div>
-			</div>
+			<div id="host-sections"></div>
 		</div>
+
 		<div id="rules-list" class="whoop">
 			<div class="info-container">
 				<p class="misc-info" id="rule-counter" data-i18n="{1} domains, {2} rules"></p>
 				<p class="misc-info snapshot-info"></p>
-				<input type="button" value=" " id="rules-list-back" data-i18n="Close Rules List" />
+				<input class="orange" type="button" value=" " id="rules-list-back" data-i18n="Close Rules List" />
 			</div>
 			<div id="data">
 				<div id="rules-filter-bar" class="filter-bar">
 					<ul id="filter-type-collapse">
 						<li class="label" data-i18n="Visibility:"></li>
-						<li id="filter-all" class="selected" data-i18n="Any"></li>
-						<li id="filter-collapsed" data-i18n="Collapsed"></li>
-						<li id="filter-expanded" data-i18n="Expanded"></li>
-					</ul>
-					<div class="divider"></div>
-					<ul id="filter-type-state">
-						<li class="label" data-i18n="State:"></li>
-						<li id="filter-state-all" class="selected" data-i18n="Any"></li>
-						<li id="filter-enabled" data-i18n="Enabled"></li>
-						<li id="filter-disabled" data-i18n="Disabled"></li>
-						<li id="filter-temporary" data-i18n="Temporary"></li>
+						<li id="filter-all" class="selected orange" data-i18n="Any"></li>
+						<li class="orange" id="filter-collapsed" data-i18n="Collapsed"></li>
+						<li class="orange" id="filter-expanded" data-i18n="Expanded"></li>
 					</ul>
 					<div class="divider"></div>
 					<ul id="filter-type-not-used" class="age-filter">
 						<li class="label" data-i18n="Not Used Within:"></li>
-						<li id="filter-age-all" class="selected" data-i18n="All"></li>
-						<li id="filter-age-hour" data-i18n="Past Hour"></li>
-						<li id="filter-age-day" data-i18n="Past Day"></li>
-						<li id="filter-age-week" data-i18n="Past Week"></li>
-						<li id="filter-age-month" data-i18n="Past Month"></li>
-						<li id="filter-age-year" data-i18n="Past Year"></li>
+						<li id="filter-age-all" class="selected orange" data-i18n="All"></li>
+						<li class="orange" id="filter-age-hour" data-i18n="Past Hour"></li>
+						<li class="orange" id="filter-age-day" data-i18n="Past Day"></li>
+						<li class="orange" id="filter-age-week" data-i18n="Past Week"></li>
+						<li class="orange" id="filter-age-month" data-i18n="Past Month"></li>
+						<li class="orange" id="filter-age-year" data-i18n="Past Year"></li>
 					</ul>
 					<div class="divider"></div>
 					<ul id="filter-type-used" class="age-filter">
 						<li class="label" data-i18n="Used Within:"></li>
-						<li id="filter-only-all" class="selected" data-i18n="All"></li>
-						<li id="filter-only-hour" data-i18n="Past Hour"></li>
-						<li id="filter-only-day" data-i18n="Past Day"></li>
-						<li id="filter-only-week" data-i18n="Past Week"></li>
-						<li id="filter-only-month" data-i18n="Past Month"></li>
-						<li id="filter-only-year" data-i18n="Past Year"></li>
+						<li id="filter-only-all" class="selected orange" data-i18n="All"></li>
+						<li class="orange" id="filter-only-hour" data-i18n="Past Hour"></li>
+						<li class="orange" id="filter-only-day" data-i18n="Past Day"></li>
+						<li class="orange" id="filter-only-week" data-i18n="Past Week"></li>
+						<li class="orange" id="filter-only-month" data-i18n="Past Month"></li>
+						<li class="orange" id="filter-only-year" data-i18n="Past Year"></li>
 					</ul>
 					<div class="divider"></div>
 					<ul id="filter-type-domain">
 						<li class="label" data-i18n="Filter:"></li>
 						<li id="li-domain-filter" class="li-text-filter">
-							<input type="search" placeholder="Domains" data-i18n="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" class="text-filter" />
+							<input type="search" placeholder="Domains" data-i18n="Domains" incremental="incremental" results="10" autosave="domain_filter" id="domain-filter" class="text-filter orange" />
 							<br style="clear:both;" />
 						</li>
 					</ul>
@@ -173,6 +123,7 @@
 						<li id="collapse-all" title=" " data-i18n="Collapse All"></li>
 						<li id="expand-all" title=" " data-i18n="Expand All"></li>
 						<li id="show-active-rules" class="divider" title=" " data-i18n="Show Active"></li>
+						<li id="show-temporary-rules" class="divider" title=" " data-i18n="Show Temporary"></li>
 						<li id="edit-domains" class="divider" title=" " data-i18n="Edit"></li>
 						<li id="make-temp-perm" class="divider" title=" " data-i18n="Make Temporary Rules Permanent"></li>
 						<li id="remove-all-temp" title=" " data-i18n="Remove Temporary Rules"></li>
@@ -182,7 +133,9 @@
 					<br style="clear:both;" />
 				</div>
 
-				<div id="rule-container"></div>
+				<div id="rule-container">
+					<ul class="rules-wrapper"></ul>
+				</div>
 			</div>
 		</div>
 		<div id="misc" class="whoop">
@@ -195,8 +148,8 @@
 		<div id="snapshots" class="whoop">
 			<div class="info-container">
 				<p class="misc-info" data-i18n="Snapshots"></p>
-				<input id="close-snapshots" value=" " type="button" data-i18n="Close Snapshots" />
-				<input id="create-snapshot" value=" " type="button" data-i18n="Create Snapshot" />
+				<input id="close-snapshots" value=" " type="button" data-i18n="Close Snapshots" class="purple" />
+				<input id="create-snapshot" value=" " type="button" data-i18n="Create Snapshot" class="purple" />
 			</div>
 
 			<p id="snapshots-info"></p>
@@ -226,10 +179,70 @@
 				</li>
 			</ul>
 		</div>
+
+		<div id="resize-handler"></div>
 	</div>
 	
 	<div id="hidden-extras">
 		<ul id="jsconsolelogger"><li id="console-header"><p class="misc-info">Console</p></li></ul>
+
+		<textarea id="tmpl_host_section">
+			<div class="host-section" id="host-section-<%=self.id%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>">
+				<div class="host-section-host">
+					<span class="label"><% if(self.is_main) { %><%=_('Main host')%><% } else { %><%=_('Frame host')%><% } %></span><span class="host-divider">&nbsp;</span>
+					<a href="javascript:void(0);" class="section-host <%=(self.disabled ? 'disabled' : '')%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>"><%=(self.host === 'blank' && !self.is_main ? 'blank - ' + self.host_host : self.host)%></a>
+				</div>
+
+				<% if (self.disabled) { %>
+				<div class="domain-disabled">
+					<p class="embossed"><%=_('JavaScript Blocker is disabled on this host.')%></p>
+				</div>
+				<% } else { %>
+
+				<div class="allowed-blocked-columns inner-section">
+					<div class="column allowed-column">
+						<div class="info-container" class="allowed-container">
+							<label class="allowed-label"><%=_('Allowed:')%></label> 
+							<a href="javascript:void(0);" class="allowed-scripts-count scripts-count">0</a> 
+							<a href="javascript:void(0);" class="allowed all-action-link"> <%=_('Block…')%></a> 
+						</div>
+		
+						<div class="urls-wrapper allowed-script-urls">
+							<div class="urls-inner"></div>
+						</div>
+					</div>
+									
+					<div class="column blocked-column">
+						<div class="info-container" class="blocked-container">
+							<label class="blocked-label"><%=_('Blocked:')%></label> 
+							<a href="javascript:void(0);" class="blocked-scripts-count scripts-count">0</a> 
+							<a href="javascript:void(0);" class="blocked all-action-link"> <%=_('Allow…')%></a> 
+						</div>
+		
+						<div class="urls-wrapper blocked-script-urls">
+							<div class="urls-inner"></div>
+						</div>
+					</div>
+					
+					<br style="clear:both;" />
+				</div>
+				
+				<% if (Settings.getItem('showUnblocked')) { %>
+				<div class="unblocked-section inner-section">
+					<div class="info-container" class="unblocked-container">
+						<label class="unblocked-label"><%=_('Unblocked:')%></label> <span class="unblocked-scripts-count scripts-count">0</span>
+					</div>
+			
+					<div class="urls-wrapper unblocked-script-urls">
+						<div class="urls-inner"></div>
+					</div>
+				</div>
+				<% } %>
+			</div>
+			<% } %>
+		</div>
+		</textarea>
+
 		<textarea id="tmpl_domain_picker">
 			<% if (!self.no_label) { %><label for="domain-picker<%=('id' in self ? '-' + self.id : '')%>"><%=_('On:')%> </label><% } %>
 			<select class="domain-picker" id="domain-picker<%=('id' in self ? '-' + self.id : '')%>" <% if ((self.page_parts.length === 2 && self.no_all) || (self.page_parts[0] === null && !self.no_all)) { %>class="single"<% } %>>
@@ -245,42 +258,33 @@
 			</select>
 		</textarea>
 		
-		<textarea id="tmpl_rule_wrapper">
-			<header id="head-<%=self.kind%>-rules" class="rules-header">
-				<h3 id="<%=self.kind%>-rules"><%=self.local%></h3>
-				<a id="toggle-<%=self.kind%>-rules" class="toggle-rules"><%=_('Hide')%></a>
-				<br style="clear:both;" />
-			</header>
-			<div id="rules-list-<%=self.kind%>-container" class="rules-list-container" style="overflow:hidden;">
-				<ul id="rules-list-<%=self.kind%>s" class="rules-wrapper"></ul>
-			</div>
-		</textarea>
-		
 		<textarea id="tmpl_main_wrapper">
-			<header id="head-<%=self.which%>-<%=self.kind%>" class="kind-header visible">
-				<h3 id="<%=self.which%>-<%=self.kind%>-items"><%=self.local%></h3>
-				<a id="toggle-<%=self.kind%>-<%=self.which%>-items" class="toggle-main">Hide</a>
+			<header class="head-<%=self.which%>-<%=self.kind%> kind-header visible">
+				<h3 class="<%=self.which%>-<%=self.kind%>-items"><%=self.local%></h3>
+				<a class="toggle-<%=self.kind%>-<%=self.which%>-items toggle-main">Hide</a>
 				<br style="clear:both;" />
 			</header>
-			<div id="<%=self.which%>-items-<%=self.kind%>-container" class="item-list-container" style="overflow:hidden;">
-				<ul id="<%=self.which%>-items-<%=self.kind%>" class="main-wrapper"></ul>
+			<div class="<%=self.which%>-items-<%=self.kind%>-container item-list-container" style="overflow:hidden;">
+				<ul class="<%=self.which%>-items-<%=self.kind%> main-wrapper" data-kind="<%=self.kind%>"></ul>
 			</div>
 		</textarea>
 
 		<textarea id="tmpl_rule_wrapper_inner">
-			<li id="<%=+ new Date()%>" class="domain-name" data-value="<%=self.domain_display%>">
-				<span class="<%=self.selectable%>"><%=self.domain%></span>
+			<li id="<%=+ new Date()%>" data-value="<%=self.domain_display%>" class="domain-name <% if (self.collapsed) { %>hidden<% } %>">
+				<span class="<%=self.selectable%>"><%=self.domain_display%></span>
 			</li>
-			<li class="domain-rules">
+			<% if (!self.no_list) { %>
+			<li class="domain-rules" data-value="<%=self.domain%>">
 				<ul></ul>
 			</li>
+			<% } %>
 		</textarea>
 
 		<textarea id="tmpl_rule_item">
 			<li>
 				<div class="bubble bubble-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><div class="inner-bubble"></div></div>
 				<span class="<%=Settings.getItem('traverseRulesRules') ? 'selectable' : ''%> rule type-<%=[self.rtype, self.temp ? 'temporary' : ''].join(' ')%>"><%=self.text%></span>
-				<% if (self.button !== null && self.rtype !== 4 && self.rtype !== 5) { %><input type="button" value="<%=self.button%>" /><% } %>
+				<% if (self.button !== null && self.rtype !== 4 && self.rtype !== 5) { %><input type="button" value="<%=self.button%>" class="<% if (self.is_delete) { %>delete<% } else { %>purple<% } %>" /><% } %>
 				<div class="divider"></div>
 			</li>
 		</textarea>

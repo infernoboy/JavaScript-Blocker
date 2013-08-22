@@ -36,5 +36,3 @@ var globalPage = GlobalPage.page(),
 };
 
 document.addEventListener('DOMContentLoaded', fun);
-
-if (CHROME) window.addEventListener('focus', fun);

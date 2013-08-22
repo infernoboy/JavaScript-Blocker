@@ -31,22 +31,18 @@
 	height: 30px;
 	width: 30px;
 	border: 1px solid;
-	background-color: rgba(244,244,244,.99);
-	border-color: rgba(160,160,160,0.75);
+	background-color: #fff;
+	border-color: rgba(160,160,160,0.55);
 }
-	#poppy-arrow-settings.flip,
-	#poppy-arrow-settings-secondary.flip {
-		background-color: rgba(255,255,255,.99);
-	}
+
 .poppy {
 	position: absolute;
 	padding: 8px 3px;
-	-webkit-border-radius: 5px;
+	-webkit-border-radius: 6px;
 	z-index: 10000;
-	background: -webkit-linear-gradient(top, rgba(255,255,255,.97), rgba(244,244,244,.97));
-	border: 1px solid rgba(160,160,160,0.8);
-	border-top-color: rgba(160,160,160,0.7);
-	box-shadow: 0 3px 15px rgba(0,0,0,0.23);
+	background: #fff;
+	border: 1px solid rgba(160,160,160,0.55);
+	box-shadow: 0 1px 14px rgba(0,0,0,0.16);
 	font-size: 8pt;
 	text-shadow: 0 1px 0 rgba(255,255,255,0.6);
 	-webkit-transition-property: -webkit-transform, opacity;
@@ -150,11 +146,11 @@
 	}
 	.poppy ul li span {
 		width: auto;
-		max-width: 497px;
+		max-width: 492px;
 		white-space: nowrap;
 	}
 		body.simple .poppy ul li span {
-			max-width: 397px;
+			max-width: 392px;
 		}
 	.poppy p.misc-info {
 		margin-bottom: 7px;

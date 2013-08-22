@@ -397,43 +397,6 @@ JB.updater = function () {
 			}, null, null, true);
 		break;
 
-		case v < 160: // 3.3.3-beta
-			if (this.isBeta && !localStorage.getItem('noShow333')) {
-				new Poppy($(this.popover.body).width() / 2, 0, [
-					'<p class="misc-info">Update 3.3.3-beta</p>',
-					'<p>You are using a beta version of JavaScript Blocker and this update is to try and figure out why jQuery 2 ',
-						'breaks the settings page for some people.</p>',
-					'<p>Try loading the settings page. If it\'s blank, look at the error console. Copy whatever is there ',
-					 	'and either comment on the issue at ',
-						'<a class="outside" href="https://github.com/infernoboy/JavaScript-Blocker/issues/17">GitHub</a> or just ',
-						'<a class="outside" href="mailto:travis@toggleable.com?subject=JavaScript Blocker settings page issue&body=">e-mail me</a>. ',
-						'If nothing appears in the console and the settings page is still blank, let me know about that too.</p>',
-					'<p><a href="javascript:void(0);">How to show the error console</a><ol style="display:none;">',
-						'<li>Enable the develop menu from the Advanced tab of Safari preferences.</li>',
-						'<li>Open the JSB settings page by clicking Settings from the popover.</li>',
-						'<li>While the settings page is active, click the Develop menu in the menu bar and then Show Error Console.</li></ol></p>',
-					'<p><input type="checkbox" id="no-show" /> <label for="no-show">Don\'t show this again</label></p>',
-					'<p><input type="button" id="rawr-ok" value="', _('Understood'), '" /></p>'
-				].join(''), function () {
-					$$('#no-show').change(function () {
-						localStorage.setItem('noShow333', this.checked);
-					});
-
-					$$('#rawr-ok').click(function () {
-						new Poppy();
-					});
-
-					$$('#poppy p a').click(function () {
-						$$('#poppy ol').show();
-					});
-				});
-			} else {
-				self.installedBundle = 160;
-
-				self.updater();
-			}
-		break;
-
 		case v < 161: // 3.4.0
 			var l = $.extend({}, window.localStorage);
 			delete l.Rules;
@@ -493,11 +456,58 @@ JB.updater = function () {
 
 					if (submit) $.post(self.baseURL + 'usage.php', { id: Settings.getItem('installID'), data: $$('#usage-stats').text() });
 
-					// self.installedBundle = 161;
+					self.installedBundle = 161;
 
-					self.donate();
+					self.updater();
 				});
 			}, null, null, true);
+		break;
+
+		case v < 162: // 4.0.0
+			var all = SettingStore.all(), setting, i;
+
+			for (setting in all) {
+				if (~(i = setting.indexOf('IsCollapsed'))) {
+					if (all[setting] !== null) Settings.setItem(setting.substr(0, i) + 'Switch', all[setting]);
+					Settings.removeItem(setting);
+				}
+
+				if (Settings.getItem(setting) === null) Settings.removeItem(setting);
+			}
+
+			Settings.removeItem('theme');
+
+			if (Settings.getItem('simplifiedRules') === false) {
+				self.update_attention_required = 162;
+
+				new Poppy($(this.popover.body).width() / 2, 0, [
+					'<p class="misc-info">Update 4.0.0 - Deprecation Notice</p>',
+					'<p>You are using a deprecated version of rule storage. Your rules will be automatically converted to utilize ',
+						'the current storage method. Unfortunately, this automatic conversion will not be able to convert all of your ',
+						'rules. Please review the rule list once conversion is completed.</p>',
+					'<p><input type="button" id="convert-rules" value="', _('Convert Rules'), '" /></p>'
+				].join(''), function () {
+					$$('#convert-rules').click(function () {
+						var result = self.rules.convert();
+
+						// self.installedBundle = 162;
+
+						self.donate();
+
+						if (result !== true)
+							new Poppy($(this.popover.body).width() / 2, 0, [
+								'<p>Some rules could not be converted. This will be the only time those rules will be displayed. Be sure to copy ',
+									'them if needed.</p>',
+								'<textarea readonly="readonly">', result, '</textarea>'
+							].join(''));
+					});
+				}, null, null, true);
+			} else {
+
+				// self.installedBundle = 162;
+
+				self.donate();
+			}
 		break;
 
 		case v < this.bundleid:
