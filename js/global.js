@@ -79,7 +79,7 @@ var RULE_TOP_HOST = 1,
 	tab: {},
 	updating: !1,
 	finding: !1,
-	reloaded: !1,
+	reload: 1,
 	caches: {
 		redirects: {},
 		domain_parts: {},
@@ -106,7 +106,7 @@ var RULE_TOP_HOST = 1,
 
 	donate: function () {
 		var self = this, status = Settings.getItem('donationVerified');
-				
+
 		if (!status || status === 777)
 			new Poppy($(this.popover.body).width() / 2, 0, [
 				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']), '</p>',
@@ -125,19 +125,20 @@ var RULE_TOP_HOST = 1,
 					$$('#no-donation').click(function () {
 						self.installedBundle = self.bundleid;
 						new Poppy();
+						Tabs.messageActive('updatePopover');
 					});
 					$$('#already-donation').click(function () {
-						self.installedBundle = self.bundleid;
 						$$('#unlock').click();
 					});
 				}, null, null, true);
-		else
+		else {
 			new Poppy($(this.popover.body).width() / 2, 0, [
 				'<p>',
 					_('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']),
 				'</p>'].join(''));
 		
-		this.installedBundle = this.bundleid;		
+			this.installedBundle = this.bundleid;
+		}
 	},
 	load_language: function (css) {
 		function set_popover_css (self, load_language, css) {
@@ -737,6 +738,8 @@ var RULE_TOP_HOST = 1,
 							(d.onshow || $.noop).call(JB);
 						}
 
+						$$('#find-bar-search:visible').trigger('search');
+
 						d.e.data('isAnimating', false).removeClass('zoom-window-animating').css('webkitTransform', '');
 						d.h.removeClass('zoom-window-animating').css('webkitTransform', '');
 					});
@@ -834,11 +837,11 @@ var RULE_TOP_HOST = 1,
 
 			if (mode !== 1 && (this._has_attention || mode < 0)) {
 				this.timer.remove('interval', 'toolbar_attention');
-				this.timer.timeout('toolbar_attention', function () {
+				this.timer.timeout('toolbar_attention', function (self) {
 					self._has_attention = false;
 										
 					ToolbarItems.image(self.disabled ? 'images/toolbar-disabled.png' : 'images/toolbar.png');
-				}, 1100);
+				}, 1100, [this]);
 
 				self = mode = undefined;
 				
@@ -1201,7 +1204,7 @@ var RULE_TOP_HOST = 1,
 
 			Settings.setItem('simpleMode', simbefore);
 
-			JB.reloaded = false;
+			JB.reload = true;
 
 			return has_unconvert ? JSON.stringify(un, null, 2) : true;
 		},
@@ -1245,7 +1248,7 @@ var RULE_TOP_HOST = 1,
 				}
 			}
 
-			JB.reloaded = false;
+			JB.reload = true;
 
 			if ($$('#rules-list').is(':visible')) this.show();
 
@@ -1473,7 +1476,7 @@ var RULE_TOP_HOST = 1,
 
 			def = split = type_map = whole = fTwo =  mode = dollar = rule = regexp = $check = use_type = domains = args = z = list = i = b = undefined;
 		}, 
-		easylist: function () {
+		easylist: function (cb) {
 			var fromSettings = function (which) {
 				var el = Settings.getItem(which);
 
@@ -1510,6 +1513,8 @@ var RULE_TOP_HOST = 1,
 						Settings.setItem('alwaysBlockscript', 'nowhere');
 						Settings.setItem('alwaysBlockframe', 'nowhere');
 					}
+
+					if (cb) cb();
 				}).error(function () {
 					fromSettings('EasyList');
 				});
@@ -2014,7 +2019,7 @@ var RULE_TOP_HOST = 1,
 					li = kind = domain = off = left = top = undefined
 			}).bind(JB, (li = $(this.parentNode)), li.data('kind'), li.data('domain'), off, off.left, off.top));
 
-			li = off = undefined;
+			li = off = event = undefined;
 		},
 		show: function () {
 			var self = this;
@@ -2029,9 +2034,9 @@ var RULE_TOP_HOST = 1,
 			if (this.using_snapshot)
 				$$('.snapshot-info').show();
 
-			var ul = $$('#rule-container ul').empty(), dul, cl = this.collapsedDomains(), rules;
+			var ul = $$('#rule-container > .rules-wrapper').empty(), dul, cl = this.collapsedDomains(), rules;
 
-			for (var kind in this.data_types) {				
+			for (var kind in this.data_types) {
 				if ((kind in this.rules) && this.enabled(kind)) {
 					var sorted = this.utils.sort_object(this.rules[kind]);
 
@@ -2342,7 +2347,7 @@ var RULE_TOP_HOST = 1,
 			
 			if (v && show_only) return false;
 			
-			var	h = 25,
+			var	h = 22,
 					a = v ? f.show() : f.hide(),
 					m = (f.slideToggle(200 * self.speedMultiplier).toggleClass('visible').hasClass('visible')) ? '-' : '+',
 					mM = m === '-' ? '+' : '-';
@@ -2352,9 +2357,12 @@ var RULE_TOP_HOST = 1,
 				marginTop: mM + '=' + h
 			}, {
 				duration: 200 * self.speedMultiplier,
-				easing: 'linear',
+				easing: 'swing',
 				step: function () {
 					$(this).trigger('scroll');
+				},
+				complete: function () {
+					if (m === '+') $(this).css('height', '');
 				}
 			});
 			
@@ -2523,8 +2531,11 @@ var RULE_TOP_HOST = 1,
 					} else if ($$('.poppy').length) {
 						e.preventDefault();
 						e.stopPropagation();
-						new Poppy();
-						new Poppy(true);
+
+						if (!$$('#modal').is(':visible')) {
+							new Poppy();
+							new Poppy(true);
+						}
 					} else if ($$('.current-selection').length) {
 						e.preventDefault();
 						e.stopPropagation();
@@ -2641,6 +2652,8 @@ var RULE_TOP_HOST = 1,
 					}
 				}
 			}
+
+			UP = DOWN = LEFT = RIGHT = undefined;
 		}).keyup(function (e) {
 			if (e.which === 17 || e.which === 18) self.optionKey = false;
 			else if (e.which === 16) self.speedMultiplier = !self.useAnimations ? 0.001 : 1;
@@ -2950,7 +2963,7 @@ var RULE_TOP_HOST = 1,
 			span.removeClass('triggered').data('quick_add_ignore_timeout', setTimeout(function (span, e) {
 				$$('#main li.pending').removeClass('pending').removeData('pending_index').each(function () {
 					$('span', this).text($(this).data('url'));
-				}).find('.info-link').text('?');
+				});
 
 				var li = span.parents('li:first');
 
@@ -3008,8 +3021,12 @@ var RULE_TOP_HOST = 1,
 
 				parts = special || !self.simpleMode || self.temporaryExpertMode ? script : parts;
 
-				if (!li.hasClass('pending')) {
+				if (!li.hasClass('pending') || Settings.getItem('quickAddQuicker')) {
+					var ind;
+
 					$$('#apply-quick-add, #clear-quick-add').prop('disabled', false);
+
+					li.data('pending_index', (ind = li.data('pending_index')) !== undefined && Settings.getItem('quickAddQuicker') ? ind + 1 : 0);
 
 					var rule, begin = $$('<span />'), select = $$('<select />').attr('id', 'quick-add-select'),
 							begin_message = self.rules.make_message(lid.kind, self.useSimpleMode() ? (lid.kind === 'special' ? '' : (lid.protocol + ':' + '*')) : '^$', !allow, Settings.getItem('quickAddTemporary')),
@@ -3053,30 +3070,34 @@ var RULE_TOP_HOST = 1,
 
 					select.toggleClass('single', select.find('option').length === 1);
 					
-					new Poppy(left, off.top + 12, [
-						'<p class="quick-add-more">', _('Press and hold for more options.'), '</p>',
-						'<p id="quick-add-rule"><span class="bubble bubble-', allow ? 0 : 1, Settings.getItem('quickAddTemporary') ? ' temporary' : '', '"></span>', begin[0].outerHTML, ' ', select[0].outerHTML, '</p>'].join(''), function () {
-						$$('#quick-add-rule select').change(function () {
-							li.data('pending_index', this.selectedIndex).data('pending_data', this.value);
+					if (!Settings.getItem('quickAddQuicker'))
+						new Poppy(left, off.top + 12, [
+							'<p class="quick-add-more">', _('Press and hold for more options.'), '</p>',
+							'<p id="quick-add-rule"><span class="bubble bubble-', allow ? 0 : 1, Settings.getItem('quickAddTemporary') ? ' temporary' : '', '"></span>', begin[0].outerHTML, ' ', select[0].outerHTML, '</p>'].join(''), function () {
+							$$('#quick-add-rule select').change(function () {
+								li.data('pending_index', this.selectedIndex).data('pending_data', this.value);
 
-							var to_do = $(this).find('option:selected').attr('data-part');
+								var to_do = $(this).find('option:selected').attr('data-part');
 
-							span.html(url.replace(new RegExp((special ? url : self.utils.escape_regexp(to_do)) + '$', 'i'), '<mark class="quick-add">' + self.utils.escape_html(special ? url : to_do) + '</mark>'));
-						})
-					}, null, 0.15);
+								span.html(url.replace(new RegExp((special ? url : self.utils.escape_regexp(to_do)) + '$', 'i'), '<mark class="quick-add">' + self.utils.escape_html(special ? url : to_do) + '</mark>'));
+							})
+						}, null, 0.15);
 
-					var first = select.find('option:first'), to_do = first.attr('data-part');
+					var first = select.find('option:eq(' + li.data('pending_index') + ')'), to_do = first.attr('data-part');
 
-					li.addClass('pending')
-						.data('pending_index', 0)
-						.data('pending_data', first.val())
-						.find('.info-link').text('+');
+					if (first.length) {
+						li.addClass('pending')
+							.data('pending_data', first.val());
 
-					span.html(url.replace(new RegExp((special ? url : self.utils.escape_regexp(to_do)) + '$', 'i'), '<mark class="quick-add">' + self.utils.escape_html(special ? url : to_do) + '</mark>'));
+						span.html(url.replace(new RegExp((special ? url : self.utils.escape_regexp(to_do)) + '$', 'i'), '<mark class="quick-add">' + self.utils.escape_html(special ? url : to_do) + '</mark>'));
+					} else
+						li.removeClass('pending').removeData('pending_index');
+
+					if (!Settings.getItem('quickAddQuicker')) select = begin = null;
 				} else {
 					new Poppy();
 
-					li.removeClass('pending').removeData('pending_index').find('.info-link').text('?');
+					li.removeClass('pending').removeData('pending_index');
 				}
 
 				if ($$('li.pending').length) $$('#quick-add-info').slideDown(200 * self.speedMultiplier);
@@ -3297,10 +3318,8 @@ var RULE_TOP_HOST = 1,
 						}, 50, [self]);
 					}, [self]);
 			}, [self]);
-		}).on('click', 'a.scripts-count, a.all-action-link', function () {
-			if (~this.className.indexOf('all-action-link')) return $(this).prev().click();
-
-			var page_parts = self.utils.domain_parts($(this).parents('.host-section').attr('data-host')), n, off = self.utils.position_poppy(this, -1, 13),
+		}).on('click', '.all-action-link', function () {
+			var page_parts = self.utils.domain_parts($(this).parents('.host-section').attr('data-host')), n, off = self.utils.position_poppy(this, 0, 13),
 					me = this, kinds = [], block = !~this.className.indexOf('block'),
 					left = off.left, top = off.top;
 
@@ -3989,9 +4008,9 @@ var RULE_TOP_HOST = 1,
 			Settings.removeItem('popoverSimpleHeight');
 
 			self.temporaryExpertMode = self.temporaryExpertMode;
-		}).on('click', '#unlock', function () {
+		}).on('click', '#unlock', function (event) {
 			var off = self.utils.position_poppy(this, 1, 17),
-					pop = self.poppies.verify_donation.call([off.left, off.top, 0], self);
+					pop = self.poppies.verify_donation.call([off.left, off.top, event.isTrigger], self);
 			
 			new Poppy(off.left, off.top, pop);
 		}).on('click', '#js-help', function () {
@@ -4062,7 +4081,7 @@ var RULE_TOP_HOST = 1,
 			delete e.EasyPrivacy;
 			e.donationVerified = !!e.donationVerified;
 			
-			new Poppy($(self.popover.body).width() / 2, 0, [
+			new Poppy($(self.popover.body).width() / 2, 1, [
 				'<p>This data contains a copy of your settings and current webpage. It does NOT reveal your rules.</p>',
 				'<textarea id="debug-info" readonly>',
 					'Version', "\n", self.displayv, '-', self.bundleid, "\n\n",
@@ -4725,7 +4744,7 @@ var RULE_TOP_HOST = 1,
 			Settings.setItem('openSettings', false);
 			this.utils.open_url(ExtensionURL('settings.html'));
 		} else if (event.key === 'language')
-			this.reloaded = false;
+			this.reload = true;
 		else if (event.key === 'simpleMode' && !event.newValue && !this.donationVerified)
 			Settings.setItem('simpleMode', true);
 		else if (event.key === 'blockReferrer' && event.newValue && !this.donationVerified)
@@ -4991,7 +5010,7 @@ var RULE_TOP_HOST = 1,
 			break;
 			
 			case 'reloadPopover':
-				this.reloaded = false;
+				this.reload = true;
 			break;
 
 			case 'createCustomScript':
@@ -5060,37 +5079,25 @@ var RULE_TOP_HOST = 1,
 		var self = this;
 
 		if (event && ('type' in event) && event.type == 'popover') {
+			if (this.reload) {
+				this.reload = false;
+
+				Popover.window().location.reload();
+
+				return this.open_popover(event);
+			}
+
 			this.popover_current = null;
 			this.temporaryExpertMode = false;
 
-			/**
-			 * Fixes issues with mouse hover events not working
-			 */
-			if (!this.reloaded) {
-				setTimeout(function () {
-					Popover.hide();
-
-					ToolbarItems.showPopover();
-				}, 10);
-
-				this.rules.use_snapshot(0);
-
-				if (this.popover) {
-					this.reloaded = true;
-					this.load_language(false);
-					
-					Popover.window().location.reload();
-				}
-				
-				return false;
-			}
-
 			$$('#find-bar-done:visible').click();
 
-			setTimeout(function () {
+			this.utils.zero_timeout(function () {
 				new Poppy();
 				new Poppy(true);
-			}, 10);
+
+				self.updater();
+			});
 		} else if (!event || (event && ('type' in event) && ~['beforeNavigate', 'close'].indexOf(event.type))) {
 			if (event.type === 'close')
 				delete this.frames[event.target.url];
@@ -5116,11 +5123,7 @@ var RULE_TOP_HOST = 1,
 				}
 			} catch (e) {}
 		}
-		
-		this.utils.timer.timeout('updater', function (self) {
-			self.updater();
-		}, 500, [this]);
-		
+
 		try {
 			if (event.type === 'popover') {
 				this.speedMultiplier = this.useAnimations ? 1 : 0.001;
@@ -5229,6 +5232,7 @@ var RULE_TOP_HOST = 1,
 			if (pop.document && pop.document.body) {
 				this.popover = pop.document;
 				this.set_theme();
+
 				this.utils.floater('#main', '.host-section-host', function (e) {
 					return e.next();
 				});
@@ -5259,6 +5263,8 @@ var RULE_TOP_HOST = 1,
 				var bar = $$('#rules-filter-bar').find('.divider:last').remove().end();
 
 				if (bar.find('ul.hidden').length === 5) bar.hide();
+
+				this.updater();
 			} else
 				this.utils.once_again('load');
 		}, this);

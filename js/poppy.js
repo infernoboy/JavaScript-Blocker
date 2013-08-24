@@ -16,7 +16,10 @@
  * @param {function|null|undefined} onshowend A onshowstart called when the popover finishes displaying
  * @param {number|null|undefined} time Animation speed of popover in seconds
  */
-var Poppy = function (x, y, content, onshowstart, onshowend, time, modal, secondary) {
+var one,
+		Poppy = function (x, y, content, onshowstart, onshowend, time, modal, secondary) {
+	one = undefined;
+
 	if (!Popover.visible()) return;
 
 	if (!ToolbarItems.visible()) {
@@ -64,8 +67,8 @@ var Poppy = function (x, y, content, onshowstart, onshowend, time, modal, second
 	}
 
 	this.init();
-	
-	return this;
+
+	one = this;
 };
 
 Poppy.prototype = {
@@ -90,7 +93,7 @@ Poppy.prototype = {
 	},
 	remove: function (onshowstart) {
 		if (this.removeOnly) {
-			$$('#modal').fadeOut(this._time * 1000);
+			if (!this.secondary) $$('#modal').fadeOut(this._time * 1000);
 
 			if ($(this.e, this.p).length) {
 				$(this.e, this.p).attr('id', this.e.substr(1) + '-hiding').css({

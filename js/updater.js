@@ -2,8 +2,9 @@
 
 JB.updater = function () {
 	var v = this.installedBundle, self = this;
-				
-	if (v === this.bundleid && !this.isBeta) return false;
+
+	if (v === this.bundleid) return false;
+	if (this.reload && v < this.bundleid) return ToolbarItems.showPopover();
 	
 	switch (true) {
 		case v < 54:

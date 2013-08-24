@@ -95,8 +95,8 @@ Strings['en-us'] = {
 	/********/ 'Error importing': 'Error importing rules.',
 	/**/
 	/**------ RULE CREATION ------
-	/*--*/ 'Allow…': 'Allow or Hide',
-	/*--*/ 'Block…': 'Block or Hide',
+	/*--*/ 'Allow…': 'Allow/Hide',
+	/*--*/ 'Block…': 'Block/Hide',
 	/*----*/ 'All.': 'All…',
 	/*------*/ 'All': 'All', // [Allow/Block/Hide] All
 	/*----*/ 'Some': 'Some',
@@ -644,6 +644,7 @@ Strings['en-us'] = {
 	// Quick Add
 	'Enable Quick Add': 'Enable Quick Add',
 	'only in simple view': 'only in simple view',
+	'Use quicker Quick Add': 'Use quicker Quick Add',
 	'Quick-add rules are temporary': 'Quick Add rules are temporary',
 	'Create Quick Add rules for:': 'Create Quick Add rules for:',
 	'Same hostname as page host': 'Same domain as page host',

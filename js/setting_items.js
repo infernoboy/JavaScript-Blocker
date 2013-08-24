@@ -199,6 +199,12 @@ Settings.settings = {
 			default: false,
 			setting: true
 		},
+		quickAddQuicker: {
+			label: 'Use quicker Quick Add',
+			if_setting: { quickAdd: true },
+			default: false,
+			setting: true
+		},
 		quickAddTemporary: {
 			label: 'Quick-add rules are temporary',
 			default: false,
