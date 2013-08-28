@@ -48,6 +48,7 @@ JB.poppies = {
 						} else if (datai >= 0) {
 							JB.donationVerified = id;
 							JB.trialStart = -1;
+							JB.popover_current = null;
 							
 							new Poppy(zoo.me[0], zoo.me[1], [
 								'<p>', _('Your donation has been verified'), '</p>',
@@ -59,7 +60,7 @@ JB.poppies = {
 									
 									setTimeout(function () {
 										Tabs.messageActive('updatePopover');
-									}, 1000);
+									}, 100);
 								} catch (e) {}
 							}, 3000);
 						} else
@@ -89,11 +90,15 @@ JB.poppies = {
 							$$('#unlock').click();
 						}).siblings('#continue').click(function () {
 							JB.donationVerified = 777;
+							JB.popover_current = null;
+
 							try {
+
 								Popover.window().location.reload();
+
 								setTimeout(function () {
 									Tabs.messageActive('updatePopover');
-								}, 1000);
+								}, 100);
 							} catch (e) {}
 						});
 					});

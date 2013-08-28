@@ -560,6 +560,9 @@ Events.addTabListener('message', messageHandler, true);
 if (!disabled) {
 	window.addEventListener('hashchange', hashUpdate, true);
 	window.addEventListener('message', windowMessenger, true);
+	document.addEventListener('keyup', function (event) {
+		if (event.ctrlKey && event.altKey && event.which === 74) GlobalPage.message('openPopover');
+	}, true);
 
 	if (parseInt(bv[0], 10) >= 536) {
 		var observer = new WebKitMutationObserver(function (mutations) {

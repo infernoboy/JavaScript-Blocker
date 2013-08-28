@@ -149,8 +149,7 @@ var RULE_TOP_HOST = 1,
 						rel: 'stylesheet',
 						id: 'lang-css-' + load_language,
 				}).addClass('language-css');
-			} else
-				self.load_language(css);
+			}
 		}
 		
 		var load_language = (Settings.getItem('language') !== 'Automatic') ?
@@ -174,14 +173,6 @@ var RULE_TOP_HOST = 1,
 	},
 	enabled: function (kind) {
 		if (!this.donationVerified && kind !== 'script') return false;
-
-		if (kind === 'special') {
-			for (var item in Settings.settings.other)
-				if ((~item.indexOf('enable_special_') || item.indexOf('customp') === 0) && this.special_enabled(item.substr('enable_special_'.length)))
-					return true;
-
-			return false;
-		}
 
 		return Settings.getItem('enable' + kind);
 	},
@@ -3086,6 +3077,8 @@ var RULE_TOP_HOST = 1,
 					var first = select.find('option:eq(' + li.data('pending_index') + ')'), to_do = first.attr('data-part');
 
 					if (first.length) {
+						new Poppy();
+						
 						li.addClass('pending')
 							.data('pending_data', first.val());
 
@@ -5028,6 +5021,10 @@ var RULE_TOP_HOST = 1,
 			case 'notification':
 				MessageTarget(event, 'notification', [event.message[0], event.message[1]]);
 			break;
+
+			case 'openPopover':
+				ToolbarItems.showPopover();
+			break;
 			
 			case 'doNothing': break;
 		}
@@ -5180,7 +5177,7 @@ var RULE_TOP_HOST = 1,
 		});
 	},
 	validate: function (event) {
-		if (event && event.command && event.command !== 'jsBlockerMenu') return;
+		if (!BrowserWindows.active() || (event && event.command && event.command !== 'jsBlockerMenu')) return;
 
 		var self = this;
 
