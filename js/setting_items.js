@@ -33,6 +33,9 @@ Settings.settings = {
 		enablehide_frame: {
 			default: true
 		},
+		enablehide_disable: {
+			default: true
+		},
 		installID: {
 			default: false
 		},

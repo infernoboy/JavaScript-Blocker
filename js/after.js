@@ -5,7 +5,7 @@ var disabled = typeof beforeLoad === 'undefined' ? false : disabled;
 // POSSIBLE MEMORY LEAK HERE.
 
 if (!disabled) {
-var special_actions = {
+var gm_injected = 0, special_actions = {
 	zoom: function (v) {
 		document.addEventListener('DOMContentLoaded', function () {
 			document.body.style.setProperty('zoom', v + '%', 'important');
@@ -280,14 +280,13 @@ var special_actions = {
 custom_special_actions = {};
 
 var appendScript = function (script, which, v) {
-	var script_string = script.toString(), p = script_string.split(/\{/), s = document.createElement('script');
-	p[1] = "\n" + '"use strict";' + "\n// JSBlocker Injected Helper Script\n" + p[1];
-	script_string = p.join('{');
+	var s = document.createElement('script');
+
 	s.id = 'jsblocker-' + (+new Date());
 	s.setAttribute('data-ignore', window.allowedToLoad);
 	s.setAttribute('data-special', which);
 	s.src = ['data:text/javascript,',
-		encodeURI(['(', script_string, ')',
+		encodeURI(['(', script.toString(), ')',
 		'(',
 			v !== undefined ? (typeof v === 'string' ? '"' + v + '"' : v) : '',
 			script.prototype && script.prototype.args ? ',' + JSON.stringify(script.prototype.args) : '',
@@ -316,18 +315,48 @@ var doSpecial = function (do_append, n, action) {
 	}
 }
 
-var parseSpecials = function (pre) {
-	if (pre) {
-		for (var z in special_actions) {
-			doSpecial(1, z, special_actions[z]);
-		}
+var GM = function () {
+	GM_getValue = function (name, def) {
+		var c = window.localStorage.getItem(gmNS + name);
+
+		return c === null ? (def !== undefined ? def : null) : c;
+	},
+	GM_setValue = function (name, value) {
+		window.localStorage.setItem(gmNS + name, value);
+	},
+	GM_deleteValue = function (name) {
+		window.localStorage.removeItem(gmNS + name);
+	},
+	GM_listValues = function () {
+		var a = [];
+
+		for (var key in window.localStorage)
+			if (window.localStorage.hasOwnProperty(key) && key.indexOf(gmNS) === 0)
+				a.push(key);
+		
+		return a;
+	},
+	GM_log = function () {
+		console.debug.apply(console, arguments);
 	}
+}
+
+GM = GM.toString();
+var p = GM.split('{');
+p.splice(0, 1);
+p[p.length - 1] = p[p.length - 1].substr(0, p[p.length - 1].length - 1);
+GM = p.join('{');
+
+var parseSpecials = function (pre) {
+	if (pre)
+		for (var z in special_actions)
+			doSpecial(1, z, special_actions[z]);
 
 	for (var n in custom_special_actions) {
 		if (pre && ~n.indexOf('custompost')) continue;
 		if (!pre && !~n.indexOf('custompost')) continue;
 
-		doSpecial(1, n, "function () {\n" + custom_special_actions[n].func + "\n}");
+		doSpecial(1, n, "function () {\nvar gmNS = \"" + n + ":\",\n" + GM + ";\n" + custom_special_actions[n].func + "\n}");
 	}
 }
 

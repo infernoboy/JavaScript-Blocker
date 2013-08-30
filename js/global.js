@@ -110,6 +110,9 @@ var RULE_TOP_HOST = 1,
 		if (!status || status === 777)
 			new Poppy($(this.popover.body).width() / 2, 0, [
 				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']), '</p>',
+				'<p><div class="divider"></div></p>',
+				'<p id="jsb-changes">Loading change log....</p>',
+				'<p><div class="divider"></div></p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
 				'<p>', _('Please, if you can'), '</p>',
 				'<p>',
@@ -117,6 +120,12 @@ var RULE_TOP_HOST = 1,
 					'<input type="button" value="', _('Maybe Later'), '" id="no-donation" /> ',
 					'<input type="button" value="', _('I\'ve Donated!'), '" id="already-donation" /> ',
 				'</p>'].join(''), function () {
+					var changes = $$('#jsb-changes');
+
+					changes.load('http://javascript-blocker.toggleable.com/change-log/' + self.displayv.replace(/\./g, '') + ' #sites-canvas-main-content', function (responseText, textStatus) {
+						if (textStatus !== 'success') changes.html('Unable to load change log.');
+					});
+
 					$$('#make-donation').click(function () {
 						self.installedBundle = self.bundleid;
 
@@ -135,9 +144,19 @@ var RULE_TOP_HOST = 1,
 			new Poppy($(this.popover.body).width() / 2, 0, [
 				'<p>',
 					_('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']),
-				'</p>'].join(''));
-		
-			this.installedBundle = this.bundleid;
+				'</p>',
+				'<p><div class="divider"></div></p>',
+				'<p id="jsb-changes">Loading change log...</p>'
+			].join(''), function () {
+				var changes = $$('#jsb-changes');
+
+				changes.load('http://javascript-blocker.toggleable.com/change-log/' + self.displayv.replace(/\./g, '') + ' #sites-canvas-main-content', function (responseText, textStatus) {
+
+					if (textStatus !== 'success') changes.html('Unable to load change log.');
+				});
+
+				self.installedBundle = self.bundleid;
+			});
 		}
 	},
 	load_language: function (css) {
@@ -4308,21 +4327,25 @@ var RULE_TOP_HOST = 1,
 					'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
 					'<label for="domain-script-temporary">&nbsp;', _('Make these temporary rules'), '</label>',
 				'</p>',
-				'<p>', Template.create('domain_picker', { page_parts: page_parts, no_all: true }), '</p>',
-				'<div class="inputs"><input class="orange" id="allow-these" type="button" value="', _((allowed ? 'Block' : 'Allow') +' These'), '" /></div>',
+				'<p>', Template.create('domain_picker', { page_parts: page_parts }), '</p>',
+				'<div class="inputs">',
+					'<input class="orange" id="hide-these" type="button" value="', _('Hide These'), '" /> ',
+					'<input class="orange" id="allow-these" type="button" value="', _((allowed ? 'Block' : 'Allow') +' These'), '" />',
+				'</div>',
 			].join(''), function () {
-				$$('#allow-these').click(function () {
+				$$('#allow-these, #hide-these').click(function () {
 					var temp = $$('#domain-script-temporary').is(':checked'),
+							hide = this.id === 'hide-these',
 							host = $$('#domain-picker').val(), disallow_predefined = $$('#excluding-list').is(':checked');
 
-					me.parent().next().find('li').each(function () {
+					me.parent().next().find('li:visible').each(function () {
 						if (disallow_predefined && ($(this).is('.rule-type-5') || $(this).is('.rule-type-4'))) return;
 
 						var data = $.data(this), proto = self.utils.active_protocol(data.script[0]).toUpperCase(),
 								ind = data.script[0].indexOf('?'), rr = (~kind.indexOf('special')) ? data.script[0] : '^' + self.utils.escape_regexp(~ind ? data.script[0].substr(0, data.script[0].indexOf('?')) : data.script[0]) + '((\\?|#)+.*)?$',
 								rule = (self.useSimpleMode() && !~kind.indexOf('special')) ? proto + ':' + (~['DATA', 'JAVASCRIPT'].indexOf(proto) ? '*' : data.url) : rr;
 
-						self.rules.add(kind, host, rule, allowed ? 0 : 1, false, temp);
+						self.rules.add((hide ? 'hide_' : '') + kind, host, rule, hide ? 42 : (allowed ? 0 : 1), false, temp);
 					});
 
 					Tabs.messageActive('reload');
@@ -4905,7 +4928,7 @@ var RULE_TOP_HOST = 1,
 			break;
 
 			case 'setting_set':
-				var dl = ['donationVerified', 'trialStart', 'installID', 'installedBundle', 'enablespecial', 'setupDone'],
+				var dl = ['donationVerified', 'trialStart', 'installID', 'installedBundle', 'enablespecial', 'enabledisable', 'setupDone'],
 						swith = Settings.getItem('simpleMode');
 				
 				if (event.message[1] === null) {
@@ -4927,7 +4950,7 @@ var RULE_TOP_HOST = 1,
 				var all = SettingStore.all();
 
 				for (var key in all)
-					if (!~['donationVerified', 'trialStart', 'installID', 'installedBundle', 'enablespecial', 'setupDone'].indexOf(key))
+					if (!~['donationVerified', 'trialStart', 'installID', 'installedBundle', 'setupDone'].indexOf(key))
 						SettingStore.removeItem(key);
 
 				SettingStore.setItem('openSettings', false);
@@ -5093,7 +5116,9 @@ var RULE_TOP_HOST = 1,
 				new Poppy();
 				new Poppy(true);
 
-				self.updater();
+				self.utils.timer.timeout('start_updater', function () {
+					self.updater();
+				}, 100);
 			});
 		} else if (!event || (event && ('type' in event) && ~['beforeNavigate', 'close'].indexOf(event.type))) {
 			if (event.type === 'close')
@@ -5261,7 +5286,9 @@ var RULE_TOP_HOST = 1,
 
 				if (bar.find('ul.hidden').length === 5) bar.hide();
 
-				this.updater();
+				this.utils.zero_timeout(function () {
+					self.updater();
+				});
 			} else
 				this.utils.once_again('load');
 		}, this);

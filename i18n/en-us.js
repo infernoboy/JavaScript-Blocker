@@ -245,6 +245,7 @@ Strings['en-us'] = {
 	'Blocked images': 'Blocked Images',
 	'Block These': 'Block These',
 	'Allow These': 'Allow These',
+	'Hide These': 'Hide These',
 	'Exclude whitelist': 'Exclude whitelisted items',
 	'Exclude blacklist': 'Exclude blacklisted items',
 

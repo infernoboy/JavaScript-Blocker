@@ -491,9 +491,9 @@ JB.updater = function () {
 					$$('#convert-rules').click(function () {
 						var result = self.rules.convert();
 
-						// self.installedBundle = 162;
+						self.installedBundle = 162;
 
-						self.donate();
+						self.updater();
 
 						if (result !== true)
 							new Poppy($(this.popover.body).width() / 2, 0, [
@@ -505,11 +505,14 @@ JB.updater = function () {
 				}, null, null, true);
 			} else {
 
-				// self.installedBundle = 162;
+				self.installedBundle = 162;
 
-				self.donate();
+				self.updater();
 			}
 		break;
+
+		case v < 165: // 4.0.3
+			Settings.removeItem('enablespecial');
 
 		case v < this.bundleid:
 			this.donate();
