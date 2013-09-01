@@ -9,7 +9,7 @@
 var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
 		random = +new Date(),
 		blank = window.location.href === 'about:blank',
-		allowedToLoad = 'al' + Math.random() * 1000000000000000000,
+		accessToken = Math.random().toString(36).substr(2),
 		bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
 		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '&about:blank' + +new Date()) : false,
 		disabled = ResourceCanLoad(beforeLoad, ['disabled', pageHost()]);
@@ -135,7 +135,7 @@ function createPlaceholder(e, url) {
 		if (!ev.isTrigger) {
 			ev.preventDefault();
 			ev.stopImmediatePropagation();
-			e[allowedToLoad] = true;
+			e[accessToken] = true;
 			pl.parentNode.replaceChild(e, pl);
 		}
 	});
@@ -237,7 +237,7 @@ function canLoad(event) {
 
 	var source = getAbsoluteURL(event.url), pathname, host, at, arr, use_source, did_something = 0, kind = kinds[node][0];
 
-	if (!el[allowedToLoad]) {
+	if (!el[accessToken]) {
 		if (kind in alwaysDo) {
 			if (!alwaysDo[kind] && event.preventDefault) event.preventDefault();
 			return alwaysDo[kind];
@@ -249,7 +249,7 @@ function canLoad(event) {
 			else
 				return 1;
 
-			if (el.getAttribute('data-ignore') === window.allowedToLoad) {
+			if (el.getAttribute('data-ignore') === window.accessToken) {
 				el.setAttribute('data-jsblocker_added', 1);
 
 				jsblocker.unblocked[kind].all.push('JSBlocker Injected Script (' + el.getAttribute('data-special') + '): ' + el.src);
@@ -411,6 +411,20 @@ function messageHandler(event) {
 			if (window !== window.top)
 				GlobalPage.message('addFrameData', [jsblocker.href, jsblocker]);
 		break;
+
+		case 'GM_xmlhttpRequest':
+			window.postMessage(event.message, '*');
+		break;
+
+		case 'GM_contextMenu':
+			if (window.accessToken === event.message[0])
+				window.postMessage({
+					type: 'GM_contextMenu',
+					ns: event.message[2],
+					target: window.accessToken,
+					caption: event.message[1]
+				}, '*');
+		break;
 	}
 }
 
@@ -448,9 +462,9 @@ function prepareAnchor(anchor, i) {
 	}
 
 	if (anchor.nodeName && anchor.nodeName.toUpperCase() === 'A') {
-		if (anchor.getAttribute('data-jsbprepared') === window.allowedToLoad) return;
+		if (anchor.getAttribute('data-jsbprepared') === window.accessToken) return;
 
-		anchor.setAttribute('data-jsbprepared', window.allowedToLoad);
+		anchor.setAttribute('data-jsbprepared', window.accessToken);
 
 		if_setting('simpleReferrer', true, function (anchor) {
 			if (anchor.getAttribute('href') && anchor.getAttribute('href').length && anchor.getAttribute('href').charAt(0) !== '#')
@@ -513,46 +527,71 @@ function prepareFrame(frame) {
 function windowMessenger(event) {
 	var mayI = 'mayIPleaseKnowYourURL:', sure = 'theURLFor:';
 
-	if (typeof event.data !== 'string') return;
+	if (typeof event.data === 'string') {
+		if (event.data === 'history-state-change')
+			jsblocker.href = pageHost();
+		else if (event.data === 'zero-timeout') {
+			event.stopPropagation();
+			if (zero.length) {
+				var o = zero.shift();
+				if (typeof o[0] === 'function')
+					o[0].apply(window, o[1]);
+			}
+		} else if (event.data.indexOf(mayI) === 0) {
+			var id = event.data.substr(mayI.length);
+			window.top.postMessage(sure + id + '#' + encodeURI(jsblocker.href), '*');
+		} else if (event.data.indexOf(sure) === 0) {
+			var off = event.data.substr(sure.length),
+					id = off.substr(0, off.indexOf('#')),
+					url = decodeURI(off.substr(id.length + 1)),
+					fr = document.getElementById(id);
 
-	if (event.data === 'history-state-change')
-		jsblocker.href = pageHost();
-	else if (event.data === 'zero-timeout') {
-		event.stopPropagation();
-		if (zero.length) {
-			var o = zero.shift();
-			if (typeof o[0] === 'function')
-				o[0].apply(window, o[1]);
+			if (!fr) return;
+
+			var old = fr.getAttribute('data-jsblocker_url');
+
+			fr[accessToken] = 0;
+
+			if (old !== url) {
+				var t = JSON.parse(JSON.stringify(beforeLoad));
+				t.target = fr;
+				t.url = url;
+				t.unblockable = old;
+				canLoad(t);
+				fr.setAttribute('data-jsblocker_url', url);
+			} else
+				fr.setAttribute('data-jsblocker_url', url);
 		}
-	} else if (event.data.indexOf(mayI) === 0) {
-		var id = event.data.substr(mayI.length);
-		window.top.postMessage(sure + id + '#' + encodeURI(jsblocker.href), '*');
-	} else if (event.data.indexOf(sure) === 0) {
-		var off = event.data.substr(sure.length),
-				id = off.substr(0, off.indexOf('#')),
-				url = decodeURI(off.substr(id.length + 1)),
-				fr = document.getElementById(id);
+	} else if (event.data instanceof Object) {
+		if (event.data.command && event.data.key === window.accessToken) {
+			switch (event.data.command) {
+				case 'GM_openInTab':
+					GlobalPage.message(event.data.command, event.data.data);
+				break;
 
-		if (!fr) return;
+				case 'GM_xmlhttpRequest':
+					GlobalPage.message(event.data.command, {
+						token: event.data.token,
+						data: JSON.parse(event.data.data)
+					});
+				break;
 
-		var old = fr.getAttribute('data-jsblocker_url');
-
-		fr[allowedToLoad] = 0;
-
-		if (old !== url) {
-			var t = JSON.parse(JSON.stringify(beforeLoad));
-			t.target = fr;
-			t.url = url;
-			t.unblockable = old;
-			canLoad(t);
-			fr.setAttribute('data-jsblocker_url', url);
-		} else
-			fr.setAttribute('data-jsblocker_url', url);
+				case 'GM_registerMenuCommand':
+					GlobalPage.message(event.data.command, {
+						ns: event.data.data.ns,
+						caption: event.data.data.caption,
+						id: Math.random().toString(36).substr(2)
+					});
+				break;
+			}
+ 		}
 	}
 }
 
 function contextmenu(event) {
-	Events.setContextMenuEventUserInfo(event, document.querySelectorAll('.jsblocker-placeholder').length);
+	GlobalPage.message('GM_contextMenuTarget', window.accessToken);
+
+	Events.setContextMenuEventUserInfo(event, event.userInfo || document.querySelectorAll('.jsblocker-placeholder').length);
 }
 
 Events.addTabListener('message', messageHandler, true);
@@ -599,8 +638,3 @@ if (!disabled) {
 	document.addEventListener('DOMContentLoaded', prepareFrames, true);
 	document.addEventListener('beforeload', canLoad, true);
 }
-
-window.postMessage = function (one, two, three) {
-	if (one !== 'zero-timeout')
-		GlobalPage.message('postMessage', [one,two,three]);
-};

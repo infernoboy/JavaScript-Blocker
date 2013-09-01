@@ -95,6 +95,8 @@ var RULE_TOP_HOST = 1,
 	frames: {},
 	displayv: null,
 	bundleid: null,
+	GM_contextMenu: {},
+	GM_contextMenuTarget: null,
 	update_attention_required: 161,
 	beta_attention_required: 1,
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
@@ -5048,6 +5050,67 @@ var RULE_TOP_HOST = 1,
 			case 'openPopover':
 				ToolbarItems.showPopover();
 			break;
+
+			case 'GM_openInTab':
+				this.utils.open_url(event.message);
+			break;
+
+			case 'GM_xmlhttpRequest':
+				var data = event.message, getHeaders = function (headers) {
+					var lines = headers.split(/\n/), o = {}, line;
+
+					for (var i = 0; i < lines.length; i++) {
+						line = lines[i].split(': ');
+						
+						if (line[0].length)
+							o[line.shift()] = line.join(': ');
+					}
+
+					return o;
+				};
+
+				data.data.error = function (res, status, req) {
+					MessageTarget(event, 'GM_xmlhttpRequest', {
+						type: 'GM_xmlhttpRequestComplete',
+						token: data.token,
+						action: 'onerror',
+						data: {
+							readyState: req.readyState,
+							responseHeaders: getHeaders(req.getAllResponseHeaders()),
+							responseText: res,
+							status: req.status,
+							statusText: status
+						}
+					});
+				};
+
+				data.data.success =  function (res, status, req) {
+					MessageTarget(event, 'GM_xmlhttpRequest', {
+						type: 'GM_xmlhttpRequestComplete',
+						token: data.token,
+						action: 'onload',
+						data: {
+							readyState: req.readyState,
+							responseHeaders: getHeaders(req.getAllResponseHeaders()),
+							responseText: res,
+							status: req.status,
+							statusText: status
+						}
+					});
+				};
+
+				$.ajax(data.data);
+			break;
+
+			case 'GM_registerMenuCommand':
+				if (!this.GM_contextMenu[event.message.ns]) this.GM_contextMenu[event.message.ns] = {};
+
+				this.GM_contextMenu[event.message.ns][event.message.caption] = event.message.id;
+			break;
+
+			case 'GM_contextMenuTarget':
+				this.GM_contextMenuTarget = event.message;
+			break;
 			
 			case 'doNothing': break;
 		}
@@ -5315,10 +5378,18 @@ var RULE_TOP_HOST = 1,
 		}
 	},
 	command: function (event) {
-		if (event.command === 'loadElementsOnce')
+		if (~event.command.indexOf('GM_contextMenu:')) {
+			var p = event.command.split(':');
+
+			Tabs.messageActive('GM_contextMenu', [this.GM_contextMenuTarget, event.target.title, p[1]]);
+		} else if (event.command === 'loadElementsOnce')
 			Tabs.messageActive('loadElementsOnce');
 	},
-	contextmenu: function (event) {		
+	contextmenu: function (event) {	
+		for (var ns in this.GM_contextMenu)
+			for (var caption in this.GM_contextMenu[ns])
+				event.contextMenu.appendContextMenuItem('GM_contextMenu:' + ns + ':' + this.GM_contextMenu[ns][caption], caption);
+
 		if (event.userInfo > 0)
 			event.contextMenu.appendContextMenuItem('loadElementsOnce', _('Load {1} Blocked Element' + (event.userInfo === 1 ? '' : 's'), [event.userInfo]));
 	}

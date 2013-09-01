@@ -6,7 +6,7 @@ var disabled = typeof beforeLoad === 'undefined' ? false : disabled;
 
 if (!disabled) {
 var gm_injected = 0, special_actions = {
-	zoom: function (v) {
+	zoom: function () {
 		document.addEventListener('DOMContentLoaded', function () {
 			document.body.style.setProperty('zoom', v + '%', 'important');
 		}, true);
@@ -21,7 +21,9 @@ var gm_injected = 0, special_actions = {
 			return window_open(URL, name, undefined, replace);
 		};
 	},
-	alert_dialogs: function (enabled, args) {
+	alert_dialogs: function () {
+		var enabled = v;
+
 		window.alert = function (a, text, html_allowed) {
 			a = a === null ? '' : (typeof a === 'undefined' ? 'undefined' : a.toString());
 			text = text ? text.toString() : null;
@@ -186,7 +188,7 @@ var gm_injected = 0, special_actions = {
 		
 		jsblocker_block_context_override();
 	},
-	autocomplete_disabler: function (v, args) {
+	autocomplete_disabler: function () {
 		var bv = parseInt(args[0], 10);
 
 		document.addEventListener('DOMContentLoaded', function () {
@@ -216,7 +218,7 @@ var gm_injected = 0, special_actions = {
 				withNode(event.target);
 			}, true);
 	},
-	font: function (v) {
+	font: function () {
 		var s = document.createElement('style');
 		s.type = 'text/css';
 		s.id = 'jsblocker-css-' + (+new Date());
@@ -279,22 +281,24 @@ var gm_injected = 0, special_actions = {
 },
 custom_special_actions = {};
 
-var appendScript = function (script, which, v) {
+var appendScript = function (script, which, v, priv) {
 	var s = document.createElement('script');
 
 	s.id = 'jsblocker-' + (+new Date());
-	s.setAttribute('data-ignore', window.allowedToLoad);
+	s.setAttribute('data-ignore', window.accessToken);
 	s.setAttribute('data-special', which);
 	s.src = ['data:text/javascript,',
-		encodeURI(['(', script.toString(), ')',
+		encodeURI(['(function() { var fn = ', script.toString(), ', anon = (new Function("v", "args", "accessKey", "which", "(" + fn.toString() + ")();"))',
 		'(',
-			v !== undefined ? (typeof v === 'string' ? '"' + v + '"' : v) : '',
-			script.prototype && script.prototype.args ? ',' + JSON.stringify(script.prototype.args) : '',
-		');'].join(''))].join('');
+			v !== undefined ? (typeof v === 'string' ? '"' + v + '"' : v) + ',': 'null,',
+			script.prototype && script.prototype.args ? JSON.stringify(script.prototype.args) + ',': 'null,',
+			'"', priv ? window.accessToken : 0, '",',
+			'"', which, '"',
+		'); })();'].join(''))].join('');
 	document.documentElement.appendChild(s);
 }
 
-var doSpecial = function (do_append, n, action) {
+var doSpecial = function (do_append, n, action, priv) {
 	var custom = n.indexOf('custom') === 0,
 			v = enabled_specials[n].value || custom, m;
 
@@ -303,49 +307,119 @@ var doSpecial = function (do_append, n, action) {
 			jsblocker.blocked.special.all.push([n, m]);
 			
 			if (!custom) {
-				if (do_append) appendScript(action, n, v);
+				if (do_append) appendScript(action, n, v, priv);
 				else action(v);
 			}
 		} else
 			if (m !== 84) {
 				jsblocker.allowed.special.all.push([n, m]);
 
-				if (custom) appendScript(action, n, true);
+				if (custom) appendScript(action, n, true, priv);
 			}
 	}
 }
 
 var GM = function () {
+	// GreaseMonkey support functions
+	GM_xmlhttpRequestCallbacks = {},
+	GM_contextMenuCallbacks = {},
+	// VALUES
 	GM_getValue = function (name, def) {
-		var c = window.localStorage.getItem(gmNS + name);
+		var c = window.localStorage.getItem(gmName + name);
 
 		return c === null ? (def !== undefined ? def : null) : c;
 	},
 	GM_setValue = function (name, value) {
-		window.localStorage.setItem(gmNS + name, value);
+		window.localStorage.setItem(gmName + name, value);
 	},
 	GM_deleteValue = function (name) {
-		window.localStorage.removeItem(gmNS + name);
+		window.localStorage.removeItem(gmName + name);
 	},
 	GM_listValues = function () {
 		var a = [];
 
 		for (var key in window.localStorage)
-			if (window.localStorage.hasOwnProperty(key) && key.indexOf(gmNS) === 0)
+			if (window.localStorage.hasOwnProperty(key) && key.indexOf(gmName) === 0)
 				a.push(key);
 		
 		return a;
 	},
+
+	// RESOURCES
+	GM_getResourceText = function (name) {
+
+	},
+	GM_getResourceURL = function (name) {
+
+	},
+
+	// OTHER
+	GM_addStyle = function (css) {
+		var style = document.createElement('style');
+		style.setAttribute('type', 'text/css');
+		style.innerHTML = css;
+
+		if (document.body)
+			document.body.appendChild(style);
+		else
+			document.documentElement.appendChild(style);
+	},
 	GM_log = function () {
 		console.debug.apply(console, arguments);
-	}
+	},
+	GM_openInTab = function (url) {
+		window.postMessage({
+			key: accessToken,
+			command: 'GM_openInTab',
+			data: url
+		}, '*');
+	},
+	GM_registerMenuCommand = function (caption, func, accessKey) {
+		GM_contextMenuCallbacks[caption] = func;
+
+		window.postMessage({
+			key: accessToken,
+			command: 'GM_registerMenuCommand',
+			data: {
+				ns: gmName,
+				caption: caption
+			}
+		}, '*');
+	},
+	GM_setClipboard = function () {
+		// Cannot be implemented.
+	},
+	GM_xmlhttpRequest = function (details) {
+		var token = Math.random().toString(36);
+
+		GM_xmlhttpRequestCallbacks[token] = details;
+
+		window.postMessage({
+			key: accessToken,
+			token: token,
+			command: 'GM_xmlhttpRequest',
+			data: JSON.stringify(details)
+		}, '*');
+	},
+	unsafeWindow = window;
+
+	window.addEventListener('message', function (event) {
+		if (event.data.type === 'GM_xmlhttpRequestComplete' && GM_xmlhttpRequestCallbacks[event.data.token]) {
+			try {
+				console.log('AJAX!!!!', event.data)
+				GM_xmlhttpRequestCallbacks[event.data.token][event.data.action](event.data.data);
+			} catch (e) {
+				console.error(e);
+			}
+		} else if (event.data.type === 'GM_contextMenu' && event.data.target === accessToken && event.data.ns === gmName)
+			GM_contextMenuCallbacks[event.data.caption]();
+	}, true);
 }
 
 GM = GM.toString();
 var p = GM.split('{');
 p.splice(0, 1);
 p[p.length - 1] = p[p.length - 1].substr(0, p[p.length - 1].length - 1);
-GM = p.join('{');
 
 var parseSpecials = function (pre) {
 	if (pre)
@@ -356,11 +430,11 @@ var parseSpecials = function (pre) {
 		if (pre && ~n.indexOf('custompost')) continue;
 		if (!pre && !~n.indexOf('custompost')) continue;
 
-		doSpecial(1, n, "function () {\nvar gmNS = \"" + n + ":\",\n" + GM + ";\n" + custom_special_actions[n].func + "\n}");
+		doSpecial(1, n, "function (v, accessToken, gmName) {\n" + p.join('{') + "\n" + custom_special_actions[n].func + "\n}", 1);
 	}
 }
 
-special_actions.alert_dialogs.prototype.args = [window.allowedToLoad || 1];
+special_actions.alert_dialogs.prototype.args = [window.accessToken || 1];
 special_actions.autocomplete_disabler.prototype.args = [window.bv || 0];
 
 if (typeof beforeLoad !== 'undefined' && !disabled) {
