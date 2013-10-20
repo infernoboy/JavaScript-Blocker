@@ -272,8 +272,8 @@ Poppy.prototype = {
 			ctx_flip.clearRect(0, 0, 30, 22)
 		
 		  ctx.shadowOffsetX = 0;
-		  ctx.shadowOffsetY = 1;
-		  ctx.shadowBlur = 9;
+		  ctx.shadowOffsetY = 0;
+		  ctx.shadowBlur = 4;
 		  ctx.shadowColor = shd;
 
 			ctx.fillStyle = bg;
@@ -297,8 +297,8 @@ Poppy.prototype = {
 			ctx.closePath();
 
 		  ctx_flip.shadowOffsetX = 0;
-		  ctx_flip.shadowOffsetY = 1;
-		  ctx_flip.shadowBlur = 9;
+		  ctx_flip.shadowOffsetY = 0;
+		  ctx_flip.shadowBlur = 4;
 		  ctx_flip.shadowColor = shd;
 
 			ctx_flip.fillStyle = bg

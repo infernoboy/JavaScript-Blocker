@@ -3,9 +3,14 @@
 var Settings = Settings || {};
 
 Settings._alwaysBlockHelp = 'alwaysBlock help';
-Settings._alwaysBlock = [['domain', 'Different hostnames'], ['topLevel', 'Different hosts &amp; subdomains'], ['nowhere', 'Nowhere'], ['everywhere', 'Anywhere']];
+Settings._alwaysBlock = [['domain', 'Different hostnames'], ['topLevel', 'Different hosts &amp; subdomains'], ['nowhere', 'Blacklist only'], ['trueNowhere', 'Nowhere'], ['everywhere', 'Anywhere']];
+Settings._alwaysBlockAjax = Settings._alwaysBlock.slice(0);
+Settings._alwaysBlockAjax.push(['ask', 'Ask when neccessary']);
 Settings.settings = {
 	misc: {
+		extendedSupport: {
+			default: parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10) >= 537
+		},
 		donationVerified: {
 			default: false
 		},
@@ -15,25 +20,13 @@ Settings.settings = {
 		enabledisable: {
 			default: true
 		},
-		enablehide_script: {
+		enableajax_get: {
 			default: true
 		},
-		enablehide_embed: {
+		enableajax_post: {
 			default: true
 		},
-		enablehide_video: {
-			default: true
-		},
-		enablehide_image: {
-			default: true
-		},
-		enablehide_special: {
-			default: true
-		},
-		enablehide_frame: {
-			default: true
-		},
-		enablehide_disable: {
+		enableajax_put: {
 			default: true
 		},
 		installID: {
@@ -104,18 +97,6 @@ Settings.settings = {
 			help: 'showUnblocked help',
 			default: false
 		},
-		expandColumns: {
-			label: 'Resize blocked and allowed columns',
-			setting: true,
-			default: true
-		},
-		noExpandSimple: {
-			label: 'Resize blocked and allowed columns only in expert view',
-			setting: true,
-			default: true,
-			if_setting: { expandColumns: true, simpleMode: true },
-			indent: 1
-		},
 		filterBarAge: {
 			label: 'Show "Not Used In Past" filter bar',
 			setting: true,
@@ -182,7 +163,7 @@ Settings.settings = {
 		secureOnly: {
 			label: 'Resources on secure sites must also be secure',
 			setting: true,
-			default: false
+			default: true
 		},
 		allowExtensions: {
 			label: 'Automatically allow resources from other extensions',
@@ -199,7 +180,7 @@ Settings.settings = {
 			label: 'only in simple view',
 			if_setting: { quickAdd: true },
 			indent: 1,
-			default: false,
+			default: true,
 			setting: true
 		},
 		quickAddQuicker: {
@@ -232,7 +213,7 @@ Settings.settings = {
 			divider: 1,
 			if_setting: { enablescript: true },
 			help: Settings._alwaysBlockHelp,
-			default: 'domain'
+			default: 'nowhere'
 		},
 		enableframe: {
 			label: 'Enable frame blocker',
@@ -254,8 +235,23 @@ Settings.settings = {
 			divider: 1,
 			if_setting: { enableframe: true },
 			help: Settings._alwaysBlockHelp,
-			default: 'domain',
+			default: 'nowhere',
 			extra: 1
+		},
+		enableajax: {
+			label: 'Enable AJAX request blocker',
+			setting: true,
+			default: true,
+			extra: 1
+		},
+		alwaysBlockajax: {
+			label: 'Automatically block AJAX requests to:',
+			setting: Settings._alwaysBlockAjax.slice(0),
+			if_setting: { enableajax: true },
+			help: Settings._alwaysBlockHelp,
+			default: 'nowhere',
+			extra: 1,
+			divider: 1
 		},
 		enableembed: {
 			label: 'Enable embed and object blocker',
@@ -474,10 +470,12 @@ Settings.settings = {
 			default: true,
 			extra: 1
 		},
-		enable_special_ajax_intercept: {
-			label: 'Show a prompt when an AJAX request tries to POST or GET information',
+		enable_special_inline_scripts: {
+			label: 'Prevent inline scripts from being executed',
 			setting: true,
 			default: false,
+			if_setting: { extendedSupport: true },
+			help: 'inline_scripts help',
 			extra: 1
 		},
 		enable_special_font: {
@@ -559,12 +557,14 @@ Settings.settings = {
 		},
 		resetSettings: {
 			label: 'Reset all settings to their default values:',
-			setting: 'Reset Settings'
+			setting: 'Reset Settings',
+			classes: 'delete'
 		},
 		removeRules: {
 			label: 'Remove all rules:',
 			setting: 'Remove Rules',
-			divider: 1
+			divider: 1,
+			classes: 'delete'
 		},
 		showWelcome: {
 			label: 'Show welcome:',
@@ -590,7 +590,8 @@ Settings.settings = {
 		clearSnapshots: {
 			label: 'Delete all snapshots:',
 			setting: 'Delete Snapshots',
-			extra: 1
+			extra: 1,
+			classes: 'delete'
 		}
 	},
 	search: {

@@ -95,8 +95,6 @@ var RULE_TOP_HOST = 1,
 	frames: {},
 	displayv: null,
 	bundleid: null,
-	GM_contextMenu: {},
-	GM_contextMenuTarget: null,
 	update_attention_required: 161,
 	beta_attention_required: 1,
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
@@ -110,22 +108,21 @@ var RULE_TOP_HOST = 1,
 		var self = this, status = Settings.getItem('donationVerified');
 
 		if (!status || status === 777)
-			new Poppy($(this.popover.body).width() / 2, 0, [
+			new Poppy($(this.popover.body).width() / 2, 2, [
 				'<p>', _('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']), '</p>',
 				'<p><div class="divider"></div></p>',
 				'<p id="jsb-changes">Loading change log....</p>',
 				'<p><div class="divider"></div></p>',
 				'<p>', _('Thank you for your continued use'), '</p>',
 				'<p>', _('Please, if you can'), '</p>',
-				'<p>',
-					'<input type="button" value="', _('Make a Donation'), '" id="make-donation" /> ',
-					'<input type="button" value="', _('Maybe Later'), '" id="no-donation" /> ',
-					'<input type="button" value="', _('I\'ve Donated!'), '" id="already-donation" /> ',
-				'</p>'].join(''), function () {
+				'<input type="button" value="', _('Make a Donation'), '" id="make-donation" /> ',
+				'<input type="button" value="', _('Maybe Later'), '" id="no-donation" /> ',
+				'<input type="button" value="', _('I\'ve Donated!'), '" id="already-donation" /> '
+				].join(''), function () {
 					var changes = $$('#jsb-changes');
 
-					changes.load('http://javascript-blocker.toggleable.com/change-log/' + self.displayv.replace(/\./g, '') + ' #sites-canvas-main-content', function (responseText, textStatus) {
-						if (textStatus !== 'success') changes.html('Unable to load change log.');
+					changes.load('http://javascript-blocker.toggleable.com/change-log/' + self.displayv.replace(/\./g, '') + ' #sites-canvas-main-content', function (responseText, textStatus, req) {
+						if (textStatus !== 'success') changes.html('Unable to load change log: ' + req.status);
 					});
 
 					$$('#make-donation').click(function () {
@@ -143,7 +140,7 @@ var RULE_TOP_HOST = 1,
 					});
 				}, null, null, true);
 		else {
-			new Poppy($(this.popover.body).width() / 2, 0, [
+			new Poppy($(this.popover.body).width() / 2, 2, [
 				'<p>',
 					_('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']),
 				'</p>',
@@ -152,9 +149,9 @@ var RULE_TOP_HOST = 1,
 			].join(''), function () {
 				var changes = $$('#jsb-changes');
 
-				changes.load('http://javascript-blocker.toggleable.com/change-log/' + self.displayv.replace(/\./g, '') + ' #sites-canvas-main-content', function (responseText, textStatus) {
+				changes.load('http://javascript-blocker.toggleable.com/change-log/' + self.displayv.replace(/\./g, '') + ' #sites-canvas-main-content', function (responseText, textStatus, req) {
 
-					if (textStatus !== 'success') changes.html('Unable to load change log.');
+					if (textStatus !== 'success') changes.html('Unable to load change log: ' + req.status);
 				});
 
 				self.installedBundle = self.bundleid;
@@ -195,7 +192,7 @@ var RULE_TOP_HOST = 1,
 	enabled: function (kind) {
 		if (!this.donationVerified && kind !== 'script') return false;
 
-		return Settings.getItem('enable' + kind);
+		return Settings.getItem('enable' + kind) || ~kind.indexOf('hide_');
 	},
 		
 	/**
@@ -244,7 +241,7 @@ var RULE_TOP_HOST = 1,
 
 			for (var host in this.caches.rule_actions[key]) {
 				for (var action_item in this.caches.rule_actions[key][host]) {
-					if (this.caches.rule_actions[key][host][action_item].access < (+new Date() - 1000 * 60 * 20))
+					if (this.caches.rule_actions[key][host][action_item].access < (Date.now() - 1000 * 60 * 20))
 						delete this.caches.rule_actions[key][host][action_item];
 				}
 
@@ -270,19 +267,26 @@ var RULE_TOP_HOST = 1,
 		if (!this.rules.using_snapshot) {
 			var cd = this.collapsedDomains();
 			
-			if (cd instanceof Array)
-				cd.forEach(function (d) {
-					if (d === _('All Domains') || (d in self.rules.rules.script) || (d in self.rules.rules.frame) || (d in self.rules.rules.embed) || (d in self.rules.rules.image))
-						if (!~new_collapsed.indexOf(d))
-							new_collapsed.push(d);
-				});
+			if (cd instanceof Array) {
+				var d;
 
+				for (var i = 0; d = cd[i]; i++)
+					for (var kind in self.rules.data_types)
+						if ((d === _('All Domains') || (d in self.rules.rules[kind])) && !~new_collapsed.indexOf(d))
+							new_collapsed.push(d);
+			}
+			
 			this.collapsedDomains(new_collapsed);
 		}
 
 		use_tracker_cache = new_collapsed = undefined;
 	},
-	isBeta: 0,
+	get isBeta() {
+		Settings.getItem('isBeta');
+	},
+	set isBeta(v) {
+		Settings.setItem('isBeta', v);
+	},
 	get speedMultiplier() {
 		return this._speedMultiplier || 1;
 	},
@@ -374,10 +378,10 @@ var RULE_TOP_HOST = 1,
 		Settings.setItem('trialStart', v);
 	},
 	trial_active: function () {
-		return (+new Date() - JB.trialStart < 1000 * 60 * 60 * 24 * 10);
+		return (Date.now() - JB.trialStart < 1000 * 60 * 60 * 24 * 10);
 	},
 	trial_remaining: function () {
-		var seconds = ((JB.trialStart + 1000 * 60 * 60 * 24 * 10) - +new Date()) / 1000,
+		var seconds = ((JB.trialStart + 1000 * 60 * 60 * 24 * 10) - Date.now()) / 1000,
 				units = {
 					days: 24 * 60 * 60,
 					hours: 60 * 60,
@@ -574,11 +578,11 @@ var RULE_TOP_HOST = 1,
 					
 					if (!current_header.length) return;
 
-					var id = 'clone-' + (current_header.attr('id') || +new Date()),
+					var id = 'clone-' + (current_header.attr('id') || Date.now()),
 							current_header_clone = current_header.clone(true, true).insertBefore(current_header).attr('id', id).addClass('floater floater-clone'),
 							top = off,
 							related_push = 0;
-											
+
 					related = d.related ? d.related.call(JB, current_header) : [];
 									
 					if (related.length) {
@@ -828,15 +832,8 @@ var RULE_TOP_HOST = 1,
 				return true;
 			}
 		},
-		id: function (c) {
-			return ((Math.random() + Math.random() + Math.random()) * 10000000000000000).toString().split('').map(function (e) {
-					var v = (parseInt(Math.random() * 10)) + parseInt(e),
-							x = String.fromCharCode('1' + (v < 10 ? '0' + v : v)),
-							r = String.fromCharCode(65 + Math.round(Math.random() * (90 - 65))),
-							b = Math.random() > Math.random() ?
-									(Math.random() > Math.random() ? x : x.toUpperCase()) : (Math.random() > Math.random() ? r : r.toLowerCase());
-					return typeof c === 'number' ? (c === 0 ? b.toLowerCase() : b.toUpperCase()) : b;
-			}).join('');
+		id: function () {
+			return (Date.now() + Math.random()).toString(36).replace(/\./, '');
 		},
 		open_url: function (url) {
 			Tabs.create({ url: url });
@@ -980,7 +977,8 @@ var RULE_TOP_HOST = 1,
 		get data_types() {
 			return {
 				disable: {}, script: {}, frame: {}, embed: {}, video: {}, image: {}, special: {},
-				hide_disable: {}, hide_script: {}, hide_frame: {}, hide_embed: {}, hide_video: {}, hide_image: {}, hide_special: {}
+				hide_disable: {}, hide_script: {}, hide_frame: {}, hide_embed: {}, hide_video: {}, hide_image: {}, hide_special: {},
+				ajax_get: {}, ajax_post: {}, ajax_put: {}, hide_ajax_get: {}, hide_ajax_post: {}, hide_ajax_put: {}
 			};
 		},
 		_loaded: false,
@@ -1034,7 +1032,7 @@ var RULE_TOP_HOST = 1,
 				if (!(key in this._tracked[cat])) this._tracked[cat][key] = { uses: 0 };
 
 				this._tracked[cat][key].uses++;
-				this._tracked[cat][key].lastUsed = +new Date();
+				this._tracked[cat][key].lastUsed = Date.now();
 
 				this.save();
 
@@ -1087,7 +1085,7 @@ var RULE_TOP_HOST = 1,
 		show_snapshots: function () {
 			this.busy = 1;
 
-			var snapshots = this.snapshots.all(1),
+			var snapshots = this.snapshots.all(1), co = { '1': 0, '0': 0 },
 					ul = $$('#current-snapshots'),
 					ul_unkept = $$('#snapshots-list-unkept').empty(),
 					ul_kept = $$('#snapshots-list-kept').empty(), self = this, compared;
@@ -1096,10 +1094,10 @@ var RULE_TOP_HOST = 1,
 
 			for (var id in snapshots) {
 				$([
-					'<li id="snapshot-', id, '" class="', id === this.using_snapshot ? 'using' : '', snapshots[id].keep ? ' kept' : '', '">',
+					'<li id="snapshot-', id, '" class="', id === this.using_snapshot ? 'using' : '', snapshots[id].keep ? ' kept ' : ' ', co[snapshots[id].keep ? '1' : '0']++ % 2 ? 'odd' : 'even', '">',
 						'<a class="', Settings.getItem('traverseSnapshots') ? 'selectable' : '', ' snapshot-date" data-id="', id, '">', snapshots[id].name ? self.utils.escape_html(snapshots[id].name) : this.snapshots.date(id), '</a> ',
 						'<input type="button" value="', self.using_snapshot === id ? _('Close Snapshot') : _('Open Preview'), '" class="preview-snapshot purple" /> ',
-						'<div class="divider"></div>',
+						'<div class="divider ', co[snapshots[id].keep ? '1' : '0'] % 2 ? 'even' : 'odd', '"></div>',
 					'</li>'].join('')).appendTo(snapshots[id].keep ? ul_kept : ul_unkept);
 
 				this.utils.zero_timeout(function (rules, id) {
@@ -1112,8 +1110,8 @@ var RULE_TOP_HOST = 1,
 				me.busy = 0;
 			}, [this]);
 
-			ul_kept.find('.divider:last').addClass('invisible');
-			ul_unkept.find('.divider:last').addClass('invisible');
+			ul_kept.find('.divider:last.even').addClass('invisible');
+			ul_unkept.find('.divider:last.even').addClass('invisible');
 
 			snapshots = ul = ul_unkept = ul_kept = self = compared = undefined;
 		},
@@ -1582,7 +1580,7 @@ var RULE_TOP_HOST = 1,
 
 			this.caches.rule_actions[kind][host][item] = {
 				action: action,
-				access: +new Date()
+				access: Date.now()
 			};
 		},
 		disabled: function (url) {
@@ -1592,7 +1590,7 @@ var RULE_TOP_HOST = 1,
 					action_cached = this.via_action_cache('disable', host, '*');
 
 			if (action_cached) {
-				action_cached.access = +new Date();
+				action_cached.access = Date.now();
 
 				return action_cached.action[0];
 			}
@@ -1623,14 +1621,14 @@ var RULE_TOP_HOST = 1,
 					domains = this.for_domain(kind, host), action_cached = this.via_action_cache(kind, host, message[2]);
 
 			if (action_cached) {
-				action_cached.access = +new Date();
+				action_cached.access = Date.now();
 
 				return action_cached.action;
 			}
 
 			var domain, rule,
-					alwaysFrom = Settings.getItem('alwaysBlock' + kind) || Settings.getItem('alwaysBlockscript'),
-					hider = ~kind.indexOf('hide_'), ignoreBL = Settings.getItem('ignoreBlacklist'), ignoreWL = Settings.getItem('ignoreWhitelist'),
+					alwaysFrom = Settings.getItem('alwaysBlock' + (~kind.indexOf('ajax') ? 'ajax' : kind)) || Settings.getItem('alwaysBlockscript'),
+					hider = ~kind.indexOf('hide_'), ignoreBL = alwaysFrom === 'trueNowhere' || Settings.getItem('ignoreBlacklist'), ignoreWL = Settings.getItem('ignoreWhitelist'),
 					sim = this.simplified || JB.temporaryExpertMode,
 					catch_wl = null;
 
@@ -1664,6 +1662,12 @@ var RULE_TOP_HOST = 1,
 				this.add_to_action_cache(kind, host, message[2], [rule_found, the_rule]);
 
 				return [rule_found, the_rule];
+			}
+
+			if (alwaysFrom === 'trueNowhere') {
+				this.add_to_action_cache(kind, host, message[2], [1, -1]);
+
+				return [1, -1];
 			}
 							
 			if (alwaysFrom !== 'nowhere') {
@@ -1941,7 +1945,7 @@ var RULE_TOP_HOST = 1,
 					if (rule === '^.*$' || rule === '*') message.push('all others')
 					else {
 						if (rule.charAt(0) === '^') message.push('others matching');
-						message.push((html ? '<b>' : '') + this.utils.escape_html(rule.charAt(0) === '^' ? rule : _(rule).toLowerCase()) + (html ? '</b>' : ''));
+						message.push((html ? '<b>' : '') + this.utils.escape_html(rule.charAt(0) === '^' ? rule : _(rule, null, 1).toLowerCase()) + (html ? '</b>' : ''));
 					}
 				}
 			} else {
@@ -1969,7 +1973,7 @@ var RULE_TOP_HOST = 1,
 				message.push(_(ukind + 's'));
 
 				if (!~unique.indexOf(rule) && rule !== '*') {
-					message.push(rule.charAt(0) === '.' ? 'within' : (rule.charAt(0) === '^' ? 'matching' : 'from'));
+					message.push(rule.charAt(0) === '.' ? 'within' : (rule.charAt(0) === '^' ? 'matching' : (~kind.indexOf('ajax_') ? 'to' : 'from')));
 					message.push((html ? '<b>' : '') + this.utils.escape_html(rule.charAt(0) === '.' ? rule.substr(1) : rule) + (html ? '</b>' : ''));
 				}
 			}
@@ -1987,7 +1991,8 @@ var RULE_TOP_HOST = 1,
 		
 			if (!JB.utils.confirm_click(this) || li.is(':animated')) return false;
 																
-			JB.rules.remove_domain(li.data('kind'), d);
+			for (var kind in JB.rules.data_types)
+				JB.rules.remove_domain(kind, d);
 			
 			li.animate({
 				right: -li.outerWidth(),
@@ -2010,26 +2015,34 @@ var RULE_TOP_HOST = 1,
 			new Poppy(off.left, off.top, [
 				'<p class="misc-info">', _('Recover')	, '</p>',
 				'<input class="purple" type="button" id="recover-domain-merge" value="', _('Merge'), '" /> ',
-				'<input class="purple" type="button" id="recover-domain-replace" value="', _('Replace'), '" />'].join(''), (function (li, kind, domain, off, left, top) {
-					$$('#recover-domain-merge').click((function (left, top, kind, domain) {
-						if (!(domain in this.rules.current_rules[kind]))
-							this.rules.current_rules[kind][domain] = this.rules.rules[kind][domain];
-						else
-							for (var rule in this.rules.rules[kind][domain])
-								this.rules.current_rules[kind][domain][rule] = this.rules.rules[kind][domain][rule];
+				'<input class="purple" type="button" id="recover-domain-replace" value="', _('Replace'), '" />'].join(''), (function (li, domain, off, left, top) {
+					$$('#recover-domain-merge').click((function (left, top, domain) {
+						var current_rules = this.rules.current_rules;
 
-						Settings.setItem(this.which, JSON.stringify(this.rules.current_rules));
+						for (var kind in this.rules.data_types) {
+							if (!(domain in current_rules[kind]))
+								current_rules[kind][domain] = this.rules.rules[kind][domain];
+							else
+								for (var rule in this.rules.rules[kind][domain])
+									current_rules[kind][domain][rule] = this.rules.rules[kind][domain][rule];
+						}
+
+						Settings.setItem(this.rules.which, JSON.stringify(current_rules));
 
 						new Poppy(left, top, _('Domain merged with current rule set.'));
-					}).bind(this, left, top, kind, domain)).siblings('#recover-domain-replace').click((function (left, top, kind, domain) {
-						this.rules.current_rules[kind][domain] = this.rules.rules[kind][domain];
-						Settings.setItem(this.which, JSON.stringify(this.rules.current_rules));
+					}).bind(this, left, top, domain)).siblings('#recover-domain-replace').click((function (left, top, domain) {
+						var current_rules = this.rules.current_rules;
+
+						for (var kind in this.rules.data_types)
+							current_rules[kind][domain] = this.rules.rules[kind][domain];
+
+						Settings.setItem(this.rules.which, JSON.stringify(current_rules));
 
 						new Poppy(left, top, _('Domain replaced in current rule set.'));
-					}).bind(this, left, top, kind, domain));
+					}).bind(this, left, top, domain));
 
 					li = kind = domain = off = left = top = undefined
-			}).bind(JB, (li = $(this.parentNode)), li.data('kind'), li.data('domain'), off, off.left, off.top));
+			}).bind(JB, (li = $(this.parentNode)), li.data('domain'), off, off.left, off.top));
 
 			li = off = event = undefined;
 		},
@@ -2070,6 +2083,11 @@ var RULE_TOP_HOST = 1,
 				.prepend('<input type="button" value="' + (this.using_snapshot ? _('Recover') : _('Delete')) + '" class="' + (!this.using_snapshot ? 'delete' : 'purple' ) + '" />')
 				.find('input').click(this.using_snapshot ? this._recover_domain : this._remove_domain);
 
+			var visi = $$('#rules-list .domain-name');
+
+			visi.filter(':odd').next().andSelf().addClass('odd');
+			visi.filter(':even:not(:first)').next().andSelf().addClass('even');
+
 			$$('#filter-type-used li.selected').click();
 
 			this.busy = 0;
@@ -2104,7 +2122,7 @@ var RULE_TOP_HOST = 1,
 					selectable: Settings.getItem('traverseRulesDomains') ? 'selectable' : '',
 					domain: domain,
 					domain_display: self.utils.escape_html(domain_name)
-				})).find('.domain-name').data({ domain: domain, kind: kind }).end().find('.domain-rules ul');
+				})).find('.domain-name').data({ domain: domain }).end().find('.domain-rules ul');
 			
 				for (rule in allowed) {
 					rules++;
@@ -2215,9 +2233,9 @@ var RULE_TOP_HOST = 1,
 				Template.create('domain_picker', { page_parts: this.utils.domain_parts(host) }),
 			'</p>',
 			'<p>',
-				'<select id="which-type" class="blocked-color">',
-					'<option value="2">', _('Disable JavaScript Blocker'), '</option>',
-					'<option value="3">', _('Enable JavaScript Blocker'), '</option>',
+				'<select id="which-type" class="', force_new ? 'allowed' : 'blocked', '-color">',
+					'<option value="', force_new ? 3 : 2, '">', _((force_new ? 'Enable' : 'Disable') + ' JavaScript Blocker'), '</option>',
+					'<option value="', force_new ? 2 : 3, '">', _((force_new ? 'Disable' : 'Enable') + ' JavaScript Blocker'), '</option>',
 				'</select>',
 				' <select id="domain-script" class="kind-disable single">',
 					'<option>', _('JavaScript Blocker'), '</option>',
@@ -2276,6 +2294,7 @@ var RULE_TOP_HOST = 1,
 
 		var cs = [
 			'<option value="', allow ? 1 : 0, '">', allow ? _('Allow') : _('Block'), '</option>',
+			'<option value="', allow ? 0 : 1, '">', allow ? _('Block') : _('Allow'), '</option>',
 			'<option value="42">', _('Hide'), '</option>',
 		];
 			
@@ -2302,7 +2321,9 @@ var RULE_TOP_HOST = 1,
 							
 						Tabs.messageActive('reload');
 					}).siblings('#which-type').change(function () {
-						$(this).toggleClass((allow ? 'allowed' : 'blocked') + '-color', this.value !== '42');
+						$(this).removeClass('blocked-color allowed-color');
+						$(this).toggleClass('blocked-color', this.value === '0');
+						$(this).toggleClass('allowed-color', this.value === '1');
 					});
 		});
 	},
@@ -2316,13 +2337,13 @@ var RULE_TOP_HOST = 1,
 	adjust_columns: function (no_animation) {
 		var self = this;
 
-		if (!Settings.getItem('expandColumns') || (this.simpleMode && Settings.getItem('noExpandSimple') && !this.temporaryExpertMode)) return;
+		if (this.simpleMode && !this.temporaryExpertMode) return;
 
 		$(this.popover.body).toggleClass('no-animations', !!no_animation || this.speedMultiplier < 1);
 
 		$$('.host-section').each(function () {
-			var ac = $('.allowed-column', this), bc = $('.blocked-column', this),
-					expande = (Settings.getItem('noExpandSimple') && !self.simpleMode) || !self.simpleMode;
+			var ac = $('.allowed-column', this), bc = $('.blocked-column', this);
+
 			ac.toggleClass('column-collapsed', ac.hasClass('hidden'));
 			bc.toggleClass('column-collapsed', bc.hasClass('hidden'));
 
@@ -2444,10 +2465,10 @@ var RULE_TOP_HOST = 1,
 					new Poppy(left, off.top + 11, _(sp + ':' + wh, [self.special_enabled(sp)]));
 			} else if (self.useSimpleMode() && (!pa.hasClass('by-rule') || pa.hasClass('unblockable'))) {
 				script_info();
-			} else 
+			} else
 				new Poppy(left, off.top + 11, [
 					'<input type="button" value="', _('More Info'), '" id="script-info" /> ',
-					!self.temporaryExpertMode && (self.simpleMode || kind === 'embed') ? '' : '<input type="button" value="' + _('View ' + kind + ' Source') + '" id="view-script" /> ',
+					self.useSimpleMode() || kind === 'embed' || kind === 'ajax_post' || kind === 'ajax_put' ? '' : '<input type="button" value="' + _('View ' + kind + ' Source') + '" id="view-script" /> ',
 					pa.hasClass('by-rule') && !pa.hasClass('unblockable') ? '<input class="orange" type="button" value="' + _('Show Matched Rules') + '" id="matched-rules" />' : ''].join(''), function () {
 						$$('#poppy').find('#script-info').click(script_info).end().find('#matched-rules').click(function () {
 							var block_allow = !me.parents('.column').hasClass('blocked-column'),
@@ -3062,7 +3083,7 @@ var RULE_TOP_HOST = 1,
 								break;
 
 								default:
-									end_message.push(rr === 0 ? _('from') : _('within'), rr === 0 ? rule : rule.substr(1));
+									end_message.push(rr === 0 ? _(~lid.kind.indexOf('ajax_') ? 'to' : 'from') : _('within'), rr === 0 ? rule : rule.substr(1));
 									rule = lid.protocol + ':' + rule
 								break;
 							}
@@ -3556,8 +3577,8 @@ var RULE_TOP_HOST = 1,
 					else
 						$(this).parent().hide().prev().hide();
 			});
-		}).on('click', '#show-active-rules', function () {
-			var hosts = $$('.section-host').map(function () { return this.getAttribute('data-host'); }), host, active = '', all_parts = [];
+		}).on('click', '#show-active-rules', function (event) {
+			var hosts = $$('.host-toggler').map(function () { return this.getAttribute('data-host'); }), host, active = '', all_parts = [];
 
 			if (!~this.className.indexOf('using')) {
 				for (var i = 0; host = hosts[i]; i++) {
@@ -3580,10 +3601,12 @@ var RULE_TOP_HOST = 1,
 				active += '^' + _('All Domains') + '$';
 			}
 						
-			$$('#domain-filter').val(active).data({
+			var df = $$('#domain-filter').val(active).data({
 				parts: all_parts,
 				active: active.length ? active : false
-			}).trigger('search');
+			});
+
+			if (!event.isTrigger) df.trigger('search');
 		}).on('click', '#view-rules', function (e) {
 			if (!self.methodAllowed) return false;
 			
@@ -3707,7 +3730,7 @@ var RULE_TOP_HOST = 1,
 			var adjuster = function (cb) {
 				self.adjust_columns();
 
-				if (cb) self.utils.timer.timeout('adjust_cb', cb, 200 * self.speedMultiplier * (Settings.getItem('expandColumns') && (((!Settings.getItem('noExpandSimple') && self.simpleMode) || self.temporaryExpertMode)) ? 1 : 0));
+				if (cb) self.utils.timer.timeout('adjust_cb', cb, 200 * self.speedMultiplier * (self.useSimpleMode() ? 0 : 1));
 			};
 
 			if (me.hasClass('hidden')) {
@@ -3758,35 +3781,13 @@ var RULE_TOP_HOST = 1,
 				}));
 			
 			self.busy = 0;
-		}).on('click', '.section-host', function (event) {
-			var parts = self.domain_parts(this.getAttribute('data-host')),
+		}).on('click', '.host-toggler', function (event) {
+			var pos = self.utils.position_poppy(this, 0, 14),
+					parts = self.domain_parts(this.getAttribute('data-host')),
 					x = parts.slice(0, 1),
 					y = parts.slice(1), active;
 
-			return self.add_disable_rule(this.getAttribute('data-host'), event.pageX, $(this).offset().top + 12, ~this.className.indexOf('disabled'));
-
-			x.push(x[0]);
-
-			parts = x.concat(y);
-			parts = parts.slice(0, -1).map(function (v) { return self.utils.escape_regexp(v); });
-
-			active = '^' + parts.join('$|^\\.') + '$|^' + _('All Domains') + '$';
-						
-			$$('#domain-filter').val(active).data('parts', parts);
-
-			self.rules.show();
-
-			self.utils.zoom($$('#rules-list'), null, function () {
-				setTimeout(function () {
-					var parts = $$('#domain-filter').trigger('search').data('parts') || [];
-				}, 50)
-			}, function() {
-				var parts = $$('#domain-filter').trigger('search').data('parts') || [];
-				
-				parts.forEach(function (part, i) {
-					$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + part + '"].hidden').click();
-				});
-			});
+			return self.add_disable_rule(this.getAttribute('data-host'), pos.left, pos.top, ~this.className.indexOf('disabled'));
 		}).on('click', '#edit-domains', function () {
 			$(this).toggleClass('edit-mode');
 						
@@ -3882,8 +3883,6 @@ var RULE_TOP_HOST = 1,
 		}).on('search', '#domain-filter', function () {
 			self.busy = 1;
 
-			$$('#rules-list li.odd, #rules-list li.even').removeClass('odd even');
-
 			$$('#show-active-rules').toggleClass('using', $(this).data('active') === this.value);
 
 			var d = $$('.domain-name:not(.visibility-hidden,.state-hidden,.visibility-hidden) span'), v;
@@ -3910,6 +3909,8 @@ var RULE_TOP_HOST = 1,
 
 			var visi, d = (visi = $$('#rules-list .domain-name:visible')).length,
 					r = $$('#rules-list .domain-name:visible + li > ul li:not(.none,.old-none,.used-none) span.rule:not(.hidden,.type-900)').length;
+
+			$$('#rules-list li.odd, #rules-list li.even').removeClass('odd even');
 
 			visi.filter(':odd').next().andSelf().addClass('odd');
 			visi.filter(':even:not(:first)').next().andSelf().addClass('even');
@@ -3938,7 +3939,7 @@ var RULE_TOP_HOST = 1,
 				break;
 			}
 			
-			$$('#domain-filter').trigger('search');
+			if ($$('#rule-container').is(':visible')) $$('#domain-filter').trigger('search');
 		}).on('click', '#show-temporary-rules', function () {
 			self.busy = 1;
 			
@@ -3989,7 +3990,7 @@ var RULE_TOP_HOST = 1,
 				break;
 			}
 
-			var time = +new Date() - off;
+			var time = Date.now() - off;
 
 			rules.each(function () {
 				var uses = $.data(this).uses;
@@ -4127,13 +4128,13 @@ var RULE_TOP_HOST = 1,
 					'<input id="clear-console" value="Clear" type="button" />',
 				'</div>'
 			].join(''), function () {
-				var l = $$('#jsconsolelogger'), ol = $$('.jsoutput').html(l.hide().html());
+				var l = $$('#jsconsolelogger'), ol = $$('.jsoutput:first').html(l.hide().html());
 				
 				l.find('.unread').removeClass('unread');
 				
 				$$('.console-unread').html(' 0').hide();
 				
-				$$('.poppy-content').scrollTop(9999999999999);
+				$$('.poppy-content:first').scrollTop(9999999999999);
 				
 				$$('#clear-console').click(function () {
 					$('li:not(#console-header)', l).remove();
@@ -4201,7 +4202,7 @@ var RULE_TOP_HOST = 1,
 			].join(''), function () {
 				$$('#name-snapshot').click(function () {
 					new Poppy(left, top, [
-						'<input class="purple" type="text" id="snapshot-name" value="', self.rules.snapshots.name(id), '" /> ',
+						'<input class="purple" type="text" id="snapshot-name" value="', self.rules.snapshots.name(id), '" placeholder="', _('Name'), '" /> ',
 						'<input type="button" id="save-name" value="', _('Save'), '" class="onenter purple" />'
 					].join(''), function () {
 						$$('#snapshot-name').focus().keypress(function (e) {
@@ -4238,7 +4239,7 @@ var RULE_TOP_HOST = 1,
 
 							var compare = self.rules.snapshots.compare(id, self.rules.current_rules), dir = this.getAttribute('data-type'), mes,
 									compare = $.extend(self.rules.data_types, compare[dir]),
-									cache_id = self.rules.snapshots.add(compare, 1, 'Comparison Cache ' + +new Date());
+									cache_id = self.rules.snapshots.add(compare, 1, 'Comparison Cache ' + self.utils.id());
 
 							self.rules.use_snapshot(cache_id);
 
@@ -4717,7 +4718,7 @@ var RULE_TOP_HOST = 1,
 				$$('#toggle-hidden').addClass('disabled').removeClass('hidden-visible');
 				$$('.column:not(.column-collapsed) .block-domain, .column:not(.column-collapsed) .allow-domain').show();
 
-				var id = +new Date();
+				var id = this.utils.id();
 
 				if (this.frames[jsblocker.href] && (jsblocker.host in this.frames[jsblocker.href]))
 					this.merger(this.frames[jsblocker.href][jsblocker.host], jsblocker);
@@ -4732,7 +4733,7 @@ var RULE_TOP_HOST = 1,
 					for (var host in this.frames[jsblocker.href]) {
 						if (host === jsblocker.host || host === 'blank') continue;
 
-						id = +new Date();
+						id = this.utils.id();
 
 						this.make_list('blocked', _('Allow'), this.frames[jsblocker.href][host], jsblocker.host, id);
 						this.make_list('allowed', _('Block'), this.frames[jsblocker.href][host], jsblocker.host, id);
@@ -4877,6 +4878,9 @@ var RULE_TOP_HOST = 1,
 									allowed: enabled ? this.rules.special_allowed(specials[i], event.message[2]) : -2
 								}
 							}
+
+							if (Settings.getItem('enableajax'))
+								result.ajax_intercept = { exclude: 1, value: Settings.getItem('alwaysBlockajax') === 'ask' ? 1 : 2, allowed: 0 };
 
 							event.message = result;
 						break theSwitch;
@@ -5049,67 +5053,6 @@ var RULE_TOP_HOST = 1,
 
 			case 'openPopover':
 				ToolbarItems.showPopover();
-			break;
-
-			case 'GM_openInTab':
-				this.utils.open_url(event.message);
-			break;
-
-			case 'GM_xmlhttpRequest':
-				var data = event.message, getHeaders = function (headers) {
-					var lines = headers.split(/\n/), o = {}, line;
-
-					for (var i = 0; i < lines.length; i++) {
-						line = lines[i].split(': ');
-						
-						if (line[0].length)
-							o[line.shift()] = line.join(': ');
-					}
-
-					return o;
-				};
-
-				data.data.error = function (res, status, req) {
-					MessageTarget(event, 'GM_xmlhttpRequest', {
-						type: 'GM_xmlhttpRequestComplete',
-						token: data.token,
-						action: 'onerror',
-						data: {
-							readyState: req.readyState,
-							responseHeaders: getHeaders(req.getAllResponseHeaders()),
-							responseText: res,
-							status: req.status,
-							statusText: status
-						}
-					});
-				};
-
-				data.data.success =  function (res, status, req) {
-					MessageTarget(event, 'GM_xmlhttpRequest', {
-						type: 'GM_xmlhttpRequestComplete',
-						token: data.token,
-						action: 'onload',
-						data: {
-							readyState: req.readyState,
-							responseHeaders: getHeaders(req.getAllResponseHeaders()),
-							responseText: res,
-							status: req.status,
-							statusText: status
-						}
-					});
-				};
-
-				$.ajax(data.data);
-			break;
-
-			case 'GM_registerMenuCommand':
-				if (!this.GM_contextMenu[event.message.ns]) this.GM_contextMenu[event.message.ns] = {};
-
-				this.GM_contextMenu[event.message.ns][event.message.caption] = event.message.id;
-			break;
-
-			case 'GM_contextMenuTarget':
-				this.GM_contextMenuTarget = event.message;
 			break;
 			
 			case 'doNothing': break;
@@ -5297,7 +5240,7 @@ var RULE_TOP_HOST = 1,
 				this.utils.open_url(ExtensionURL('settings.html#for-welcome'));
 
 				if (this.trialStart === 0)
-					this.trialStart = +new Date();
+					this.trialStart = Date.now();
 
 				if (Settings.getItem('enableSnapshots'))
 					this.rules.snapshots.add(this.rules.rules);
@@ -5378,18 +5321,10 @@ var RULE_TOP_HOST = 1,
 		}
 	},
 	command: function (event) {
-		if (~event.command.indexOf('GM_contextMenu:')) {
-			var p = event.command.split(':');
-
-			Tabs.messageActive('GM_contextMenu', [this.GM_contextMenuTarget, event.target.title, p[1]]);
-		} else if (event.command === 'loadElementsOnce')
+		if (event.command === 'loadElementsOnce')
 			Tabs.messageActive('loadElementsOnce');
 	},
 	contextmenu: function (event) {	
-		for (var ns in this.GM_contextMenu)
-			for (var caption in this.GM_contextMenu[ns])
-				event.contextMenu.appendContextMenuItem('GM_contextMenu:' + ns + ':' + this.GM_contextMenu[ns][caption], caption);
-
 		if (event.userInfo > 0)
 			event.contextMenu.appendContextMenuItem('loadElementsOnce', _('Load {1} Blocked Element' + (event.userInfo === 1 ? '' : 's'), [event.userInfo]));
 	}

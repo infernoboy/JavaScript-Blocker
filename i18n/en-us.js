@@ -58,6 +58,9 @@ Strings['en-us'] = {
 	/**/ 'Embeds': 'Embeds & objects',
 	/**/ 'Videos': 'Videos',
 	/**/ 'Specials': 'Other',
+	/**/ 'Ajax_posts': 'AJAX POSTs',
+	/**/ 'Ajax_gets': 'AJAX GETs',
+	/**/ 'Ajax_puts': 'AJAX PUTs',
 	/**/
 	/*** Appears in a poppy when clicking the ? to the left of a Blocked or Allowed item when expert
 	/*** features are disabled.
@@ -68,6 +71,7 @@ Strings['en-us'] = {
 	/****/ 'Beautify Script': 'Beautify Script', // Displayed when viewing the contents of a script. Also applies to unblockable scripts.
 	/**/ 'View frame Source': 'View Frame Source',
 	/**/ 'View image Source': 'View Image',
+	/**/ 'View ajax_get Source': 'View Request Response',
 	/**/ 'Show Matched Rules': 'Show Matched Rules',
 	/***** These appear as a header in the poppy.
 	/****/ 'Matched script Rules': 'Matched Script Rules',
@@ -76,6 +80,9 @@ Strings['en-us'] = {
 	/****/ 'Matched embed Rules': 'Matched Embed & Object Rules',
 	/****/ 'Matched video Rules': 'Matched Video Rules',
 	/****/ 'Matched special Rules': 'Matched Other Rules',
+	/****/ 'Matched ajax_get Rules': 'Matched AJAX GET Rules',
+	/****/ 'Matched ajax_post Rules': 'Matched AJAX POST Rules',
+	/****/ 'Matched ajax_put Rules': 'Matched AJAX PUT Rules',
 	/**/
 	/**/ 'Unblocked Script': 'Unblockable Script', // A header in a window displaying the contents of an unblockable script.
 	/**/
@@ -187,6 +194,7 @@ Strings['en-us'] = {
 	'Show Setup': 'Show Setup',
 	'View': 'View',
 	'Disable': 'Disable',
+	'Enable': 'Enable',
 	'Delete': 'Delete',
 	'Recover': 'Recover',
 	'Merge': 'Merge',
@@ -216,11 +224,18 @@ Strings['en-us'] = {
 	'New embed rule for {1}': 'New embed & object rule for <b>{1}</b>', // {1} = domain name
 	'New video rule for {1}': 'New video rule for <b>{1}</b>', // {1} = domain name
 	'New special rule for {1}': 'New other rule for <b>{1}</b>', // {1} = domain name
+	'New ajax_get rule for {1}': 'New AJAX GET rule for <b>{1}</b>', // {1} = domain name
+	'New ajax_post rule for {1}': 'New AJAX POST rule for <b>{1}</b>', // {1} = domain name
+	'New ajax_put rule for {1}': 'New AJAX PUT rule for <b>{1}</b>', // {1} = domain name
 	'New hide_script rule for {1}': 'New hide-script rule for <b>{1}</b>', // {1} = domain name
 	'New hide_frame rule for {1}': 'New hide-frame rule for <b>{1}</b>', // {1} = domain name
 	'New hide_embed rule for {1}': 'New hide-embed-&-object rule for <b>{1}</b>', // {1} = domain name
 	'New hide_video rule for {1}': 'New hide-video rule for <b>{1}</b>', // {1} = domain name
 	'New hide_special rule for {1}': 'New hide-other rule for <b>{1}</b>', // {1} = domain name
+	'New hide_ajax_get rule for {1}': 'New hide-AJAX-GET rule for <b>{1}</b>', // {1} = domain name
+	'New hide_ajax_post rule for {1}': 'New hide-AJAX-POST rule for <b>{1}</b>', // {1} = domain name
+	'New hide_ajax_put rule for {1}': 'New hide-AJAX-PUT rule for <b>{1}</b>', // {1} = domain name
+
 	'Show {1} more': 'Show {1} more', // {1} = number of hidden items in main window.
 	'Understood': 'Understood',
 	'Reset JS Blocker': 'Reset JS Blocker',
@@ -237,12 +252,18 @@ Strings['en-us'] = {
 	'Allowed videos': 'Allowed Videos',
 	'Allowed specials': 'Allowed Others',
 	'Allowed images': 'Allowed Images',
+	'Allowed ajax_gets': 'Allowed AJAX GETs',
+	'Allowed ajax_posts': 'Allowed AJAX POSTs',
+	'Allowed ajax_pus': 'Allowed AJAX PUTs',
 	'Blocked scripts': 'Blocked Scripts',
 	'Blocked frames': 'Blocked Frames',
 	'Blocked embeds': 'Blocked Embeds & Objects',
 	'Blocked videos': 'Blocked Videos',
 	'Blocked specials': 'Blocked Others',
 	'Blocked images': 'Blocked Images',
+	'Blocked ajax_gets': 'Blocked AJAX GETs',
+	'Blocked ajax_posts': 'Blocked AJAX POSTs',
+	'Blocked ajax_puts': 'Blocked AJAX PUTs',
 	'Block These': 'Block These',
 	'Allow These': 'Allow These',
 	'Hide These': 'Hide These',
@@ -292,6 +313,9 @@ Strings['en-us'] = {
 	'embeds': 'embeds and objects',
 	'videos': 'videos',
 	'specials': 'other',
+	'ajax_gets': 'AJAX GETs',
+	'ajax_posts': 'AJAX POSTs',
+	'ajax_puts': 'AJAX PUTs',
 	'Forgot': 'iForgot',
 	'Current Snapshot': 'Current Snapshot',
 	'Current Comparison': 'Current Comparison',
@@ -310,7 +334,7 @@ Strings['en-us'] = {
 	'Open Preview': 'Preview',
 	'Compare': 'Compare',
 	'Only in Snapshot': 'Only in Snapshot',
-	'Only in My Rules': 'Only in My Rules',
+	'Only in My Rules': 'Not in Snapshot',
 	'In Both': 'In Both',
 	'Show Rules': 'Show Rules',
 	'Snapshot Preview: {1}': 'Rules in Snapshot <b>{1}</b>',
@@ -335,6 +359,7 @@ Strings['en-us'] = {
 	'Loading embed': 'Loading embed&hellip;',
 	'Loading object': 'Loading object&hellip;',
 	'Loading image': 'Loading image&hellip;',
+	'Loading ajax_get': 'Loading request response&hellip;',
 	'Loading Rules': 'Loading Rules…',
 	'Copy below': 'Copy the below and save it to a file to create a backup.',
 	
@@ -389,12 +414,18 @@ Strings['en-us'] = {
 	'Adding a image Rule': 'Adding an Image Rule',
 	'Adding a special Rule': 'Adding a Rule',
 	'Adding a disable Rule': 'Adding a Disable/Enable Rule',
+	'Adding a ajax_get Rule': 'Adding an AJAX GET Rule',
+	'Adding a ajax_post Rule': 'Adding an AJAX POST Rule',
+	'Adding a ajax_put Rule': 'Adding an AJAX PUT Rule',
 	'Adding a hide_script Rule': 'Adding a Hide-Script Rule',
 	'Adding a hide_frame Rule': 'Adding a Hide-Frame Rule',
 	'Adding a hide_embed Rule': 'Adding a Hide-Embed-&-Object Rule',
 	'Adding a hide_video Rule': 'Adding a Hide-Video Rule',
 	'Adding a hide_image Rule': 'Adding a Hide-Image Rule',
 	'Adding a hide_special Rule': 'Adding a Hide-Other Rule',
+	'Adding a hide_ajax_get Rule': 'Adding a Hide-AJAX-GET Rule',
+	'Adding a hide_ajax_post Rule': 'Adding a Hide-AJAX-POST Rule',
+	'Adding a hide_ajax_put Rule': 'Adding a Hide-AJAX-PUT Rule',
 
 	'Adding a script Rule For {1}': 'Adding a Script Rule For {1}',
 	'Adding a frame Rule For {1}': 'Adding a Frame Rule For {1}',
@@ -402,12 +433,18 @@ Strings['en-us'] = {
 	'Adding a video Rule For {1}': 'Adding a Video Rule For {1}',
 	'Adding a image Rule For {1}': 'Adding an Image Rule For {1}',
 	'Adding a special Rule For {1}': 'Adding an Other Rule For {1}',
+	'Adding a ajax_get Rule For {1}': 'Adding an AJAX GET Rule For {1}',
+	'Adding a ajax_post Rule For {1}': 'Adding an AJAX POST Rule For {1}',
+	'Adding a ajax_put Rule For {1}': 'Adding an AJAX PUT Rule For {1}',
 	'Adding a hide_script Rule For {1}': 'Adding a Hide-Script Rule For {1}',
 	'Adding a hide_frame Rule For {1}': 'Adding a Hide-Frame Rule For {1}',
 	'Adding a hide_embed Rule For {1}': 'Adding a Hide-Embed-&-Object Rule For {1}',
 	'Adding a hide_video Rule For {1}': 'Adding a Hide-Video Rule For {1}',
 	'Adding a hide_image Rule For {1}': 'Adding a Hide-Image Rule For {1}',
 	'Adding a hide_special Rule For {1}': 'Adding a Hide-Other Rule For {1}',
+	'Adding a hide_ajax_get Rule For {1}': 'Adding a Hide-AJAX-GET Rule For {1}',
+	'Adding a hide_ajax_post Rule For {1}': 'Adding an Hide-AJAX-POST Rule For {1}',
+	'Adding a hide_ajax_put Rule For {1}': 'Adding an Hide-AJAX-PUT Rule For {1}',
 
 	'Editing a script Rule For {1}': 'Editing a Script Rule For {1}',
 	'Editing a frame Rule For {1}': 'Editing a Frame Rule For {1}',
@@ -415,12 +452,18 @@ Strings['en-us'] = {
 	'Editing a video Rule For {1}': 'Editing a Video Rule For {1}',
 	'Editing a image Rule For {1}': 'Editing an Image Rule For {1}',
 	'Editing a special Rule For {1}': 'Editing an Other Rule For {1}',
+	'Editing a ajax_get Rule For {1}': 'Editing an AJAX GET Rule For {1}',
+	'Editing a ajax_post Rule For {1}': 'Editing an AJAX POST Rule For {1}',
+	'Editing a ajax_put Rule For {1}': 'Editing an AJAX PUT Rule For {1}',
 	'Editing a hide_script Rule For {1}': 'Editing a Hide-Script Rule For {1}',
 	'Editing a hide_frame Rule For {1}': 'Editing a Hide-Frame Rule For {1}',
 	'Editing a hide_embed Rule For {1}': 'Editing a Hide-Embed-&-Object Rule For {1}',
 	'Editing a hide_video Rule For {1}': 'Editing a Hide-Video Rule For {1}',
 	'Editing a hide_image Rule For {1}': 'Editing a Hide-Image Rule For {1}',
 	'Editing a hide_special Rule For {1}': 'Editing a Hide-Other Rule For {1}',
+	'Editing a hide_ajax_get Rule For {1}': 'Editing a Hide-AJAX-GET Rule For {1}',
+	'Editing a hide_ajax_post Rule For {1}': 'Editing an Hide-AJAX-POST Rule For {1}',
+	'Editing a hide_ajax_put Rule For {1}': 'Editing an Hide-AJAX-PUT Rule For {1}',
 
 	/** MISC HEADERS **/
 	'JavaScript Blocker is disabled.': 'JavaScript Blocker is disabled.',
@@ -463,6 +506,7 @@ Strings['en-us'] = {
 	'block': 'block',
 	'hide': 'hide',
 	'within': 'within',
+	'to': 'to',
 	'from': 'from',
 	'matching': 'matching',
 	'others matching': 'others matching',
@@ -505,6 +549,9 @@ Strings['en-us'] = {
 	'ajax_intercept': 'AJAX POST/GET requests',
 		'ajax_intercept:0': 'AJAX POST/GET requests will be intercepted and you will be prompted to allow the action.',
 		'ajax_intercept:1': 'All AJAX requests are allowed automatically.',
+	'inline_scripts': 'Inline script execution',
+		'inline_scripts:0': 'Inline scripts will not be executed.',
+		'inline_scripts:1': 'Inline scripts will be executed.',
 
 	'Injected pre Script: {1}': 'Before Load: {1}',
 	'Injected post Script: {1}': 'After Load: {1}',
@@ -603,15 +650,18 @@ Strings['en-us'] = {
 	'Enable video blocker': 'Enable video blocker',
 	'Show a placeholder for blocked videos': 'Show a placeholder for blocked videos',
 	'Automatically block videos from:': 'Block videos from:',
-	'Enable DOM image blocker': 'Enable DOM image blocker',
-	'Show a placeholder for blocked images': 'Show a placeholder for blocked images',
-	'Automatically block images from:': 'Block images from:',
-	'Display alert() messages within the webpage instead of a popup dialog': 'Display alert() messages within the webpage instead of a popup dialog<br/><span class="aside">Modal alert dialogs</span>', // alert() is a function in javascript; do not localize.
-	'Disable confirm() popup dialogs and confirm actions automatically': 'Disable confirm() popup dialogs and confirm actions automatically<br/><span class="aside">Confirm dialogs</span>', // confirm() is a function in javascript; do not localize.
+	'Enable DOM image blocker': 'Enable image hider',
+	'Show a placeholder for blocked images': 'Show a placeholder for hidden images',
+	'Automatically block images from:': 'Hide images from:',
+	'Enable AJAX request blocker': 'Enable AJAX request blocker',
+	'Automatically block AJAX requests to:': 'Block AJAX requests to:',
+	'Display alert() messages within the webpage instead of a popup dialog': 'Display alert() messages within the webpage instead of a modal popup<br/><span class="aside">Modal alert dialogs</span>', // alert() is a function in javascript; do not localize.
+	'Disable confirm() popup dialogs and confirm actions automatically': 'Disable confirm() modal popups and confirm actions automatically<br/><span class="aside">Confirm dialogs</span>', // confirm() is a function in javascript; do not localize.
 	'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items': 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items<br/><span class="aside">Context menu overrides</span>',
 	'Prevent webpages from resizing the window and creating new windows with a custom size': 'Prevent webpages from resizing the window and creating new windows with a custom size<br/><span class="aside">Window resize functions</span>',
 	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete<br/><span class="aside">Autocomplete disablers</span>',
 	'Show a prompt when an AJAX request tries to POST or GET information': 'Let me confirm when an AJAX request is allowed to POST or GET information<br/><span class="aside">AJAX POST/GET requests</span>',
+	'Prevent inline scripts from being executed': 'Prevent inline scripts from being executed<br/><span class="aside">Inline script execution</span>',
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
 	'Disabled mode persist across Safari restarts': 'Disabled mode persist across Safari restarts',
@@ -695,8 +745,10 @@ Strings['en-us'] = {
 	// Automatically block items from...
 	'Different hostnames': 'Different hostnames',
 	'Different hosts &amp; subdomains': 'Different hosts &amp; subdomains',
-	'Nowhere': 'Blacklist only',
+	'Nowhere': 'Nowhere',
+	'Blacklist only': 'Blacklist only',
 	'Anywhere': 'Anywhere',
+	'Ask when neccessary': 'Ask when neccessary',
 
 	 // Snapshots
 	 'Snapshots description': 'Snapshots keeps track of all changes made to your rules. It lets you easily revert to different ' +
@@ -783,6 +835,9 @@ Strings['en-us'] = {
 	
 	'highlight help': 'Whitelist matches appear in green, blacklist matches in red, and standard rules in gray.',
 	'contextmenu_overrides help': 'Other extensions not being able to create custom menu items is an unfortunate side effect and cannot be prevented.',
+	'inline_scripts help': 'Injects the following meta tag into the webpage:<br/><br/><code>&lt;meta http-equiv="content-security-policy" content="default-src *; script-src *; style-src * \'unsafe-inline\'; object-src *" /&gt;</code><br/><br/>' +
+		'This does <b>not</b> guarantee that all scripts will be prevented from executing. For example: a webpage may send a header that overrides the meta tag, though this is highly unlikely to allow inline scripts. ' +
+		'This feature is available in Safari 6.1 or greater.',
 	'showUnblocked help': 'Some scripts on webpages are embedded in the page itself rather than loaded from an external resource. These scripts cannot be blocked and will always execute.',
 	'alwaysBlock help': [
 		'<p>If you visit "www.example.com"…</p>',
@@ -790,7 +845,9 @@ Strings['en-us'] = {
 				'"www.example.com", and "example.com".</p>',
 		'<p><b>Different hosts & subdomains</b> will allow only "www.example.com".</p>',
 		'<p><b>Blacklist only</b> will allow anything not blocked by the blacklist.</p>',
-		'<p><b>Anywhere</b> will allow nothing.</p>'].join(''),
+		'<p><b>Nowhere</b> will allow everything.</p>',
+		'<p><b>Anywhere</b> will allow nothing.</p>',
+		'<p><b>Ask when neccessary</b> will ask you to allow or deny the item if a rule was not found.</p>'].join(''),
 	
 	'simpleMode help': 'When enabled, a different rule set will be used.',
 	'simpleReferrer help': 'Adds the attribute <b>rel="noreferrer"</b> to anchor tags.', // <b>rel="noreferrer"</b> = do not localize.

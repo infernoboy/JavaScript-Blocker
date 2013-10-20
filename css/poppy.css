@@ -37,12 +37,12 @@
 
 .poppy {
 	position: absolute;
-	padding: 8px 3px;
+	padding: 5px 3px;
 	-webkit-border-radius: 6px;
 	z-index: 10000;
 	background: #fff;
 	border: 1px solid rgba(160,160,160,0.55);
-	box-shadow: 0 1px 14px rgba(0,0,0,0.16);
+	box-shadow: 0 0 6px rgba(0,0,0,0.14);
 	font-size: 8pt;
 	text-shadow: 0 1px 0 rgba(255,255,255,0.6);
 	-webkit-transition-property: -webkit-transform, opacity;
@@ -80,7 +80,7 @@
 		display: none;
 	}
 	.poppy .poppy-content {
-		padding: 0 7px;
+		padding: 3px 7px;
 		max-height: 340px;
 		max-width: 530px;
 		overflow-y: scroll;

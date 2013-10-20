@@ -5,8 +5,8 @@ var disabled = typeof beforeLoad === 'undefined' ? false : disabled;
 // POSSIBLE MEMORY LEAK HERE.
 
 if (!disabled) {
-var gm_injected = 0, special_actions = {
-	zoom: function () {
+var special_actions = {
+	zoom: function (v) {
 		document.addEventListener('DOMContentLoaded', function () {
 			document.body.style.setProperty('zoom', v + '%', 'important');
 		}, true);
@@ -21,31 +21,34 @@ var gm_injected = 0, special_actions = {
 			return window_open(URL, name, undefined, replace);
 		};
 	},
-	alert_dialogs: function () {
-		var enabled = v;
-
-		window.alert = function (a, text, html_allowed) {
+	alert_dialogs: function (enabled, args) {
+		window.alert = function (a, text, html_allowed, hkey) {
 			a = a === null ? '' : (typeof a === 'undefined' ? 'undefined' : a.toString());
 			text = text ? text.toString() : null;
 			
 			var html_verify = args[0],
 					cur_all = document.querySelectorAll('.jsblocker-alert'), top = 0,
 					ht = document.createElement('div'),
-					more = parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10) >= 536;
+					more = parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10) >= 536,
+					title = (text ? text.replace(/&/g, '&amp;').replace(/</g, '&lt;') : 'alert()'),
+					body = (!text || html_allowed !== html_verify ? a.replace(/&/g, '&amp;').replace(/</g, '&lt;') : a);	
 
 			ht.innerHTML = [
 				'<div class="jsblocker-alert-inner">',
 					'<a href="javascript:void(0);" class="jsblocker-close"></a>',
-					'<div class="jsblocker-alert-bg">', (text ? text.replace(/&/g, '&amp;').replace(/</g, '&lt;') : 'alert()'), '</div>',
-					'<div class="jsblocker-alert-text">', (!text || html_allowed !== html_verify ? a.replace(/&/g, '&amp;').replace(/</g, '&lt;') : a), '</div>',
+					'<div class="jsblocker-alert-bg">', title, '</div>',
+					'<div class="jsblocker-alert-text">', body, '</div>',
 				'</div>'].join('');
 			ht.className = 'jsblocker-alert';
 			ht.id = 'jsblocker-alert-' + (+new Date());
 			
-			document.documentElement.appendChild(ht);
+			if (document.documentElement.firstChild)
+				document.documentElement.insertBefore(ht, document.documentElement.firstChild);
+			else
+				document.documentElement.appendChild(ht);
 
 			ht.style.setProperty('top', -ht.offsetHeight + 'px');	
-			ht.style.setProperty('z-index', (cur_all.length ? 90000 - cur_all.length : 90000), 'important');	
+			ht.style.setProperty('z-index', (cur_all.length ? 9999999909 - cur_all.length : 9999999909), 'important');	
 
 			setTimeout(function (ht, now) {
 				var dur = '0.65s, 0.45s' + (more ? ', 0.55s' : '');
@@ -66,15 +69,16 @@ var gm_injected = 0, special_actions = {
 				ht.addEventListener('mousewheel', function (event) {
 					if (ht.removed) return;
 
-					if (event.wheelDeltaX) event.preventDefault();
+					// if (event.wheelDeltaX) event.preventDefault();
 
-					if (this.disallowMouseWheel || event.wheelDeltaY) return;
+					// if (this.disallowMouseWheel || event.wheelDeltaY) return;
 
 					clearTimeout(ht.resetTimeout);
 
 					var st = window.getComputedStyle(inn, null),
 							right = parseInt(st.getPropertyValue('right'), 10),
-							del = event.wheelDeltaX * (event.webkitDirectionInvertedFromDevice ? -1 : 1),
+							// del = event.wheelDeltaX * (event.webkitDirectionInvertedFromDevice ? -1 : 1),
+							del = 0,
 							nright = right + del;
 
 					if (nright > 0) nright = 0;
@@ -84,7 +88,7 @@ var gm_injected = 0, special_actions = {
 					ht.style.setProperty('-webkit-transition-duration', '0' + dur.substr(4));
 
 					inn.style.setProperty('right', nright + 'px', 'important');
-					ht.style.setProperty('opacity', per, 'important');
+					ht.style.setProperty('opacity');
 
 					if (per <= 0.1) {
 						ht.removed = 1;
@@ -96,7 +100,7 @@ var gm_injected = 0, special_actions = {
 					} else
 						ht.resetTimeout = setTimeout(function (ht, inn) {
 							inn.style.setProperty('right', '0px', 'important');
-							ht.style.setProperty('opacity', '1', 'important');
+							ht.style.setProperty('opacity', '1');
 						}, 500, ht, inn);
 
 					setTimeout(function (ht, more, dur) {
@@ -118,8 +122,6 @@ var gm_injected = 0, special_actions = {
 
 					for (var i = 0; all[i]; i++)
 						all_fixed.push(all[i].getAttribute('id'));
-
-					all_fixed.reverse();
 
 					all_fixed = all_fixed.slice(all_fixed.indexOf(ht.id) + 1);
 
@@ -188,7 +190,7 @@ var gm_injected = 0, special_actions = {
 		
 		jsblocker_block_context_override();
 	},
-	autocomplete_disabler: function () {
+	autocomplete_disabler: function (v, args) {
 		var bv = parseInt(args[0], 10);
 
 		document.addEventListener('DOMContentLoaded', function () {
@@ -218,7 +220,7 @@ var gm_injected = 0, special_actions = {
 				withNode(event.target);
 			}, true);
 	},
-	font: function () {
+	font: function (v) {
 		var s = document.createElement('style');
 		s.type = 'text/css';
 		s.id = 'jsblocker-css-' + (+new Date());
@@ -243,11 +245,11 @@ var gm_injected = 0, special_actions = {
 			window.postMessage('history-state-change', '*');
 		};
 	},
-	ajax_intercept: function () {
+	ajax_intercept: function (v, args) {
 		var ajax = {
 			open: XMLHttpRequest.prototype.open,
 			send: XMLHttpRequest.prototype.send
-		};
+		}, store = {};
 
 		XMLHttpRequest.prototype.open = function () {
 			this.intercept = arguments;
@@ -256,15 +258,20 @@ var gm_injected = 0, special_actions = {
 		}
 
 		XMLHttpRequest.prototype.send = function () {
-			var str = 'This page wants to ', allow = false;
+			var self = this, key = args[0], str = '', allow = false, id = (Date.now() + Math.random()).toString(36).replace(/\./, ''), a = document.createElement('a'), path = (this.intercept[1] instanceof Object) ? this.intercept[1].path : this.intercept[1];
+
+			store[id] = { req: this, args: arguments };
+
+			a.href = path;
 
 			switch(this.intercept[0]) {
 				case 'POST':
-					str += 'POST the following information to ' + this.intercept[1] + ":\n\n" + decodeURIComponent(Array.prototype.slice.call(arguments).join(' '));
+					str += '<p><b>Path</b><br/>' + path + "</p><p><b>Parameters</b><br/>" + decodeURIComponent(Array.prototype.slice.call(arguments).join(' ')) + '</p>';
 				break;
 
+				case 'PUT':
 				case 'GET':
-					str += 'GET ' + this.intercept[1];
+					str += '<p><b>Path</b><br/>' + path + '</p>';
 				break;
 
 				default:
@@ -272,10 +279,106 @@ var gm_injected = 0, special_actions = {
 				break;
 			}
 
-			var confirmed = allow ? true : confirm(str + "\n\nDo you want to allow this?");
+			if (!allow) {
+				var ajaxIntercept = new CustomEvent('JSBCommander', {
+					detail: {
+						key: args[0],
+						command: 'ajaxIntercept',
+						kind: 'ajax_' + this.intercept[0].toLowerCase(),
+						source: a.href,
+						id: id,
+						exclude: v === 1
+					}
+				});
 
-			if (confirmed)
-				ajax.send.apply(this, arguments);
+				document.addEventListener('ajax_handler_' + id, function (event) {
+					document.removeEventListener('ajax_handler_' + event.detail.id);
+
+					if (event.detail.allowed[1] < 0 && v === 1) {
+						var inlineAlert = new CustomEvent('JSBCommander', {
+							detail: {
+								key: args[0],
+								command: 'inlineAlert',
+								body: [str, '<p>',
+									'<a href="javascript:void(0);" class="' + id + ' jsb-allow" data-action="allowed" data-method="1" data-store="' + id + '">Allow</a> <span class="jsb-divider">|</span> ',
+									'<a href="javascript:void(0);" class="' + id + ' jsb-block" data-action="blocked" data-method="0" data-store="' + id + '">Block</a> ',
+								'</p>'].join(''),
+								title: 'AJAX ' + self.intercept[0] + ' Request'
+							}
+						});
+
+						document.addEventListener('click', function (event) {
+							if (event.target.className && ~event.target.className.indexOf(id)) {
+								var clicker = document.createEvent('HTMLEvents'), ac = event.target.getAttribute('data-action'), me = store[event.target.getAttribute('data-store')];
+								clicker.initEvent('click', true, true);
+
+								event.target.parentNode.parentNode.previousSibling.previousSibling.dispatchEvent(clicker);
+
+								var pushItem = new CustomEvent('JSBCommander', {
+									detail: {
+										key: key,
+										command: 'pushItem',
+										kind: 'ajax_' + me.req.intercept[0].toLowerCase(),
+										data: a.href,
+										which: 'hosts',
+										action: ac,
+										how: [parseInt(event.target.getAttribute('data-method'), 10), -1]
+									}
+								});
+
+								document.dispatchEvent(pushItem);
+
+								switch(ac) {
+									case 'allowed':
+										ajax.send.apply(me.req, me.args);
+									break;
+									
+									case 'blocked':
+										try {
+											me.req.abort();
+										} catch (e) {}
+									break;
+								}
+
+								delete store[event.target.getAttribute('data-store')];
+							}
+						}, false);
+
+						document.dispatchEvent(inlineAlert);
+					} else {
+						if (event.detail.allowed[0]) ajax.send.apply(store[event.detail.id].req, store[event.detail.id].args)
+						else try {
+							store[event.detail.id].req.abort();
+						} catch(e) {}
+					}
+				}, true);
+				
+				document.dispatchEvent(ajaxIntercept);
+			}
+		}
+	},
+	inline_scripts: function (v, args) {
+		if (parseInt(args[0], 10) >= 537) {
+			var meta = document.createElement('meta');
+			meta.setAttribute('http-equiv', 'content-security-policy');
+			meta.setAttribute('content', "default-src *; script-src *; style-src * 'unsafe-inline'; object-src *");
+		
+			if (document.documentElement.firstChild)
+				document.documentElement.insertBefore(meta, document.documentElement.firstChild);
+			else
+				document.documentElement.appendChild(meta);
+		}
+	},
+	CustomEvent: function () {
+		if (!window.CustomEvent) {
+			var CustomEvent = function ( event, params ) {
+				params = params || { bubbles: false, cancelable: false, detail: undefined };
+				var evt = document.createEvent( 'CustomEvent' );
+				evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+				return evt;
+			};
+
+			window.CustomEvent = CustomEvent;
 		}
 	}
 },
@@ -288,14 +391,19 @@ var appendScript = function (script, which, v, priv) {
 	s.setAttribute('data-ignore', window.accessToken);
 	s.setAttribute('data-special', which);
 	s.src = ['data:text/javascript,',
-		encodeURI(['(function() { var fn = ', script.toString(), ', anon = (new Function("v", "args", "accessKey", "which", "(" + fn.toString() + ")();"))',
+		encodeURI(['(', script.toString(), ')',
 		'(',
 			v !== undefined ? (typeof v === 'string' ? '"' + v + '"' : v) + ',': 'null,',
 			script.prototype && script.prototype.args ? JSON.stringify(script.prototype.args) + ',': 'null,',
 			'"', priv ? window.accessToken : 0, '",',
 			'"', which, '"',
-		'); })();'].join(''))].join('');
-	document.documentElement.appendChild(s);
+		');'].join(''))].join('');
+
+	if (document.documentElement.firstChild)
+		document.documentElement.insertBefore(s, document.documentElement.firstChild);
+	else
+		document.documentElement.appendChild(s);
+
 }
 
 var doSpecial = function (do_append, n, action, priv) {
@@ -304,7 +412,7 @@ var doSpecial = function (do_append, n, action, priv) {
 
 	if (v === true || parseInt(v, 10) || (typeof v === 'string' && v.length)) {
 		if (!((m = enabled_specials[n].allowed) % 2)) {
-			jsblocker.blocked.special.all.push([n, m]);
+			if (!enabled_specials[n].exclude) jsblocker.blocked.special.all.push([n, m]);
 			
 			if (!custom) {
 				if (do_append) appendScript(action, n, v, priv);
@@ -312,114 +420,12 @@ var doSpecial = function (do_append, n, action, priv) {
 			}
 		} else
 			if (m !== 84) {
-				jsblocker.allowed.special.all.push([n, m]);
+				if (!enabled_specials[n].exclude) jsblocker.allowed.special.all.push([n, m]);
 
 				if (custom) appendScript(action, n, true, priv);
 			}
 	}
 }
-
-var GM = function () {
-	// GreaseMonkey support functions
-	GM_xmlhttpRequestCallbacks = {},
-	GM_contextMenuCallbacks = {},
-	// VALUES
-	GM_getValue = function (name, def) {
-		var c = window.localStorage.getItem(gmName + name);
-
-		return c === null ? (def !== undefined ? def : null) : c;
-	},
-	GM_setValue = function (name, value) {
-		window.localStorage.setItem(gmName + name, value);
-	},
-	GM_deleteValue = function (name) {
-		window.localStorage.removeItem(gmName + name);
-	},
-	GM_listValues = function () {
-		var a = [];
-
-		for (var key in window.localStorage)
-			if (window.localStorage.hasOwnProperty(key) && key.indexOf(gmName) === 0)
-				a.push(key);
-		
-		return a;
-	},
-
-	// RESOURCES
-	GM_getResourceText = function (name) {
-
-	},
-	GM_getResourceURL = function (name) {
-
-	},
-
-	// OTHER
-	GM_addStyle = function (css) {
-		var style = document.createElement('style');
-		style.setAttribute('type', 'text/css');
-		style.innerHTML = css;
-
-		if (document.body)
-			document.body.appendChild(style);
-		else
-			document.documentElement.appendChild(style);
-	},
-	GM_log = function () {
-		console.debug.apply(console, arguments);
-	},
-	GM_openInTab = function (url) {
-		window.postMessage({
-			key: accessToken,
-			command: 'GM_openInTab',
-			data: url
-		}, '*');
-	},
-	GM_registerMenuCommand = function (caption, func, accessKey) {
-		GM_contextMenuCallbacks[caption] = func;
-
-		window.postMessage({
-			key: accessToken,
-			command: 'GM_registerMenuCommand',
-			data: {
-				ns: gmName,
-				caption: caption
-			}
-		}, '*');
-	},
-	GM_setClipboard = function () {
-		// Cannot be implemented.
-	},
-	GM_xmlhttpRequest = function (details) {
-		var token = Math.random().toString(36);
-
-		GM_xmlhttpRequestCallbacks[token] = details;
-
-		window.postMessage({
-			key: accessToken,
-			token: token,
-			command: 'GM_xmlhttpRequest',
-			data: JSON.stringify(details)
-		}, '*');
-	},
-	unsafeWindow = window;
-
-	window.addEventListener('message', function (event) {
-		if (event.data.type === 'GM_xmlhttpRequestComplete' && GM_xmlhttpRequestCallbacks[event.data.token]) {
-			try {
-				console.log('AJAX!!!!', event.data)
-				GM_xmlhttpRequestCallbacks[event.data.token][event.data.action](event.data.data);
-			} catch (e) {
-				console.error(e);
-			}
-		} else if (event.data.type === 'GM_contextMenu' && event.data.target === accessToken && event.data.ns === gmName)
-			GM_contextMenuCallbacks[event.data.caption]();
-	}, true);
-}
-
-GM = GM.toString();
-var p = GM.split('{');
-p.splice(0, 1);
-p[p.length - 1] = p[p.length - 1].substr(0, p[p.length - 1].length - 1);
 
 var parseSpecials = function (pre) {
 	if (pre)
@@ -430,26 +436,34 @@ var parseSpecials = function (pre) {
 		if (pre && ~n.indexOf('custompost')) continue;
 		if (!pre && !~n.indexOf('custompost')) continue;
 
-		doSpecial(1, n, "function (v, accessToken, gmName) {\n" + p.join('{') + "\n" + custom_special_actions[n].func + "\n}", 1);
+		doSpecial(1, n, "function (v, accessToken, gmName) {\n" + custom_special_actions[n].func + "\n}", 1);
 	}
 }
 
 special_actions.alert_dialogs.prototype.args = [window.accessToken || 1];
+special_actions.ajax_intercept.prototype.args = [window.accessToken || 1];
 special_actions.autocomplete_disabler.prototype.args = [window.bv || 0];
+special_actions.inline_scripts.prototype.args = [window.bv || 0];
 
 if (typeof beforeLoad !== 'undefined' && !disabled) {
-	var customScripts = ResourceCanLoad(beforeLoad, ['customScripts']);
+	appendScript(special_actions.history_fix, 'history_fix');
+	appendScript(special_actions.CustomEvent, 'CustomEvent');
 
-	for (var cp in customScripts.pre)
+	var customScripts = ResourceCanLoad(beforeLoad, ['customScripts']), specials = ['inline_scripts'];
+
+	for (var cp in customScripts.pre) {
 		custom_special_actions[cp] = customScripts.pre[cp];
 
-	for (var pc in customScripts.post)
+		specials.push(cp);
+	}
+
+	for (var pc in customScripts.post) {
 		custom_special_actions[pc] = customScripts.post[pc];
 
-	var specials = [];
+		specials.push(pc);
+	}
 
 	for (var w in special_actions) specials.push(w);
-	for (var q in custom_special_actions) specials.push(q);
 
 	var enabled_specials = ResourceCanLoad(beforeLoad, ['enabledSpecials', specials, jsblocker.href]);
 
@@ -458,7 +472,5 @@ if (typeof beforeLoad !== 'undefined' && !disabled) {
 	document.addEventListener('DOMContentLoaded', function () {
 		parseSpecials(false);
 	}, true);
-
-	appendScript(special_actions.history_fix, 'history_fix');
 }
 }

@@ -514,6 +514,19 @@ JB.updater = function () {
 		case v < 165: // 4.0.3
 			Settings.removeItem('enablespecial');
 
+			self.installedBundle = 165;
+
+			self.updater();
+		break;
+
+		case v < 168: // 4.0.5
+			if (Settings.getItem('enable_special_ajax_intercept'))
+				Settings.setItem('alwaysBlockajax', 'ask');
+
+			Settings.removeItem('enable_special_ajax_intercept');
+			Settings.removeItem('expandColumns');
+			Settings.removeItem('noExpandSimple');
+
 		case v < this.bundleid:
 			this.donate();
 

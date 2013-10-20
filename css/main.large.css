@@ -97,3 +97,22 @@ body.simple #main ul.show-per-host li span {
 	body.simple #main .column.expanded ul.show-per-host li span {
 		max-width: 91%;
 	}
+
+.section-host {
+	max-width: 426px;
+}
+	body.simple .section-host {
+		max-width: 326px;
+	}
+
+.filter-bar .text-filter,
+.filter-bar .li-text-filter {
+	width: 495px;
+}
+	body.simple .filter-bar .text-filter,
+	body.simple .filter-bar .li-text-filter {
+		width: 395px;
+	}
+ul li > span {
+	height: 22px;
+}

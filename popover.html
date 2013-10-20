@@ -75,7 +75,7 @@
 
 		<div id="rules-list" class="whoop">
 			<div class="info-container">
-				<p class="misc-info" id="rule-counter" data-i18n="{1} domains, {2} rules"></p>
+				<p class="misc-info" id="rule-counter" data-i18n="{1} domains, {2} rules" data-i18n-fill="[0,0]"></p>
 				<p class="misc-info snapshot-info"></p>
 				<input class="orange" type="button" value=" " id="rules-list-back" data-i18n="Close Rules List" />
 			</div>
@@ -190,7 +190,8 @@
 			<div class="host-section" id="host-section-<%=self.id%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>">
 				<div class="host-section-host">
 					<span class="label"><% if(self.is_main) { %><%=_('Main host')%><% } else { %><%=_('Frame host')%><% } %></span><span class="host-divider">&nbsp;</span>
-					<a href="javascript:void(0);" class="section-host <%=(self.disabled ? 'disabled' : '')%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>"><%=(self.host === 'blank' && !self.is_main ? 'blank - ' + self.host_host : self.host)%></a>
+					<span class="section-host"><%=(self.host === 'blank' && !self.is_main ? 'blank - ' + self.host_host : self.host)%></span>
+					<input type="button" class="host-toggler <%=(self.disabled ? 'disabled' : '')%>" value="<%=(self.disabled ? _('Enable') : _('Disable'))%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>" />
 				</div>
 
 				<% if (self.disabled) { %>

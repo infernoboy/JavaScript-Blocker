@@ -5,10 +5,10 @@
  ***************************************/
 
 var Strings = {},
-		_ = function (string, args) {
+		_ = function (string, args, no_append) {
 	var s, load_language = Strings.getLanguage();
 		
-	s = Strings[load_language] && (string in Strings[load_language]) ? Strings[load_language][string] : Strings['en-us'][string] || string + ':NOT_LOCALIZED';
+	s = Strings[load_language] && (string in Strings[load_language]) ? Strings[load_language][string] : Strings['en-us'][string] || string + (no_append ? '' : ':NOT_LOCALIZED');
 	
 	if (args) {
 		for(var i = 1; i <= args.length; i++) {

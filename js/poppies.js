@@ -13,6 +13,7 @@ JB.poppies = {
 			me: this,
 			main: main,
 			modal: this[2],
+			time: $$('#donation-id').length ? 0.001 : null,
 			content: [
 				'<p class="misc-info">', _('Donation Verification'), '</p>',
 				(this.length === 5) ? '<p class="error">' + this[3] + '</p>' : '',
@@ -22,7 +23,7 @@ JB.poppies = {
 				'<p><input type="text" placeholder="', _('PayPal Email Address'), '" id="donation-id" /> ',
 				'<input type="button" value="', _('Continue'), '" id="donation-confirm" class="onenter" /></p>',
 				'<p><a class="outside" href="http://javascript-blocker.toggleable.com/donate ">', _('Make a Donation'), '</a> <span class="label">￨</span> ',
-				'<a id="unlock-free" href="javascript:void(0);">', _('Unlock Without Contributing'), '</a> <span class="label">￨</span> ',
+				Settings.getItem('donationVerified') !== 777 ? ['<a id="unlock-free" href="javascript:void(0);">', _('Unlock Without Contributing'), '</a> <span class="label">￨</span> '].join('') : '',
 				'<a class="outside" href="mailto:travis@toggleable.com?subject=I forgot my JavaScript Blocker activation information!&body=Help me out!">', _('Forgot'), '</a></p>'].join(''),
 			onshowstart: function () {
 				var did = $$('#donation-id');
@@ -31,9 +32,8 @@ JB.poppies = {
 				did[0].selectionEnd = did.val().length;
 				
 				$$('#donation-confirm').click(function (event) {
-					var id = $$('#donation-id').val().substr(0, 100);
-				
-					$.get(zoo.url + encodeURIComponent(id) + '&install=' + encodeURIComponent(SettingStore.getItem('installID'))).success(function (data) {
+					var id = $$('#donation-id').val().substr(0, 100),
+							done = function (data) {
 						var datai = parseInt(data, 10),
 								error = null;
 						
@@ -68,9 +68,14 @@ JB.poppies = {
 						
 						if (error)
 							new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], error, id], main));
-					}).error(function (req) {
-						var text = (req.status === 0 || req.status === 404) ? 'Unable to connect to activation server at this time. The server may be down or your firewall may be blocking the connection. ' +
-							'Please ensure outgoing connections to port 160 of lion.toggleable.com are allowed.' : req.statusText;
+					};
+				
+					$.get(zoo.url + encodeURIComponent(id) + '&install=' + encodeURIComponent(SettingStore.getItem('installID')))
+					.success(done)
+					.error(function (req) {
+						if (req.status === 0 || req.status === 404) return done(10);
+
+						var text = req.statusText;
 
 						new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], 'Error ' + req.status + ': ' + text, id], main));
 					});
@@ -89,6 +94,7 @@ JB.poppies = {
 						$$('#go-back').click(function () {
 							$$('#unlock').click();
 						}).siblings('#continue').click(function () {
+							JB.installedBundle = JB.bundleid;
 							JB.donationVerified = 777;
 							JB.popover_current = null;
 
@@ -227,6 +233,7 @@ JB.poppies = {
 					'<input class="delete" type="button" value="', _('Delete'), '" id="snapshot-delete" />'
 				].join('') : '',
 				'<div class="divider" style="margin:7px 0 6px;"></div>',
+				'<p class="misc-info">', _('Show Rules'), '</p>',
 				'<input class="purple" type="button" value="', _('Only in Snapshot'), '" id="compare-left" data-type="left" /> ',
 				'<input class="purple" type="button" value="', _('Only in My Rules'), '" id="compare-right" data-type="right" /> ',
 				'<input class="purple" type="button" value="', _('In Both'), '" id="compare-both" data-type="both" /> ',

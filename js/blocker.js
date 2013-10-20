@@ -11,8 +11,21 @@ var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPh
 		blank = window.location.href === 'about:blank',
 		accessToken = Math.random().toString(36).substr(2),
 		bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
-		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '&about:blank' + +new Date()) : false,
+		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '-' + makeid()) : false,
+		alert_history = {},
 		disabled = ResourceCanLoad(beforeLoad, ['disabled', pageHost()]);
+
+if (!window.CustomEvent)
+	(function () {
+		function CustomEvent ( event, params ) {
+			params = params || { bubbles: false, cancelable: false, detail: undefined };
+			var evt = document.createEvent( 'CustomEvent' );
+			evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+			return evt;
+		};
+
+		window.CustomEvent = CustomEvent;
+	})();
 
 function pageHost(not_real) {
 	if (parentURL) return parentURL;
@@ -76,6 +89,7 @@ function createPlaceholder(e, url) {
 	var pl, st, pl, i, p, w, pw, pB, p2, t, o, parsed = parseURL(url), proto = activeProtocol(url), host = parsed.host,
 			pr = ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
 			pa = parsed.pathname.replace(/</g, '&lt;').replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&(?!lt;)/g, '&<wbr />').replace(/=/g, '=<wbr />'),
+			se = parsed.search.replace(/</g, '&lt;').replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&(?!lt;)/g, '&<wbr />').replace(/=/g, '=<wbr />'),
 			place =  [
 				'<div class="jsblocker-node-wrap">',
 					'<p class="jsblocker-node">', e.nodeName.toLowerCase(), '</p>',
@@ -84,7 +98,7 @@ function createPlaceholder(e, url) {
 				'<p class="jsblocker-url">',
 					'<span class="jsblocker-protocol">', proto, ~['about', 'javascript', 'data'].indexOf(proto) ? ':' : '://', '</span>',
 					'<span class="jsblocker-host">', ~['about', 'javascript', 'data'].indexOf(proto) ? '' : host.replace(/\./g, '.<wbr />'), '<wbr /></span>',
-					'<span class="jsblocker-path">', pa, '</span>',
+					'<span class="jsblocker-path">', pa, se, '</span>',
 				'</p>'].join(''),
 			pl = document.createElement('div');	
 
@@ -169,6 +183,9 @@ kinds.EMBED = ['embed', ph];
 kinds.OBJECT = ['embed', ph];
 kinds.VIDEO = ['video', ph];
 kinds.IMG = ['image', ph];
+kinds.AJAX_POST = ['ajax_post'];
+kinds.AJAX_PUT = ['ajax_put'];
+kinds.AJAX_GET = ['ajax_get'];
 
 for (var kind in kinds) {
 	jsblocker.allowed[kinds[kind][0]] = { all: [], hosts: [] }
@@ -229,7 +246,7 @@ function getAbsoluteURL(url) {
 	return parseURL(url).href;
 }
 
-function canLoad(event) {
+function canLoad(event, exclude) {
 	var el = event.target ? event.target : event,
 			node = el.nodeName.toUpperCase();
 
@@ -241,7 +258,7 @@ function canLoad(event) {
 		if (kind in alwaysDo) {
 			if (!alwaysDo[kind] && event.preventDefault) event.preventDefault();
 			return alwaysDo[kind];
-		} else if (event.target) {									
+		} else if (event.target) {		
 			if (source && source.length)
 				use_source = source, host = activeHost(source, 1);
 			else if (node !== 'OBJECT')
@@ -264,16 +281,17 @@ function canLoad(event) {
 					isAllowed = allo[0],
 					mo = isAllowed || !event.preventDefault ? 'allowed' : 'blocked';
 
+
 			if (allo[1] === -84) {
 				alwaysDo[kind] = isAllowed;
-				return isAllowed;
+				return allo;
 			}
 
 			did_something = 1;
 
 			if (!isAllowed && event.preventDefault)	event.preventDefault();
 			
-			jsblocker[mo][kind].all.push([use_source, allo[1], event.unblockable || false]);
+			if (exclude !== true || allo[1] >= 0) jsblocker[mo][kind].all.push([use_source, allo[1], event.unblockable || false]);
 		
 			if (!~jsblocker[mo][kind].hosts.indexOf(host)) jsblocker[mo][kind].hosts.push(host);
 
@@ -293,6 +311,8 @@ function canLoad(event) {
 
 	if (did_something)
 		ready(event);
+
+	return allo;
 }
 
 function ready(event) {
@@ -411,20 +431,6 @@ function messageHandler(event) {
 			if (window !== window.top)
 				GlobalPage.message('addFrameData', [jsblocker.href, jsblocker]);
 		break;
-
-		case 'GM_xmlhttpRequest':
-			window.postMessage(event.message, '*');
-		break;
-
-		case 'GM_contextMenu':
-			if (window.accessToken === event.message[0])
-				window.postMessage({
-					type: 'GM_contextMenu',
-					ns: event.message[2],
-					target: window.accessToken,
-					caption: event.message[1]
-				}, '*');
-		break;
 	}
 }
 
@@ -500,6 +506,10 @@ function prepareAnchor(anchor, i) {
 	}
 }
 
+function makeid() {
+	return (Date.now() + Math.random()).toString(36).replace(/\./, '');
+}
+
 function prepareFrames() {
 	var iframes = document.getElementsByTagName('iframe'),
 			frames = document.getElementsByTagName('frame');
@@ -562,35 +572,50 @@ function windowMessenger(event) {
 			} else
 				fr.setAttribute('data-jsblocker_url', url);
 		}
-	} else if (event.data instanceof Object) {
-		if (event.data.command && event.data.key === window.accessToken) {
-			switch (event.data.command) {
-				case 'GM_openInTab':
-					GlobalPage.message(event.data.command, event.data.data);
-				break;
+	}
+}
 
-				case 'GM_xmlhttpRequest':
-					GlobalPage.message(event.data.command, {
-						token: event.data.token,
-						data: JSON.parse(event.data.data)
-					});
-				break;
+function commandHandler(event) {
+	if (event.detail.command && event.detail.key === window.accessToken) {
+		switch (event.detail.command) {
+			case 'ajaxIntercept':
+				var b = JSON.parse(JSON.stringify(beforeLoad));
 
-				case 'GM_registerMenuCommand':
-					GlobalPage.message(event.data.command, {
-						ns: event.data.data.ns,
-						caption: event.data.data.caption,
-						id: Math.random().toString(36).substr(2)
-					});
-				break;
-			}
- 		}
+				b.url = event.detail.source;
+				b.preventDefault = function () {};
+				b.target = {
+					nodeName: event.detail.kind,
+					getAttribute: function () { return null; },
+					setAttribute: function () {}
+				};
+
+				var e = new CustomEvent('ajax_handler_' + event.detail.id, {
+					detail: {
+						id: event.detail.id,
+						allowed: canLoad(b, event.detail.exclude)
+					}
+				});
+
+				document.dispatchEvent(e);
+			break;
+
+			case 'pushItem':
+				jsblocker[event.detail.action][event.detail.kind].all.push([event.detail.data, event.detail.how[1], false]);
+
+				if (event.detail.which === 'hosts' && !~jsblocker[event.detail.action][event.detail.kind].hosts.indexOf(event.detail.data))
+					jsblocker[event.detail.action][event.detail.kind].hosts.push(event.detail.data);
+
+				GlobalPage.message('updatePopover', jsblocker);
+			break;
+
+			case 'inlineAlert':
+				special_actions.alert_dialogs(1, [window.accessToken])(event.detail.body, event.detail.title, event.detail.key, event.detail.hkey);
+			break;
+		}
 	}
 }
 
 function contextmenu(event) {
-	GlobalPage.message('GM_contextMenuTarget', window.accessToken);
-
 	Events.setContextMenuEventUserInfo(event, event.userInfo || document.querySelectorAll('.jsblocker-placeholder').length);
 }
 
@@ -637,4 +662,5 @@ if (!disabled) {
 	document.addEventListener('DOMContentLoaded', prepareAnchors, true);
 	document.addEventListener('DOMContentLoaded', prepareFrames, true);
 	document.addEventListener('beforeload', canLoad, true);
+	document.addEventListener('JSBCommander', commandHandler, true);
 }

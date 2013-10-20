@@ -59,7 +59,7 @@
 		}
 	.jsblocker-url {
 		margin-left: 0 !important;
-		top: 7px !important;
+		top: 15px !important;
 		margin-top: 0 !important;
 		position: relative !important;
 		visibility: hidden !important;
@@ -81,6 +81,12 @@
 	}
 
 .jsblocker-alert {
+	color: initial !important;
+	font: initial !important;
+	font-size: 8pt !important;
+}
+
+.jsblocker-alert {
 	position: fixed !important;
 	top: 0;
 	right: 0;
@@ -89,27 +95,31 @@
 	opacity: 0;
 	padding-bottom: 4px !important;
 	overflow: hidden !important;
-	font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif !important;
-	color: #3f3f3f !important;
 }
+	.jsblocker-alert * {
+		font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif !important;
+		color: #3a3a3a !important;
+		font-size: 8pt !important;
+	}
+	.jsblocker-alert:hover .jsblocker-close {
+		opacity: 1;
+	}
 	.jsblocker-alert p {
 		margin-bottom: 8px;
 	}
 	.jsblocker-alert-inner {
 		-webkit-transform: perspective(500px) rotateX(-67deg);
 		-webkit-transition: -webkit-transform 0.45s ease-out, -webkit-filter 2s;
-		background: -webkit-linear-gradient(top, #ffffff, #f0f0f0) !important;
-		margin: 10px 15px 16px !important;
+		background: url(../Icon-lighter.png) 260px 4px no-repeat, -webkit-linear-gradient(top, #ffffff, #fafafa) !important;
+		background-size: 24px 24px, auto auto !important;
+		margin: 10px 10px 16px !important;
 		padding: 7px 5px 10px 10px !important;
 		z-index: 0 !important;
 		-webkit-border-radius: 5px !important;
-		box-shadow: 0 5px 15px rgba(0,0,0,0.4) !important;
-		border: 1px solid rgba(0,0,0,0.45) !important;
-		border-left-color: rgba(0,0,0,0.32) !important;
-		border-right-color: rgba(0,0,0,0.32) !important;
-		border-top-color: rgba(0,0,0,0.23) !important;
+		box-shadow: 0 0 6px rgba(0,0,0,0.14) !important;
+		border: 1px solid rgba(160,160,160,0.55) !important;
 		overflow: hidden !important;
-		opacity: 0.97 !important;
+		opacity: 1 !important;
 		position: relative !important;
 		right: 0;
 	}
@@ -124,7 +134,7 @@
 	.jsblocker-close {
 		opacity: 0;
 		position: absolute !important;
-		top: 3px !important;
+		top: 4px !important;
 		right: 3px !important;
 		-webkit-transition: opacity 0.15s !important;
 		-webkit-user-select: none !important;
@@ -150,6 +160,28 @@
 		text-shadow: 0 1px 0 rgba(255,255,255,1) !important;
 		line-height: 1.4 !important;
 	}
+	.jsblocker-alert-text .jsb-divider {
+		color: #ccc !important;
+	}
+	.jsblocker-alert-text p {
+		margin: 0 0 5px !important;
+		padding: 0 !important;
+	}
+	.jsblocker-alert-text a.jsb-allow {
+		color: #008913 !important;
+	}
+	.jsblocker-alert-text a.jsb-block {
+		color: #920101 !important;
+	}
+	.jsblocker-alert-text a {
+		cursor: pointer !important;
+		color: #0064E3 !important;
+		text-decoration: none !important;
+		font-weight: bold !important;
+	}
+		.jsblocker-alert-text a:hover {
+			color: #0B37B4 !important;
+		}
 	.jsblocker-alert-bg {
 		margin-bottom: 5px !important;
 		font-size: 9pt !important;
@@ -159,4 +191,7 @@
 		-webkit-user-select: none !important;
 		cursor: default !important;
 		z-index: 1 !important;
+	}
+	.jsblocker-alert-text b {
+		font-weight: bold !important;
 	}

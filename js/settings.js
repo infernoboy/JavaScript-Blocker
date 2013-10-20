@@ -142,9 +142,9 @@ $.extend(Settings, {
 
 			Settings.set_value(setting, (this.type === 'checkbox') ? (Settings.settings[group][setting].opposite ? !this.checked : this.checked) : this.value);
 		}).on('click', 'input[type="button"]', function () {
-			if (!$(this).parents('li').hasClass('single-click') && !self.confirm_click(this)) return false;
+			if (!$(this).parents('li').hasClass('single-click') && !~this.className.indexOf('single-click') && !self.confirm_click(this)) return false;
 
-			if (this.className === 'edit-custom') {
+			if (~this.className.indexOf('edit-custom')) {
 				var li = $(this).parent(),
 						scripts = JSON.parse(Settings.current_value('custom' + li.data('kind') + 'Scripts')),
 						name = prompt(_('Enter a name for the script.'), li.data('name'));
@@ -163,7 +163,7 @@ $.extend(Settings, {
 						window.location.reload();
 					}
 				}
-			} else if (this.className === 'remove-custom') {
+			} else if (~this.className.indexOf('remove-custom')) {
 				var li = $(this).parent();
 
 				GlobalPage.message('removeCustomScript', [li.data('kind'), li.data('id')]);
@@ -328,6 +328,7 @@ $.extend(Settings, {
 							if (!~placed_headers.indexOf(section)) {
 								placed_headers.push(section);
 								set.header = _(Settings.toolbar_items[section]);
+								set.search_result = 1;
 							}
 
 							li = Settings.make_setting(section, setting, set, ul);
@@ -343,9 +344,7 @@ $.extend(Settings, {
 			if (li) head.parent().hide()
 			else head.parent().show();
 			
-			ul.find('.extras:gt(0)').remove().end().find('.description').remove().end().find('.divider').remove();
-
-			if (val === 'welcome') $('#for-welcome').click();
+			ul.find('.extras:gt(0)').remove().end().find('.description').remove().end().find('.divider:not(.search-divider)').remove().end().find('.search-divider:first').remove();
 		}).keydown(function (e) {
 			if (e.which === 16) speedMultiplier = !Settings.current_value('animations') ? 0.001 : 20;
 		}).keyup(function (e) {
@@ -394,12 +393,16 @@ $.extend(Settings, {
 		else if (setting === 'language' && !no_reload)
 			window.location.reload();
 
-		var ul = $('section.active').find('ul').empty(),
-				sec = ul.end().attr('id');
+		if ($('#toolbar li.selected').is('#for-search'))
+			$('#search-box').trigger('search');
+		else {
+			var ul = $('section.active').find('ul').empty(),
+					sec = ul.end().attr('id');
+			
+			for (var setting in Settings.settings[sec])
+				Settings.make_setting(sec, setting, Settings.settings[sec][setting], ul);
+		}
 		
-		for (var setting in Settings.settings[sec])
-			Settings.make_setting(sec, setting, Settings.settings[sec][setting], ul);
-
 		GlobalPage.message('aboutPage');
 	},
 	clear: function () {
@@ -418,6 +421,9 @@ $.extend(Settings, {
 		
 		current = Settings.current_value(setting);
 		current = setting_item.opposite ? !current : current;
+
+		if (setting_item.search_result)
+			$('<li class="divider search-divider" />').appendTo(sec);
 
 		if (setting_item.extras)
 			$('<li class="extras" />').html('<div class="label">' + _('Donator-only features') + '</div><br style="clear:both;" />').appendTo(sec);
@@ -543,7 +549,7 @@ $.extend(Settings, {
 				var str = [
 					'<li>',
 						'<span>', pre[key].name.replace(/&/g, '&amp;').replace(/</g, '&lt;'), '</span> ',
-						'<input type="button" class="remove-custom" value="Remove" /> <input type="button" class="edit-custom" value="Edit" />',
+						'<input type="button" class="remove-custom delete" value="', _('Remove'), '" /> <input type="button" class="edit-custom single-click" value="', _('Edit'), '" />',
 						'<div class="divider small"></div>',
 					'</li>'
 				].join('');
