@@ -6,12 +6,39 @@
 
 "use strict";
 
-var beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
-		random = +new Date(),
-		blank = window.location.href === 'about:blank',
-		accessToken = Math.random().toString(36).substr(2),
+var blank = window.location.href === 'about:blank',
+		Token = {
+			_tokens: {},
+			generate: function () {
+				return Math.random().toString(36).substr(2);
+			},
+			create: function (value, keep) {
+				var t = this.generate();
+
+				this._tokens[t] = {
+					value: value || undefined,
+					keep: !!keep
+				};
+
+				if (!keep)
+					setTimeout(function (self, to) {
+						delete self._tokens[to];
+					}, 120000, this, t);
+
+				return t;
+			},
+			valid: function (token, value) {
+				return (token && this._tokens[token] && this._tokens[token].value === value);
+			},
+			expire: function (token, not_kept) {
+				if (this._tokens[token] && (!not_kept || !this._tokens[token].keep))
+					delete this._tokens[token];
+			}
+		},
+		beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
+		accessToken = Token.generate(),
 		bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
-		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '-' + makeid()) : false,
+		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '-' + Token.generate()) : false,
 		alert_history = {},
 		disabled = ResourceCanLoad(beforeLoad, ['disabled', pageHost()]);
 
@@ -60,16 +87,13 @@ function setCSSs(e, p, not_important) {
 
 function fitFont(e, f) {
 	var fs = 22, maxH = e.offsetHeight, maxW = e.offsetWidth - 10, text = e.querySelector('.jsblocker-node'),
-			text2 = e.querySelector('.jsblocker-node-two'), wr = e.querySelector('.jsblocker-node-wrap'), tH, tW;
+			wr = e.querySelector('.jsblocker-node-wrap'), tH, tW;
 	
 	text.style.setProperty('opacity', '0.5', 'important')
-	text2.style.setProperty('opacity', '0.5', 'important')
 	
 	do {
 		text.style.setProperty('font-size', fs + 'pt', 'important');
-		text2.style.setProperty('font-size', fs + 'pt', 'important');
 		wr.style.setProperty('margin-top', '-' + ((text.offsetHeight / 2) - 3) + 'px', 'important');
-		text2.style.setProperty('margin-left', '-' + Math.round(text.offsetWidth / 2) + 'px', 'important');
 		tH = text.offsetHeight;
 		tW = text.offsetWidth;
 		fs -= 1;
@@ -84,16 +108,16 @@ function fitFont(e, f) {
 }
 
 function createPlaceholder(e, url) {
-	if (!e.parentNode || !url) return false;
+	if (!e.parentNode || !url || e.nodeName === 'IFRAME') return false;
 		
 	var pl, st, pl, i, p, w, pw, pB, p2, t, o, parsed = parseURL(url), proto = activeProtocol(url), host = parsed.host,
+			types = { 'application/x-shockwave-flash': 'flash', 'application/pdf': 'PDF document' }, type = e.getAttribute('type'),
 			pr = ['top', 'right', 'bottom', 'left', 'z-index', 'clear', 'float', 'vertical-align', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', '-webkit-margin-before-collapse', '-webkit-margin-after-collapse'],
 			pa = parsed.pathname.replace(/</g, '&lt;').replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&(?!lt;)/g, '&<wbr />').replace(/=/g, '=<wbr />'),
 			se = parsed.search.replace(/</g, '&lt;').replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&(?!lt;)/g, '&<wbr />').replace(/=/g, '=<wbr />'),
 			place =  [
 				'<div class="jsblocker-node-wrap">',
-					'<p class="jsblocker-node">', e.nodeName.toLowerCase(), '</p>',
-					'<p class="jsblocker-node-two">', e.nodeName.toLowerCase(), '</p>',
+					'<p class="jsblocker-node">', e.nodeName.toLowerCase(), type ? '<br/>' + (types[type] || type) : '', '</p>',
 				'</div>',
 				'<p class="jsblocker-url">',
 					'<span class="jsblocker-protocol">', proto, ~['about', 'javascript', 'data'].indexOf(proto) ? ':' : '://', '</span>',
@@ -106,12 +130,10 @@ function createPlaceholder(e, url) {
 
 	var pw = pl.querySelector('.jsblocker-node-wrap'),
 			p = pl.querySelector('.jsblocker-node'),
-			pB = pl.querySelector('.jsblocker-node-two'),
 			p2 = pl.querySelector('.jsblocker-url');
 	
 	p2.title = e.nodeName.toLowerCase() + ' - ' + url;
 	p.title = p2.title;
-	pB.title = p.title;
 
 	var	w = e.offsetWidth <= 12 ? e.offsetWidth : e.offsetWidth - 12,
 			h = e.offsetHeight <= 12 ? e.offsetHeight : e.offsetHeight - 12;
@@ -140,7 +162,7 @@ function createPlaceholder(e, url) {
 		pr.push('position');
 	
 	setCSS(st, pr, pl);
-		
+	
 	e.parentNode.replaceChild(pl, e);
 	
 	fitFont(pl);
@@ -156,10 +178,6 @@ function createPlaceholder(e, url) {
 }
 
 var alwaysDo = {},
-		kinds = {
-			special: ['special'],
-			disable: ['disable']
-		},
 		jsblocker = {
 			allowed: {},
 			blocked: {},
@@ -168,34 +186,34 @@ var alwaysDo = {},
 			host: blank ? 'blank' : window.location.host || 'blank'
 		}, readyTimeout = {}, zero = [], settings = {},
 		ph = function (kind, allowed, host, url) {
-			if (!allowed)
+			if (!allowed && ~['frame', 'video', 'embed', 'image'].indexOf('kind') && t.nodeName !== 'FRAME')
 				if_setting('showPlaceholder' + kind, true, function (t) {
 					createPlaceholder(t, url);
 				}, function (t) {
 					if (t.parentNode) t.parentNode.removeChild(t);
 				}, [this]);
+		},
+		kinds = {
+			SCRIPT: ['script', ph],
+			FRAME: ['frame', ph],
+			IFRAME: ['frame', ph],
+			EMBED: ['embed', ph],
+			OBJECT: ['embed', ph],
+			VIDEO: ['video', ph],
+			IMG: ['image', ph],
+			AJAX_POST: ['ajax_post'],
+			AJAX_PUT: ['ajax_put'],
+			AJAX_GET: ['ajax_get'],
+			INJECTED: ['injected'],
+			special: ['special'],
+			disable: ['disable']
 		};
-
-kinds.SCRIPT = ['script', ph];
-kinds.FRAME = ['frame', ph];
-kinds.IFRAME = ['frame', ph];
-kinds.EMBED = ['embed', ph];
-kinds.OBJECT = ['embed', ph];
-kinds.VIDEO = ['video', ph];
-kinds.IMG = ['image', ph];
-kinds.AJAX_POST = ['ajax_post'];
-kinds.AJAX_PUT = ['ajax_put'];
-kinds.AJAX_GET = ['ajax_get'];
 
 for (var kind in kinds) {
 	jsblocker.allowed[kinds[kind][0]] = { all: [], hosts: [] }
 	jsblocker.blocked[kinds[kind][0]] = { all: [], hosts: [] }
 	jsblocker.unblocked[kinds[kind][0]] = { all: [], hosts: [] }
 }
-
-jsblocker.allowed.injected = { all: [], hosts: [] };
-jsblocker.blocked.injected = { all: [], hosts: [] };
-jsblocker.unblocked.injected = { all: [], hosts: [] };
 
 function zero_timeout(fn, args) {
 	zero.push([fn, args]);
@@ -246,7 +264,7 @@ function getAbsoluteURL(url) {
 	return parseURL(url).href;
 }
 
-function canLoad(event, exclude) {
+function canLoad(event, exclude, meta) {
 	var el = event.target ? event.target : event,
 			node = el.nodeName.toUpperCase();
 
@@ -266,12 +284,16 @@ function canLoad(event, exclude) {
 			else
 				return 1;
 
-			if (el.getAttribute('data-ignore') === window.accessToken) {
-				el.setAttribute('data-jsblocker_added', 1);
+			if (Token.valid(el.getAttribute('data-jsb_ignore'), 'jsb_ignore')) {
+				Token.expire(el.getAttribute('data-jsb_ignore'));
 
-				jsblocker.unblocked[kind].all.push('JSBlocker Injected Script (' + el.getAttribute('data-special') + '): ' + el.src);
+				el.setAttribute('data-jsb_added', Token.create(el.outerHTML, true));
 
-				el.removeAttribute('data-ignore');
+				if_setting('hideJSBInjected', false, function (kind, el) {
+					jsblocker.unblocked[kind].all.push('JSB Injected Script (' + el.getAttribute('data-jsb_special') + '): ' + el.src);
+				}, null, [kind, el]);
+
+				el.removeAttribute('data-jsb_ignore');
 				return 1;
 			}
 
@@ -289,18 +311,26 @@ function canLoad(event, exclude) {
 
 			did_something = 1;
 
+			if (!meta) {
+				switch (node) {
+					case 'EMBED':
+						meta = el.getAttribute('type');
+					break;
+				}
+			}
+
 			if (!isAllowed && event.preventDefault)	event.preventDefault();
 			
-			if (exclude !== true || allo[1] >= 0) jsblocker[mo][kind].all.push([use_source, allo[1], event.unblockable || false]);
+			if (exclude !== true || allo[1] >= 0) jsblocker[mo][kind].all.push([use_source, allo[1], event.unblockable || false, meta]);
 		
 			if (!~jsblocker[mo][kind].hosts.indexOf(host)) jsblocker[mo][kind].hosts.push(host);
 
 			if (kinds[node][1] && event.preventDefault) kinds[node][1].call(event.target, kind, isAllowed, host, use_source);
 		} else if ((!source || source.length === 0) && !event.target) {
-			if (el.innerHTML.length && !el.getAttribute('data-jsblocker_added')) {
+			if (el.innerHTML.length && (!el.getAttribute('data-jsb_added') || !Token.valid(el.getAttribute('data-jsb_added'), el.outerHTML.length))) {
 				did_something = 1;
 
-				el.setAttribute('data-jsblocker_added', 1);
+				el.setAttribute('data-jsb_added', Token.create(el.outerHTML.length, true));
 
 				jsblocker.unblocked[kind].all.push(el.innerHTML);
 			
@@ -326,9 +356,10 @@ function ready(event) {
 		if (event.type === 'DOMContentLoaded') {
 			var script_tags = document.getElementsByTagName('script'), i, b = script_tags.length;
 			for (i = 0; i < b; i++) {
-				if (!script_tags[i].getAttribute('data-jsblocker_added')) {
+				if (!Token.valid(script_tags[i].getAttribute('data-jsb_added'), script_tags[i].outerHTML.length)) {
 					if (!script_tags[i].getAttribute('src') || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
-						script_tags[i].setAttribute('data-jsblocker_added', 1);
+						script_tags[i].setAttribute('data-jsb_added', Token.create(script_tags[i].outerHTML.length, true));
+
 						jsblocker.unblocked.script.all.push(script_tags[i].innerHTML);
 
 						kinds.SCRIPT[1].call(script_tags[i], 'script', 1);
@@ -471,12 +502,12 @@ function prepareAnchor(anchor, i) {
 		if (anchor.getAttribute('data-jsbprepared') === window.accessToken) return;
 
 		anchor.setAttribute('data-jsbprepared', window.accessToken);
-
-		if_setting('simpleReferrer', true, function (anchor) {
+		
+		if (!(enabled_specials.simple_referrer.allowed % 2)) {
 			if (anchor.getAttribute('href') && anchor.getAttribute('href').length && anchor.getAttribute('href').charAt(0) !== '#')
 				if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length))
 					anchor.setAttribute('rel', 'noreferrer');
-		}, null, [anchor]);
+		}
 
 		if (window !== window.top)
 			if_setting('confirmShortURL', true, function (anchor) {
@@ -504,10 +535,6 @@ function prepareAnchor(anchor, i) {
 				}, 1000);
 			}, true);
 	}
-}
-
-function makeid() {
-	return (Date.now() + Math.random()).toString(36).replace(/\./, '');
 }
 
 function prepareFrames() {
@@ -576,7 +603,9 @@ function windowMessenger(event) {
 }
 
 function commandHandler(event) {
-	if (event.detail.command && event.detail.key === window.accessToken) {
+	if (event.detail.command && Token.valid(event.detail.token, event.detail.command) && event.detail.key === window.accessToken) {
+		Token.expire(event.detail.token, true);
+
 		switch (event.detail.command) {
 			case 'ajaxIntercept':
 				var b = JSON.parse(JSON.stringify(beforeLoad));
@@ -589,10 +618,18 @@ function commandHandler(event) {
 					setAttribute: function () {}
 				};
 
-				var e = new CustomEvent('ajax_handler_' + event.detail.id, {
+				var e = new CustomEvent('jsb_ajax_handler', {
 					detail: {
 						id: event.detail.id,
-						allowed: canLoad(b, event.detail.exclude)
+						token: Token.create('inlineAlert'),
+						str: event.detail.str,
+						kind: event.detail.kind,
+						source: event.detail.source,
+						meta: event.detail.meta,
+						accessKey: ResourceCanLoad(beforeLoad, ['generateRuleAccessKey']),
+						rule: ResourceCanLoad(beforeLoad, ['arbitrary', 'utils.escape_regexp', event.detail.source]),
+						allowed: canLoad(b, event.detail.exclude, event.detail.meta),
+						domain_parts: ResourceCanLoad(beforeLoad, ['arbitrary', 'domain_parts', parseURL(pageHost()).host])
 					}
 				});
 
@@ -600,7 +637,7 @@ function commandHandler(event) {
 			break;
 
 			case 'pushItem':
-				jsblocker[event.detail.action][event.detail.kind].all.push([event.detail.data, event.detail.how[1], false]);
+				jsblocker[event.detail.action][event.detail.kind].all.push([event.detail.data, event.detail.how[1], false, event.detail.meta]);
 
 				if (event.detail.which === 'hosts' && !~jsblocker[event.detail.action][event.detail.kind].hosts.indexOf(event.detail.data))
 					jsblocker[event.detail.action][event.detail.kind].hosts.push(event.detail.data);
@@ -609,7 +646,22 @@ function commandHandler(event) {
 			break;
 
 			case 'inlineAlert':
-				special_actions.alert_dialogs(1, [window.accessToken])(event.detail.body, event.detail.title, event.detail.key, event.detail.hkey);
+				special_actions.alert_dialogs(1, [window.accessToken])(event.detail.body, event.detail.title, event.detail.key, event.detail.hkey, event.detail.id);
+
+				var e = new CustomEvent('jsb_alert_ready', {
+					detail: {
+						id: event.detail.id,
+						meta: event.detail.meta,
+						addRuleToken: Token.create('addRule'),
+						pushItemToken: Token.create('pushItem')
+					}
+				});
+
+				document.dispatchEvent(e);
+			break;
+
+			case 'addRule':
+				GlobalPage.message('addRule', event.detail);
 			break;
 		}
 	}
@@ -663,4 +715,9 @@ if (!disabled) {
 	document.addEventListener('DOMContentLoaded', prepareFrames, true);
 	document.addEventListener('beforeload', canLoad, true);
 	document.addEventListener('JSBCommander', commandHandler, true);
+
+	window.onerror = function (d, p, l, c) {
+		if (~p.indexOf('JavaScriptBlocker'))
+			GlobalPage.message('errorOccurred', d + ', ' + p + ', ' + l);
+	};
 }

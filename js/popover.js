@@ -32,8 +32,6 @@ var globalPage = GlobalPage.page(),
 	if (window.navigator.platform.match(/Win/)) document.body.className += ' windows';
 	else if (window.navigator.platform.match(/Mac/)) document.body.className += ' macos';
 	
-	document.body.className += ' theme-' + globalPage.JB.theme;
-
 	var ctx =	document.getCSSCanvasContext('2d', 'checkbox', 20, 20);
 	ctx.clearRect(0, 0, 20, 20)
 

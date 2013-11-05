@@ -339,6 +339,16 @@ $.extend(Settings, {
 					}
 				}
 
+			if (~val.indexOf(':')) {
+				var s = val.split(':');
+
+				switch (s[0].toLowerCase()) {
+					case 'getvalue':
+						li =  $('<li />').text(s[1] + ' = ' + Settings.current_value(s[1])).appendTo(ul);
+					break;
+				}
+			}
+
 			var head = $('#setting-headerSearch .label').html(li ? _('Search Results') : _('No Results'));
 
 			if (li) head.parent().hide()
@@ -578,7 +588,7 @@ Settings.toolbar_items = {
 	custom: 'Custom',
 	about: 'About',
 	welcome: 'Show Welcome',
-	search: '<input type="search" id="search" incremental="incremental" placeholder="' + 'Search' + '" results="10" autosave="setting_search" />'
+	search: '<input autocomplete="off" type="search" id="search" incremental="incremental" placeholder="' + 'Search' + '" results="10" autosave="setting_search" />'
 };
 
 if (window == window.top) delete Settings.toolbar_items.close;
@@ -696,3 +706,8 @@ window.addEventListener('message', function (e) {
 		}
 	}
 });
+
+window.onerror = function (d, p, l, c) {
+	if (~p.indexOf('JavaScriptBlocker'))
+		GlobalPage.message('errorOccurred', d + ', ' + p + ', ' + l);
+};

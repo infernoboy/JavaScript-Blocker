@@ -146,8 +146,8 @@ JB.poppies = {
 						this.real_url ? ['<input class="orange" type="button" id="rule-options-link" value="', _('Options...'), '" /> '].join('') : ' ',
 					'</p>',
 					'<div class="inputs">',
-						main.rules.simplified && !~this.li.data('kind').indexOf('special') ? '<textarea id="rule-proto-input" wrap="off" placeholder="Protocol" class="rule-input orange"></textarea> ' : '',
-						'<textarea class="orange" id="rule-input" wrap="off" placeholder="Rule"></textarea> ',
+						main.rules.simplified && !~this.li.data('kind').indexOf('special') ? '<textarea spellcheck="false" id="rule-proto-input" wrap="off" placeholder="Protocol" class="rule-input orange"></textarea> ' : '',
+						'<textarea spellcheck="false" class="orange" id="rule-input" wrap="off" placeholder="Rule"></textarea> ',
 						'<input type="button" value="', _('Save'), '" id="rule-save" class="onenter orange" />',
 					'</div>',
 				'</div>'].join(''),
@@ -377,7 +377,7 @@ JB.poppies = {
 			onshowstart: function () {
 				$$('#backup-e').click(function () {
 					new Poppy(zoo.me.left, zoo.me.top, [
-						'<textarea class="orange" id="backup-export" readonly="readonly">' + JB.rules.export() + '</textarea>',
+						'<textarea spellcheck="false" class="orange" id="backup-export" readonly="readonly">' + JB.rules.export() + '</textarea>',
 						'<p>', _('Copy above'), '</p>'].join(''), function () {
 						var t = $$('#poppy textarea');
 						t[0].selectionStart = 0;
@@ -387,7 +387,7 @@ JB.poppies = {
 					if (JB.rules.using_snapshot) return new Poppy(zoo.me.left, zoo.me.top, _('Snapshot in use'));
 
 					new Poppy(zoo.me.left, zoo.me.top, [
-						'<textarea class="orange" id="backup-import"></textarea>',
+						'<textarea spellcheck="false" class="orange" id="backup-import"></textarea>',
 						'<p>', _('Paste your backup'), '</p>',
 						'<dlv class="inputs">',
 							'<input class="orange" type="button" value="', _('Restore'), '" id="backup-restore" />',

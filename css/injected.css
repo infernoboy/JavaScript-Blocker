@@ -1,6 +1,6 @@
 .jsblocker-placeholder {
-	background: url(../images/linen.png) !important;
-	box-shadow: inset 0 0 4px rgba(0,0,0,0.7) !important;
+	background: #eee !important;
+	box-shadow: inset 0 0 4px rgba(0,0,0,0.45) !important;
 	margin: 0 !important;
 	line-height: 1 !important;
 	overflow: hidden !important;
@@ -27,10 +27,10 @@
 	}
 	.jsblocker-placeholder:hover {
 		opacity: 0.9 !important;
-		background: url(../images/linen.png) !important;
+		background: #eee !important;
 	}
 	.jsblocker-placeholder:active {
-		background: -webkit-linear-gradient(top, rgba(0,0,0,0.05), rgba(255,255,255,0.3)), url(../images/linen.png) !important;
+		background: #ddd !important;
 		opacity: 1 !important;
 	}
 	.jsblocker-node-wrap {
@@ -38,40 +38,38 @@
 		top: 50% !important;
 		margin-left: 0 !important;
 	}
-	.jsblocker-node,
-	.jsblocker-node-two {
+	.jsblocker-node {
 		margin-top: -3px !important;
 		display: inline-block !important;
 		position: static;
 		font-weight: bold !important;
-		color: rgba(0,0,0,0.7) !important;
 		-webkit-text-select: none !important;
 		overflow: visible !important;
+		line-height: 1.3 !important;
+		color: rgba(0,0,0,0.35) !important;
+		text-shadow: 0 1px 1px #fff, 0 0 0 rgba(0,0,0,0.5), 0 0 1px #fff !important;
 	}
-		.jsblocker-node-two {
-			top: 1px !important;
-			left: 50% !important;
-			position: absolute !important;
-			color: rgba(255,255,255,0.9) !important;
-		}
-		.jsblocker-placeholder:hover .jsblocker-node-wrap {
+		.jsblocker-placeholder:hover .jsblocker-node-wrap,
+		.jsblocker-placeholder:active .jsblocker-node-wrap {
 			opacity: 0.2 !important;
 		}
 	.jsblocker-url {
 		margin-left: 0 !important;
 		top: 15px !important;
-		margin-top: 0 !important;
-		position: relative !important;
+		position: absolute !important;
+		text-align: center !important;
+		width: 100% !important;
 		visibility: hidden !important;
 		font-size: 12px !important;
 	}
-		.jsblocker-placeholder:hover .jsblocker-url {
+		.jsblocker-placeholder:hover .jsblocker-url,
+		.jsblocker-placeholder:active .jsblocker-url {
 			visibility: visible !important;
 		}
 	.jsblocker-host {
 		margin-left: 0 !important;
 		margin-top: 0 !important;
-		color: #333 !important;
+		color: #222 !important;
 	}
 	.jsblocker-path,
 	.jsblocker-protocol {
@@ -96,10 +94,87 @@
 	padding-bottom: 4px !important;
 	overflow: hidden !important;
 }
+	.jsblocker-alert ::-webkit-scrollbar {
+		width: 7px !important;
+		height: 7px !important;
+	}
+	.jsblocker-alert ::-webkit-scrollbar-corner {
+		background: transparent !important;
+	}
+	.jsblocker-alert ::-webkit-scrollbar-track {
+		-webkit-border-radius: 5px !important;
+		border-top: 1px solid rgba(0,0,0,0.15) !important;
+		background: -webkit-linear-gradient(top, rgba(0,0,0,0.1), rgba(0,0,0,0.02)) !important;
+	}
+	.jsblocker-alert ::-webkit-scrollbar-track:vertical {
+		border-top: none !important;
+		border-left: 1px solid rgba(0,0,0,0.15) !important;
+		background: -webkit-linear-gradient(0deg, rgba(0,0,0,0.1), rgba(0,0,0,0.02)) !important;
+	}
+	.jsblocker-alert ::-webkit-scrollbar-thumb {
+		-webkit-border-radius: 5px !important;
+		border-top: 1px solid rgba(0,0,0,0.01) !important;
+		background: -webkit-linear-gradient(top, #bbb, #999) !important;
+	}
+	.jsblocker-alert ::-webkit-scrollbar-thumb:vertical {
+		border-left: 1px solid rgba(0,0,0,0.01) !important;
+		background: -webkit-linear-gradient(180deg, #999, #bbb) !important;
+	}
+	.jsblocker-alert-text input,
+	.jsblocker-alert-text select,
+	.jsblocker-alert-text button,
+	.jsblocker-alert-text textarea {
+		background: rgba(255,255,255,0) !important;
+		border: none !important;
+		-webkit-border-radius: 4px !important;
+		color: #0069de !important;
+		text-shadow: 0 1px 0 rgba(255,255,255,0.5) !important;
+		border: 1px solid rgba(0,0,0,0.02) !important;
+	}
+	.jsblocker-alert-text input:not([type="checkbox"]):not([type="radio"]):focus,
+	.jsblocker-alert-text select:focus,
+	.jsblocker-alert-text button:focus,
+	.jsblocker-alert-text textarea:focus {
+		outline: none !important;
+	}
+	.jsblocker-alert-text input:not([type="checkbox"]):not([type="radio"]):not([type="text"]):not([type="search"]):focus,
+	.jsblocker-alert-text select:focus,
+	.jsblocker-alert-text button:focus {
+		border-color: rgb(20,158,255) !important;
+	}
+	.jsblocker-alert-text input[type="button"]:not(.delete):active,
+	.jsblocker-alert-text button:not(.delete):active {
+		background: rgba(0,0,0,0.015) !important;
+		color: #094e96 !important;
+		-webkit-animation: none !important;
+	}
+	.jsblocker-alert-text input[type="text"],
+	.jsblocker-alert-text input[type="search"] {
+		padding: 2px !important;
+	}
+	.jsblocker-alert-text input[type="text"],
+	.jsblocker-alert-text input[type="search"],
+	.jsblocker-alert-text textarea {
+		-webkit-border-radius: 0 !important;
+		background: #fff !important;
+		border: 1px solid rgba(0,0,0,0.12) !important;
+		border-bottom-color: #a7c1d9 !important;
+		box-shadow: none !important;
+		color: #111 !important;
+		font-size: 8pt !important;
+	}
+	.jsblocker-alert-text input[type="text"]:focus,
+	.jsblocker-alert-text input[type="search"]:focus,
+	.jsblocker-alert-text textarea:focus {
+		border-color: rgba(0,0,0,0.17) !important;
+		border-bottom-color: #0069de !important;
+		box-shadow: none !important;
+	}
 	.jsblocker-alert * {
 		font-family: 'Lucida Grande', 'Lucida Sans Unicode', sans-serif !important;
 		color: #3a3a3a !important;
 		font-size: 8pt !important;
+		font-weight: normal !important;
 	}
 	.jsblocker-alert:hover .jsblocker-close {
 		opacity: 1;
@@ -123,9 +198,13 @@
 		position: relative !important;
 		right: 0;
 	}
-		.jsblocker-alert-inner textarea {
+		.jsblocker-alert-inner textarea:not(.jsb-ajax-rule-input) {
 			width: 246px !important;
+			min-width: 246px !important;
+			max-width: 246px !important;
 			height: 130px !important;
+			min-height: 130px !important;
+			max-height: 130px !important;
 			margin: 3px 0 0 3px !important;
 			padding: 2px !important;
 			border: 1px solid #888 !important;
@@ -158,8 +237,11 @@
 		max-height: 200px !important;
 		font-size: 8pt !important;
 		text-shadow: 0 1px 0 rgba(255,255,255,1) !important;
-		line-height: 1.4 !important;
 	}
+		.jsblocker-alert-text,
+		.jsblocker-alert-text * {
+			line-height: 1.4 !important;
+		}
 	.jsblocker-alert-text .jsb-divider {
 		color: #ccc !important;
 	}
@@ -167,17 +249,17 @@
 		margin: 0 0 5px !important;
 		padding: 0 !important;
 	}
-	.jsblocker-alert-text a.jsb-allow {
+	.jsblocker-alert-text .jsb-allow {
 		color: #008913 !important;
 	}
-	.jsblocker-alert-text a.jsb-block {
+	.jsblocker-alert-text .jsb-block {
 		color: #920101 !important;
 	}
 	.jsblocker-alert-text a {
 		cursor: pointer !important;
 		color: #0064E3 !important;
 		text-decoration: none !important;
-		font-weight: bold !important;
+		font-weight: normal !important;
 	}
 		.jsblocker-alert-text a:hover {
 			color: #0B37B4 !important;
@@ -192,6 +274,67 @@
 		cursor: default !important;
 		z-index: 1 !important;
 	}
+	.jsblocker-alert-text .jsb-bold,
 	.jsblocker-alert-text b {
 		font-weight: bold !important;
+	}
+	.jsblocker-alert-text .jsb-label {
+		color: #666 !important;
+	}
+	.jsblocker-alert-text .jsb-indent {
+		display: inline-block !important;
+		padding-left: 6px !important;
+	}
+	.jsblocker-alert-text select {
+		font-size: 8pt !important;
+		border: 1px solid rgba(0,0,0,0.09) !important;
+		-webkit-appearance: none !important;
+		padding: 1px 16px 2px 6px !important;
+		color: #3A3A3A !important;
+		-webkit-border-radius: 3px !important;
+		background: url(../images/select-arrows.png) no-repeat right 1px, -webkit-linear-gradient(top, rgb(255,255,255), rgb(249,249,249)) !important;
+		background-size: 20px 16px, auto auto !important;
+	}
+		.jsblocker-alert-text select:active {
+			background: url(../images/select-arrows.png) no-repeat right 1px, -webkit-linear-gradient(top, rgb(249,249,249), rgb(255,255,255)) !important;
+			background-size: 20px 16px, auto auto !important;
+		}
+	.jsblocker-alert-text textarea.jsb-ajax-rule-input {
+		margin-bottom: -8px !important;
+		margin-left: 1px !important;
+		width: 192px !important;
+		min-width: 192px !important;
+		height: 19px !important;
+		min-height: 19px !important;
+		max-height: 19px !important;
+		overflow-x: scroll !important;
+		overflow-y: hidden !important;
+		resize: none !important;
+		display: inline-block !important;
+		border-bottom-color: #f3d3c0 !important;
+		padding: 1px 2px 1px !important;
+		box-sizing: initial !important;
+		vertical-align: inherit !important;
+	}
+		.jsblocker-alert-text textarea.jsb-ajax-rule-input:focus {
+			border-bottom-color: #fb6808 !important;
+		}
+		.jsblocker-alert-text .jsb-ajax-rule-input::-webkit-scrollbar {
+			height: 3px !important;
+		}
+	.jsblocker-alert-text .jsb-ajax-rule-save {
+		margin-left: 3px !important;
+		color: #fb6808 !important;
+		font-weight: bold !important;
+	}
+	.jsblocker-alert-text .jsb-hide {
+		display: none !important;
+	}
+	.jsblocker-alert-text .jsb-ajax-rule-cancel {
+		display: inline-block !important;
+		margin-top: 9px !important;
+	}
+	.jsb-ajax-add select {
+		margin-bottom: 4px !important;
+		margin-top: 3px !important;
 	}

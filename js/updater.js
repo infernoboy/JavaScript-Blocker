@@ -504,7 +504,6 @@ JB.updater = function () {
 					});
 				}, null, null, true);
 			} else {
-
 				self.installedBundle = 162;
 
 				self.updater();
@@ -526,6 +525,40 @@ JB.updater = function () {
 			Settings.removeItem('enable_special_ajax_intercept');
 			Settings.removeItem('expandColumns');
 			Settings.removeItem('noExpandSimple');
+
+			self.installedBundle = 168;
+
+			self.updater();
+		break;
+
+		case v < 171: // 4.0.8
+			var with_no_donation = Settings.getItem('simpleReferrer') && (!self.donationVerified || self.trial_active());
+
+			if (!Settings.getItem('simpleReferrer')) Settings.setItem('enable_special_simple_referrer', false);
+
+			Settings.removeItem('simpleReferrer')
+
+			if (with_no_donation)
+				new Poppy($(this.popover.body).width() / 2, 0, [
+					'<p class="misc-info">The Referrer Update</p>',
+					'<p>This update turns a feature you are using into one only obtainable by unlocking all features.</p>',
+					'<p>Because you have not yet made a contribution, all features will be unlocked for <b>free</b>. Enjoy.</p>',
+					'<p><input type="button" id="reload-popover" value="', _('Continue'), '" /></p>'
+				].join(''), function () {
+					$$('#reload-popover').click(function () {
+						self.trialStart = -1;
+						self.donationVerified = 777;
+						Popover.window().location.reload();
+					});
+				}, null, null, true);
+			else {
+				self.donate();
+
+				// self.installedBundle = 171;
+
+				// self.updater();
+			}
+		break;
 
 		case v < this.bundleid:
 			this.donate();

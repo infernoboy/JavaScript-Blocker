@@ -67,6 +67,9 @@ Settings.settings = {
 		},
 		popoverHeight: {
 			default: 400
+		},
+		simpleReferrer: { // DEPRECATED.
+			default: true
 		}
 	},
 	ui: {
@@ -80,12 +83,6 @@ Settings.settings = {
 			setting: true,
 			default: false
 		},
-		highlight: {
-			label: 'Highlight items that matched a rule',
-			setting: true,
-			default: true,
-			help: 'highlight help'
-		},
 		persistDisabled: {
 			label: 'Disabled mode persist across Safari restarts',
 			setting: false,
@@ -96,6 +93,13 @@ Settings.settings = {
 			setting: true,
 			help: 'showUnblocked help',
 			default: false
+		},
+		hideJSBInjected: {
+			label: 'Hide injected helper scripts',
+			setting: true,
+			default: true,
+			indent: 1,
+			if_setting: { showUnblocked: true }
 		},
 		filterBarAge: {
 			label: 'Show "Not Used In Past" filter bar',
@@ -239,13 +243,13 @@ Settings.settings = {
 			extra: 1
 		},
 		enableajax: {
-			label: 'Enable AJAX request blocker',
+			label: 'Enable XHR request blocker',
 			setting: true,
 			default: true,
 			extra: 1
 		},
 		alwaysBlockajax: {
-			label: 'Automatically block AJAX requests to:',
+			label: 'Automatically block XHRs to:',
 			setting: Settings._alwaysBlockAjax.slice(0),
 			if_setting: { enableajax: true },
 			help: Settings._alwaysBlockHelp,
@@ -397,12 +401,6 @@ Settings.settings = {
 		}
 	},
 	other: {
-		simpleReferrer: {
-			label: 'Prevent links on webpages from sending referer information',
-			setting: true,
-			help: 'simpleReferrer help',
-			default: true
-		},
 		confirmShortURL: {
 			label: 'Confirm short URL redirects before they occur',
 			setting: true,
@@ -444,10 +442,17 @@ Settings.settings = {
 			indent: 1,
 			if_setting: { blockReferrer: true }
 		},
+		enable_special_simple_referrer: {
+			label: 'Prevent links on webpages from sending referers',
+			setting: true,
+			description: 'Once any of these features are active,',
+			help: 'simpleReferrer help',
+			default: true,
+			extra: 1
+		},
 		enable_special_alert_dialogs: {
 			label: 'Display alert() messages within the webpage instead of a popup dialog',
 			setting: true,
-			description: 'Once any of these features are active,',
 			default: true,
 			extra: 1
 		},
@@ -551,6 +556,7 @@ Settings.settings = {
 			classes: 'description'
 		},
 		easyListNow: {
+			classes: 'single-click',
 			label: 'Update lists now:',
 			setting: 'Update Now',
 			divider: 1

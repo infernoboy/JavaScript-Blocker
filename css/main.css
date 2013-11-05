@@ -120,6 +120,9 @@ header h1 {
 	#misc {
 		overflow-x: auto !important;
 	}
+	#misc-content p {
+		padding: 10px;
+	}
 	#modal,
 	.zoom-window-animating {
 		position: absolute !important;
@@ -256,8 +259,14 @@ header h1 {
 	#quick-add-select {
 		max-width: 310px;
 	}
+		#quick-add-select.temporary {
+			max-width: 240px;
+		}
 		body.simple #quick-add-select {
 			max-width: 260px;
+		}
+		body.simple #quick-add-select.temporary {
+			max-width: 190px;
 		}
 #modal,
 #disabled {
@@ -861,7 +870,7 @@ ul {
 }
 
 span.rule {
-	padding-left: 15px;
+	padding-left: 16px;
 }
 body:not(.disabled) .main-wrapper li span,
 #rules-list li span.rule {
@@ -905,20 +914,20 @@ ul li > span {
 	max-width: 99%;
 	overflow: auto;
 	white-space: nowrap;
-	padding-bottom: 1px;
-	height: 21px;
+	padding-bottom: 2px;
+	height: 20px;
 }
 	ul li.domain-name span.nodbl {
 		padding-bottom: 0;
 	}
 	#rules-list ul li span {
-		max-width: 83%;
+		max-width: 441px;
 	}
 	#rules-list ul li.domain-name span {
 		padding-bottom: 0;
 	}
 	body.simple #rules-list ul li span {
-		max-width: 345px;
+		max-width: 349px;
 	}
 	#main ul li span {
 		max-width: 93%;
@@ -950,15 +959,15 @@ ul li > span {
 		}
 	body.highlight-matched #main ul li.by-rule:not(.unblockable) {
 		/*background: -webkit-linear-gradient(left, rgba(44,158,250,0), rgba(44,158,250,0.07) 20%, rgba(44,158,250,0.09) 50%, rgba(44,158,250,0.07) 80%, rgba(44,158,250,0));*/
-		background: rgba(44,158,250,0.09);
+		background: rgba(44,158,250,0.05);
 	}
 	body.highlight-matched #main ul li.by-rule.rule-type-4:not(.unblockable) {
 		/*background: -webkit-linear-gradient(left, rgba(255,0,60,0), rgba(255,0,60,0.05) 20%, rgba(255,0,60,0.06) 50%, rgba(255,0,60,0.05) 80%, rgba(255,0,60,0));*/
-		background: rgba(255,0,50,0.057);
+		background: rgba(255,0,40,0.04);
 	}
 		body.highlight-matched #main .allowed-column li.by-rule.rule-type-5:not(.unblockable) {
 			/*background: -webkit-linear-gradient(left, rgba(0,255,0,0), rgba(0,255,0,0.05) 20%, rgba(0,255,0,0.1) 50%, rgba(0,255,0,0.05) 80%, rgba(0,255,0,0));*/
-			background: rgba(0,255,0,0.1);
+			background: rgba(0,255,0,0.075);
 		}
 	.unblocked-script-urls li span {
 		max-width: 100% !important;
@@ -1112,12 +1121,20 @@ header h3 {
 		.info-container.floater,
 		.rules-header.floater,
 		.domain-name.floater {
-			background: rgba(248,248,248,0.98) !important;
+			border-top-color: #fff !important;
+			background-color: rgba(255,255,255,.98) !important;
 		}
 		.kind-header.floater,
 		.info-container.floater,
 		.rules-header.floater {
 			padding-bottom: 0;
+		}
+		.domain-name.floater {
+			border-bottom-color: #eee;
+		}
+		.domain-name.floater .divider {
+			border-color: #fff;
+			border-bottom-color: #eee;
 		}
 	#main h3 {
 		padding: 0;
@@ -1253,8 +1270,15 @@ div.divider {
 	body.simple #snapshots .snapshot-date {
 		max-width: 344px;
 	}
-	.snapshot-date.equal {
-		text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 0 5px #e691ff !important;
+	.snapshot-date.equal:after,
+	#rule-options li:last-child a:after {
+		color: #aaa;
+		padding-left: 4px;
+		text-align: right;
+		content: ' current';
+	}
+	#rule-options li:last-child a:after {
+		content: ' default';
 	}
 
 #snapshots .using a {
@@ -1343,7 +1367,7 @@ div.divider {
 	.domain-name + li.domain-rules {
 		overflow: hidden;
 		padding-top: 1px;
-		margin-left: -10px;
+		margin-left: -15px;
 		margin-top: -5px;
 		padding-left: 5px;
 	}
@@ -1590,14 +1614,15 @@ div.divider {
 				margin-bottom: 0;
 			}
 		#main .actions-bar li {
-			padding: 2px 2px 0px !important;
+			padding: 1px 4px 0px 4px !important;
 			-webkit-border-radius: 0;
 			font-size: 8pt;
 			text-shadow: none;
-			height: 15px;
-			margin-top: -2px;
+			height: 16px;
+			margin-top: -1px;
 			font-weight: normal;
 			text-shadow: 0 1px 0 #fff;
+			border-radius: 3px;
 		}
 			#main .actions-bar li:not(#jsblocker-name):active {
 				color: #444;
@@ -1632,9 +1657,9 @@ div.divider {
 			}
 				#toggle-hidden.hidden-visible {
 					color: #0069de;
+					background: #f0f7ff;
 				}
 		#main li.divider {
-			padding-left: 6px !important;
 			margin-left: 2px;
 		}
 
@@ -1690,7 +1715,7 @@ div.divider {
 						background-image: url(../images/rule-list-actions@2x.png);
 					}
 				}
-				.actions-bar li.divider {
+				#rules-list .actions-bar li.divider {
 					margin-left: 10px;
 					padding-left: 4px !important;
 					-webkit-background-clip: content-box !important;
@@ -1793,8 +1818,7 @@ body.disabled .allowed-blocked-columns,
 body.disabled #main .info-container,
 body.disabled #page-list,
 body.disabled #page-lists-label,
-body.disabled #frame-switcher,
-body.disabled #toggle-hidden {
+body.disabled #frame-switcher {
 	display: none;
 }
 
@@ -1861,19 +1885,21 @@ body.disabled #toggle-hidden {
 		white-space: pre;
 	}
 		mark.quick-add {
-			text-shadow: 0 1px 0 #333;
+			text-shadow: 0 1px 0 rgba(0,0,0,0.5);
 			background-image: none;
 			color: #fbfbfb;
-			padding: 0 2px 0 3px;
+			padding: 0 3px 0 4px;
 			box-shadow: 0 1px 0 rgba(0,0,0,0.55),
 				inset 0 3px 0 rgba(255,255,255,0.12), inset 0 2px 0 rgba(255,255,255,0.22), inset 0 1px 0 rgba(0,0,0,0.27),
 				inset 1px 0 0 rgba(0,0,0,0.28), inset -1px 0 0 rgba(0,0,0,0.25);
+			box-shadow: none;
+			border-radius: 3px;
 		}
 			.allowed-column mark.quick-add {
 				background: #df253a;
 			}
 			.blocked-column mark.quick-add {
-				background: #2e9f18;
+				background: #289013;
 			}
 #backup-export,
 #backup-import,
