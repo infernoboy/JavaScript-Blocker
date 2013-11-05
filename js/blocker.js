@@ -108,7 +108,7 @@ function fitFont(e, f) {
 }
 
 function createPlaceholder(e, url) {
-	if (!e.parentNode || !url || e.nodeName === 'IFRAME') return false;
+	if (!e.parentNode || !url) return false;
 		
 	var pl, st, pl, i, p, w, pw, pB, p2, t, o, parsed = parseURL(url), proto = activeProtocol(url), host = parsed.host,
 			types = { 'application/x-shockwave-flash': 'flash', 'application/pdf': 'PDF document' }, type = e.getAttribute('type'),
@@ -186,7 +186,7 @@ var alwaysDo = {},
 			host: blank ? 'blank' : window.location.host || 'blank'
 		}, readyTimeout = {}, zero = [], settings = {},
 		ph = function (kind, allowed, host, url) {
-			if (!allowed && ~['frame', 'video', 'embed', 'image'].indexOf('kind') && t.nodeName !== 'FRAME')
+			if (!allowed && ~['frame', 'video', 'embed', 'image'].indexOf(kind) && this.nodeName !== 'FRAME')
 				if_setting('showPlaceholder' + kind, true, function (t) {
 					createPlaceholder(t, url);
 				}, function (t) {
