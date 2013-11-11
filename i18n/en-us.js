@@ -9,48 +9,124 @@
  ***************************************/
 
 Strings['en-us'] = {
+	'Safari extensions website': 'JavaScript Blocker has been successfully installed, but will not be able to run on the Safari Extensions ' +
+		'Gallery website for security reasons.',
+	'{1} cannot function when its toolbar icon is hidden.': '{1} cannot function when its toolbar icon is hidden.',
 	'Thanks for using {1}': 'Thanks for using {1}!',
 	'All Domains': 'All Domains',
 	'?': '?', // Displayed next to an item to display further helpful information.
 	'{1} matches': '{1} matches', // {1} = Number of items found using the find bar (Cmd+F)
+	'Free trial expired':
+		'Your free trial of JavaScript Blocker\'s extra features has expired. To see what what you\'ll be missing out on, browse around the ' +
+		'<a class="outside" href="' + ExtensionURL('settings.html#for-other') + '">settings page</a>. You can make a contribution and have ' +
+		'it verified to continue using those features.',
+	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
+	'Please click the flashing toolbar icon to continue': 'Your attention is required in order for JavaScript Blocker to continue functioning properly. ' +
+	 'All sources will be blocked by default until you click the flashing toolbar icon to complete the update',
+	'Donation Required': 'A verified contribution is required to use that feature. Click <b>Unlock</b> at the top-left of the main window to do so.',
+	'You cannot use JavaScript Blocker': 'You cannot use JavaScript Blocker with expert features enabled until you have made a contribution and had it verified.',
+	'Either disable expert': 'Either disable expert features or click <b>{1}</b> below to verify your contribution.',
 
+	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
+	'Please, if you can': 'Please, if you can, show your support by making a contribution of any amount. ' +
+	 'It would be greatly appreciated and you will have unlimited access to all the extra features of JavaScript Blocker.',
+
+	// Appears in the context menu of a webpage when elements have been blocked.
+	'Load {1} Blocked Elements': 'Load {1} Blocked Elements',
+	'Load {1} Blocked Element': 'Load {1} Blocked Element',
+
+	'Donator-only Features': 'Extra Features',
+
+	'Allow': 'Allow',
+	'Block': 'Block',
+	'View': 'View',
+	'Delete': 'Delete',
+	'Save': 'Save',
+	'Close': 'Close',
+	'Back': 'Back',
+	'Continue': 'Continue',
+	'Understood': 'Understood',
+	'Done': 'Done',
+
+
+	date: {
+		days_short: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+		days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+		days_full: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+		months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+		months_full: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+	},
 
 	/*------ MAIN WINDOW ------
-	/**/ 'Done': 'Done',
+	/**/ 'Update Failure': 'Information about the current webpage is outdated or unavailable at this time. The webpage may not be fully loaded yet. If it is, reloading might resolve the issue.',
+	/**/
 	/**------ TOOLBAR ------
 	/*--*/ 'Unlock': 'Unlock',
 	/*--*/ 'Contribute': 'Contribute',
+	/*--*/  'Donation Verification': 'Payment Verification',
+	/*--*/  'An email address was not specified.': 'An email address was not specified.',
+	/*--*/  'A donation with that email address was not found.': 'A contribution with that email address was not found.',
+	/*--*/  'The maximum number': 'The maximum number of activations has been used for that email address.',
+	/*--*/  'Your donation has been verified': 'Your payment has been verified and all features have been unlocked.',
+	/*--*/  'Thanks for your support!': 'Thanks for your support!',
+	/*--*/  'What donation?': 'What extra features are there?',
+	/*--*/  'Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>': 'You have {1} days, {2} hours, and {3} minutes remaining in your trial of the {4}',
+	/*--*/   'donator-only features.': 'extra features.', // Also appears on the About tab of the settings page.
+	/*--*/  'To complete the unlocking': 'To unlock all features permanently, you must enter the email address you used to make your payment. Please note that ' +
+	/*--*/   'it may take up to 24 hours for it to become active on the server.',
+	/*--*/  'PayPal Email Address': 'PayPal Email Address',
+	/*--*/  'Make a Donation': 'Make a Contribution',
+	/*--*/  'Unlock Without Contributing': 'Unlock Without Contributing',
+	/*--*/   'By clicking continue': 'By clicking continue, all features will be unlocked permanently. If in the future you want to ' +
+	/*--*/   'make a donation, click <b>Contribute</b> (the <b>Unlock</b> button will be renamed) and then <b>Make a Contribution</b>.',
+	/*--*/    'Unlocked without contributing': 'All features have been unlocked for free. If you would like to make a donation, you may do so ' +
+	/*--*/     'from the <a class="outside" href="http://javascript-blocker.toggleable.com/donate">donation page</a>.',
+	/*--*/  'Forgot': 'iForgot',
 	/*--*/ 'Enable JavaScript Blocker': 'Enable',
 	/*--*/ 'enable JavaScript Blocker': 'enable',
 	/*--*/ 'Disable JavaScript Blocker': 'Disable',
 	/*--*/ 'disable JavaScript Blocker': 'disable',
-	/*--*/ 'Disable JavaScript Blocker on': 'Disable JavaScript Blocker',
 	/*--*/ 'Help': 'Help',
 	/*--*/ 'Settings': 'Settings',
 	/*--*/ 'Rules': 'Rules',
+	/*--*/  'Active Temporary Rules': 'Active Temporary Rules', // A header for the 3 buttons below.
+	/*--*/   'Make Permanent': 'Make Permanent',
+	/*--*/   'Revoke': 'Revoke',
+	/*--*/   'Show': 'Show',
+	/*--*/  'Show All': 'Show All',
+	/*--*/  'Show Active': 'Show Active',
+	/*--*/  'Backup': 'Backup',
+	/*--*/   'Export': 'Export',
+	/*--*/    'Copy above': 'Copy the above and save it to a file to create a backup.',
+	/*--*/   'Import': 'Import',
+	/*--*/    'Restore': 'Restore',
+	/*--*/    'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
+	/*--*/    'Error importing': 'Error importing rules.',
+	/*--*/  'Snapshot': 'Snapshot', // Appears only when a snapshot is active.
 	/*--*/ 'Show Hidden': 'Show Hidden',
 	/*--*/ 'JavaScript Blocker': 'JavaScript Blocker',
-	/**--------*/
+	/**-------- TOOLBAR */
 	/**/
-	/**/ 'Page:': 'Host:', // Label for page selector
-	/***** Navigation on the right of the page selector.
-	/****/ 'Main page': 'Main host',
-	/****/ 'Prev. frame': 'Prev. host',
-	/****/ 'Next frame': 'Next host',
+	/**/ 'Maybe Later': 'Maybe Later',
+	/**/ 'I\'ve Donated!': 'I\'ve Contributed',
 	/**/
-	/*** Displayed in the page selector as an optgroup.
-	/**/ 'Main Page': 'Main Host',
-	/**/ 'Inline Frame Pages': 'Inline Frame Hosts',
-	/**/ 'Main host': 'Main',
-	/**/ 'Frame host': 'Frame',
-	/**/
-	/*** Displayed in the page selector when a frame does not have a URL.
-	/**/ 'Custom Frame': '(Non-URL Based Frame)',
+	/**/ 'This view contains outdated information. Scroll to the top to have it updated.':
+	/**/  'Outdated information might be displayed. <a id="scroll-to-top">Scroll to the top</a> to have it updated.',
 	/**/
 	/*** A label preceding a number determining the amount of items in a section.
 	/**/ 'Allowed:': 'Allowed:',
 	/**/ 'Blocked:': 'Blocked:',
 	/**/ 'Unblocked:': 'Unblockable:',
+	/**/
+	/*** Displayed next to the hostname in the main window.
+	/**/ 'Main host': 'Main',
+	/**/ 'Frame host': 'Frame',
+	/**/
+	/**/ 'Disable': 'Disable',
+	/**/ 'Enable': 'Enable',
+	/**/
+	/**/ 'JavaScript Blocker is disabled.': 'JavaScript Blocker is disabled.',
+	/**/ 'JavaScript Blocker is disabled on this host.': 'JavaScript Blocker is disabled on this host.',
 	/**/
 	/*** Headers for the item groups. Displayed in all-caps via CSS transformation.
 	/*** Also displayed when adding an All... rule as a list of checkboxes.
@@ -67,65 +143,135 @@ Strings['en-us'] = {
 	/*** Appears in a poppy when clicking the ? to the left of a Blocked or Allowed item when expert
 	/*** features are disabled.
 	/**/ 'No information available.': 'No information available.',
-	/**/ 'Meta Info': 'Meta Data',
+	/**/ 'Meta Info': 'Metadata',
 	/**/ 'More Info': 'Safety Info',
-	/****/ 'Safety Information for {1}': 'Safety Information for {1}', // {1} = domain (www.google.com)
+	/**/  'Safety Information for {1}': 'Safety Information for {1}', // {1} = domain (www.google.com)
 	/**/ 'View script Source': 'View Script Source',
-	/****/ 'Beautify Script': 'Beautify Script', // Displayed when viewing the contents of a script. Also applies to unblockable scripts.
+	/**/  'Beautify Script': 'Beautify Script', // Displayed when viewing the contents of a script. Also applies to unblockable scripts.
 	/**/ 'View frame Source': 'View Frame Source',
 	/**/ 'View image Source': 'View Image',
 	/**/ 'View ajax_get Source': 'View Request Response',
 	/**/ 'Show Matched Rules': 'Show Matched Rules',
-	/***** These appear as a header in the poppy.
-	/****/ 'Matched script Rules': 'Matched Script Rules',
-	/****/ 'Matched frame Rules': 'Matched Frame Rules',
-	/****/ 'Matched image Rules': 'Matched Image Rules',
-	/****/ 'Matched embed Rules': 'Matched Embed and Object Rules',
-	/****/ 'Matched video Rules': 'Matched Video Rules',
-	/****/ 'Matched special Rules': 'Matched Other Rules',
-	/****/ 'Matched ajax_get Rules': 'Matched XHR GET Rules',
-	/****/ 'Matched ajax_post Rules': 'Matched XHR POST Rules',
-	/****/ 'Matched ajax_put Rules': 'Matched XHR PUT Rules',
+	/**/  'Matched script Rules': 'Matched Script Rules',
+	/**/  'Matched frame Rules': 'Matched Frame Rules',
+	/**/  'Matched image Rules': 'Matched Image Rules',
+	/**/  'Matched embed Rules': 'Matched Embed and Object Rules',
+	/**/  'Matched video Rules': 'Matched Video Rules',
+	/**/  'Matched special Rules': 'Matched Other Rules',
+	/**/  'Matched ajax_get Rules': 'Matched XHR GET Rules',
+	/**/  'Matched ajax_post Rules': 'Matched XHR POST Rules',
+	/**/  'Matched ajax_put Rules': 'Matched XHR PUT Rules',
+	/**/
+	/**/ 'This data URI cannot be displayed.': 'This data URI cannot be displayed.',
+	/**/ 'Loading script': 'Loading script...',
+	/**/ 'Loading frame': 'Loading frame...',
+	/**/ 'Loading embed': 'Loading embed...',
+	/**/ 'Loading object': 'Loading object...',
+	/**/ 'Loading image': 'Loading image...',
+	/**/ 'Loading ajax_get': 'Loading request response...',
+	/**/
+	/**/ 'Show {1} more': 'Show {1} more', // {1} = number of hidden items in main window.
 	/**/
 	/**/ 'Unblocked Script': 'Unblockable Script', // A header in a window displaying the contents of an unblockable script.
 	/**/
-	/*** Appears as buttons in a poppy when clicking the Rules toolbar item.
-	/**/ 'Active Temporary Rules': 'Active Temporary Rules', // A header for the 3 buttons below.
-	/****/ 'Make Permanent': 'Make Permanent',
-	/****/ 'Revoke': 'Revoke',
-	/****/ 'Show': 'Show',
-	/**/ 'Show All': 'Show All',
-	/**/ 'Show Active': 'Show Active',
-	/**/ 'Backup': 'Backup',
-	/****/ 'Export': 'Export',
-	/******/ 'Copy above': 'Copy the above and save it to a file to create a backup.',
-	/****/ 'Import': 'Import',
-	/******/ 'Restore': 'Restore',
-	/******/ 'Paste your backup': 'Paste the contents of your backup above and hit restore. All existing rules will be removed.',
-	/********/ 'Error importing': 'Error importing rules.',
-	/**/
 	/**------ RULE CREATION ------
+	/*--*/ 'Apply Changes': 'Apply Changes',
+	/*--*/ 'Clear Selection': 'Clear Selection',
+	/*--*/ 'Closing the popover will apply changes.': 'Closing the popover will apply changes.',
+	/*--*/ 'Press and hold for more options.': 'Press and hold for more options.',
+	/*--*/
 	/*--*/ 'Allow…': 'Allow/Hide',
 	/*--*/ 'Block…': 'Block/Hide',
-	/*----*/ 'All.': 'All…',
-	/*------*/ 'All': 'All', // [Allow/Block/Hide] All
-	/*----*/ 'Some': 'Some',
-	/*------*/ 'Make these temporary rules': 'Make these temporary rules', // Also appears when adding the above All... rule
-	/*------*/ '{1} selected items': '{1} selected items',
+	/*--*/  'Allow/Hide': 'Allow or Hide',
+	/*--*/  'Block/Hide': 'Block or Hide',
+	/*--*/   'All': 'All',
+	/*--*/    '{1} All': '{1} All', // [Allow/Block/Hide] All
+	/*--*/   'Some': 'Some',
+	/*--*/    'Make these temporary rules': 'Make these temporary rules', // Also appears when adding the above All... rule
+	/*--*/    '{1} selected items': '{1} selected items',
 	/*--*/
 	/*--*/ 'On:': 'On:', // The domain in which a rule is to be created for (On: google.com)
-	/******* These are also used in a select box before a domain name (Allow google.com)
-	/******* and in a select box when adding an All... rule (Allow All)
-	/*----*/ 'Hide': 'Hide', 
-	/*----*/ 'Block': 'Block',
-	/*----*/ 'Allow': 'Allow',
-	/**--------*/
-	/*-----------*/
+	/*****  These are also used in a select box before a domain name (Allow google.com)
+	/*****  and in a select box when adding an All... rule (Allow All)
+	/*--*/  'Hide': 'Hide', 
+	/*--*/  'Block': 'Block',
+	/*--*/  'Allow': 'Allow',
+	/*--*/
+	/*--*/ 'Unblockable frame': 'This frame\'s source cannot be blocked because it\'s the result of a navigation event that occurred from ' +
+	/*--*/  'the original URL. It may appear as "<span class="{1}">{2}</span>"; blocking that instead may work.',
+	/*--*/
+	/***------ RULE EXIST CHECK
+	/*----*/ 'The following rule is allowing this item:': 'The following rule is allowing this item:',
+	/*----*/ 'The following rules are allowing this item:': 'The following rules are allowing this item:',
+	/*----*/ 'The following rule is blocking this item:': 'The following rule is blocking this item:',
+	/*----*/ 'The following rules are blocking this item:': 'The following rules are blocking this item:',
+	/*----*/ 'The following rule is affecting JavaScript Blocker on this host:': 'The following rule is affecting JavaScript Blocker on this host:',
+	/*----*/ 'The following rules are affecting JavaScript Blocker on this host:': 'The following rules are affecting JavaScript Blocker on this host:',
+	/*----*/
+	/*----*/ 'Would you like to delete it, or add a new one?': 'Would you like to delete it, or add a new one?',
+	/*----*/ 'Would you like to delete them, or add a new one?': 'Would you like to delete them, or add a new one?',
+	/*----*/
+	/*----*/ 'New Rule': 'New Rule',
+	/*----*/ 'Delete Rule': 'Delete Rule',
+	/*----*/ 'Delete Rules': 'Delete Rules',
+	/***-------- RULE EXIST CHECK */
+	/*--*/
+	/*--*/ 'Adding a script Rule': 'Adding a Script Rule',
+	/*--*/ 'Adding a frame Rule': 'Adding a Frame Rule',
+	/*--*/ 'Adding a embed Rule': 'Adding an Embed and Object Rule',
+	/*--*/ 'Adding a video Rule': 'Adding a Video Rule',
+	/*--*/ 'Adding a image Rule': 'Adding an Image Rule',
+	/*--*/ 'Adding a special Rule': 'Adding a Rule',
+	/*--*/ 'Adding a disable Rule': 'Adding a Disable/Enable Rule',
+	/*--*/ 'Adding a ajax_get Rule': 'Adding an XHR GET Rule',
+	/*--*/ 'Adding a ajax_post Rule': 'Adding an XHR POST Rule',
+	/*--*/ 'Adding a ajax_put Rule': 'Adding an XHR PUT Rule',
+	/*--*/ 'Adding a hide_script Rule': 'Adding a Hide-Script Rule',
+	/*--*/ 'Adding a hide_frame Rule': 'Adding a Hide-Frame Rule',
+	/*--*/ 'Adding a hide_embed Rule': 'Adding a Hide-Embed-and-Object Rule',
+	/*--*/ 'Adding a hide_video Rule': 'Adding a Hide-Video Rule',
+	/*--*/ 'Adding a hide_image Rule': 'Adding a Hide-Image Rule',
+	/*--*/ 'Adding a hide_special Rule': 'Adding a Hide-Other Rule',
+	/*--*/ 'Adding a hide_ajax_get Rule': 'Adding a Hide-XHR-GET Rule',
+	/*--*/ 'Adding a hide_ajax_post Rule': 'Adding a Hide-XHR-POST Rule',
+	/*--*/ 'Adding a hide_ajax_put Rule': 'Adding a Hide-XHR-PUT Rule',
+	/*--*/
+	/***** Appears when clicking the the headers for the item groups such as SCRIPTS, FRAMES, etc.
+	/*--*/ 'Allowed scripts': 'Allowed Scripts',
+	/*--*/ 'Allowed frames': 'Allowed Frames',
+	/*--*/ 'Allowed embeds': 'Allowed Embeds and Objects',
+	/*--*/ 'Allowed videos': 'Allowed Videos',
+	/*--*/ 'Allowed specials': 'Allowed Others',
+	/*--*/ 'Allowed images': 'Allowed Images',
+	/*--*/ 'Allowed ajax_gets': 'Allowed XHR GETs',
+	/*--*/ 'Allowed ajax_posts': 'Allowed XHR POSTs',
+	/*--*/ 'Allowed ajax_pus': 'Allowed XHR PUTs',
+	/*--*/ 'Blocked scripts': 'Blocked Scripts',
+	/*--*/ 'Blocked frames': 'Blocked Frames',
+	/*--*/ 'Blocked embeds': 'Blocked Embeds and Objects',
+	/*--*/ 'Blocked videos': 'Blocked Videos',
+	/*--*/ 'Blocked specials': 'Blocked Others',
+	/*--*/ 'Blocked images': 'Blocked Images',
+	/*--*/ 'Blocked ajax_gets': 'Blocked XHR GETs',
+	/*--*/ 'Blocked ajax_posts': 'Blocked XHR POSTs',
+	/*--*/ 'Blocked ajax_puts': 'Blocked XHR PUTs',
+	/*--*/
+	/*--*/ 'Block These': 'Block These',
+	/*--*/ 'Allow These': 'Allow These',
+	/*--*/ 'Hide These': 'Hide These',
+	/*--*/ 'Exclude whitelist': 'Exclude whitelisted items',
+	/*--*/ 'Exclude blacklist': 'Exclude blacklisted items',
+	/*--*/
+	/*--*/ 'Temporary rule': 'Make this a temporary rule',
+	/*--*/
+	/*--*/ 'Options...': 'Options...', // Appears in the expert rule creation poppy.
+	/**-------- RULE CREATION */
+	/*-------- MAIN WINDOW */
 	
 	/*------ RULE WINDOW ------
 	/**/ 'Close Rules List': 'Close Rules',
 	/**/
-	/*** {1} - number of domains in list, {2} - number of rules in list
+	/*** {1} = number of domains in list, {2} = number of rules in list
 	/**/ '{1} domain, {2} rule': '{1} domain, {2} rule',
 	/**/ '{1} domain, {2} rules': '{1} domain, {2} rules',
 	/**/ '{1} domains, {2} rule': '{1} domains, {2} rule',
@@ -133,427 +279,234 @@ Strings['en-us'] = {
 	/**/
 	/**------ FILTER BARS ------
 	/*--*/ 'Filter:': 'Filter:',
-	/*----*/ 'Domains': 'Domains', // Used as the placeholder for the domain filter
-	/*--*/
-	/*--*/ 'State:': 'State:',
-	/*----*/ 'Any': 'Any',
-	/*----*/ 'Enabled': 'Enabled',
-	/*----*/ 'Disabled': 'Disabled',
-	/*----*/ 'Show Temporary': 'Show Temporary',
+	/*--*/  'Domains': 'Domains', // Used as the placeholder for the domain filter
 	/*--*/
 	/*--*/ 'Visibility:': 'Visibility:',
-	/*------ 'Any'
-	/*----*/ 'Collapsed': 'Collapsed',
-	/*----*/ 'Expanded': 'Expanded',
+	/*--*/  'Any': 'Any',
+	/*--*/  'Collapsed': 'Collapsed',
+	/*--*/  'Expanded': 'Expanded',
 	/*--*/
 	/*--*/ 'Not Used Within:': 'Not Used In Past:', // If a rule has or hasn't been used in ...
 	/*--*/ 'Used Within:': 'Used In Past:',
-	/*----*/ 'Past Hour': 'Hour',
-	/*----*/ 'Past Day': 'Day',
-	/*----*/ 'Past Week': 'Week',
-	/*----*/ 'Past Month': 'Month',
-	/*----*/ 'Past Year': 'Year',
-	/**--------*/
+	/*--*/  'Past Hour': 'Hour',
+	/*--*/  'Past Day': 'Day',
+	/*--*/  'Past Week': 'Week',
+	/*--*/  'Past Month': 'Month',
+	/*--*/  'Past Year': 'Year',
+	/**-------- FILTER BARS */
 	/**/
 	/**------ ACTIONS TOOLBAR (displayed in a tooltip when hovering over the appropriate item) ------
 	/*--*/ 'Collapse All': 'Collapse All',
 	/*--*/ 'Expand All': 'Expand All',
 	/*---- 'Show Active'
+	/*--*/ 'Show Temporary': 'Show Temporary',
 	/*--*/ 'Edit': 'Edit', // Switch rule list to edit mode to delete entire domain rulesets
 	/*--*/ 'Make Temporary Rules Permanent': 'Make Temporary Rules Permanent',
+	/*--*/  'All temporary rules are now permanent.': 'All temporary rules are now permanent.',
 	/*--*/ 'Remove Temporary Rules': 'Remove Temporary Rules',
+	/*--*/  'All temporary rules have been removed.': 'All temporary rules have been removed.',
 	/*--*/ 'Snapshots': 'Snapshots', // Also displayed as a header in the Snapshots window
 	/*--*/ 'Reload Rules': 'Reload Rules',
-	/**--------*/
+	/**-------- ACTIONS TOOLBAR */
 	/**/
-	/**------ RULE LISTING ------
-	/*--** Headers for the groups of rules. Displayed in all-caps via CSS transformation.
-	/*--*/ 'frame Rules': 'Frame Rules',
-	/*--*/ 'script Rules': 'Script Rules',
-	/*--*/ 'embed Rules': 'Embed and Object Rules',
-	/*--*/ 'video Rules': 'Video Rules',
-	/*--*/ 'image Rules': 'Image Rules',
-	/*--*/ 'special Rules': 'Other Rules',
-	/*--*/ 'hide_script Rules': 'Hide-Script Rules',
-	/*--*/ 'hide_frame Rules': 'Hide-Frame Rules',
-	/*--*/ 'hide_embed Rules': 'Hide-Embed-and-Object Rules',
-	/*--*/ 'hide_video Rules': 'Hide-Video Rules',
-	/*--*/ 'hide_image Rules': 'Hide-Image Rules',
-	/*--*/ 'hide_special Rules': 'Hide-Other Rules',
-
-	'Nothing has been allowed.': 'No Items Allowed',
-	'Nothing has been blocked.': 'No Items Blocked',
-
-	'Remove': 'Remove',
-	'Allow': 'Allow',
-	'Allow/Hide': 'Allow or Hide',
-	'Block': 'Block',
-	'Block/Hide': 'Block or Hide',
-	'All in Snapshot': 'All in Snapshot',
-	'{1} All': '{1} All',
-	'Webpage default': 'Webpage default',
-	'The following features will appear as <b>{1}</b>.': 'The following features will appear as <b>{1}</b>. They will not count towards the amount of blocked/allowed resources.',
-	'Finish Setup': 'Finish Setup',
-	'Show Setup': 'Show Setup',
-	'View': 'View',
-	'Disable': 'Disable',
-	'Enable': 'Enable',
-	'Delete': 'Delete',
-	'Recover': 'Recover',
-	'Merge': 'Merge',
-	'Replace': 'Replace',
-	'Save': 'Save',
-	'Edit Rule': 'Edit Rule',
-	'New Rule': 'New Rule',
-	'Restore/Delete Rules': 'Restore/Delete Rules',
-	'Disable/Delete Rules': 'Disable/Delete Rules',
-	'restore Rule': 'Restore Rule',
-	'disable Rule': 'Disable Rule',
-	'restore Rules': 'Restore Rules',
-	'disable Rules': 'Disable Rules',
-	'Delete Rule': 'Delete Rule',
-	'Delete Rules': 'Delete Rules',
-	'Do you want to completely remove all rules for this domain?': 'Do you want to completely remove all rules for this domain?',
-	'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.':
-			'Keep in mind that if automatic rules are enabled, rules will be recreated if you visit the webpage again.',
-	'Close Snapshots': 'Close Snapshots',
-	'Close': 'Close',
-	'Reinstall whitelist and blacklist rules:': 'Reinstall whitelist and blacklist rules:', // CHANGED
-	'Reinstall Whitelist and Blacklist': 'Reinstall Whitelist and Blacklist',
-	'Back': 'Back',
-	'Continue': 'Continue',
-	'New script rule for {1}': 'New script rule for <b>{1}</b>', // {1} = domain name
-	'New frame rule for {1}': 'New frame rule for <b>{1}</b>', // {1} = domain name
-	'New embed rule for {1}': 'New embed and object rule for <b>{1}</b>', // {1} = domain name
-	'New video rule for {1}': 'New video rule for <b>{1}</b>', // {1} = domain name
-	'New special rule for {1}': 'New other rule for <b>{1}</b>', // {1} = domain name
-	'New ajax_get rule for {1}': 'New XHR GET rule for <b>{1}</b>', // {1} = domain name
-	'New ajax_post rule for {1}': 'New XHR POST rule for <b>{1}</b>', // {1} = domain name
-	'New ajax_put rule for {1}': 'New XHR PUT rule for <b>{1}</b>', // {1} = domain name
-	'New hide_script rule for {1}': 'New hide-script rule for <b>{1}</b>', // {1} = domain name
-	'New hide_frame rule for {1}': 'New hide-frame rule for <b>{1}</b>', // {1} = domain name
-	'New hide_embed rule for {1}': 'New hide-embed-and-object rule for <b>{1}</b>', // {1} = domain name
-	'New hide_video rule for {1}': 'New hide-video rule for <b>{1}</b>', // {1} = domain name
-	'New hide_special rule for {1}': 'New hide-other rule for <b>{1}</b>', // {1} = domain name
-	'New hide_ajax_get rule for {1}': 'New hide-XHR-GET rule for <b>{1}</b>', // {1} = domain name
-	'New hide_ajax_post rule for {1}': 'New hide-XHR-POST rule for <b>{1}</b>', // {1} = domain name
-	'New hide_ajax_put rule for {1}': 'New hide-XHR-PUT rule for <b>{1}</b>', // {1} = domain name
-
-	'Show {1} more': 'Show {1} more', // {1} = number of hidden items in main window.
-	'Understood': 'Understood',
-	'Reset JS Blocker': 'Reset JS Blocker',
-	'Leave Settings Alone': 'Leave Settings Alone', // TO BE DELETED
-	'Make a Donation': 'Make a Contribution',
-	'Maybe Later': 'Maybe Later',
-	'I\'ve Donated!': 'I\'ve Contributed',
-	'Temporary rule': 'Make this a temporary rule',
-	'Options...': 'Options...',
-	'Use large font': 'Use large font',
-	'Allowed scripts': 'Allowed Scripts',
-	'Allowed frames': 'Allowed Frames',
-	'Allowed embeds': 'Allowed Embeds and Objects',
-	'Allowed videos': 'Allowed Videos',
-	'Allowed specials': 'Allowed Others',
-	'Allowed images': 'Allowed Images',
-	'Allowed ajax_gets': 'Allowed XHR GETs',
-	'Allowed ajax_posts': 'Allowed XHR POSTs',
-	'Allowed ajax_pus': 'Allowed XHR PUTs',
-	'Blocked scripts': 'Blocked Scripts',
-	'Blocked frames': 'Blocked Frames',
-	'Blocked embeds': 'Blocked Embeds and Objects',
-	'Blocked videos': 'Blocked Videos',
-	'Blocked specials': 'Blocked Others',
-	'Blocked images': 'Blocked Images',
-	'Blocked ajax_gets': 'Blocked XHR GETs',
-	'Blocked ajax_posts': 'Blocked XHR POSTs',
-	'Blocked ajax_puts': 'Blocked XHR PUTs',
-	'Block These': 'Block These',
-	'Allow These': 'Allow These',
-	'Hide These': 'Hide These',
-	'Exclude whitelist': 'Exclude whitelisted items',
-	'Exclude blacklist': 'Exclude blacklisted items',
-
-	'This script will be allowed': 'This script will be allowed.',
-	'This frame will be allowed': 'This frame will be allowed.',
-	'This embed will be allowed': 'This embed/object will be allowed.',
-	'This video will be allowed': 'This video will be allowed.',
-	'This other will be allowed': 'This other feature will be allowed.',
-	'This script will be blocked': 'This script will be blocked.',
-	'This frame will be blocked': 'This frame will be blocked.',
-	'This embed will be blocked': 'This embed/object will be blocked.',
-	'This video will be blocked': 'This video will be blocked.',
-	'This other will be blocked': 'This other feature will be blocked.',
-	'script from {1} will be allowed': 'Allow scripts {3} <span class="{1}"><b>{2}</b></span>',
-	'frame from {1} will be allowed': 'Allow frames {3} <span class="{1}"><b>{2}</b></span>',
-	'embed from {1} will be allowed': 'Allow fmbeds and objects {3} <span class="{1}"><b>{2}</b></span>',
-	'video from {1} will be allowed': 'Allow videos {3} <span class="{1}"><b>{2}</b></span>',
-	'special from {1} will be allowed': 'Allow <b>{2}</b>',
-	'script from {1} will be blocked': 'Block scripts {3} <span class="{1}"><b>{2}</b></span>',
-	'frame from {1} will be blocked': 'Block frames {3} <span class="{1}"><b>{2}</b></span>',
-	'embed from {1} will be blocked': 'Block embeds and objects {3} <span class="{1}"><b>{2}</b></span>',
-	'video from {1} will be blocked': 'Block videos {3} <span class="{1}"><b>{2}</b></span>',
-	'special from {1} will be blocked': 'Block <b>{2}</b>',
-	'Apply Changes': 'Apply Changes',
-	'Clear Selection': 'Clear Selection',
-	'Closing the popover will apply changes.': 'Closing the popover will apply changes.',
-	'Press and hold for more options.': 'Press and hold for more options.',
-	'Click again to allow {1} {2}': 'Click to allow within <b>{2}</b> instead.',
-	'Click again to block {1} {2}': 'Click to block within <b>{2}</b> instead.',
-	'Click again to leave this allowed.': 'Click to leave this allowed.',
-	'Click again to leave this blocked.': 'Click to leave this blocked.',
-
-	'{1} item is about to be allowed': '{1} item is about to be allowed.',
-	'{1} item is about to be blocked': '{1} item is about to be blocked.',
-	'{1} items are about to be allowed': '{1} items are about to be allowed.',
-	'{1} items are about to be blocked': '{1} items are about to be blocked.',
-
-	'This view contains outdated information. Scroll to the top to have it updated.':
-		'Outdated information might be displayed. <a id="scroll-to-top">Scroll to the top</a> to have it updated.',
-
-	'scripts': 'scripts',
-	'frames': 'frames',
-	'images': 'images',
-	'embeds': 'embeds and objects',
-	'videos': 'videos',
-	'specials': 'other',
-	'ajax_gets': 'XHR GETs',
-	'ajax_posts': 'XHR POSTs',
-	'ajax_puts': 'XHR PUTs',
-
-	'script:': 'Script:',
-	'frame:': 'Frame:',
-	'image:': 'Image:',
-	'embed:': 'Embed or object:',
-	'video:': 'Video:',
-	'special:': 'Other:',
-	'ajax_get:': 'XHR GET:',
-	'ajax_post:': 'XHR POST:',
-	'ajax_put:': 'XHR PUT:',
-	'hide_script:': 'Hide script:',
-	'hide_frame:': 'Hide frame:',
-	'hide_image:': 'Hide image:',
-	'hide_embed:': 'Hide embed or object:',
-	'hide_video:': 'Hide video:',
-	'hide_special:': 'Hide other:',
-	'hide_ajax_get:': 'Hide XHR GET:',
-	'hide_ajax_post:': 'Hide XHR POST:',
-	'hide_ajax_put:': 'Hide XHR PUT:',
-
-	'Forgot': 'iForgot',
-	'Current Snapshot': 'Current Snapshot',
-	'Current Comparison': 'Current Comparison',
-	'Create Snapshot': 'Create Snapshot',
-	'Snapshot': 'Snapshot',
-	'Show Snapshots': 'Show Snapshots',
-	'Close Snapshot': 'Close Snapshot',
-	'Close Comparison': 'Close Comparison',
-	'Merge With Current Rules': 'Merge Rules',
-	'Replace Current Rules': 'Replace Rules',
-	'Keep': 'Keep',
-	'Unkeep': 'Unkeep',
-	'Name': 'Name',
-	'Kept': 'Kept',
-	'Unkept': 'Unkept',
-	'Open Preview': 'Preview',
-	'Compare': 'Compare',
-	'Only in Snapshot': 'Only in Snapshot',
-	'Only in My Rules': 'Not in Snapshot',
-	'In Both': 'In Both',
-	'Show Rules': 'Show Rules',
-	'Snapshot Preview: {1}': 'Rules in Snapshot <b>{1}</b>',
-	'Rules Only in Snapshot: {1}': 'Rules Only in Snapshot <b>{1}</b>',
-	'Rules Not in Snapshot: {1}': 'Rules Not in Snapshot <b>{1}</b>',
-	'Rules in Both Current Rules and Snapshot: {1}': 'Rules in Both My Rules and Snapshot <b>{1}</b>',
-	'Load {1} Blocked Elements': 'Load {1} Blocked Elements',
-	'Load {1} Blocked Element': 'Load {1} Blocked Element',
-	'{1} allowed, {2} blocked': '{1} allowed, {2} blocked',
-	/** /BUTTONS **/
-	
-	/** POPPIES **/
-	'Whitelist and blacklist rules have been reinstalled.': 'Whitelist and blacklist rules have been reinstalled.',
-	'All temporary rules are now permanent.': 'All temporary rules are now permanent.',
-	'All temporary rules have been removed.': 'All temporary rules have been removed.',
-	'Rule succesfully edited.': 'Rule succesfully edited.',
-	'Rule succesfully added for {1}': 'Rule succesfully added for <b>{1}</b>', // {1} = domain name
-	'Rule succesfully moved to {1}': 'Rule succesfully moved to <b>{1}</b>', // {1} = domain name NEW
-	'Changes will appear when you <a id="reload-rules" href="#">reload the rules list</a>.': 'Changes will appear when you <a id="reload-rules" href="#">reload the rule list</a>.',
-	'Loading script': 'Loading script&hellip;',
-	'Loading frame': 'Loading frame&hellip;',
-	'Loading embed': 'Loading embed&hellip;',
-	'Loading object': 'Loading object&hellip;',
-	'Loading image': 'Loading image&hellip;',
-	'Loading ajax_get': 'Loading request response&hellip;',
-	'Loading Rules': 'Loading Rules…',
-	'Copy below': 'Copy the below and save it to a file to create a backup.',
-	
-	'The rule allowing this item will be removed.': 'The rule allowing this item will be removed.',
-	'The rule blocking this item will be removed.': 'The rule blocking this item will be removed.',
-
-	'Nothing is hidden': 'Nothing is hidden.',
-
-	'Snapshot in use': 'You cannot modify rules while previewing or comparing a snapshot.',
-	'Domain replaced in current rule set.': 'Domain replaced in current rule set.',
-	'Domain merged with current rule set.': 'Domain merged with current rule set.',
-	'Rule added to current rule set.': 'Rule added to current rule set.',
-	'Snapshot created.': 'A new snapshot has been created.',
-	'You have {1} snapshots using {2} of storage.': 'You have {1} snapshots using {2} of storage.',
-
-	'By clicking continue': 'By clicking continue, all features will be unlocked permanently. If in the future you want to ' +
-		'make a donation, click <b>Contribute</b> (the <b>Unlock</b> button will be renamed) and then <b>Make a Contribution</b>.',
-	/** /POPPIES **/
-	
-	/** ERRORS-ISH **/
-	'Safari extensions website': 'JavaScript Blocker has been successfully installed, but will not be able to run on the Safari Extensions ' +
-		'Gallery website for security reasons.',
-	'This data URI cannot be displayed.': 'This data URI cannot be displayed.',	
-	'Predefined rules cannot be edited.': 'Predefined rules cannot be edited. ',
-	'Disable rules cannot be modified.': 'Disable/enable rules cannot be modified.',
-	'Update Failure': 'Information about the current webpage is outdated or unavailable at this time. The webpage may not be fully loaded yet. If it is, reloading might resolve the issue.',
-	'Unable to view source of embedded items.': 'Unable to view source of embedded items.',
-
-	'Unblockable frame': 'This frame\'s source cannot be blocked because it\'s the result of a navigation event that occurred from ' +
-		'the original URL. It may appear as "<span class="{1}">{2}</span>"; blocking that instead may work.',
-	'{1} cannot function when its toolbar icon is hidden.': '{1} cannot function when its toolbar icon is hidden.',
-	'No rules exist for this domain.': 'No rules exist for this domain',
-	'Please click the flashing toolbar icon to continue': 'Your attention is required in order for JavaScript Blocker to continue functioning properly. ' +
-		'All sources will be blocked by default until you click the flashing toolbar icon to complete the update',
-	/** /ERRORS-ISH **/
-	
-	'Adding a simple rule help':
-		'<p>If editing an existing rule, changing the domain will cause it to be moved, not copied.</p>' +
-		'<p><b>Protocol</b> - Enter the protocols you want to affect separated by a comma (,). Leave this blank to affect all protocols. If adding a regular expression rule, this is ignored.</p>' +
-		'<p><b>Rule</b> - Enter a domain, *, or a regular expression pattern. Placing a period (.) in front of a domain will match all sub-domains also. ' +
-		'To add a regular expression rule, enter a pattern starting with <b>^</b> and ending with <b>$</b>.</p>',
-	'Adding an expert rule help':
-		'<p>If editing an existing rule, changing the domain will cause it to be moved, not copied.</p>' +
-		'<p><b>Rule</b> - Enter a regular expression pattern that matches the item you wish to allow/block. Click the <b>Options...</b> button to reveal some pre-defined patterns.</p>',
-	'Enter the pattern for the URL(s) you want to affect.': 'Enter the pattern for the URL(s) you want to affect.',
-	'Adding a Rule For {1}': 'Adding a Rule For {1}', // {1} = domain name
-	'Editing a Rule For {1}': 'Editing a Rule For {1}', // *
-	'Adding a script Rule': 'Adding a Script Rule',
-	'Adding a frame Rule': 'Adding a Frame Rule',
-	'Adding a embed Rule': 'Adding an Embed and Object Rule',
-	'Adding a video Rule': 'Adding a Video Rule',
-	'Adding a image Rule': 'Adding an Image Rule',
-	'Adding a special Rule': 'Adding a Rule',
-	'Adding a disable Rule': 'Adding a Disable/Enable Rule',
-	'Adding a ajax_get Rule': 'Adding an XHR GET Rule',
-	'Adding a ajax_post Rule': 'Adding an XHR POST Rule',
-	'Adding a ajax_put Rule': 'Adding an XHR PUT Rule',
-	'Adding a hide_script Rule': 'Adding a Hide-Script Rule',
-	'Adding a hide_frame Rule': 'Adding a Hide-Frame Rule',
-	'Adding a hide_embed Rule': 'Adding a Hide-Embed-and-Object Rule',
-	'Adding a hide_video Rule': 'Adding a Hide-Video Rule',
-	'Adding a hide_image Rule': 'Adding a Hide-Image Rule',
-	'Adding a hide_special Rule': 'Adding a Hide-Other Rule',
-	'Adding a hide_ajax_get Rule': 'Adding a Hide-XHR-GET Rule',
-	'Adding a hide_ajax_post Rule': 'Adding a Hide-XHR-POST Rule',
-	'Adding a hide_ajax_put Rule': 'Adding a Hide-XHR-PUT Rule',
-
-	'Adding a script Rule For {1}': 'Adding a Script Rule For {1}',
-	'Adding a frame Rule For {1}': 'Adding a Frame Rule For {1}',
-	'Adding a embed Rule For {1}': 'Adding an Embed and Object Rule For {1}',
-	'Adding a video Rule For {1}': 'Adding a Video Rule For {1}',
-	'Adding a image Rule For {1}': 'Adding an Image Rule For {1}',
-	'Adding a special Rule For {1}': 'Adding an Other Rule For {1}',
-	'Adding a ajax_get Rule For {1}': 'Adding an XHR GET Rule For {1}',
-	'Adding a ajax_post Rule For {1}': 'Adding an XHR POST Rule For {1}',
-	'Adding a ajax_put Rule For {1}': 'Adding an XHR PUT Rule For {1}',
-	'Adding a hide_script Rule For {1}': 'Adding a Hide-Script Rule For {1}',
-	'Adding a hide_frame Rule For {1}': 'Adding a Hide-Frame Rule For {1}',
-	'Adding a hide_embed Rule For {1}': 'Adding a Hide-Embed-and-Object Rule For {1}',
-	'Adding a hide_video Rule For {1}': 'Adding a Hide-Video Rule For {1}',
-	'Adding a hide_image Rule For {1}': 'Adding a Hide-Image Rule For {1}',
-	'Adding a hide_special Rule For {1}': 'Adding a Hide-Other Rule For {1}',
-	'Adding a hide_ajax_get Rule For {1}': 'Adding a Hide-XHR-GET Rule For {1}',
-	'Adding a hide_ajax_post Rule For {1}': 'Adding an Hide-XHR-POST Rule For {1}',
-	'Adding a hide_ajax_put Rule For {1}': 'Adding an Hide-XHR-PUT Rule For {1}',
-
-	'Editing a script Rule For {1}': 'Editing a Script Rule For {1}',
-	'Editing a frame Rule For {1}': 'Editing a Frame Rule For {1}',
-	'Editing a embed Rule For {1}': 'Editing an Embed and Object Rule For {1}',
-	'Editing a video Rule For {1}': 'Editing a Video Rule For {1}',
-	'Editing a image Rule For {1}': 'Editing an Image Rule For {1}',
-	'Editing a special Rule For {1}': 'Editing an Other Rule For {1}',
-	'Editing a ajax_get Rule For {1}': 'Editing an XHR GET Rule For {1}',
-	'Editing a ajax_post Rule For {1}': 'Editing an XHR POST Rule For {1}',
-	'Editing a ajax_put Rule For {1}': 'Editing an XHR PUT Rule For {1}',
-	'Editing a hide_script Rule For {1}': 'Editing a Hide-Script Rule For {1}',
-	'Editing a hide_frame Rule For {1}': 'Editing a Hide-Frame Rule For {1}',
-	'Editing a hide_embed Rule For {1}': 'Editing a Hide-Embed-and-Object Rule For {1}',
-	'Editing a hide_video Rule For {1}': 'Editing a Hide-Video Rule For {1}',
-	'Editing a hide_image Rule For {1}': 'Editing a Hide-Image Rule For {1}',
-	'Editing a hide_special Rule For {1}': 'Editing a Hide-Other Rule For {1}',
-	'Editing a hide_ajax_get Rule For {1}': 'Editing a Hide-XHR-GET Rule For {1}',
-	'Editing a hide_ajax_post Rule For {1}': 'Editing an Hide-XHR-POST Rule For {1}',
-	'Editing a hide_ajax_put Rule For {1}': 'Editing an Hide-XHR-PUT Rule For {1}',
-
-	/** MISC HEADERS **/
-	'JavaScript Blocker is disabled.': 'JavaScript Blocker is disabled.',
-	'JavaScript Blocker is disabled on this host.': 'JavaScript Blocker is disabled on this host.',
-	/** /MISC **/
-	
-	/** INFO ABOUT REMOVING RULES **/
-	'The following rule is allowing this item:': 'The following rule is allowing this item:',
-	'The following rules are allowing this item:': 'The following rules are allowing this item:',
-	'The following rule is blocking this item:': 'The following rule is blocking this item:',
-	'The following rules are blocking this item:': 'The following rules are blocking this item:',
-	'The following rule is affecting JavaScript Blocker on this host:': 'The following rule is affecting JavaScript Blocker on this host:',
-	'The following rules are affecting JavaScript Blocker on this host:': 'The following rules are affecting JavaScript Blocker on this host:',
-	
-	'Would you like to delete it, or add a new one?': 'Would you like to delete it, or add a new one?',
-	'Would you like to delete them, or add a new one?': 'Would you like to delete them, or add a new one?',
-	'Would you like to restore it, or add a new one?': 'Would you like to restore it, or add a new one?',
-	'Would you like to disable it, or add a new one?': 'Would you like to disable it, or add a new one?',
-	'Would you like to restore them, or add a new one?': 'Would you like to restore them, or add a new one?',
-	'Would you like to disable them, or add a new one?': 'Would you like to disable them, or add a new one?',
-	'Would you like to restore/delete them, or add a new one?': 'Would you like to restore/delete them, or add a new one?',
-	'Would you like to disable/delete them, or add a new one?': 'Would you like to disable/delete them, or add a new one?',
-	
-	'The following rule(s) would be deleted or disabled:': 'The following rule(s) would be deleted or disabled:',
-	'This may inadvertently affect other scripts.': 'This may inadvertently affect other scripts.',
-	'You can also create a new rule to affect just this one.': 'You can also create a new rule to affect just this one.',
-	/** /INFO **/
-
-	/** RULE STUFF - NEW **/
-	'HTTP': 'non-secure',
-	'HTTPS': 'secure',
-	'SAFARI-EXTENSION': 'Safari extension',
-	'ABOUT': '',
-	'DATA': 'data URI',
-	'JAVASCRIPT': 'JavaScript URI',
-	'SPECIAL': 'other',
-	'FTP': 'file transfer protocol',
-	'Temporarily': 'Temporarily',
-	'allow': 'allow',
-	'block': 'block',
-	'hide': 'hide',
-	'within': 'within',
-	'to': 'to',
-	'from': 'from',
-	'matching': 'matching',
-	'others matching': 'others matching',
-	'all others': 'all others',
-	'and': 'and',
-	'all': 'all',
-
-/*Temporarily allow secure scripts from google.com
-	Allow non-secure scripts from google.com
-	Allow non-secure scripts within google.com
-	Temporarily block secure scripts from google.com
-	Hide non-secure and secure scripts from google.com
-	Hide Safari extension, secure and non-secure scripts within google.com
-	Allow others matching ^window_resize$
-	Allow window resize fucntions
-	Block scripts matching ^http:\/\/google\.com\/.*$ */
+	/**------ RULE LIST
+	/*----*/ 'No rules exist for this domain.': 'No rules exist for this domain',
+	/*----*/
+	/***------ SIMPLE VIEW
+	/******* Examples:
+	/******* Temporarily allow secure scripts from google.com
+	/******* Allow non-secure scripts from google.com
+	/******* Allow non-secure scripts within google.com
+	/******* Temporarily block secure scripts from google.com
+	/******* Hide non-secure and secure scripts from google.com
+	/******* Hide Safari extension, secure and non-secure scripts within google.com
+	/******* Allow others matching ^window_resize$
+	/******* Allow window resize fucntions
+	/******* Block scripts matching ^http:\/\/google\.com\/.*$ 
+	/*----*/ 'HTTP': 'non-secure',
+	/*----*/ 'HTTPS': 'secure',
+	/*----*/ 'SAFARI-EXTENSION': 'Safari extension',
+	/*----*/ 'ABOUT': '',
+	/*----*/ 'DATA': 'data URI',
+	/*----*/ 'JAVASCRIPT': 'JavaScript URI',
+	/*----*/ 'SPECIAL': 'other',
+	/*----*/ 'FTP': 'file transfer protocol',
+	/*----*/ 'Temporarily': 'Temporarily',
+	/*----*/ 'allow': 'allow',
+	/*----*/ 'block': 'block',
+	/*----*/ 'hide': 'hide',
+	/*----*/ 'within': 'within',
+	/*----*/ 'to': 'to',
+	/*----*/ 'from': 'from',
+	/*----*/ 'matching': 'matching',
+	/*----*/ 'others matching': 'others matching',
+	/*----*/ 'all others': 'all others',
+	/*----*/ 'and': 'and',
+	/*----*/ 'all': 'all',
+	/*----*/ 'scripts': 'scripts',
+	/*----*/ 'frames': 'frames',
+	/*----*/ 'images': 'images',
+	/*----*/ 'embeds': 'embeds and objects',
+	/*----*/ 'videos': 'videos',
+	/*----*/ 'specials': 'other',
+	/*----*/ 'ajax_gets': 'XHR GETs',
+	/*----*/ 'ajax_posts': 'XHR POSTs',
+	/*----*/ 'ajax_puts': 'XHR PUTs',
+	/***-------- SIMPLE VIEW */
+	/*--*/
+	/***** These appear when viewing the rule list in expert mode.
+	/*--*/ 'script:': 'Script:',
+	/*--*/ 'frame:': 'Frame:',
+	/*--*/ 'image:': 'Image:',
+	/*--*/ 'embed:': 'Embed or object:',
+	/*--*/ 'video:': 'Video:',
+	/*--*/ 'special:': 'Other:',
+	/*--*/ 'ajax_get:': 'XHR GET:',
+	/*--*/ 'ajax_post:': 'XHR POST:',
+	/*--*/ 'ajax_put:': 'XHR PUT:',
+	/*--*/ 'hide_script:': 'Hide script:',
+	/*--*/ 'hide_frame:': 'Hide frame:',
+	/*--*/ 'hide_image:': 'Hide image:',
+	/*--*/ 'hide_embed:': 'Hide embed or object:',
+	/*--*/ 'hide_video:': 'Hide video:',
+	/*--*/ 'hide_special:': 'Hide other:',
+	/*--*/ 'hide_ajax_get:': 'Hide XHR GET:',
+	/*--*/ 'hide_ajax_post:': 'Hide XHR POST:',
+	/*--*/ 'hide_ajax_put:': 'Hide XHR PUT:',
+	/**/
+	/***------ RULE EDITING
+	/******* This will appear anywhere a rule may be added or edited.
+	/*----*/ 'Snapshot in use': 'You cannot modify rules while previewing or comparing a snapshot.',
+	/*----*/ 'Predefined rules cannot be edited.': 'Predefined rules cannot be edited. ',
+	/*----*/ 'Disable rules cannot be modified.': 'Disable/enable rules cannot be modified.',
+	/*----*/
+	/*----*/ 'Adding a simple rule help':
+	/*----*/  '<p>If editing an existing rule, changing the domain will cause it to be moved, not copied.</p>' +
+	/*----*/  '<p><b>Protocol</b> - Enter the protocols you want to affect separated by a comma (,). Leave this blank to affect all protocols. If adding a regular expression rule, this is ignored.</p>' +
+	/*----*/  '<p><b>Rule</b> - Enter a domain, *, or a regular expression pattern. Placing a period (.) in front of a domain will match all sub-domains also. ' +
+	/*----*/  'To add a regular expression rule, enter a pattern starting with <b>^</b> and ending with <b>$</b>.</p>',
+	/*----*/ 'Adding an expert rule help':
+	/*----*/  '<p>If editing an existing rule, changing the domain will cause it to be moved, not copied.</p>' +
+	/*----*/  '<p><b>Rule</b> - Enter a regular expression pattern that matches the item you wish to allow/block. Click the <b>Options...</b> button to reveal some pre-defined patterns.</p>',
+	/*----*/
+	/*----*/ 'Rule removed.': 'Rule removed.',
+	/*----*/
+	/*******  {1} = domain name
+	/*----*/ 'Edit Rule': 'Edit Rule',
+	/*----*/  'Editing a script Rule For {1}': 'Editing a Script Rule For {1}',
+	/*----*/  'Editing a frame Rule For {1}': 'Editing a Frame Rule For {1}',
+	/*----*/  'Editing a embed Rule For {1}': 'Editing an Embed and Object Rule For {1}',
+	/*----*/  'Editing a video Rule For {1}': 'Editing a Video Rule For {1}',
+	/*----*/  'Editing a image Rule For {1}': 'Editing an Image Rule For {1}',
+	/*----*/  'Editing a special Rule For {1}': 'Editing an Other Rule For {1}',
+	/*----*/  'Editing a ajax_get Rule For {1}': 'Editing an XHR GET Rule For {1}',
+	/*----*/  'Editing a ajax_post Rule For {1}': 'Editing an XHR POST Rule For {1}',
+	/*----*/  'Editing a ajax_put Rule For {1}': 'Editing an XHR PUT Rule For {1}',
+	/*----*/  'Editing a hide_script Rule For {1}': 'Editing a Hide-Script Rule For {1}',
+	/*----*/  'Editing a hide_frame Rule For {1}': 'Editing a Hide-Frame Rule For {1}',
+	/*----*/  'Editing a hide_embed Rule For {1}': 'Editing a Hide-Embed-and-Object Rule For {1}',
+	/*----*/  'Editing a hide_video Rule For {1}': 'Editing a Hide-Video Rule For {1}',
+	/*----*/  'Editing a hide_image Rule For {1}': 'Editing a Hide-Image Rule For {1}',
+	/*----*/  'Editing a hide_special Rule For {1}': 'Editing a Hide-Other Rule For {1}',
+	/*----*/  'Editing a hide_ajax_get Rule For {1}': 'Editing a Hide-XHR-GET Rule For {1}',
+	/*----*/  'Editing a hide_ajax_post Rule For {1}': 'Editing an Hide-XHR-POST Rule For {1}',
+	/*----*/  'Editing a hide_ajax_put Rule For {1}': 'Editing an Hide-XHR-PUT Rule For {1}',
+	/*----*/
+	/*----*/ 'Rule succesfully edited.': 'Rule succesfully edited.',
+	/*----*/
+	/*******  Indented strings also appear in the main window during rule creation in expert view.
+	/*----*/ 'New script rule for {1}': 'New script rule for <b>{1}</b>',
+	/*----*/  'Adding a script Rule For {1}': 'Adding a Script Rule For {1}',
+	/*----*/ 'New frame rule for {1}': 'New frame rule for <b>{1}</b>',
+	/*----*/  'Adding a frame Rule For {1}': 'Adding a Frame Rule For {1}',
+	/*----*/ 'New embed rule for {1}': 'New embed and object rule for <b>{1}</b>',
+	/*----*/  'Adding a embed Rule For {1}': 'Adding an Embed and Object Rule For {1}',
+	/*----*/ 'New video rule for {1}': 'New video rule for <b>{1}</b>',
+	/*----*/  'Adding a video Rule For {1}': 'Adding a Video Rule For {1}',
+	/*----*/ 'New image rule for {1}': 'New image rule for <b>{1}</b>',
+	/*----*/  'Adding a image Rule For {1}': 'Adding an Image Rule For {1}',
+	/*----*/ 'New special rule for {1}': 'New other rule for <b>{1}</b>',
+	/*----*/ 	'Adding a special Rule For {1}': 'Adding an Other Rule For {1}',
+	/*----*/ 'New ajax_get rule for {1}': 'New XHR GET rule for <b>{1}</b>',
+	/*----*/  'Adding a ajax_get Rule For {1}': 'Adding an XHR GET Rule For {1}',
+	/*----*/ 'New ajax_post rule for {1}': 'New XHR POST rule for <b>{1}</b>',
+	/*----*/  'Adding a ajax_post Rule For {1}': 'Adding an XHR POST Rule For {1}',
+	/*----*/ 'New ajax_put rule for {1}': 'New XHR PUT rule for <b>{1}</b>',
+	/*----*/  'Adding a ajax_put Rule For {1}': 'Adding an XHR PUT Rule For {1}',
+	/*----*/ 'New hide_script rule for {1}': 'New hide-script rule for <b>{1}</b>',
+	/*----*/  'Adding a hide_script Rule For {1}': 'Adding a Hide-Script Rule For {1}',
+	/*----*/ 'New hide_frame rule for {1}': 'New hide-frame rule for <b>{1}</b>',
+	/*----*/  'Adding a hide_frame Rule For {1}': 'Adding a Hide-Frame Rule For {1}',
+	/*----*/ 'New hide_embed rule for {1}': 'New hide-embed-and-object rule for <b>{1}</b>',
+	/*----*/  'Adding a hide_embed Rule For {1}': 'Adding a Hide-Embed-and-Object Rule For {1}',
+	/*----*/ 'New hide_video rule for {1}': 'New hide-video rule for <b>{1}</b>',
+	/*----*/  'Adding a hide_video Rule For {1}': 'Adding a Hide-Video Rule For {1}',
+	/*----*/ 'New hide_image rule for {1}': 'New hide-image rule for <b>{1}</b>',
+	/*----*/  'Adding a hide_image Rule For {1}': 'Adding a Hide-Image Rule For {1}',
+	/*----*/ 'New hide_special rule for {1}': 'New hide-other rule for <b>{1}</b>',
+	/*----*/  'Adding a hide_special Rule For {1}': 'Adding a Hide-Other Rule For {1}',
+	/*----*/ 'New hide_ajax_get rule for {1}': 'New hide-XHR-GET rule for <b>{1}</b>',
+	/*----*/  'Adding a hide_ajax_get Rule For {1}': 'Adding a Hide-XHR-GET Rule For {1}',
+	/*----*/ 'New hide_ajax_post rule for {1}': 'New hide-XHR-POST rule for <b>{1}</b>',
+	/*----*/  'Adding a hide_ajax_post Rule For {1}': 'Adding an Hide-XHR-POST Rule For {1}',
+	/*----*/ 'New hide_ajax_put rule for {1}': 'New hide-XHR-PUT rule for <b>{1}</b>',
+	/*----*/  'Adding a hide_ajax_put Rule For {1}': 'Adding an Hide-XHR-PUT Rule For {1}',
+	/*----*/
+	/*----*/ 'Rule succesfully added for {1}': 'Rule succesfully added for <b>{1}</b>',
+	/*----*/ 'Rule succesfully moved to {1}': 'Rule succesfully moved to <b>{1}</b>',
+	/***-------- RULE EDITING */
+	/**-------- RULE LIST */
+	/**/
+	/**------ SNAPSHOTS
+	/*--*/ 'Close Snapshots': 'Close Snapshots',
+	/*--*/ 'Create Snapshot': 'Create Snapshot',
+	/*--*/  'Snapshot created.': 'A new snapshot has been created.',
+	/*--*/
+	/*--*/ 'You have {1} snapshots using {2} of storage.': 'You have {1} snapshots using {2} of storage.',
+	/*--*/
+	/*--*/ 'Open Preview': 'Preview',
+	/*--*/
+	/*--*/ 'Keep': 'Keep',
+	/*--*/ 'Unkeep': 'Unkeep',
+	/*--*/ 'Name': 'Name',
+	/*--*/ 'Kept': 'Kept',
+	/*--*/ 'Unkept': 'Unkept',
+	/*--*/ 'Compare': 'Compare',
+	/*--*/  'Show Rules': 'Show Rules',
+	/*--*/   'Only in Snapshot': 'Only in Snapshot',
+	/*--*/   'Only in My Rules': 'Not in Snapshot',
+	/*--*/   'In Both': 'In Both',
+	/*--*/   'All in Snapshot': 'All in Snapshot',
+	/*--*/ 
+	/***------ SNAPSHOTS IN RULE LIST
+	/******* Also appears in the main window when a snapshot is active.
+	/*----*/ 'Snapshot Preview: {1}': 'Rules in Snapshot <b>{1}</b>',
+	/*----*/ 'Rules Only in Snapshot: {1}': 'Rules Only in Snapshot <b>{1}</b>',
+	/*----*/ 'Rules Not in Snapshot: {1}': 'Rules Not in Snapshot <b>{1}</b>',
+	/*----*/ 'Rules in Both Current Rules and Snapshot: {1}': 'Rules in Both My Rules and Snapshot <b>{1}</b>',
+	/*----*/ 
+	/*----*/ 'Current Snapshot': 'Current Snapshot',
+	/*----*/ 'Current Comparison': 'Current Comparison',
+	/*----*/  'Merge With Current Rules': 'Merge Rules',
+	/*----*/  'Replace Current Rules': 'Replace Rules',
+	/*----*/  'Close Snapshot': 'Close Snapshot',
+	/*----*/  'Close Comparison': 'Close Comparison',
+	/*----*/  'Show Snapshots': 'Show Snapshots',
+	/*----*/
+	/*----*/ 'Recover': 'Recover',
+	/*----*/  'Rule added to current rule set.': 'Rule added to current rule set.',
+	/*----*/  'Merge': 'Merge',
+	/*----*/   'Domain merged with current rule set.': 'Domain merged with current rule set.',
+	/*----*/  'Replace': 'Replace',
+	/*----*/   'Domain replaced in current rule set.': 'Domain replaced in current rule set.',
+	/***-------- SNAPSHOTS IN RULE LIST */
+	/**-------- SNAPSHOTS */
+	/*-------- RULE WINDOW */
 	
 	/** SPECIALS (Other Features) **/
 	'alert_dialogs': 'Modal alert popups',
 		'alert_dialogs:0': 'Alerts will display within the webpage.',
 		'alert_dialogs:1': 'Alerts will display normally.',
-	'confirm_dialogs': 'Confirm dialogs',
-		'confirm_dialogs:0': 'Confirm dialogs will not be displayed. Actions will be confirmed automatically.',
-		'confirm_dialogs:1': 'Confirm dialogs will display normally.',
 	'contextmenu_overrides': 'Context menu overrides',
 		'contextmenu_overrides:0': 'The context menu is the standard browser menu. Any menu items created by other extensions will not be displayed.',
 		'contextmenu_overrides:1': 'The context menu may be blocked or replaced with a custom menu.',
@@ -574,57 +527,13 @@ Strings['en-us'] = {
 		'inline_scripts:1': 'Inline scripts will be executed.',
 	'simple_referrer': 'Links sending referrers',
 		'simple_referrer:0': 'Links will not send referrer information.',
-		'simpleReferrer:1': 'Links will be able to send referrer information.',
+		'simple_referrer:1': 'Links will be able to send referrer information.',
 
 	'Injected pre Script: {1}': 'Before Load: {1}',
 	'Injected post Script: {1}': 'After Load: {1}',
-
 	/** /SPECIALS **/
-			
-	/** DONATION STUFF **/
-	'Donator-only Features': 'Extra Features',
-	'Trial remaining {1} days, {2} hours, and {3} minutes': 'You have {1} days, {2} hours, and {3} minutes remaining in your free trial.', // TO BE DELETED
-	'Trial remaining {1} days, {2} hours, and {3} minutes of the <b>{4}</b>': 'You have {1} days, {2} hours, and {3} minutes remaining in your trial of the {4}',
-		'donator-only features.': 'extra features.',
-	'Free trial expired':
-		'Your free trial of JavaScript Blocker\'s extra features has expired. To see what what you\'ll be missing out on, browse around the ' +
-		'<a class="outside" href="' + ExtensionURL('settings.html#for-other') + '">settings page</a>. You can make a contribution and have ' +
-		'it verified to continue using those features.',
-	'Remember for free': 'If you are unable to make a contribution (or just don\'t want to), click <b>Unlock</b> in the JavaScript Blocker popup, then <b>Unlock Without Contributing</b>. ' +
-		'You will then have access to all of the extra features for free.',
-	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
-	'Thank you for your continued use': 'Thank you for your continued use of JavaScript Blocker!',
-	'Please, if you can': 'Please, if you can, show your support by making a contribution of any amount. ' +
-			'It would be greatly appreciated and you will have unlimited access to all the extra features of JavaScript Blocker.',
-	'Donation Verification': 'Payment Verification',
-	'To complete the unlocking': 'To unlock all features permanently, you must enter the email address you used to make your payment. Please note that ' +
-			'it may take up to 24 hours for it to become active on the server.',
-	'PayPal Email Address': 'PayPal Email Address',
-	'An email address was not specified.': 'An email address was not specified.',
-	'A donation with that email address was not found.': 'A contribution with that email address was not found.',
-	'The maximum number': 'The maximum number of activations has been used for that email address.',
-	'Your donation has been verified': 'Your payment has been verified and all features have been unlocked.',
-	'Unlocked without contributing': 'All features have been unlocked for free. If you would like to make a donation, you may do so ' +
-		'from the <a class="outside" href="http://javascript-blocker.toggleable.com/donate">donation page</a>.',
-	'You may unlock {1}': 'You may unlock JavaScript Blocker on {1} more copies of Safari.',
-	'Thanks for your support!': 'Thanks for your support!',
-	'All features are already unlocked.': 'All features are already unlocked.',
-	'Donation Required': 'A verified contribution is required to use that feature. Click <b>Unlock</b> at the top-left of the main window to do so.',
-	"Unlock Without Contributing": "Unlock Without Contributing",
-	'What donation?': 'What extra features are there?',
-	'You cannot use JavaScript Blocker': 'You cannot use JavaScript Blocker with expert features enabled until you have made a contribution and had it verified.',
-	'Either disable expert': 'Either disable expert features or click <b>{1}</b> below to verify your contribution.',
-	'New donation method {1}': 'Due to many complaints about features not remaining unlocked, a new payment verification system has been created. Please click <b>{1}</b> to verify your payment one final time.',
-	/** /DONATION **/
 	
-	/** SETTINGS - NEW **/
-	'Last EasyList/EasyPrivacy update was {1}': 'Last blacklist/whitelist update was {1}<br />Update is scheduled to run every 5 days.',
-	'Rule List Filter Bars': 'Rule list',
-	'JavaScript Blocker Settings': 'JavaScript Blocker Settings',
-	'Once any of these features are active,':
-		'When active, the following features will appear in the main window as a blocked item under <b>OTHER</b>, but will not count towards the amount of blocked/allowed resources. ' + 
-		'You can create rules for them just as you would any other item.',
-	
+	/** SETTINGS  **/
 	// Toolbar items
 	'User Interface': 'User Interface',
 	'Keyboard': 'Keyboard',
@@ -634,36 +543,29 @@ Strings['en-us'] = {
 	'About': 'About',
 	
 	'Donator-only features': 'Extra features', // Header displayed above the section containing donator-only features.
+
+	'Last EasyList/EasyPrivacy update was {1}': 'Last blacklist/whitelist update was {1}<br />Update is scheduled to run every 5 days.',
+	'Rule List Filter Bars': 'Rule list',
+	'JavaScript Blocker Settings': 'JavaScript Blocker Settings',
 	
 	'Language:': 'Language:',
 	'Sources displayed by default:': 'Sources displayed by default:',
 	'Toolbar badge shows number of:': 'Toolbar badge shows number of:',
 	'Use animations': 'Use animations',
-	'Use floating headers': 'Use floating headers',
 	'Use a large font': 'Use a large font',
-	'Use simplified rules': 'Use simplified rules',
-	'Highlight items that matched a rule': 'Highlight items that matched a rule',
+	'Disabled mode persist across Safari restarts': 'Ensure disabled mode persist across Safari restarts',
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
 	'Hide injected helper scripts': 'Hide injected helper and custom scripts',
-	'Hide donator-only features': 'Hide extra features',
-	'Show the number of items blocked or allowed for each host': 'Show number of items blocked/allowed per host',
 	'Temporarily switch to expert mode when clicked': 'Temporarily switch to expert view upon clicking number of allowed/blocked hosts',
-	'Resize blocked and allowed columns': 'Resize blocked and allowed item lists when collapsed',
-	'Resize blocked and allowed columns only in expert view': 'only in expert view',
-	'Show blocked and allowed resources in page list': 'Show number of blocked and allowed resources in page selector',
-	'Show whitelist and blacklist rules in the rule list': 'Show whitelist and blacklist rules in the rule list',
-	'Theme:': 'Theme:',
 	'Enable expert features to block individual items instead of full hosts': 'Enable expert mode to allow/block items using regexp',
 	'A different rule set will be used in this mode.': 'A different rule set will be used in this mode. Would you like to convert your existing rules ' +
 		'to be compatible? Some rules may not be able to be converted automatically.',
+
 	'Ignore whitelist rules': 'Ignore whitelist rules',
 	'Ignore blacklist rules': 'Ignore blacklist rules',
 	'Resources on secure sites must also be secure': 'Block insecure resources on secure websites<br/><span class="aside">This will only affect items that have a blocker enabled.</span>',
 	'Automatically allow resources from other extensions': 'Allow resources from other extensions',
-	'Prevent links on webpages from sending referers': 'Prevent links on webpages from sending referrers<br/><span class="aside">Links sending referrers</span>',
 	'Automatically block scripts from:': 'Block scripts from:',
-	'Create temporary rules for automatic actions': 'Create temproary rules for automatic actions',
-	'…even if Private Browsing is enabled': 'even if Private Browsing is enabled',
 	'Enable script blocker': 'Enable script blocker',
 	'Enable frame blocker': 'Enable frame blocker',
 	'Show a placeholder for blocked frames': 'Show a placeholder for blocked frames',
@@ -679,16 +581,26 @@ Strings['en-us'] = {
 	'Automatically block images from:': 'Hide images from:',
 	'Enable XHR request blocker': 'Enable XHR blocker',
 	'Automatically block XHRs to:': 'Block XHRs to:',
+
+	'Once any of these features are active,':
+		'When active, the following features will appear in the main window as a blocked item under <b>OTHER</b>, but will not count towards the amount of blocked/allowed resources. ' + 
+		'You can create rules for them just as you would any other item.',
+
+	'Prevent links on webpages from sending referers': 'Prevent links on webpages from sending referrers<br/><span class="aside">Links sending referrers</span>',
 	'Display alert() messages within the webpage instead of a popup dialog': 'Prevent alerts from displaying in a modal popup<br/><span class="aside">Modal alert popups</span>', // alert() is a function in javascript; do not localize.
 	'Disable confirm() popup dialogs and confirm actions automatically': 'Disable confirm() modal popups and confirm actions automatically<br/><span class="aside">Confirm dialogs</span>', // confirm() is a function in javascript; do not localize.
 	'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items': 'Prevent webpages from disabling or using a custom context menu and prevent other extensions from creating menu items<br/><span class="aside">Context menu overrides</span>',
 	'Prevent webpages from resizing the window and creating new windows with a custom size': 'Prevent webpages from resizing the window and creating new windows with a custom size<br/><span class="aside">Window resize functions</span>',
 	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete<br/><span class="aside">Autocomplete disablers</span>',
-	'Show a prompt when an XHR request tries to POST or GET information': 'Let me confirm when an XHR request is allowed to POST or GET information<br/><span class="aside">XHR POST/GET requests</span>',
 	'Prevent inline scripts from being executed': 'Prevent inline scripts from being executed<br/><span class="aside">Inline script execution</span>',
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
-	'Disabled mode persist across Safari restarts': 'Ensure disabled mode persist across Safari restarts',
+
+	'custom helper description': 'This section allows you to create custom scripts that are injected into a webpage. They will appear ' +
+		'under the <b>OTHER</b> section of the main window. Once a new script is created, you can create rules ' +
+		'to enable it on a per-site basis or create a rule to enable it everywhere.',
+	'before load description': 'These scripts will be injected into the webpage before the DOM and other scripts are loaded.',
+	'after load description': 'These scripts will be injected once the content of the webpage is ready to be manipulated.',
 
 	'Enter a name for the script.': 'Enter a name to use for the script. This will be displayed in the popover under allowed/blocked.',
 	'Enter the contents of the script.': 'Enter the contents of the script. You can use option+return to make a new line.',
@@ -699,14 +611,6 @@ Strings['en-us'] = {
 	'Create Script': 'Create Script',
 	'Before Load': 'Before Load',
 	'After Load': 'After Load',
-
-	'Enable custom injected scripts': 'Enable custom injected scripts',
-
-	'custom helper description': 'This section allows you to create custom scripts that are injected into a webpage. They will appear ' +
-		'under the <b>OTHER</b> section of the main window. Once a new script is created, you can create rules ' +
-		'to enable it on a per-site basis or create a rule to enable it everywhere.',
-	'before load description': 'These scripts will be injected into the webpage before the DOM and other scripts are loaded.',
-	'after load description': 'These scripts will be injected once the content of the webpage is ready to be manipulated.',
 
 	'The short URL—{1}—is redirecting you to: {2} {3} Do you want to continue?':
 		"The short URL—{1}—is redirecting you to:\n\n{2}\n{3}\n\nDo you want to continue?",
@@ -727,11 +631,8 @@ Strings['en-us'] = {
 	
 	// Zoom
 	'Default webpage zoom level': '<span class="aside">Default webpage zoom level</span>',
+	'Webpage default': 'Webpage default',
 	'Enter a custom zoom level to use.': 'Enter a custom zoom level to use. Do not include the % symbol.', // Pops up when "Other..." is clicked
-	
-	// Font size
-	'Normal': 'Normal',
-	'Large': 'Large',
 	
 	// Langauge selection
 	'Automatic': 'Automatic',
@@ -744,19 +645,9 @@ Strings['en-us'] = {
 	'Blocked items': 'Blocked items',
 	'Allowed items': 'Allowed items',
 	'Neither': 'Neither',
-	
-	// Theme name
-	'Default': 'Default',
-	'Textured Metal': 'Textured Metal',
-	'OS X Lion': 'OS X Lion',
-	'Blue Linen': 'Blue Linen',
-	'Twilight (Incomplete)': 'Twilight (Incomplete)',
 
-	'Show visibility filter bar': 'Show visibility filter bar',
-	'Show state filter bar': 'Show state filter bar',
 	'Show "Not Used In Past" filter bar': 'Show "Not Used In Past" filter bar',
 	'Show "Used In Past" filter bar': 'Show "Used In Past" filter bar',
-	'Show domain filter bar': 'Show domain filter bar',
 	
 	// Font selection
 	'Default webpage font': '<span class="aside">Default webpage font</span>',
@@ -776,7 +667,7 @@ Strings['en-us'] = {
 
 	 // Snapshots
 	 'Snapshots description': 'Snapshots keeps track of all changes made to your rules. It lets you easily revert to different ' +
-	 		'rule sets, or recover just a few. You\'ll never have to worry about messing up your rules again.',
+	 	 'rule sets, or recover just a few. You\'ll never have to worry about messing up your rules again.',
 	 'Snapshots disabled': 'Rule snapshots is currently disabled. You can enable it from the <a href="' + ExtensionURL('settings.html#for-snapshots') + '" class="outside">Snapshots tab</a> of the settings page.',
 	 'Enable rule snapshots': 'Enable rule snapshots',
 	 'Do you want to remove snapshots that exist?': 'Do you want to remove all existing snapshots?',
@@ -786,18 +677,18 @@ Strings['en-us'] = {
 	 'unkept snapshots': 'unkept snapshots',
 
 	 // Keyboard
-	 'Keyboard navigation helps you get around JavaScript Blocker using only the keyboard.':
-	 	'Keyboard navigation helps you get around JavaScript Blocker using just the keyboard. ' +
-	 	'Use the arrow keys and enter/return to select items. Use the tab key to traverse through ' +
-	 	'normal input and select elements. Hiting the tab key while on a selected ' +
-	 	'item will focus its closest input or select element. Press escape to cancel a selection or ' +
-	 	'to unfocus an element.<br /><br />Traverse through the following items:',
-	 'Main window actions bar': 'Main window actions bar',
-	 'Main window allowed/blocked/unblockable items': 'Main window allowed/blocked/unblockable items',
-	 'Rule list filter bar': 'Rule list filter bar',
-	 'Rule list domains': 'Rule list domains',
-	 'Rule list rules': 'Rule list rules',
-	 'Holding option rule': 'Holding alt/option while hitting enter/return will trigger the standard add-a-rule UI if Quick Add is enabled.',
+	'Keyboard navigation helps you get around JavaScript Blocker using only the keyboard.':
+	 'Keyboard navigation helps you get around JavaScript Blocker using just the keyboard. ' +
+	 'Use the arrow keys and enter/return to select items. Use the tab key to traverse through ' +
+	 'normal input and select elements. Hiting the tab key while on a selected ' +
+	 'item will focus its closest input or select element. Press escape to cancel a selection or ' +
+	 'to unfocus an element.<br /><br />Traverse through the following items:',
+	'Main window actions bar': 'Main window actions bar',
+	'Main window allowed/blocked/unblockable items': 'Main window allowed/blocked/unblockable items',
+	'Rule list filter bar': 'Rule list filter bar',
+	'Rule list domains': 'Rule list domains',
+	'Rule list rules': 'Rule list rules',
+	'Holding option rule': 'Holding alt/option while hitting enter/return will trigger the standard add-a-rule UI if Quick Add is enabled.',
 	
 	'EXPERIMENTAL: Enable full referer blocking':
 		'EXPERIMENTAL: Enable full referrer blocking',
@@ -807,7 +698,7 @@ Strings['en-us'] = {
 		'feature off.',
 	'When a new tab opens, make it active': 'When a new tab opens, make it active',
 
-	// Short URL stuff - NEW
+	// Short URL stuff
 	'Confirm short URL redirects before they occur': 'Show a confirmation dialog before navigating to a shortened URL',
 	'confirmShortURL confirm': 'Before navigating to a short URL, it will be sent to LongURL.org to determine where it will redirect to. ' +
 		'This cannot be done in JavaScript. No identifiable information is sent; just the URL ' +
@@ -833,13 +724,7 @@ Strings['en-us'] = {
 	'Remove Rules': 'Remove Rules', // button
 	'All rules have been removed.': 'All rules have been removed.', // popup
 	'All snapshots have been removed.': 'All snapshots have been removed.', // popup
-	'Rule removed.': 'Rule removed.',
 
-	'Reinstall': 'Reinstall', // reinstall WL and BL
-
-	'Include whitelist and blacklist rules': 'Include whitelist and blacklist rules (can take a few minutes to load)',
-
-	'Convert non-simplified rules:': 'Convert non-simplified rules:',
 	'Convert Rules': 'Convert Rules',
 	'Rules converted.': 'All rules have been successfully converted. Please review the newly created rules.',
 	'Some rules could not be converted {1}': 'Some rules could not be converted {1} Please review the newly created rules.',
@@ -850,6 +735,7 @@ Strings['en-us'] = {
 	'Import a full backup:': 'Import a full backup:',
 	'Delete all snapshots:': 'Delete all snapshots:',
 	'Create Backup': 'Create Backup',
+	 'Copy below': 'Copy the below and save it to a file to create a backup.',
 	'Import Backup': 'Import Backup',
 	'Delete Snapshots': 'Delete Snapshots',
 	'Error importing backup': 'Error importing backup',
@@ -857,7 +743,6 @@ Strings['en-us'] = {
 		'may have to re-verify your donation if applicable.',
 	'Your backup has been successfully restored.': 'Your backup has been successfully restored.',
 	
-	'highlight help': 'Whitelist matches appear in green, blacklist matches in red, and standard rules in gray.',
 	'contextmenu_overrides help': 'Other extensions not being able to create custom menu items is an unfortunate side effect and cannot be prevented.',
 	'inline_scripts help': 'Injects the following meta tag into the webpage:<br/><br/><code>&lt;meta http-equiv="content-security-policy" content="default-src *; script-src *; style-src * \'unsafe-inline\'; object-src *" /&gt;</code><br/><br/>' +
 		'This does <b>not</b> guarantee that all scripts will be prevented from executing. For example: a webpage may send a header that overrides the meta tag, though this is highly unlikely to allow inline scripts. ' +
@@ -879,16 +764,6 @@ Strings['en-us'] = {
 		'This is a Safari limitation and there is nothing that can be done to prevent it from loading.',
 	'simplifiedRules help': 'Rules will be displayed in the rule list in plain English without the complexity of regular expressions. ' +
 		'Because rules are saved differently when this option is enabled, existing rules must be converted before they can be used. ' +
-		'This can be done from the About tab and choosing Convert Rules.',
-	'convertRules help': 'This will attempt to convert rules created using the non-expert UI (with simplified rules disabled) into simplified ones. Any custom or edited rules may not be converted ' +
-		'and will have to be re-added manually when using the simplified rules UI. Any existing rules will remain untouched.',
-
-	date: {
-		days_short: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
-		days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-		days_full: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-		months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-		months_full: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-	}
+		'This can be done from the About tab and choosing Convert Rules.'
 	/** /SETTINGS **/
 };
