@@ -182,7 +182,7 @@ var special_actions = {
 	font: function (v) {
 		var s = document.createElement('style');
 		s.type = 'text/css';
-		s.id = 'jsblocker-css-' + (+new Date());
+		s.id = 'jsblocker-css-' + Date.now();
 		s.innerText = '*:not(pre):not(code) { font-family: "' + v + '" !important; }';
 		document.documentElement.appendChild(s);
 	},
@@ -485,7 +485,7 @@ custom_special_actions = {};
 var appendScript = function (script, which, v, priv) {
 	var s = document.createElement('script');
 
-	s.id = 'jsblocker-' + (+new Date());
+	s.id = 'jsb-' + (window.Token ? Token.generate() : Date.now());
 	s.setAttribute('data-jsb_ignore', window.Token ? Token.create('jsb_ignore') : 1);
 	s.setAttribute('data-jsb_special', which);
 	s.src = ['data:text/javascript,',
@@ -493,7 +493,7 @@ var appendScript = function (script, which, v, priv) {
 		'(',
 			v !== undefined ? (typeof v === 'string' ? '"' + v + '"' : v) + ',': 'null,',
 			script.prototype && script.prototype.args ? JSON.stringify(script.prototype.args) + ',': 'null,',
-			'"', priv ? window.accessToken : 0, '",',
+			'"', priv ? Token.create('custom', true) : 0, '",',
 			'"', which, '"',
 		');'].join(''))].join('');
 
@@ -536,7 +536,7 @@ var parseSpecials = function (pre) {
 		if (pre && ~n.indexOf('custompost')) continue;
 		if (!pre && !~n.indexOf('custompost')) continue;
 
-		doSpecial(1, n, "function (v, accessToken, gmName) {\n" + custom_special_actions[n].func + "\n}", 1);
+		doSpecial(1, n, "function (jsbValue, jsbArgs, jsbKey, jsbName) {\n" + custom_special_actions[n].func + "\n}", 1);
 	}
 }
 

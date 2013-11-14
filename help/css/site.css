@@ -3,15 +3,18 @@
 	margin: 0;
 }
 
-body {
-	background: #f5f6f7 url(../images/bg.png) top center repeat-x;
-	font-family: 'Helvetica Neue', Helvetica, sans-serif;
-	font-size: 10pt;
-	padding: 0 135px;
+html {
+	background: rgba(0,0,0,0.035);
 }
 
-#container {
-	padding: 10px 0;
+body {
+	font-family: 'Helvetica Neue', Helvetica, sans-serif;
+	font-size: 10pt;
+	padding: 0 132px;
+}
+
+body > article > section {
+	border-right: 1px solid rgba(0,0,0,0.065);
 }
 
 #money-maker {
@@ -30,28 +33,31 @@ header {
 	background: #fff;
 	margin-bottom: 5px;
 	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
 	border: 1px solid #ddd;
-	-webkit-box-shadow: 0 1px 1px #999;
-	-moz-box-shadow: 0 1px 1px #999;
 }
 
-#container > header {
-	margin: 5px 10px;
+body > header {
+	margin: 5px 10px 0;
 	background: transparent;
 	border: none;
 	-webkit-box-shadow: none;
 	-moz-box-shadow: none;
 }
 
-section {
-	background-color: rgba(0,0,0,0.02);
-	padding: 10px 5px 10px 10px;
-	margin: 5px 0px 10px 10px;
-	border-left: 1px solid rgba(0,0,0,0.07);
+.jump {
+	margin-bottom: 15px;
 }
 
-#container > article > section > section:nth-of-type(1) {
+section {
+	background-color: rgba(0,0,0,0.02);
+	padding: 10px 0 10px 10px;
+	margin: 5px 0px 10px 10px;
+	border-left: 1px solid rgba(0,0,0,0.047);
+	border-bottom: 1px solid rgba(0,0,0,0.065);
+	border-top: 1px solid rgba(0,0,0,0.065);
+}
+
+body > article > section > section:nth-of-type(1) {
 	margin-top: 5px;
 }
 
@@ -76,8 +82,12 @@ p + p {
 	margin-top: 3px;
 }
 
-p.no-padding {
+.no-padding {
 	padding-top: 0;
+}
+
+ul.no-padding {
+	margin-top: 0;
 }
 
 code {
@@ -126,11 +136,11 @@ ul li:last-child {
 	padding-bottom: 0;
 }
 
-ul li p.clickable {
+.clickable {
 	color: #0000D0;
 	cursor: pointer;
 }
-	ul li p.clickable:hover {
+	.clickable:hover {
 		color: #000090;
 	}
 

@@ -91,11 +91,10 @@ Snapshots.prototype = {
 
 		this.store[id] = {
 			data: data,
-			keep: 0,
+			keep: !!keep,
 			name: null
 		};
 
-		if (keep) this.keep(id);
 		if (typeof name === 'string' && name.length) this.name(id, name);
 		if (typeof callback === 'function') callback.call(this, id, this.store[id]);
 		
@@ -158,7 +157,7 @@ Snapshots.prototype = {
 					left: left in this.store ? this.store[left].data : left,
 					right: right in this.store ? this.store[right].data : right
 				}, swap = { left: 'right', right: 'left' },
-				diff = {}, both, empty = $.isEmptyObject, score = { left: 0, right: 0 },
+				diff = {}, both, empty = $.isEmptyObject,
 				side, key, lr;
 
 		for (lr in compare) {
@@ -178,12 +177,8 @@ Snapshots.prototype = {
 				for (key in compare[side]) {
 					if (!(key in compare[opp])) {
 						diff[side][key] = compare[side][key];
-						score[side]++;
 					} else if (compare[side][key] instanceof Object) {
 						cp = this.compare(compare.left[key], compare.right[key]);
-
-						score.left += cp.score.left;
-						score.right += cp.score.right;
 
 						if (!empty(cp.left)) diff.left[key] = cp.left;
 						if (!empty(cp.right))	diff.right[key] = cp.right;
@@ -197,28 +192,22 @@ Snapshots.prototype = {
 							if (ref instanceof Array || ref instanceof Object) {
 								cp = this.compare(ref, compare[opp][key][l]);
 
-								score.left += cp.score.left;
-								score.right += cp.score.right;
-
 								diff.left.push(cp.left);
 								diff.right.push(cp.right);
+
 								both.push(cp.both);
 							} else {
 								if (ref === compare[opp][key][l]) {
 									both.push(ref);
-									score[side]++;
 								} else {
 									diff[side].push(ref);
-									score[side]++;
 								}
 							}
 						}
 					} else if (compare.left[key] === compare.right[key]) {
 						both[key] = compare[side][key];
-						score[side]++;
 					} else {
 						diff[side][key] = compare[side][key];
-						score[side]++;
 					}
 				}
 			}
@@ -234,26 +223,22 @@ Snapshots.prototype = {
 					if (ref instanceof Array || ref instanceof Object) {
 						cp = this.compare(ref, compare[opp][l]);
 
-						score.left += cp.score.left;
-						score.right += cp.score.right;
-
 						diff.left.push([cp.left]);
 						diff.right.push([cp.right]);
+
 						both.push([cp.both]);
 					} else {
 						if (ref === compare[opp][l]) {
 							both.push(ref);
-							score[side]++;
 						} else {
 							diff[side].push(ref);
-							score[side]++;
 						}
 					}
 				}
 			}
 		}
 
-		var result = { left: diff.left, right: diff.right, both: both, score: score, equal: score.left === score.right };
+		var result = { left: diff.left, right: diff.right, both: both, equal: $.isEmptyObject(diff.left) && $.isEmptyObject(diff.right) };
 		
 		return result;
 	}

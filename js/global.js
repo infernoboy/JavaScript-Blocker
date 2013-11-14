@@ -1278,22 +1278,19 @@ var RULE_TOP_HOST = 1,
 			this.utils.timer.timeout('save_rules', function (rules, snapshots, which, self, no_snapshot) {
 				try {
 					if (Settings.getItem('enableSnapshots') && Settings.getItem('autoSnapshots') && !no_snapshot && !self.using_snapshot) {
-						if (Settings.getItem('snapshotIgnoreTemporaryRules')) {
-							var filtered_rules = {};
+						var filtered_rules = {};
 
-							for (var kind in rules) {
-								filtered_rules[kind] = {};
+						for (var kind in rules) {
+							filtered_rules[kind] = {};
 
-								for (var domain in rules[kind]) {
-									filtered_rules[kind][domain] = {};
+							for (var domain in rules[kind]) {
+								filtered_rules[kind][domain] = {};
 
-									for (var rule in rules[kind][domain])
-										if (!rules[kind][domain][rule][1])
-											filtered_rules[kind][domain][rule] = rules[kind][domain][rule];
-								}
+								for (var rule in rules[kind][domain])
+									if (!rules[kind][domain][rule][1])
+										filtered_rules[kind][domain][rule] = rules[kind][domain][rule];
 							}
-						} else
-							var filtered_rules = rules;
+						}
 
 						self.utils.zero_timeout(function (snapshots, filtered_rules, self) {
 							if (!snapshots.compare(snapshots.latest(), filtered_rules).equal) {
@@ -1303,7 +1300,8 @@ var RULE_TOP_HOST = 1,
 										self.show_snapshots();
 									}
 								});
-							}
+							} else
+								console.log('Rules are equal to latest snapshot.')
 						}, [snapshots, filtered_rules, self]);
 					}
 
@@ -3005,6 +3003,8 @@ var RULE_TOP_HOST = 1,
 			$$('#quick-add-info').slideUp(200 * self.speedMultiplier);
 
 			if (!$$('.some-list').length) Tabs.messageActive('updatePopover');
+
+			Popover.window().focus();
 		}).on('mousedown', alblspan, function (e, t) {
 			var span = $(this);
 
@@ -4026,8 +4026,21 @@ var RULE_TOP_HOST = 1,
 					pop = self.poppies.verify_donation.call([off.left, off.top, event.isTrigger], self);
 			
 			new Poppy(off.left, off.top, pop);
-		}).on('click', '#js-help', function () {
-			self.utils.open_url(ExtensionURL('help/index.html'));
+		}).on('click', '#js-help', function (ev) {
+			self.utils.timer.remove('timeout', 'dblclick_console');
+
+			if (this.disallowClick) {
+				this.disallowClick = 0;
+
+				ev.stopImmediatePropagation();
+			} else
+				self.utils.open_url(ExtensionURL('help/index.html'));
+		}).on('mousedown', '#js-help', function () {
+			self.utils.timer.timeout('dblclick_console', function (e) {
+				e.disallowClick = 1;
+
+				$$('#jsblocker-name').dblclick();
+			}, 500, [this]);
 		}).on('click', '#js-settings', function () {
 			Popover.hide();
 			self.utils.open_url(ExtensionURL('settings.html'));
@@ -4078,11 +4091,7 @@ var RULE_TOP_HOST = 1,
 				this.style.opacity = a ? 0 : 1;
 				this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
 			});
-		}).on('dblclick', '.host-section:first-child .host-section-host .label', function () {
-			var l = $.extend({}, window.localStorage);
-			delete l.Rules;
-			delete l.CollapsedDomains;
-			
+		}).on('dblclick', '.host-section:first-child .host-section-host .label', function () {			
 			var e = $.extend({}, SettingStore.all());
 			delete e.Rules;
 			delete e.SimpleRules;
@@ -4094,7 +4103,7 @@ var RULE_TOP_HOST = 1,
 			delete e.EasyPrivacy;
 			e.donationVerified = !!e.donationVerified;
 			
-			new Poppy($(self.popover.body).width() / 2, 1, [
+			new Poppy($(self.popover.body).width() / 2, 2, [
 				'<p>This data contains a copy of your settings and current webpage. It does NOT reveal your rules.</p>',
 				'<textarea spellcheck="false" id="debug-info" readonly>',
 					'Version', "\n", self.displayv, '-', self.bundleid, "\n\n",
@@ -4102,7 +4111,6 @@ var RULE_TOP_HOST = 1,
 					'Trial Start', "\n", self.trialStart, "\n\n",
 					'Trial Remaining', "\n", self.trial_remaining(), "\n\n",
 					'User Agent', "\n", window.navigator.userAgent, "\n\n",
-					'window.localStorage', "\n", JSON.stringify(l), "\n\n", 
 					'Settings', "\n", JSON.stringify(e), "\n\n",
 					'Webpage', "\n", self.tab.url,
 				'</textarea>'
@@ -4114,9 +4122,7 @@ var RULE_TOP_HOST = 1,
 				t.scrollTop = 0
 			});
 		}).on('dblclick', '#jsblocker-name', function () {
-			var off = self.utils.position_poppy(this, 9, 14);
-
-			new Poppy(off.left, off.top, [
+			new Poppy($(self.popover.body).width() / 2, 2, [
 				'<ul class="jsoutput"></ul>',
 				'<div class="inputs">',
 					'<input id="report-console" value="Report" type="button" /> ',
@@ -4592,7 +4598,7 @@ var RULE_TOP_HOST = 1,
 
 		if (!this.trial_active() && !this.donationVerified && !badge_only && this.trialStart > -1)
 			return this.utils.timer.timeout('trial_expired', function (self) {
-				new Poppy($(self.popover.body).width() / 2, 0, [
+				new Poppy($(self.popover.body).width() / 2, 2, [
 					'<p class="misc-info">', _('JavaScript Blocker'), '</p>',
 					'<p>', _('Free trial expired', ['JavaScript Blocker']), '</p>',
 					'<p><input type="button" id="click-understood" value="', _('Understood'), '" /></p>'
@@ -5184,7 +5190,7 @@ var RULE_TOP_HOST = 1,
 					Settings.setItem('simpleMode', true);
 
 					setTimeout(function (self) {
-						new Poppy($(self.popover.body).width() / 2, 0, [
+						new Poppy($(self.popover.body).width() / 2, 2, [
 							'<p>', _('You cannot use JavaScript Blocker'), '</p>'].join(''));
 					}, 2000, self);
 				} else {
@@ -5206,7 +5212,7 @@ var RULE_TOP_HOST = 1,
 									message = ['<p>', _('Update Failure'), '</p>'];
 
 								if (url in self.caches.jsblocker) {
-									new Poppy($(self.popover.body).width() / 2, 0, message.join(''));
+									new Poppy($(self.popover.body).width() / 2, 2, message.join(''));
 									self.do_update_popover({ message: self.caches.jsblocker[url], target: { url: url } });
 								} else {
 									self.clear_ui();

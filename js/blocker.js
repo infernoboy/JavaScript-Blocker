@@ -44,10 +44,10 @@ var blank = window.location.href === 'about:blank',
 
 if (!window.CustomEvent)
 	(function () {
-		function CustomEvent ( event, params ) {
+		function CustomEvent (event, params) {
 			params = params || { bubbles: false, cancelable: false, detail: undefined };
-			var evt = document.createEvent( 'CustomEvent' );
-			evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+			var evt = document.createEvent('CustomEvent');
+			evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
 			return evt;
 		};
 
@@ -139,7 +139,7 @@ function createPlaceholder(e, url) {
 			h = e.offsetHeight <= 12 ? e.offsetHeight : e.offsetHeight - 12;
 	
 	pl.className = 'jsblocker-placeholder';
-	pl.id = 'placeholder-' + +new Date();
+	pl.id = 'placeholder-' + Token.generate();
 
 	setCSSs(pl, {
 		display: 'inline-block',
@@ -171,7 +171,7 @@ function createPlaceholder(e, url) {
 		if (!ev.isTrigger) {
 			ev.preventDefault();
 			ev.stopImmediatePropagation();
-			e[accessToken] = true;
+			e.setAttribute('data-jsb_auto_allow', Token.create('auto_allow'));
 			pl.parentNode.replaceChild(e, pl);
 		}
 	});
@@ -186,7 +186,7 @@ var alwaysDo = {},
 			host: blank ? 'blank' : window.location.host || 'blank'
 		}, readyTimeout = {}, zero = [], settings = {},
 		ph = function (kind, allowed, host, url) {
-			if (!allowed && ~['frame', 'video', 'embed', 'image'].indexOf(kind) && this.nodeName !== 'FRAME')
+			if (!allowed)
 				if_setting('showPlaceholder' + kind, true, function (t) {
 					createPlaceholder(t, url);
 				}, function (t) {
@@ -272,7 +272,7 @@ function canLoad(event, exclude, meta) {
 
 	var source = getAbsoluteURL(event.url), pathname, host, at, arr, use_source, did_something = 0, kind = kinds[node][0];
 
-	if (!el[accessToken]) {
+	if (!Token.valid(el.getAttribute('data-jsb_auto_allow'), 'auto_allow')) {
 		if (kind in alwaysDo) {
 			if (!alwaysDo[kind] && event.preventDefault) event.preventDefault();
 			return alwaysDo[kind];
@@ -297,7 +297,7 @@ function canLoad(event, exclude, meta) {
 				return 1;
 			}
 
-			if (node === 'IFRAME' || node === 'FRAME') el.setAttribute('data-jsblocker_url', use_source);
+			if (node === 'IFRAME' || node === 'FRAME') el.setAttribute('data-jsb_url', use_source);
 
 			var allo = ResourceCanLoad(event, [kind, jsblocker.href, use_source, !(window == window.top)]),
 					isAllowed = allo[0],
@@ -314,6 +314,8 @@ function canLoad(event, exclude, meta) {
 			if (!meta) {
 				switch (node) {
 					case 'EMBED':
+					case 'OBJECT':
+					case 'FRAME':
 						meta = el.getAttribute('type');
 					break;
 				}
@@ -337,7 +339,8 @@ function canLoad(event, exclude, meta) {
 				if (kinds[node][1]) kinds[node][1].call(el, kind, 1);
 			}
 		}
-	}
+	} else
+		Token.expire(el.getAttribute('data-jsb_auto_allow'));
 
 	if (did_something)
 		ready(event);
@@ -482,9 +485,12 @@ function prepareAnchors(event, anchors, forms) {
 	for (var x = 0; x < a.length; x++)
 		if (a[x].getAttribute('href'))
 			prepareAnchor(a[x], x);
-	for (var y = 0; y < f.length; y++)
-		if (f[y].getAttribute('method') && f[y].getAttribute('method').toLowerCase() === 'post')
-			GlobalPage.message('cannotAnonymize', getAbsoluteURL(f[y].getAttribute('action')));
+
+	if_setting('blockReferrer', true, function (f) {
+		for (var y = 0; y < f.length; y++)
+			if (f[y].getAttribute('method') && f[y].getAttribute('method').toLowerCase() === 'post')
+				GlobalPage.message('cannotAnonymize', getAbsoluteURL(f[y].getAttribute('action')));
+	}, null, [f]);
 }
 
 function prepareAnchor(anchor, i) {
@@ -499,9 +505,9 @@ function prepareAnchor(anchor, i) {
 	}
 
 	if (anchor.nodeName && anchor.nodeName.toUpperCase() === 'A') {
-		if (anchor.getAttribute('data-jsbprepared') === window.accessToken) return;
+		if (Token.valid(anchor.getAttribute('data-jsb_prepared'), 'anchor')) return;
 
-		anchor.setAttribute('data-jsbprepared', window.accessToken);
+		anchor.setAttribute('data-jsb_prepared', Token.create('anchor', 1));
 		
 		if (!(enabled_specials.simple_referrer.allowed % 2)) {
 			if (anchor.getAttribute('href') && anchor.getAttribute('href').length && anchor.getAttribute('href').charAt(0) !== '#')
@@ -522,18 +528,20 @@ function prepareAnchor(anchor, i) {
 				});
 			}, null, [anchor]);
 		
-		if (anchor.getAttribute('href') && anchor.getAttribute('href').charAt(0) === '#')
-			GlobalPage.message('cannotAnonymize', getAbsoluteURL(anchor.getAttribute('href')));
-		else	
-			anchor.addEventListener('mousedown', function (e) {
-				var k = (window.navigator.platform.match(/Win/)) ? e.ctrlKey : e.metaKey;
-			
-				GlobalPage.message('anonymousNewTab', k || e.which === 2 ? 1 : 0);
-			
-				setTimeout(function () {
-					GlobalPage.message('anonymousNewTab', 0);
-				}, 1000);
-			}, true);
+		if_setting('blockReferrer', true, function (anchor) {
+			if (anchor.getAttribute('href') && anchor.getAttribute('href').charAt(0) === '#')
+				GlobalPage.message('cannotAnonymize', getAbsoluteURL(anchor.getAttribute('href')));
+			else	
+				anchor.addEventListener('mousedown', function (e) {
+					var k = (window.navigator.platform.match(/Win/)) ? e.ctrlKey : e.metaKey;
+				
+					GlobalPage.message('anonymousNewTab', k || e.which === 2 ? 1 : 0);
+				
+					setTimeout(function () {
+						GlobalPage.message('anonymousNewTab', 0);
+					}, 1000);
+				}, true);
+		}, null, [anchor]);
 	}
 }
 
@@ -554,7 +562,7 @@ function prepareFrame(frame) {
 
 	id = fr.getAttribute('id');
 
-	if (!id || !id.length) fr.setAttribute('id', 'frame-' + +new Date());
+	if (!id || !id.length) fr.setAttribute('id', 'frame-' + Token.generate());
 
 	fr.addEventListener('load', function () {
 		this.contentWindow.postMessage('mayIPleaseKnowYourURL:' + this.id, '*');
@@ -585,9 +593,9 @@ function windowMessenger(event) {
 
 			if (!fr) return;
 
-			var old = fr.getAttribute('data-jsblocker_url');
+			var old = fr.getAttribute('data-jsb_url');
 
-			fr[accessToken] = 0;
+			Token.expire(fr.getAttribute('data-jsb_auto_allow'));
 
 			if (old !== url) {
 				var t = JSON.parse(JSON.stringify(beforeLoad));
@@ -595,15 +603,15 @@ function windowMessenger(event) {
 				t.url = url;
 				t.unblockable = old;
 				canLoad(t);
-				fr.setAttribute('data-jsblocker_url', url);
+				fr.setAttribute('data-jsb_url', url);
 			} else
-				fr.setAttribute('data-jsblocker_url', url);
+				fr.setAttribute('data-jsb_url', url);
 		}
 	}
 }
 
 function commandHandler(event) {
-	if (event.detail.command && Token.valid(event.detail.token, event.detail.command) && event.detail.key === window.accessToken) {
+	if (event.detail.command && Token.valid(event.detail.token, event.detail.command) && (event.detail.key === window.accessToken || Token.valid(event.detail.key, 'custom'))) {
 		Token.expire(event.detail.token, true);
 
 		switch (event.detail.command) {

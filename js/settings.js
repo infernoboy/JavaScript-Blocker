@@ -27,9 +27,7 @@ $.extend(Settings, {
 
 			window.location.hash = this.id;
 			
-			try {
-				window.localStorage.setItem('tab', this.id);
-			} catch (e) {}
+			Settings.set_value('settingsPageTab', this.id);
 
 			self.tba = 1;
 
@@ -188,7 +186,7 @@ $.extend(Settings, {
 						script = script ? $.trim(script) : '';
 
 						if (script.length) {
-							var id = 'custompre_' + +new Date();
+							var id = 'custompre_' + Date.now();
 
 							GlobalPage.message('createCustomScript', ['pre', id, name, script]);
 
@@ -209,7 +207,7 @@ $.extend(Settings, {
 						script = script ? $.trim(script) : '';
 
 						if (script.length) {
-							var id = 'custompost_' + +new Date();
+							var id = 'custompost_' + Date.now();
 
 							GlobalPage.message('createCustomScript', ['post', id, name, script]);
 
@@ -421,7 +419,7 @@ $.extend(Settings, {
 		setTimeout(function () { window.location.reload(); }, 700);
 	},
 	trial_active: function () {
-		return (+new Date() - this._current.trialStart < 1000 * 60 * 60 * 24 * 10);
+		return (Date.now() - this._current.trialStart < 1000 * 60 * 60 * 24 * 10);
 	},
 	extras_active: function () {
 		return (!Settings.current_value('donationVerified') && !this.trial_active());
@@ -559,7 +557,7 @@ $.extend(Settings, {
 				var str = [
 					'<li>',
 						'<span>', pre[key].name.replace(/&/g, '&amp;').replace(/</g, '&lt;'), '</span> ',
-						'<input type="button" class="remove-custom delete" value="', _('Remove'), '" /> <input type="button" class="edit-custom single-click" value="', _('Edit'), '" />',
+						'<input type="button" class="remove-custom delete" value="', _('Delete'), '" /> <input type="button" class="edit-custom single-click" value="', _('Edit'), '" />',
 						'<div class="divider small"></div>',
 					'</li>'
 				].join('');
@@ -678,11 +676,11 @@ function settingsReady() {
 				.html('<div class="left"></div><span>' + (tool !== 'search' ? _(Settings.toolbar_items[tool]) : Settings.toolbar_items[tool]) + '</span><div class="right"></div>').appendTo('#toolbar');
 	}
 
-	var ref;
+	var ref, cu = $('#' + Settings.current_value('settingsPageTab'));
 	
 	if (window.location.hash.length > 1 && (ref = $(window.location.hash)).length) ref.click();
-	else if (window.localStorage.tab && (ref = $('#' + window.localStorage.tab)).length) ref.click();
-	else $('#for-about').click();
+	else if ((ref = $('#' + Settings.current_value('settingsPageTab'))).length) ref.click();
+	else $$('#for-welcome').click();
 
 	GlobalPage.message('aboutPage');
 		

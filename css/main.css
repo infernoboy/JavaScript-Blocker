@@ -963,11 +963,11 @@ ul li > span {
 	}
 	body.highlight-matched #main ul li.by-rule.rule-type-4:not(.unblockable) {
 		/*background: -webkit-linear-gradient(left, rgba(255,0,60,0), rgba(255,0,60,0.05) 20%, rgba(255,0,60,0.06) 50%, rgba(255,0,60,0.05) 80%, rgba(255,0,60,0));*/
-		background: rgba(255,0,40,0.04);
+		background: rgba(255,0,40,0.03);
 	}
 		body.highlight-matched #main .allowed-column li.by-rule.rule-type-5:not(.unblockable) {
 			/*background: -webkit-linear-gradient(left, rgba(0,255,0,0), rgba(0,255,0,0.05) 20%, rgba(0,255,0,0.1) 50%, rgba(0,255,0,0.05) 80%, rgba(0,255,0,0));*/
-			background: rgba(0,255,0,0.075);
+			background: rgba(0,255,0,0.062);
 		}
 	.unblocked-script-urls li span {
 		max-width: 100% !important;
@@ -1933,7 +1933,7 @@ body.disabled #frame-switcher {
 	.current-selection span,
 	.current-selection a {
 		color: #fff !important;
-		text-shadow: 0 1px 0 rgba(0,0,0,0.45) !important;
+		text-shadow: 0 1px 0 rgba(0,0,0,0.4) !important;
 	}
 
 .jsoutput {

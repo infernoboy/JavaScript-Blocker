@@ -1,5 +1,5 @@
 $(function() {
-	$('li section')
+	$('li section, .help-text')
 		.css('display', 'none')
 		.prev('p')
 		.addClass('clickable')

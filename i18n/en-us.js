@@ -48,7 +48,6 @@ Strings['en-us'] = {
 	'Understood': 'Understood',
 	'Done': 'Done',
 
-
 	date: {
 		days_short: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
 		days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -598,7 +597,7 @@ Strings['en-us'] = {
 
 	'custom helper description': 'This section allows you to create custom scripts that are injected into a webpage. They will appear ' +
 		'under the <b>OTHER</b> section of the main window. Once a new script is created, you can create rules ' +
-		'to enable it on a per-site basis or create a rule to enable it everywhere.',
+		'to enable it on a per-site basis or create a rule to enable it everywhere. Learn more on the <a href="' + ExtensionURL('help/index.html#custom-scripts') + '">help page</a>.',
 	'before load description': 'These scripts will be injected into the webpage before the DOM and other scripts are loaded.',
 	'after load description': 'These scripts will be injected once the content of the webpage is ready to be manipulated.',
 
@@ -720,8 +719,8 @@ Strings['en-us'] = {
 	'Show welcome:': 'Show welcome page:',
 	'Show Welcome': 'Show Welcome',
 	
-	'Remove all rules:': 'Remove all rules:', // label
-	'Remove Rules': 'Remove Rules', // button
+	'Remove all rules:': 'Delete all rules:', // label
+	'Remove Rules': 'Delete Rules', // button
 	'All rules have been removed.': 'All rules have been removed.', // popup
 	'All snapshots have been removed.': 'All snapshots have been removed.', // popup
 
@@ -735,7 +734,7 @@ Strings['en-us'] = {
 	'Import a full backup:': 'Import a full backup:',
 	'Delete all snapshots:': 'Delete all snapshots:',
 	'Create Backup': 'Create Backup',
-	 'Copy below': 'Copy the below and save it to a file to create a backup.',
+	 'Copy below': 'Copy the text below and save it to a file to create a backup.',
 	'Import Backup': 'Import Backup',
 	'Delete Snapshots': 'Delete Snapshots',
 	'Error importing backup': 'Error importing backup',

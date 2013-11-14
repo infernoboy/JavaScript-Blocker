@@ -304,7 +304,7 @@ JB.poppies = {
 							id = si.data('id'),
 							compare = JB.rules.snapshots.compare(id, JB.rules.current_rules), dir = this.getAttribute('data-type'), mes,
 							compare = $.extend(JB.rules.data_types, compare[dir]),
-							cache_id = JB.rules.snapshots.add(compare, 1, 'Comparison Cache ' + +new Date()),
+							cache_id = JB.rules.snapshots.add(compare, 1, 'Comparison Cache ' + Date.now()),
 							fun = function () {
 								JB.rules.show();
 								JB.rules.snapshots.remove(cache_id);

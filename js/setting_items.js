@@ -70,6 +70,9 @@ Settings.settings = {
 		},
 		simpleReferrer: { // DEPRECATED.
 			default: true
+		},
+		settingsPageTab: {
+			default: 'for-welcome'
 		}
 	},
 	ui: {
@@ -345,13 +348,6 @@ Settings.settings = {
 			default: true,
 			setting: true,
 			label: 'Create a snapshot when rules are modified',
-			extra: 1,
-			if_setting: { enableSnapshots: true }
-		},
-		snapshotIgnoreTemporaryRules: {
-			label: 'Ignore temporary rules when creating new snapshots',
-			setting: true,
-			default: false,
 			extra: 1,
 			if_setting: { enableSnapshots: true }
 		},

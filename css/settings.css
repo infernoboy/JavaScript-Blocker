@@ -94,7 +94,6 @@ body {
 			float: right;
 		}
 		#toolbar li.selected {
-			/*background: #f0f7ff;*/
 			color: #0069de;
 		}
 			#toolbar li .left,
