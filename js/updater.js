@@ -4,7 +4,11 @@ JB.updater = function () {
 	var v = this.installedBundle, self = this;
 
 	if (v === this.bundleid) return false;
-	if (this.reload && v < this.bundleid) return ToolbarItems.showPopover();
+	if (this.reload && v < this.bundleid) {
+		if (~this.silent_updates.indexOf(this.bundleid) || (this.donationVerified && !Settings.getItem('updateNotify'))) {}
+		else
+			ToolbarItems.showPopover();
+	}
 	
 	switch (true) {
 		case v < 89: // 2.8.0
@@ -12,7 +16,7 @@ JB.updater = function () {
 			
 			new Poppy($(this.popover.body).width() / 2, 0, [
 				'<p class="misc-info">Too Old</p>',
-				'<p>You are using an extremely outdated version of JavaScript Blocker. You must uninstall it and reinstall the latest version manually; ',
+				'<p>You were using an extremely outdated version of JavaScript Blocker. You must uninstall it and reinstall the latest version manually; ',
 					'updating will not work.</p>'].join(''), null, null, null, true);
 		break;
 
@@ -354,12 +358,61 @@ JB.updater = function () {
 					});
 				}, null, null, true);
 			else {
-				self.donate();
+				this.installedBundle = 171;
 
-				// self.installedBundle = 171;
-
-				// self.updater();
+				this.updater();
 			}
+		break;
+
+		case v < 177: // 4.1.0
+			var pre = JSON.parse(Settings.getItem('custompreScripts') || '{}'),
+					post = JSON.parse(Settings.getItem('custompostScripts') || '{}'),
+					all = $.extend({}, pre, post), test;
+
+			if (!$.isEmptyObject(all)) {
+				self.update_attention_required = self.update_attention_required <= 177 ? 177 : self.update_attention_required;
+
+				new Poppy($(this.popover.body).width() / 2, 0, [
+					'<p class="misc-info">The User Scripts Update</p>',
+					'<p>This updates changes the way custom scripts work. Because you have custom scripts from a previous version of JavaScript Blocker, ',
+					'they will have to be updated to be compatible. This process is completely automatic. If applicable, you should create a new backup ',
+					'once this is done since backups containing the old custom scripts cannot be imported any longer.</p>',
+					'<p><input type="button" id="rewrite-scripts" value="', _('Continue'), '" /></p>'
+				].join(''), function () {
+					$$('#rewrite-scripts').click(function () {
+						for (var ns in all) {
+							test = UserScript._parse(all[ns].func);
+
+							if (!test.data.name || !test.data.namespace) {
+								UserScript.add([
+									'// ==UserScript==',
+									'// @name ' + all[ns].name,
+									'// @namespace ' + ns,
+									~ns.indexOf('pre') ? '// @run-at document-start' : '',
+									'// ==/UserScript==',
+									' ', ' '
+								].join("\n") + all[ns].func);
+							} else
+								UserScript.add(all[ns].func);
+						}
+
+						Settings.removeItem('custompostScripts');
+						Settings.removeItem('custompreScripts');
+
+						self.donate();
+
+						// this.installedBundle = 177;
+
+						// this.updater();
+					});
+				}, null, null, true);
+		} else {
+			this.donate();
+
+			// this.installedBundle = 177;
+
+			// this.updater();
+		}
 		break;
 
 		case v < this.bundleid:

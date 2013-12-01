@@ -83,8 +83,8 @@ header a {
 	font-size: 10pt;
 }
 
-#jsblocker-name {
-	display: none;
+#main .actions-bar li {
+	padding: 1px 1px 0px 1px !important;
 }
 
 .host-section-host {
@@ -115,4 +115,8 @@ body.simple #main ul.show-per-host li span {
 	}
 ul li > span {
 	height: 22px;
+}
+
+.scripts-count-type {
+	font-size: 9pt;
 }

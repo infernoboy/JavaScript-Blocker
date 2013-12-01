@@ -6,6 +6,16 @@
 
 "use strict";
 
+window.critical_timeout = null;
+
+window.onerror = function (d, p, l, c) {
+	window.critical_timeout = setTimeout(function (d, p, l) {
+		alert('Critical error: ' + d + ',' + p + ',' + l);
+	}, 1000, d, p, l);
+
+	_d(d + ', ' + p + ', ' + l);
+};
+
 jQuery.fn.reverse = [].reverse;
 
 window.open = function (url, name, specs) {
@@ -75,9 +85,10 @@ var RULE_TOP_HOST = 1,
 		logger.data('messages', cur.concat(args))
 			.append('<li class="jsoutputcode unread">' + args.join(' ') + '<div class="divider"></div></li>')
 			.find('.divider').removeClass('invisible').filter(':last').addClass('invisible');
+
+		clearTimeout(window.critical_timeout);
 	},
 	JB = {
-	tab: {},
 	updating: !1,
 	finding: !1,
 	reload: 1,
@@ -97,7 +108,7 @@ var RULE_TOP_HOST = 1,
 	displayv: null,
 	bundleid: null,
 	update_attention_required: 161,
-	beta_attention_required: 1,
+	silent_updates: [174, 176],
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
 	longURL: 'http://api.longurl.org/v2/expand?user-agent=ToggleableJavaScriptBlocker&title=1&format=json&url=',
 	
@@ -107,6 +118,14 @@ var RULE_TOP_HOST = 1,
 
 	donate: function () {
 		var self = this, status = Settings.getItem('donationVerified');
+
+		if (~this.silent_updates.indexOf(this.bundleid) || (this.donationVerified && !Settings.getItem('updateNotify'))) {
+			new Poppy();
+
+			Tabs.messageActive('updatePopover');
+
+			return this.installedBundle = this.bundleid;
+		}
 
 		if (!status || status === 777)
 			new Poppy($(this.popover.body).width() / 2, 2, [
@@ -145,6 +164,7 @@ var RULE_TOP_HOST = 1,
 				'<p>',
 					_('Updated JavaScript Blocker {1}', ['<a class="outside" href="http://javascript-blocker.toggleable.com/change-log/' + this.displayv.replace(/\./g, '') + '">' + this.displayv + '</a>']),
 				'</p>',
+				'<p><input type="button" id="disable-update-notify" value="', _('Hide Update Notifications'), '" /></p>',
 				'<p><div class="divider"></div></p>',
 				'<p id="jsb-changes">Loading change log...</p>'
 			].join(''), function () {
@@ -156,6 +176,11 @@ var RULE_TOP_HOST = 1,
 				});
 
 				self.installedBundle = self.bundleid;
+
+				$$('#disable-update-notify').click(function () {
+					Settings.setItem('updateNotify', false);
+					new Poppy();
+				});
 			});
 		}
 	},
@@ -184,7 +209,7 @@ var RULE_TOP_HOST = 1,
 	special_enabled: function (special) {
 		if (!this.donationVerified) return false;
 
-		if (special.indexOf('customp') === 0) return 1;
+		if (UserScript.exist(special)) return 1;
 
 		var s = Settings.getItem('enable_special_' + special);
 
@@ -281,6 +306,9 @@ var RULE_TOP_HOST = 1,
 		}
 
 		use_tracker_cache = new_collapsed = undefined;
+	},
+	get tab() {
+		return Tabs.active();
 	},
 	get isBeta() {
 		return Settings.getItem('isBeta');
@@ -432,14 +460,22 @@ var RULE_TOP_HOST = 1,
 		}
 	},
 	utils: {
+		blobURL: function (text) {
+			if (!window.Blob) return '';
+			
+			return (window.URL ? window.URL : window.webkitURL).createObjectURL(new Blob([text]));
+		},
 		b64_to_utf8: function (str) {
 			return decodeURIComponent(escape(window.atob(str)));
+		},
+		utf8_to_b64: function (str) {
+			return window.btoa(unescape(encodeURIComponent(str)));
 		},
 		throttle: function (fn, delay, extra) {
 			var timeout = null, last = 0
 
 			return function () {
-				var elapsed = Date.now() - last, args = $.merge($.makeArray(arguments), extra);
+				var elapsed = Date.now() - last, args = $.merge($.makeArray(arguments), extra || []);
 
 				var execute = function () {
 					last = Date.now();
@@ -840,7 +876,7 @@ var RULE_TOP_HOST = 1,
 			}
 		},
 		id: function () {
-			return (Date.now() + Math.random()).toString(36).replace(/\./, '');
+			return Math.random().toString(36).substr(2, 10);
 		},
 		open_url: function (url) {
 			Tabs.create({ url: url });
@@ -866,14 +902,14 @@ var RULE_TOP_HOST = 1,
 			
 			this._has_attention = 1;
 			
-			this.timer.interval('toolbar_attention', function () {
+			this.timer.interval('toolbar_attention', function (self) {
 				self._attention = !self._attention;
 								
 				ToolbarItems
 					.state(false)
 					.image(self._attention ? 'images/toolbar-attn.png' : (self.disabled ? 'images/toolbar-disabled.png' : 'images/toolbar.png'))
 					.badge(self._attention ? 1 : 0, null);
-			}, 1000);
+			}, 1000, [this]);
 
 			self = mode = undefined;
 		}
@@ -889,13 +925,14 @@ var RULE_TOP_HOST = 1,
 		var r = /^([a-zA-Z0-9\-]+):(\/\/)?([^\/]+)\/?/;
 		
 		try {
-			if (!url) url = this.tab.url;
+			if (!url || typeof url !== 'string') url = this.tab.url;
 		} catch (e) { return 'ERROR'; }
 		
 		if (url === 'about:blank') return 'blank';
 		if (/^javascript:/.test(url)) return 'JavaScript Protocol';
+		if (/^blob:/.test(url)) return 'Blob URI';
 		if (url in this.caches.active_host) return this.caches.active_host[url];
-		if (/^data/.test(url)) return (this.caches.active_host[url] = 'Data URI');
+		if (/^data:/.test(url)) return (this.caches.active_host[url] = 'Data URI');
 		if (url.match(r) && url.match(r).length > 2) return (this.caches.active_host[url] = url.match(r)[3]);
 		return url;
 	},
@@ -976,7 +1013,6 @@ var RULE_TOP_HOST = 1,
 		}
 	},
 	rules: {
-		accessKeys: {},
 		blacklist: {},
 		whitelist: {},
 		get simplified() {
@@ -1300,8 +1336,7 @@ var RULE_TOP_HOST = 1,
 										self.show_snapshots();
 									}
 								});
-							} else
-								console.log('Rules are equal to latest snapshot.')
+							}
 						}, [snapshots, filtered_rules, self]);
 					}
 
@@ -1385,8 +1420,8 @@ var RULE_TOP_HOST = 1,
 
 			this.save(1);
 		},
-		recache: function (kind, d) {			
-			if (d === '.*') {
+		recache: function (kind, d) {
+			if (d === '.*' || !(kind in this.caches.rule_actions)) {
 				this.caches.rule_actions = this.data_types;
 				this.cache[kind] = {};
 				this.cache_nowlbl[kind] = {};
@@ -1423,9 +1458,9 @@ var RULE_TOP_HOST = 1,
 
 			mainFor:
 			for (var i = 0, b = split.length; i < b; i++) {
-				var whole = split[i], fTwo = this._firstTwo(whole);
+				var whole = $.trim(split[i]), fTwo = this._firstTwo(whole);
 
-				if (fTwo === '##' || ~whole.indexOf('#@#')) continue;
+				if (fTwo === '##' || ~whole.indexOf('#@#') || !whole.length) continue;
 
 				var mode = fTwo === '@@' ? 5 : 4,
 						whole = mode === 5 ? whole.substr(2) : whole,
@@ -1445,6 +1480,7 @@ var RULE_TOP_HOST = 1,
 				if (whole[0] === '!' || whole[0] === '[' || ~whole.indexOf('##')) continue;
 
 				rule = rule.replace(/\//g, '\\/')
+					.replace(/\(/g, '\\(')
 					.replace(/\+/g, '\\+')
 					.replace(/\?/g, '\\?')
 					.replace(/\^/g, '([^a-zA-Z0-9_\.%-]+|$)')
@@ -1491,7 +1527,13 @@ var RULE_TOP_HOST = 1,
 			}
 
 			def = split = type_map = whole = fTwo =  mode = dollar = rule = regexp = $check = use_type = domains = args = z = list = i = b = undefined;
-		}, 
+		},
+		_easylist_urls: {
+			EasyMalware: 'https://easylist-downloads.adblockplus.org/malwaredomains_full.txt',
+			EasyPrivacy: 'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
+			EasyList: 'https://easylist-downloads.adblockplus.org/easylist.txt',
+			EasySocial: 'https://adversity.googlecode.com/hg/Antisocial.txt'
+		},
 		easylist: function (cb) {
 			var fromSettings = function (which) {
 				var el = Settings.getItem(which);
@@ -1503,40 +1545,28 @@ var RULE_TOP_HOST = 1,
 			}, lastUpdate = Settings.getItem('EasyListLastUpdate');
 
 			if (lastUpdate && Date.now() - lastUpdate < 432000000) {
-				fromSettings('EasyPrivacy');
-				fromSettings('EasyList');
+				for (var key in this._easylist_urls) fromSettings(key);
 				return;
 			}
 
-			$.ajax({
-				url: 'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
-				async: false
-			}).success(function (easyprivacy) {
-				Settings.setItem('EasyPrivacy', easyprivacy);
-
-				fromSettings('EasyPrivacy');
-
+			for (var key in this._easylist_urls)
 				$.ajax({
-					url: 'https://easylist-downloads.adblockplus.org/easylist.txt',
+					url: this._easylist_urls[key],
 					async: false
-				}).success(function (easylist) {
-					Settings.setItem('EasyListLastUpdate', Date.now());
-					Settings.setItem('EasyList', easylist);
+				}).success(function (list) {
+					Settings.setItem(key, list);
 
-					fromSettings('EasyList');
+					fromSettings(key);
 
-					if (!JB.setupDone) {
-						Settings.setItem('alwaysBlockscript', 'nowhere');
-						Settings.setItem('alwaysBlockframe', 'nowhere');
-					}
+					Settings.setItem('alwaysBlockscript', 'nowhere');
+					Settings.setItem('alwaysBlockframe', 'nowhere');
 
 					if (cb) cb();
 				}).error(function () {
-					fromSettings('EasyList');
+					fromSettings(key);
 				});
-			}).error(function () {
-				fromSettings('EasyPrivacy');
-			});
+
+			Settings.setItem('EasyListLastUpdate', Date.now());
 		},
 		remove_all_predefined: function (cb) {
 			var a, b, c, d, kind, rs = this.rules, k, e, r;
@@ -1773,7 +1803,11 @@ var RULE_TOP_HOST = 1,
 
 			var ref;
 
-			return ((ref = this.caches.rule_regexp[rule]) ? ref : this.caches.rule_regexp[rule] = new RegExp(rule, 'i')).test(url);
+			try {
+				return ((ref = this.caches.rule_regexp[rule]) ? ref : this.caches.rule_regexp[rule] = new RegExp(rule, 'i')).test(url);
+			} catch (e) {
+				return false;
+			}
 		},
 		with_protos: function (rule) {
 			if (this.which === 'Rules' || rule.charAt(0) === '^') {
@@ -1786,8 +1820,8 @@ var RULE_TOP_HOST = 1,
 			var srule = rule.split(':'), ps;
 
 			return {
-				rule: srule.length === 1 ? srule[0] : srule.slice(1).join(':'),
-				protos: srule.length === 1 || !srule[0].length ? false : ((ps = srule[0].toUpperCase().split(','))[0].length ? ps : false)
+				rule: UserScript.exist(rule) ? rule : (srule.length === 1 ? srule[0] : srule.slice(1).join(':')),
+				protos: UserScript.exist(rule) ? false : (srule.length === 1 || !srule[0].length ? false : ((ps = srule[0].toUpperCase().split(','))[0].length ? ps : false))
 			};
 		},
 		add: function (kind, domain, pattern, action, add_to_beginning, temporary) {
@@ -2234,7 +2268,7 @@ var RULE_TOP_HOST = 1,
 		new Poppy(left, top, [
 			'<p class="misc-info">', _('Adding a disable Rule'), '</p>',
 			'<p>',
-				'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+				'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') || PrivateBrowsing() ? ' checked' : '', ' />',
 				'<label for="domain-script-temporary">&thinsp;', _('Temporary rule'), '</label> ',
 			'</p>',
 			'<p>',
@@ -2285,6 +2319,8 @@ var RULE_TOP_HOST = 1,
 					a.push(this.utils.fill(opt, ['ABOUT:blank', 'blank'])); break;
 				case 'Data URI':
 					a.push(this.utils.fill(opt, ['DATA:*', 'Data URI'])); break;
+				case 'Blob':
+					a.push(this.utils.fill(opt, ['BLOB:*', 'Blob'])); break;
 				case 'JavaScript Protocol':
 					a.push(this.utils.fill(opt, ['JAVASCRIPT:*', 'JavaScript Protocol'])); break;
 				default:
@@ -2309,7 +2345,7 @@ var RULE_TOP_HOST = 1,
 		new Poppy(left, top + 12, [
 				'<p class="misc-info">', _('Adding a ' + kind + ' Rule'), '</p>',
 				'<p>',
-					'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+					'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') || PrivateBrowsing() ? ' checked' : '', ' />',
 					'<label for="domain-script-temporary">&thinsp;', _('Temporary rule'), '</label> ',
 				'</p>',
 				'<p>',
@@ -2464,9 +2500,8 @@ var RULE_TOP_HOST = 1,
 				var wh = t.parents('.urls-wrapper').is('.blocked-script-urls') ? 0 : 1,
 						sp = t.parent().data('script')[0];
 
-				if (~sp.indexOf('customp')) {
-					var which = ~sp.indexOf('custompre') ? 'pre' : 'post';
-					codeify(self.customScripts[which]()[sp].func, true);
+				if (UserScript.exist(sp)) {
+					codeify(UserScript.get(sp).script, true);
 					self.utils.zoom($$('#misc'));
 				} else
 					new Poppy(left, off.top + 11, _(sp + ':' + wh, [self.special_enabled(sp)]));
@@ -2748,7 +2783,7 @@ var RULE_TOP_HOST = 1,
 						use_host = '.*'; break;
 				}
 
-				self.rules.add(lid.kind, use_host, lid.pending_data, rtype ? 1 : 0, true, Settings.getItem('quickAddTemporary'));
+				self.rules.add(lid.kind, use_host, lid.pending_data, rtype ? 1 : 0, true, Settings.getItem('quickAddTemporary') || PrivateBrowsing());
 
 				self.utils.timer.timeout('quick_add_reload', function (lis) {
 					lis.addClass('allow-update').removeClass('pending');
@@ -3080,8 +3115,8 @@ var RULE_TOP_HOST = 1,
 
 					li.data('pending_index', (ind = li.data('pending_index')) !== undefined && Settings.getItem('quickAddQuicker') ? ind + 1 : 0);
 
-					var rule, begin = $$('<span />'), select = $$('<select />').attr('id', 'quick-add-select').toggleClass('temporary', Settings.getItem('quickAddTemporary')),
-							begin_message = self.rules.make_message(lid.kind, self.useSimpleMode() ? (lid.kind === 'special' ? '' : (lid.protocol + ':' + '*')) : '^$', !allow, Settings.getItem('quickAddTemporary')),
+					var rule, begin = $$('<span />'), select = $$('<select />').attr('id', 'quick-add-select').toggleClass('temporary', Settings.getItem('quickAddTemporary') || PrivateBrowsing()),
+							begin_message = self.rules.make_message(lid.kind, self.useSimpleMode() ? (lid.kind === 'special' ? '' : (lid.protocol + ':' + '*')) : '^$', !allow, Settings.getItem('quickAddTemporary') || PrivateBrowsing()),
 							end_message;
 
 					for (var rr = 0; parts[rr]; rr++) {
@@ -3091,6 +3126,7 @@ var RULE_TOP_HOST = 1,
 						if (self.rules.simplified && !special) {
 							switch (lid.protocol) {
 								case 'DATA':
+								case 'BLOB':
 								case 'JAVASCRIPT':
 									rule = lid.protocol + ':*'
 								break;
@@ -3125,7 +3161,7 @@ var RULE_TOP_HOST = 1,
 					if (!Settings.getItem('quickAddQuicker'))
 						new Poppy(left, off.top + 12, [
 							'<p class="quick-add-more">', _('Press and hold for more options.'), '</p>',
-							'<p id="quick-add-rule"><span class="bubble bubble-', allow ? 0 : 1, Settings.getItem('quickAddTemporary') ? ' temporary' : '', '"></span>', begin[0].outerHTML, ' ', select[0].outerHTML, '</p>'].join(''), function () {
+							'<p id="quick-add-rule"><span class="bubble bubble-', allow ? 0 : 1, Settings.getItem('quickAddTemporary') || PrivateBrowsing() ? ' temporary' : '', '"></span>', begin[0].outerHTML, ' ', select[0].outerHTML, '</p>'].join(''), function () {
 							$$('#quick-add-rule select').change(function () {
 								li.data('pending_index', this.selectedIndex).data('pending_data', this.value);
 
@@ -3392,7 +3428,7 @@ var RULE_TOP_HOST = 1,
 								kinds.join('<br />'),
 							'</p>',
 							'<p>',
-								'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+								'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') || PrivateBrowsing() ? ' checked' : '', ' />',
 								'<label for="domain-script-temporary">&nbsp;', _('Make these temporary rules'), '</label> ',
 							'</p>',
 							'<p>',
@@ -4027,20 +4063,7 @@ var RULE_TOP_HOST = 1,
 			
 			new Poppy(off.left, off.top, pop);
 		}).on('click', '#js-help', function (ev) {
-			self.utils.timer.remove('timeout', 'dblclick_console');
-
-			if (this.disallowClick) {
-				this.disallowClick = 0;
-
-				ev.stopImmediatePropagation();
-			} else
-				self.utils.open_url(ExtensionURL('help/index.html'));
-		}).on('mousedown', '#js-help', function () {
-			self.utils.timer.timeout('dblclick_console', function (e) {
-				e.disallowClick = 1;
-
-				$$('#jsblocker-name').dblclick();
-			}, 500, [this]);
+			self.utils.open_url(ExtensionURL('help/index.html'));
 		}).on('click', '#js-settings', function () {
 			Popover.hide();
 			self.utils.open_url(ExtensionURL('settings.html'));
@@ -4092,26 +4115,38 @@ var RULE_TOP_HOST = 1,
 				this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
 			});
 		}).on('dblclick', '.host-section:first-child .host-section-host .label', function () {			
-			var e = $.extend({}, SettingStore.all());
-			delete e.Rules;
-			delete e.SimpleRules;
-			delete e.CollapsedDomains;
-			delete e.Snapshots;
-			delete e.RulesUseTracker;
-			delete e.SimpleRulesUseTracker;
-			delete e.EasyList;
-			delete e.EasyPrivacy;
-			e.donationVerified = !!e.donationVerified;
+			var e = { settings: $.extend({}, SettingStore.all()) };
+
+			delete e.settings.Rules;
+			delete e.settings.SimpleRules;
+			delete e.settings.CollapsedDomains;
+			delete e.settings.Snapshots;
+			delete e.settings.RulesUseTracker;
+			delete e.settings.SimpleRulesUseTracker;;
+			delete e.settings.userScriptRequirements;
+			delete e.settings.userScriptResources;
+			delete e.settings.userScripts;
+
+			e.settings.userScriptList = {};
+			e.settings.donationVerified = !!e.settings.donationVerified;
+
+			for (var ns in UserScript._all)
+				e.settings.userScriptList[ns] = {
+					meta: UserScript.get(ns).meta
+				}
+
+			for (var ls in self.rules._easylist_urls)
+				delete e.settings[ls];
 			
 			new Poppy($(self.popover.body).width() / 2, 2, [
-				'<p>This data contains a copy of your settings and current webpage. It does NOT reveal your rules.</p>',
+				'<p>This data contains a copy of your settings and current webpage. It does NOT reveal your rules. The names and metadata of your user scripts are included.</p>',
 				'<textarea spellcheck="false" id="debug-info" readonly>',
 					'Version', "\n", self.displayv, '-', self.bundleid, "\n\n",
 					'Beta', "\n", self.isBeta ? 'yes' : 'no', "\n\n",
 					'Trial Start', "\n", self.trialStart, "\n\n",
 					'Trial Remaining', "\n", self.trial_remaining(), "\n\n",
 					'User Agent', "\n", window.navigator.userAgent, "\n\n",
-					'Settings', "\n", JSON.stringify(e), "\n\n",
+					'Settings', "\n", JSON.stringify(e, null, 2), "\n\n",
 					'Webpage', "\n", self.tab.url,
 				'</textarea>'
 			].join(''), function () {
@@ -4333,7 +4368,7 @@ var RULE_TOP_HOST = 1,
 					'<input type="checkbox" id="excluding-list" checked /> ',
 					'<label for="excluding-list">', _('Exclude ' + (allowed ? 'whitelist' : 'blacklist')), '</label>',
 				'</p><p>',
-					'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+					'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') || PrivateBrowsing() ? ' checked' : '', ' />',
 					'<label for="domain-script-temporary">&nbsp;', _('Make these temporary rules'), '</label>',
 				'</p>',
 				'<p>', Template.create('domain_picker', { page_parts: page_parts }), '</p>',
@@ -4434,14 +4469,14 @@ var RULE_TOP_HOST = 1,
 
 		if (disabled) return;
 		
-		var el = $('.' + text + '-script-urls .urls-inner', section).empty(), use_url, test_url, protocol, poopy,
-				shost_list = {}, lab = $('.' + text + '-scripts-count', section), cn = 0, key;
+		var col = $('.' + text + '-column', section), el = $('.urls-inner', col).empty(), use_url, test_url, protocol, poopy, ltype,
+				shost_list = {}, lab = $('.scripts-count', col), cn = 0, key;
 
 		for (key in this.rules.data_types)
-			shost_list[key] = {};
+			shost_list[key] = { };
 			
 		function append_url(index, kind, ul, use_url, script, type, button, protocol, unblockable, meta) {
-			if (~use_url.indexOf('customp') && kind === 'special') use_url = 'Injected Script: ' + use_url;
+			if (UserScript.exist(use_url) && kind === 'special') use_url = 'User Script: ' + use_url;
 
 			return ul.append('<li>' + (text !== 'unblocked' ? '<div class="info-link">?</div>' : '') + '<span></span> <small></small><div class="divider"></div></li>')
 					.find('li:last').attr('id', text.toLowerCase() + '-' + kind + '-' + index + '-' + id)
@@ -4461,7 +4496,7 @@ var RULE_TOP_HOST = 1,
 		}
 		
 		function add_item(index, kind, the_item) {
-			var item = the_item[0], protocol = null;
+			var item = the_item[0], protocol = null, use_list;
 
 			if (text === 'unblocked') {
 				the_item = [the_item, the_item, the_item];
@@ -4473,16 +4508,18 @@ var RULE_TOP_HOST = 1,
 				use_url = self.utils.active_host(item);
 				test_url = use_url + the_item[1];
 
-				if (!(protocol in shost_list[kind])) shost_list[kind][protocol] = {};
+				if (!(protocol in shost_list[kind])) shost_list[kind][protocol] = { blockable: {}, unblockable: {} };
 
-				if (!(test_url in shost_list[kind][protocol])) {
+				use_list = the_item[2] ? shost_list[kind][protocol].unblockable : shost_list[kind][protocol].blockable;
+
+				if (!(test_url in use_list)) {
 					li = append_url(index, kind, ul, use_url, item, the_item[1], button, protocol, the_item[2]);
-					shost_list[kind][protocol][test_url] = [1, li.attr('id')];
+					use_list[test_url] = [1, li.attr('id')];
 				} else {
-					shost_list[kind][protocol][test_url][0]++;
+					use_list[test_url][0]++;
 					
 					try {
-						$('li#' + shost_list[kind][protocol][test_url][1], ul).data('script').push(item);
+						$('li#' + use_list[test_url][1], ul).data('script').push(item);
 					} catch (e) {
 						return self.make_list(text, button, jsblocker, host_host, id);
 					}
@@ -4510,7 +4547,7 @@ var RULE_TOP_HOST = 1,
 			ul.css('display', do_hide ? 'none' : 'block')
 				.parent().prev().toggleClass('collapsed', do_hide).toggleClass('visible', !do_hide).find('.toggle-main').html(_(do_hide ? 'Show' : 'Hide'));;
 
-			if (self.useSimpleMode() && text !== 'unblocked') {
+			if (this.useSimpleMode() && text !== 'unblocked') {
 				cn += jsblocker[text][key].hosts.length;
 					
 				lab.html(cn);
@@ -4520,6 +4557,12 @@ var RULE_TOP_HOST = 1,
 
 				lab.html(cn);
 			}
+
+			var ty = this.useSimpleMode() ? 'host' : 'resource';
+
+			if (cn !== 1) ty += 's';
+
+			$('.scripts-count-type', col).html(_(ty));
 
 			if (jsblocker[text][key].all.length) {
 				ul.parent().show().prev().show();
@@ -4573,10 +4616,11 @@ var RULE_TOP_HOST = 1,
 				
 				for (var kind in shost_list)
 					for (poopy in shost_list[kind])
-						for (use_url in shost_list[kind][poopy]) {
-							$('#' + shost_list[kind][poopy][use_url][1], ul).find('small')
-									.html('<a href="javascript:void(0);" class="show-scripts">' + shost_list[kind][poopy][use_url][0] + '</a>');
-						}				
+						for (ltype in shost_list[kind][poopy])
+							for (use_url in shost_list[kind][poopy][ltype]) {
+								$('#' + shost_list[kind][poopy][ltype][use_url][1], ul).find('small')
+										.html('<a href="javascript:void(0);" class="show-scripts">' + shost_list[kind][poopy][ltype][use_url][0] + '</a>');
+							}				
 			}
 				
 			if (self.collapsed(text)) {
@@ -4590,6 +4634,7 @@ var RULE_TOP_HOST = 1,
 	popover_current: null,
 	do_update_popover: function (event) {
 		if (event.message.href === 'reading-list://') return console.log('Reading list ignored.');
+		if (!this.tab) return _d('Attempted to update popover but this.tab returned null.', this.tab, event);
 
 		var cached_jsblocker = JSON.stringify(this.caches.jsblocker[event.message.href]), 
 				jshost = this.utils.active_host(event.message.href), badge_only = !Popover.visible();
@@ -4829,6 +4874,10 @@ var RULE_TOP_HOST = 1,
 				} else if (event.message[0])
 					typeSwitch:
 					switch (event.message[0]) {
+						case '_':
+							event.message = _(event.message[1], event.message[2]);
+						break theSwitch;
+
 						case 'arbitrary':
 							var al = ['displayv', 'bundleid', 'trial_remaining', 'trial_active', 'domain_parts', 'utils.escape_regexp'], r = this, s = event.message[1].split(/\./g);
 							
@@ -4864,26 +4913,29 @@ var RULE_TOP_HOST = 1,
 							event.message = _(event.message[1], event.message[2]);
 						break theSwitch;
 
-						case 'disabled':
-							event.message = this.disabled || this.rules.disabled(event.message[1]);
+						case 'info':
+							event.message = {
+								disabled: this.disabled || this.rules.disabled(event.message[1]),
+								beta: this.isBeta
+							};
 						break theSwitch;
 
-						case 'customScripts':
-							event.message = { pre: this.customScripts.pre(), post: this.customScripts.post() };
-						break theSwitch;
-
-						case 'generateRuleAccessKey':
-							var key = this.utils.id();
-
-							this.rules.accessKeys[key] = 1;
-
-							event.message = key;
+						case 'userScripts':
+							event.message = UserScript.load(event.message[1]);
 						break theSwitch;
 
 						case 'enabledSpecials':
-							var specials = event.message[1], result = {}, enabled;
+							var specials = event.message[1], result = {
+								installUserScriptPrompt: {
+									value: 1,
+									allowed: /^https?:\/\/.*\/[^\/]+.user\.js$/.test(event.message[2]) ? 1 : 0,
+									exclude: 1
+								}
+							}, enabled;
 
 							for (var i = 0; i < specials.length; i++) {
+								if (specials[i] in result) continue;
+
 								enabled = this.rules.special_enabled(specials[i]);
 
 								result[specials[i]] = {
@@ -4933,16 +4985,17 @@ var RULE_TOP_HOST = 1,
 			break;
 
 			case 'getAllSettings':
-				Tabs.messageActive('gotAllSettings', $.extend({}, SettingStore.all()));
+				MessageTarget(event, 'gotAllSettings', JSON.stringify($.extend({}, SettingStore.all())));
 			break;
 
 			case 'aboutPage':
-				Tabs.messageActive('aboutPage', {
+				MessageTarget(event, 'aboutPage', {
 					displayv: this.displayv,
 					trial_active: this.trial_active(),
 					trial_remaining: this.trial_remaining(),
 					bundleid: this.bundleid,
-					easylist_last_update: Settings.getItem('EasyListLastUpdate') || 0
+					easylist_last_update: Settings.getItem('EasyListLastUpdate') || 0,
+					user_script_last_update: Settings.getItem('userScriptLastUpdate') || 0
 				});
 			break;
 
@@ -4980,12 +5033,29 @@ var RULE_TOP_HOST = 1,
 				Settings.setItem('EasyListLastUpdate', 0);
 
 				JB.rules.easylist(function () {
-					Tabs.messageActive('easyListsUpdated');
+					MessageTarget(event, 'easyListsUpdated');
 				});
+			break;
+
+			case 'updateUserScripts':
+				Settings.setItem('userScriptLastUpdate', 0);
+
+				UserScript.autoUpdate(function () {
+					MessageTarget(event, 'userScriptsUpdated');
+				}, event.message);
+			break;
+
+			case 'setUserScriptDeveloperMode':
+				UserScript.developerMode(event.message[0], event.message[1]);
+			break;
+
+			case 'setUserScriptAutoUpdate':
+				UserScript.automaticallyUpdate(event.message[0], event.message[1]);
 			break;
 
 			case 'updatePopover':
 				delete this.frames[event.target.url];
+				
 				MessageTarget(event, 'getFrameData');
 
 				this.utils.timer.timeout('update_popover', function (event) {
@@ -5049,18 +5119,6 @@ var RULE_TOP_HOST = 1,
 				this.reload = true;
 			break;
 
-			case 'createCustomScript':
-				this.customScripts.add(event.message[0], event.message[1], event.message[2], event.message[3]);
-			break;
-
-			case 'editCustomScript':
-				this.customScripts.add(event.message[0], event.message[1], event.message[2], event.message[3], true);
-			break;
-
-			case 'removeCustomScript':
-				this.customScripts.remove(event.message[0], event.message[1]);
-			break;
-
 			case 'notification':
 				MessageTarget(event, 'notification', [event.message[0], event.message[1]]);
 			break;
@@ -5070,15 +5128,142 @@ var RULE_TOP_HOST = 1,
 			break;
 
 			case 'addRule':
-				if (event.message.accessKey in this.rules.accessKeys) {
-					this.rules.add(event.message.kind, event.message.domain, event.message.rule, event.message.action, null, event.message.temporary);
+				var which = this.simpleMode ? event.message.rule.simple : event.message.rule.expert;
 
-					delete this.rules.accessKeys[event.message.accessKey];
-				}
+				if (event.message.kind in this.rules.data_types) {
+					if (which)
+						this.rules.add(event.message.kind, event.message.domain, which, event.message.action, null, event.message.temporary);
+				} else
+					MessageTarget(event, 'commanderCallback', {
+						key: event.message.key,
+						callback: event.message.callback,
+						result: {
+							errorText: 'Unsupported kind.',
+							error: 1
+						}
+					});
+			break;
+
+			case 'addUserScript':
+				UserScript.add(event.message);
+			break;
+
+			case 'removeUserScript':
+				UserScript.remove(event.message);
+			break;
+
+			case 'installUserScriptFrom':
+				UserScript.downloadScript(event.message.url, function (response) {
+					var r = UserScript.add(response);
+
+					MessageTarget(event, 'commanderCallback', {
+						key: event.message.key,
+						callback: event.message.callback,
+						result: r
+					});
+				});
+			break;
+
+			case 'openInTab':
+				window.open(event.message.data);
+			break;
+
+			case 'XMLHttpRequest':
+				var done = function (action, res, status, req) {	
+					MessageTarget(event, 'commanderCallback', {
+						key: event.message.key,
+						callback: event.message.callback,
+						result: {
+							action: action,
+							response: {
+								readyState: req.readyState,
+								responseHeaders: (function (headers) {
+									var lines = headers.split(/\n/), o = {}, line;
+
+									for (var i = 0; i < lines.length; i++) {
+										line = lines[i].split(': ');
+										
+										if (line[0].length)
+											o[line.shift()] = line.join(': ');
+									}
+
+									return o;
+								})(req.getAllResponseHeaders ? req.getAllResponseHeaders() : ''),
+								responseText: res,
+								status: req.status,
+								statusText: status,
+								lengthComputable: req.lengthComputable,
+								loaded: req.loaded,
+								total: req.total
+							}
+						}
+					});
+				};
+
+				event.message.details.xhr = function () {
+					var xhr = new XMLHttpRequest();
+
+					xhr.upload.addEventListener('progress', function (e) {
+						xhr.lengthComputable = e.lengthComputable;
+						xhr.loaded = e.loaded;
+						xhr.total = e.total;
+
+						done('onprogress', '', '', xhr);
+					});
+
+					xhr.addEventListener('progress', function (e) {
+						xhr.lengthComputable = e.lengthComputable;
+						xhr.loaded = e.loaded;
+						xhr.total = e.total;
+
+						done('onprogress', '', '', xhr);
+					});
+
+					xhr.addEventListener('loadend', function (e) {
+						MessageTarget(event, 'commanderCallback', {
+							key: event.message.key,
+							callback: event.message.callback,
+							result: {
+								action: 'deleteCallback',
+								callback: event.message.callback
+							}
+						});
+					});
+
+					return xhr;
+				};
+
+				event.message.details.beforeSend = (function (headers) {
+					return function (req) {
+						for (var header in headers)
+							req.setRequestHeader(header, headers[header]);
+					};
+				})(event.message.details.headers ? event.message.details.headers : {});
+
+				event.message.details.cache = !event.message.details.ignoreCache;
+
+				event.message.details.success = function (res, status, req) {
+					done('onload', res, status, req);
+				};
+
+				event.message.details.error = function (req, status, res) {
+					if (res === 'timeout') done('ontimeout', res, status, req);
+					else if (res === 'abort') done('onabort', res, status, req);
+					else done('onerror', res.message ? res.message : res, status, req);
+				};
+
+				event.message.details.dataType = 'text';
+
+				$.ajax(event.message.details);
 			break;
 
 			case 'errorOccurred':
 				_d(event.message);
+			break;
+
+			case 'backupImported':
+				UserScript.unload();
+				this.rules.reload();
 			break;
 			
 			case 'doNothing': break;
@@ -5159,10 +5344,8 @@ var RULE_TOP_HOST = 1,
 			if (event.type === 'close')
 				delete this.caches.jsblocker[event.target.url];
 
-			if (event.type === 'beforeNavigate') {
-				this.set_active_tab();
+			if (event.type === 'beforeNavigate')
 				this.handle_navigate(event);
-			}
 			
 			setTimeout(function (self, event) {
 				delete self.anonymous.newTab[event.target.url];
@@ -5227,17 +5410,6 @@ var RULE_TOP_HOST = 1,
 			}
 		} catch(e) { }
 	},
-	set_active_tab: function (callback) {
-		var self = this;
-
-		Tabs.active(function (tab) {
-			if (self.tab !== tab[0])
-				self.tab = tab.length ? tab[0] : {};
-
-			if (typeof callback === 'function')
-				callback.call(self, self.tab);
-		});
-	},
 	validate: function (event) {
 		if (!BrowserWindows.active() || (event && event.command && event.command !== 'jsBlockerMenu')) return;
 
@@ -5246,13 +5418,10 @@ var RULE_TOP_HOST = 1,
 		this.utils.once('load', function () {
 			if (!Settings.getItem('persistDisabled') && this.disabled) this.disabled = false;
 
-			var cpre = this.customScripts.pre(), cpost = this.customScripts.post();
+			var userScripts = UserScript._all;
 
-			for (var ipre in cpre)
-				Strings['en-us'][ipre] = _('Injected pre Script: {1}', [cpre[ipre].name]);
-
-			for (var ipost in cpost)
-				Strings['en-us'][ipost] = _('Injected post Script: {1}', [cpost[ipost].name]);
+			for (var ns in userScripts)
+				Strings['en-us'][ns] = _('User Script: {1}', [userScripts[ns].meta.name]);
 
 			this.caches.rule_actions = this.rules.data_types;
 
@@ -5354,13 +5523,345 @@ var RULE_TOP_HOST = 1,
 		}
 	},
 	command: function (event) {
+		if (event.command.indexOf('contextMenu:') === 0) {
+			var s = event.command.split(':');
+
+			Tabs.messageAll('executeMenuCommand', {
+				pageToken: s[1],
+				scriptToken: s[2],
+				callback: s[3]
+			});
+		}
+
 		if (event.command === 'loadElementsOnce')
 			Tabs.messageActive('loadElementsOnce');
 	},
-	contextmenu: function (event) {	
-		if (event.userInfo > 0)
-			event.contextMenu.appendContextMenuItem('loadElementsOnce', _('Load {1} Blocked Element' + (event.userInfo === 1 ? '' : 's'), [event.userInfo]));
+	contextmenu: function (event) {
+		if (!event.userInfo) return;
+
+		var pageToken, scriptToken, caption;
+
+		for (var caption in event.userInfo.menuCommand)
+			event.contextMenu.appendContextMenuItem('contextMenu:' + event.userInfo.pageToken + ':' + event.userInfo.menuCommand[caption].scriptToken + ':' + event.userInfo.menuCommand[caption].callback, caption);
+
+		if (event.userInfo.placeholders > 0)
+			event.contextMenu.appendContextMenuItem('loadElementsOnce', _('Load {1} Blocked Element' + (event.userInfo.placeholders === 1 ? '' : 's'), [event.userInfo.placeholders]));
 	}
+},
+UserScript = {
+	_parse: function (script) {
+		if (typeof script !== 'string') return null;
+
+		var lines = script.split(/\n/g), line_match = /\/\/\s@([a-z:0-9-]+)\s+([^\n]+)/i, parse_lines = false, resource = null, parsed = {
+			description: '',  exclude: [], exclude_jsb: [], grant: [], icon: '', include: [], include_jsb: [], match: [], match_jsb: [], name: null,
+			namespace: null, require: {}, resource: {}, 'run-at': '', version: ''
+		}, metaStr = '', ukey = null, uvalue;
+
+		for (var line = 0; line < lines.length; line++) {
+			if (!parse_lines && /\/\/\s==UserScript==/.test(lines[line])) parse_lines = true;
+			else if (parse_lines && /\/\/\s==\/UserScript==/.test(lines[line])) break;
+			else if (parse_lines) {
+				lines[line].replace(line_match, function (full, key, value) {
+					value = $.trim(value);
+					metaStr += full + "\n";
+
+					if ((key in parsed) && value.length) {
+						if (typeof parsed[key] === 'string' || parsed[key] === null) parsed[key] = value;
+						else if (key === 'resource') {
+							resource = value.split(' ');
+
+							parsed[key][resource[0]] = resource[1];
+						} else if (key === 'require') {
+							parsed[key][value] = value;
+						} else {
+							if (~['exclude', 'include', 'match'].indexOf(key)) {
+								ukey = key + '_jsb';
+								uvalue = JB.utils.active_host(value).replace(/\*/g, '')
+								
+								if (!~parsed[ukey].indexOf(uvalue))
+									parsed[ukey].push(uvalue);
+							}
+
+							if (!~parsed[key].indexOf(value))
+								parsed[key].push(value);
+						}
+					} else if (value.length)
+						parsed[key] = value;
+				});
+			}
+		}
+
+		return { data: parsed, metaStr: metaStr };
+	},
+
+	__saved_resources: null,
+	get _saved_resources() {
+		return this.__saved_resources || (this.__saved_resources = JSON.parse(Settings.getItem('userScriptResources')));
+	},
+	__saved_requirements: null,
+	get _saved_requirements() {
+		return this.__saved_requirements || (this.__saved_requirements = JSON.parse(Settings.getItem('userScriptRequirements')));
+	},
+	_fetch_resources: function (ns, resources, ref, callback) {
+		var self = this, xhr;
+
+		if ($.isEmptyObject(resources)) return callback(ns, null);
+
+		for (var resourceName in resources) {
+			if ((ns in ref) && (resourceName in ref[ns])) {
+				callback(ns, resourceName, ref[ns][resourceName].data, ref[ns][resourceName].type, ref);
+			} else {
+				if (!(ns in ref)) ref[ns] = {};
+
+				(function (resources, ns, resourceName, ref) {
+					xhr = new XMLHttpRequest();
+					xhr.open('GET', resources[resourceName], true);
+					xhr.responseType = 'arraybuffer';
+					xhr.onload = function () {
+						var d = '', u = new Uint8Array(this.response), i, b;
+
+						for (i = 0, b = u.length; i < b; i++)
+							d += String.fromCharCode(u[i]);
+
+						callback(ns, resourceName, btoa(d), this.getResponseHeader('Content-Type'), ref);
+					};
+					xhr.onerror = function () {
+						callback(ns, resourceName, '', 'text/plain', ref);
+					};
+					xhr.send(null);
+				})(resources, ns, resourceName, ref);
+			}
+		}
+
+		return ref;
+	},
+
+	__all: null,
+	get _all() {
+		return this.__all || (this.__all = JSON.parse(JB.utils.b64_to_utf8(Settings.getItem('userScripts'))));
+	},
+
+	load: function (url) {
+		var all = {}, res, req;
+
+		for (var ns in this._all) {
+			res = this._saved_resources[ns];
+			req = this._saved_requirements[ns];
+
+			if (this._all[ns].developerMode)
+				UserScript.autoUpdate($.noop, ns);
+
+			if (!url || (url && (JB.rules.special_allowed(ns, url) % 2))) {
+				all[ns] = $.extend({}, this._all[ns]);
+				all[ns].resources = res;
+				all[ns].requirements = req;
+			} else
+				all[ns] = {
+					meta: {
+						name: this._all[ns].meta.name,
+						namespace: this._all[ns].meta.namespace
+					}
+				};
+		}
+
+		return all;
+	},
+
+	unload: function () {
+		this.__all = null;
+		this.__saved_requirements = null;
+		this.__saved_resources = null;
+	},
+
+	get: function (ns) {
+		return this._all[ns];
+	},
+
+	_attr: function (attr, ns, v) {
+		if (!this.exist(ns)) return null;
+
+		if (typeof v === 'boolean') {
+			this._all[ns][attr] = v;
+
+			this._save();
+		}
+
+		return this._all[ns][attr];
+	},
+
+	developerMode: function (ns, v) {
+		return this._attr('developerMode', ns, v);
+	},
+
+	automaticallyUpdate: function (ns, v) {
+		return this._attr('autoUpdate', ns, v);
+	},
+
+	add: function (script) {
+		var parsed = this._parse(script);
+
+		if (parsed.data.name === null || parsed.data.namespace === null) return false;
+
+		var ns = parsed.data.name + ':' + parsed.data.namespace, re,
+				o = {
+					metaStr: parsed.metaStr,
+					meta: parsed.data,
+					script: script,
+					autoUpdate: (((re = this.automaticallyUpdate(ns)) !== null) ? re : (parsed.data.updateURL && parsed.data.downloadURL)),
+					developerMode: this.developerMode(ns),
+					before: parsed['run-at'] && parsed['run-at'].toLowerCase() === 'document-start'
+				},
+				allowOn = parsed.data.match_jsb.concat(parsed.data.include_jsb), self = this;
+
+		for (var i = 0; i < allowOn.length; i++)
+			JB.rules.add('special', allowOn[i], ns, 1);
+
+		Strings['en-us'][ns] = _('User Script: {1}', [parsed.data.name]);
+
+		delete this._saved_resources[ns];
+		delete this._saved_requirements[ns];
+
+		this._fetch_resources(ns, parsed.data.resource, this._saved_resources, function (ns, resourceName, data, type, ref) {
+			if (!resourceName) return;
+
+			ref[ns][resourceName] = {
+				data: data,
+				type: type
+			};
+
+			self._save();
+		});
+
+		this._fetch_resources(ns, parsed.data.require, this._saved_requirements, function (ns, resourceName, data, type, ref) {
+			if (!resourceName) return;
+
+			ref[ns][resourceName] = {
+				data: data,
+				type: type
+			};
+
+			self._save();
+		});
+
+		this._all[ns] = o;
+
+		this._save();
+
+		return true;
+	},
+	remove: function (ns, excludeResources) {
+		if (!excludeResources)
+			for (var domain in JB.rules.rules.special)
+				JB.rules.remove_matches('special', JB.rules.matching_URLs('special', domain, [ns], null));
+
+		delete this._all[ns];
+		
+		if (!excludeResources) delete this._saved_resources[ns];
+
+		this._save();
+	},
+
+	exist: function (ns) {
+		return ns in this._all;
+	},
+
+	downloadScript: function (url, callback) {
+		$.ajax({
+			cache: false,
+			dataType: 'text',
+			async: false,
+			url: url,
+			timeout: 5
+		}).success(callback).error(function (error) {
+			
+		});
+	},
+
+	isNewer: function (a, b) {
+		var a = typeof a === 'string' ? a : '0',
+				b = typeof b === 'string' ? b : '0',
+				av = a.split(/[^0-9\.]+/),
+				bv = b.split(/[^0-9\.]+/),
+				as = av[0].split(/\./),
+				bs = bv[0].split(/\./);
+
+		av[1] = typeof av[1] !== 'undefined' ? parseInt(av[1], 10) : Infinity;
+		bv[1] = typeof bv[1] !== 'undefined' ? parseInt(bv[1], 10) : Infinity;
+
+		while (as.length < 6) as.push(0);
+		while (bs.length < 6) bs.push(0);
+
+		var aj = as.join(''), bj = bs.join('');
+
+		if (aj.charAt(0) === '0' || bj.charAt(0) === '0') {
+			aj = '99999' + aj;
+			bj = '99999' + bj;
+		}
+
+		aj = parseInt(aj, 10);
+		bj = parseInt(bj, 10);
+
+		return (bj > aj || (bj === aj && bv[1] > av[1]));
+	},
+
+	autoUpdate: function (callback, force) {
+		var lastUpdate = Settings.getItem('userScriptLastUpdate');
+
+		if (!callback && (!Settings.getItem('userScriptAutoUpdate') || (lastUpdate && Date.now() - lastUpdate < 432000000))) return;
+
+		Settings.setItem('userScriptLastUpdate', Date.now());
+
+		var i = 0, self = this;
+
+		for (var ns in this._all) {
+			if (!this._all[ns].autoUpdate && !force) continue;
+			if (typeof force === 'string' && force !== ns) continue;
+
+			i++;
+
+			if (this._all[ns].meta.updateURL) {
+				if (typeof force === 'string') {
+					this.downloadScript(this._all[ns].meta.downloadURL, function (script) {
+						self.add(script);
+					});
+
+					continue;
+				}
+
+				(function (self, ns) {
+					$.ajax({
+						cache: false,
+						dataType: 'text',
+						async: false,
+						url: self._all[ns].meta.updateURL,
+						timeout: 5
+					}).success(function (response) {
+						var parsed = self._parse(response).data;
+
+						if ((force || self.isNewer(self._all[ns].meta.version, parsed.version)) && parsed.updateURL && parsed.downloadURL) {
+							if (parsed.name + ':' + parsed.namespace === self._all[ns].meta.name + ':' + self._all[ns].meta.namespace) {
+								self.downloadScript(self._all[ns].meta.downloadURL, function (script) {
+									self.add(script);
+								});
+							}
+						}
+					}).error(function (error) {
+						
+					});
+				})(this, ns);
+			}
+		}
+
+		setTimeout(callback, 600 * i);
+	},
+
+	_save: (function () {
+		return JB.utils.throttle(function () {
+			if (UserScript.__all !== null) Settings.setItem('userScripts', JB.utils.utf8_to_b64(JSON.stringify(UserScript.__all)));
+			if (UserScript.__saved_resources !== null) Settings.setItem('userScriptResources', JSON.stringify(UserScript.__saved_resources));
+			if (UserScript.__saved_requirements !== null) Settings.setItem('userScriptRequirements', JSON.stringify(UserScript.__saved_requirements));
+		}, 100);
+	})()
 };
 
 JB.rules.__proto__ = JB;
@@ -5382,6 +5883,8 @@ $.ajax({
 
 JB.rules.easylist();
 
+UserScript.autoUpdate();
+
 window.receiveMessage = function (target, message, data) {
 	JB.handle_message({
 		type: message,
@@ -5393,51 +5896,43 @@ window.receiveMessage = function (target, message, data) {
 document.addEventListener('DOMContentLoaded', function () {
 	JB.load_language();
 	JB.validate();
-});
 
-window.addEventListener('message', function (event) {
-	if (event.data === 'zero-timeout') {
-		event.stopPropagation();
+	window.addEventListener('message', function (event) {
+		if (event.data === 'zero-timeout') {
+			event.stopPropagation();
 
-		if (JB.utils._zero_timeouts.length) {
-			var o = JB.utils._zero_timeouts.shift();
+			if (JB.utils._zero_timeouts.length) {
+				var o = JB.utils._zero_timeouts.shift();
 
-			if (typeof o[0] === 'function')
-				o[0].apply(JB, o[1]);
+				if (typeof o[0] === 'function')
+					o[0].apply(JB, o[1]);
+			}
 		}
-	}
-});
+	});
 
-window.onerror = function (d, p, l, c) {
-	_d(d + ', ' + p + ', ' + l);
-};
-
-Events.addApplicationListener('contextmenu', JB.contextmenu, JB);
-Events.addApplicationListener('command', JB.command, JB);
-Events.addApplicationListener('close', JB.open_popover, JB);
-Events.addApplicationListener('activate', function (event) {
-	JB.set_active_tab(function (tab) {
+	Events.addApplicationListener('contextmenu', JB.contextmenu, JB);
+	Events.addApplicationListener('command', JB.command, JB);
+	Events.addApplicationListener('close', JB.open_popover, JB);
+	Events.addApplicationListener('activate', function (event) {
 		JB.popover_current = null;
 
-		MessageTarget({ target: tab }, 'updatePopover');
+		MessageTarget({ target: JB.tab }, 'updatePopover');
 
 		JB.utils.timer.timeout('deactivate_toolbar', function () {
 			ToolbarItems.badge(0, JB.tab);
 		}, 400);
 	});
-});
-Events.addApplicationListener('navigate', function (event) {
-	JB.set_active_tab(function (tab) {
-		if (event.target === tab)
+	Events.addApplicationListener('navigate', function (event) {
+		if (event.target === JB.tab)
 			MessageTarget(event, 'updatePopover');
-	});
-}, JB);
-Events.addApplicationListener('beforeNavigate', JB.open_popover, JB);
-Events.addApplicationListener('beforeNavigate', JB.anonymize, JB);
-Events.addApplicationListener('popover', JB.open_popover, JB);
-Events.addApplicationListener('validate', JB.validate, JB);
-Events.addApplicationListener('message', JB.handle_message, JB);
-Events.addSettingsListener(JB.setting_changed, JB);
+	}, JB);
+	Events.addApplicationListener('beforeNavigate', JB.open_popover, JB);
+	Events.addApplicationListener('beforeNavigate', JB.anonymize, JB);
+	Events.addApplicationListener('popover', JB.open_popover, JB);
+	Events.addApplicationListener('validate', JB.validate, JB);
+	Events.addApplicationListener('message', JB.handle_message, JB);
+	Events.addSettingsListener(JB.setting_changed, JB);
+}, true);
 
 Object.defineProperty(Array.prototype, 'unique', {
 	enumerable: false,

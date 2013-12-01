@@ -23,7 +23,8 @@ var wld = {
 		'.icloud.com': ['gstatic\\.com'],
 		'.monster.com': ['monster\\.com'],
 		'.ensighten.com': ['ensighten\\.com'],
-		'.gorillanation.com': ['gorillanation\\.com']
+		'.gorillanation.com': ['gorillanation\\.com'],
+		'.digg.com': ['digg\\.com']
 	},
 	frame: {
 		'.facebook.com': ['facebook\\.com'],
@@ -34,6 +35,9 @@ var wld = {
 	},
 	image: {
 		'.google.com': ['gstatic\\.com']
+	},
+	ajax_get: {
+		'.digg.com': ['digg\\.com']
 	}
 };
 

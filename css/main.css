@@ -179,7 +179,7 @@ header h1 {
 	.column.expanded {
 		width: 555px;
 		margin-top: 28px;
-		margin-left: -121px;
+		margin-left: -161px;
 		border-color: transparent !important;
 	}
 		body.simple .column.expanded {
@@ -187,7 +187,7 @@ header h1 {
 		}
 	.allowed-column.column.expanded {
 		margin-left: 0;
-		margin-right: -119px;
+		margin-right: -160px;
 		-webkit-transition-duration: 100ms,  200ms, 200ms, 200ms, 200ms, 200ms, 150ms;
 	}
 		body.slow-animations .allowed-column.expanded {
@@ -195,7 +195,7 @@ header h1 {
 		}
 	.allowed-blocked-columns:not(.none-expanded) .column-collapsed,
 	body.simple .allowed-blocked-columns:not(.none-expanded) .column-collapsed {
-		width: 121px;
+		width: 161px;
 		min-height: 25px;
 		height: 25px;
 	}
@@ -444,10 +444,10 @@ textarea {
 
 @-webkit-keyframes redPulse {
 	0% {
-		box-shadow: 0 0 2px rgba(255,0,0,0.8);
+		background: #ff3b30;
 	}
 	100% {
-		box-shadow: 0 0 5px rgba(255,0,0,1);
+		background: #e9001b;
 	}
 }
 
@@ -525,13 +525,16 @@ button.purple {
 
 input[type="button"].confirm-click,
 button.confirm-click {
-	color: #ff3b30;
+	color: #fff;
+	background: #ff3b30;
 	border-color: #ff3b30;
+	text-shadow: none;
 	-webkit-animation: redPulse 0.5s linear 0 infinite alternate;
 }
 	input[type="button"].confirm-click:active,
 	button.confirm-click:active {
-		color: #fa2025;
+		color: #fff;
+		background: #fa2025;
 	}
 select {
 	font-size: 8pt;
@@ -688,6 +691,10 @@ label {
 		background: none;
 		padding-left: 0;
 		margin: 0;
+	}
+	.scripts-count-type {
+		color: #bbb;
+		font-size: 8pt;
 	}
 
 #reset-domain,
@@ -1614,7 +1621,7 @@ div.divider {
 				margin-bottom: 0;
 			}
 		#main .actions-bar li {
-			padding: 1px 4px 0px 4px !important;
+			padding: 1px 3px 0px 3px !important;
 			-webkit-border-radius: 0;
 			font-size: 8pt;
 			text-shadow: none;

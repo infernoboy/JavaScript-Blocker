@@ -1,6 +1,11 @@
 "use strict";
 
-var speedMultiplier = 1, firstLoad = true;
+var speedMultiplier = 1, firstLoad = true, beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false};
+
+window._ = function (str, args) {
+	return ResourceCanLoad(beforeLoad, ['_', str, args]);
+};
+
 $.extend(Settings, {
 	loaded: 0,
 	tba: 0,
@@ -20,14 +25,24 @@ $.extend(Settings, {
 
 			}
 
+			if ($('#toolbar li.selected').is('#for-user-script-edit') && $('#button-user-script-save').is(':not(:disabled)')) {
+				if (!confirm(_('Confirm user script navigate away'))) return;
+			}
+
 			if (self.tba)
 				return setTimeout(function (self) {
 					self.click();
 				}, 600, $(this));
-
-			window.location.hash = this.id;
 			
-			Settings.set_value('settingsPageTab', this.id);
+			if (this.id !== 'for-user-script-edit') {
+				window.location.hash = this.id;
+
+				Settings.set_value('settingsPageTab', this.id);
+			} else {
+				window.location.hash = 'user-script';
+
+				$('#button-user-script-save').prop('disabled', false).val(_('Save'));
+			}
 
 			self.tba = 1;
 
@@ -38,7 +53,7 @@ $.extend(Settings, {
 					s = $('section').removeClass('active').filter('#' + sec).css('opacity', 0).addClass('active');
 					
 			if (sec !== 'about') {
-				var ul = s.find('ul').empty();
+				var ul = s.find('ul.settings').empty();
 			
 				for (var setting in Settings.settings[sec])
 					Settings.make_setting(sec, setting, Settings.settings[sec][setting], ul);
@@ -104,6 +119,8 @@ $.extend(Settings, {
 				break;
 			}
 		}).on('change', 'section select, section input[type="checkbox"], section input[type="number"]', function () {
+			if (~this.className.indexOf('private')) return;
+
 			var li = $(this).parents('li'),
 					id = li.attr('id'),
 					setting = li.attr('data-setting'),
@@ -144,76 +161,45 @@ $.extend(Settings, {
 
 			if (~this.className.indexOf('edit-custom')) {
 				var li = $(this).parent(),
-						scripts = JSON.parse(Settings.current_value('custom' + li.data('kind') + 'Scripts')),
-						name = prompt(_('Enter a name for the script.'), li.data('name'));
+						scripts = JSON.parse(b64_to_utf8(Settings.current_value('userScripts')));
 
-				name = name ? $.trim(name) : '';
-				name = name.substr(0, 100);
+				$('#user-script-content').val(scripts[li.data('ns')].script);
 
-				if (name.length) {
-					var edited = prompt(_('Enter the contents of the script.'), scripts[li.data('id')].func);
+				$('#for-user-script-edit').click();
 
-					edited = edited ? $.trim(edited) : '';
-
-					if (edited.length) {
-						GlobalPage.message('editCustomScript', [li.data('kind'), li.data('id'), name, edited]);
-
-						window.location.reload();
-					}
-				}
+				$('#button-user-script-save').prop('disabled', true).val(_('Saved'));
 			} else if (~this.className.indexOf('remove-custom')) {
 				var li = $(this).parent();
 
-				GlobalPage.message('removeCustomScript', [li.data('kind'), li.data('id')]);
+				GlobalPage.message('removeUserScript', li.data('ns'));
+				GlobalPage.message('getAllSettings');
 
-				window.location.reload();
+				setTimeout(function () { Settings.set_value(); }, 300);
 			}
-			
+
 			switch (this.id.substr('button-'.length)) {
 				case 'switchCustomTab':
 					$('#for-custom').click();
 				break;
 
-				case 'createCustomPre':
-					var name = prompt(_('Enter a name for the script.'));
+				case 'createUserScript':
+					var c = $('#user-script-content');
 
-					name = name ? $.trim(name) : '';
-					name = name.substr(0, 100);
+					c.val([
+						'// ==UserScript==',
+						'// @name My User Script',
+						'// @namespace ' + Date.now(),
+						'// ==/UserScript==',
+						' ', ' '
+					].join("\n"));
 
-					if (name.length) {
-						var script = prompt(_('Enter the contents of the script.'));
-						
-						script = script ? $.trim(script) : '';
+					$('#for-user-script-edit').click();
 
-						if (script.length) {
-							var id = 'custompre_' + Date.now();
+					$('#button-user-script-save').prop('disabled', false).val(_('Save'));
 
-							GlobalPage.message('createCustomScript', ['pre', id, name, script]);
+					c.focus();
 
-							window.location.reload();
-						}
-					}
-				break;
-
-				case 'createCustomPost':
-					var name = prompt(_('Enter a name for the script.'));
-
-					name = name ? $.trim(name) : '';
-					name = name.substr(0, 100);
-
-					if (name.length) {
-						var script = prompt(_('Enter the contents of the script.'));
-						
-						script = script ? $.trim(script) : '';
-
-						if (script.length) {
-							var id = 'custompost_' + Date.now();
-
-							GlobalPage.message('createCustomScript', ['post', id, name, script]);
-
-							window.location.reload();
-						}
-					}
+					c[0].selectionStart = c.val().length;
 				break;
 
 				case 'resetSettings':
@@ -237,6 +223,20 @@ $.extend(Settings, {
 					GlobalPage.message('updateEasyLists');
 				break;
 
+				case 'userScriptNow':
+					this.disabled = true;
+					this.value = _('Updating...');
+
+					GlobalPage.message('updateUserScripts');
+				break;
+
+				case 'userScriptRedownload':
+					this.disabled = true;
+					this.value = _('Downloading...');
+
+					GlobalPage.message('updateUserScripts', 1);
+				break;
+
 				case 'createBackup':
 					if (Settings.extras_active()) {
 						alert(_('Donation Required'), null, 1);
@@ -258,7 +258,7 @@ $.extend(Settings, {
 						simpleRules: Settings.current_value('SimpleRules') || '{}'
 					}) + '</textarea>', _('Copy below'), 1);
 
-					var ta = document.querySelector('.jsblocker-alert textarea');
+					var ta = document.querySelector('.jsb-alert textarea');
 
 					ta.focus();
 					ta.selectionStart = 0;
@@ -288,6 +288,8 @@ $.extend(Settings, {
 						for (var setting in js.settings)
 							Settings.set_value(setting, js.settings[setting], 1);
 
+						GlobalPage.message('backupImported');
+
 						alert(_('Your backup has been successfully restored.'), null, 1);
 					} catch (e) {
 						alert(e.toString(), _('Error importing backup'), 1);
@@ -302,7 +304,20 @@ $.extend(Settings, {
 				case 'convertRules':
 					GlobalPage.message('convertRules');
 				break;
+
+				case 'user-script-save':
+					this.disabled = true;
+					this.value = _('Saved');
+
+					GlobalPage.message('addUserScript', $('#user-script-content').val());
+
+					Settings.set_value('settingsPageTab', 'for-custom');
+
+					GlobalPage.message('getAllSettings');
+				break;
 			}
+		}).on('input', '#user-script-content', function () {
+			$('#button-user-script-save').prop('disabled', false).val(_('Save'));
 		}).on('search', '#search', function () {
 			$('#for-search:not(.selected)').click();
 			
@@ -383,28 +398,30 @@ $.extend(Settings, {
 		return (this._current[setting] !== undefined) ? this._current[setting] : (Settings.items && (setting in Settings.items) ? Settings.items[setting].default : null);
 	},
 	set_value: function (setting, v, no_reload) {
-		GlobalPage.message('reloadPopover');
+		if (setting) {
+			GlobalPage.message('reloadPopover');
 
-		v = v === 'false' ? false : (v === 'true' ? true : v);
+			v = v === 'false' ? false : (v === 'true' ? true : v);
 
-		GlobalPage.message('setting_set', [setting, v]);
-		
-		this._current[setting] = v;
+			GlobalPage.message('setting_set', [setting, v]);
 			
-		if ($('#toolbar li.selected#for-search').length)
-			$('#search').trigger('search');
-		
-		if (setting === 'largeFont')
-			$(document.body).toggleClass('large', v);
-		else if (setting === 'animations')
-			speedMultiplier = 1;
-		else if (setting === 'language' && !no_reload)
-			window.location.reload();
+			this._current[setting] = v;
+				
+			if ($('#toolbar li.selected#for-search').length)
+				$('#search').trigger('search');
+			
+			if (setting === 'largeFont')
+				$(document.body).toggleClass('large', v);
+			else if (setting === 'animations')
+				speedMultiplier = 1;
+			else if (setting === 'language' && !no_reload)
+				window.location.reload();
+		}
 
 		if ($('#toolbar li.selected').is('#for-search'))
 			$('#search-box').trigger('search');
 		else {
-			var ul = $('section.active').find('ul').empty(),
+			var ul = $('section.active').find('ul.settings').empty(),
 					sec = ul.end().attr('id');
 			
 			for (var setting in Settings.settings[sec])
@@ -538,14 +555,9 @@ $.extend(Settings, {
 		if (setting_item.label === false)
 			li.remove();
 
-		if (setting === 'customPostContainer' || setting === 'customPreContainer') {
-			var pre = JSON.parse(Settings.current_value(setting === 'customPostContainer' ? 'custompostScripts' : 'custompreScripts')),
-					ul = $('.setting', li).html('<ul class="small" />').find('ul'), has = false;
-
-			for (var key in pre) {
-				has = true;
-				break;
-			}
+		if (setting === 'userScriptsContainer') {
+			var scripts = JSON.parse(b64_to_utf8(Settings.current_value('userScripts'))),
+					ul = $('.setting', li).html('<ul class="small" />').find('ul'), has = !$.isEmptyObject(scripts), i = 0, canUpdate;
 
 			$([
 				'<li class="custom-header">',
@@ -553,20 +565,38 @@ $.extend(Settings, {
 				'</li>'
 			].join('')).appendTo(ul);
 
-			for (var key in pre) {
+			for (var key in scripts) {
+				i++;
+
+				canUpdate = scripts[key].meta.updateURL && scripts[key].meta.downloadURL;
+
 				var str = [
 					'<li>',
-						'<span>', pre[key].name.replace(/&/g, '&amp;').replace(/</g, '&lt;'), '</span> ',
+						'<img class="user-script-icon" width="48" height="48" src="', encodeURI(scripts[key].meta.icon || scripts[key].meta.icon64 || 'images/null.gif'), '" /> ',
+						'<span class="user-script-name">', scripts[key].meta.name.replace(/&/g, '&amp;').replace(/</g, '&lt;'), '</span> ',
 						'<input type="button" class="remove-custom delete" value="', _('Delete'), '" /> <input type="button" class="edit-custom single-click" value="', _('Edit'), '" />',
+						'<div class="user-script-toggles">',
+							'<input ', !canUpdate ? 'disabled="disabled"' : '', ' class="user-script-auto-update private" id="user-script-update-', i, '" type="checkbox" ', scripts[key].autoUpdate ? 'checked' : '', '/> <label for="user-script-update-', i, '">', _('Enable automatic updating'), '</label><br />',
+							'<input ', !canUpdate ? 'disabled="disabled"' : '', ' class="user-script-developer private" id="user-script-developer-', i, '" type="checkbox" ', scripts[key].developerMode ? 'checked' : '', '/> <label for="user-script-developer-', i, '">', _('Enable developer mode'), '</label>',
+							!canUpdate ? '<span class="aside">This script does not contain an @updateURL or @downloadURL directive.</span>' : '',
+						'</div>',
 						'<div class="divider small"></div>',
 					'</li>'
 				].join('');
 
 				$(str).data({
-					name: pre[key].name,
-					kind: setting === 'customPostContainer' ? 'post' : 'pre',
-					id: key
-				}).appendTo(ul);
+					ns: key
+				}).appendTo(ul).find('.user-script-developer').change(function () {
+					GlobalPage.message('setUserScriptDeveloperMode', [$(this).parents('li').data('ns'), this.checked]);
+					GlobalPage.message('getAllSettings');
+
+					setTimeout(function () { Settings.set_value(); }, 300);
+				}).end().find('.user-script-auto-update').change(function () {
+					GlobalPage.message('setUserScriptAutoUpdate', [$(this).parents('li').data('ns'), this.checked]);
+					GlobalPage.message('getAllSettings');
+
+					setTimeout(function () { Settings.set_value(); }, 300);
+				});
 			}
 
 			ul.find('.divider:last').remove();
@@ -586,6 +616,7 @@ Settings.toolbar_items = {
 	custom: 'Custom',
 	about: 'About',
 	welcome: 'Show Welcome',
+	'user-script-edit': 'Edit User Script',
 	search: '<input autocomplete="off" type="search" id="search" incremental="incremental" placeholder="' + 'Search' + '" results="10" autosave="setting_search" />'
 };
 
@@ -600,6 +631,7 @@ Events.addTabListener('message', function (event) {
 		} catch (e) {}
 
 	switch (event.name) {
+		case 'userScriptsUpdated':
 		case 'easyListsUpdated':
 			window.location.reload();
 		break;
@@ -611,7 +643,7 @@ Events.addTabListener('message', function (event) {
 			Settings._current.Rules = event.message.Rules;
 			Settings._current.SimpleRules = event.message.SimpleRules;
 
-			settingsReady();
+			if (firstLoad) settingsReady();
 		break;
 
 		case 'aboutPage':
@@ -619,11 +651,13 @@ Events.addTabListener('message', function (event) {
 					bi = event.message.bundleid,
 					rem = event.message.trial_remaining,
 					lu = event.message.easylist_last_update,
+					us = event.message.user_script_last_update,
 					don = Settings.current_value('donationVerified');
 
 			rem.push('<a class="outside" href="http://javascript-blocker.toggleable.com/donation_only" target="_top">' + _('donator-only features.') + '</a>');
 
 			$('#easy-list-update').html('<p>' + _('Last EasyList/EasyPrivacy update was {1}', [lu ? new Date(lu) : 'never.']) + '</p>');
+			$('#user-script-update').html('<p>' + _('Last user scripts update was {1}', [us ? new Date(us) : 'never.']) + '</p>');
 
 			$('#js-displayv').html(dv);
 			$('#js-bundleid').html(bi);
@@ -671,10 +705,9 @@ function settingsReady() {
 	for (setting in Settings.settings.about)
 		Settings.make_setting('about', setting, Settings.settings.about[setting], $('#about ul'));
 	
-	for (tool in Settings.toolbar_items) {
+	for (tool in Settings.toolbar_items)
 		$('<li />').attr('id', 'for-' + tool)
 				.html('<div class="left"></div><span>' + (tool !== 'search' ? _(Settings.toolbar_items[tool]) : Settings.toolbar_items[tool]) + '</span><div class="right"></div>').appendTo('#toolbar');
-	}
 
 	var ref, cu = $('#' + Settings.current_value('settingsPageTab'));
 	
@@ -687,6 +720,14 @@ function settingsReady() {
 	$(document.body).toggleClass('large', Settings.current_value('largeFont')).toggleClass('windows', /Win/.test(window.navigator.platform));
 	
 	document.title = _('JavaScript Blocker Settings');
+};
+
+function b64_to_utf8 (str) {
+	return decodeURIComponent(escape(window.atob(str)));
+};
+
+function utf8_to_b64 (str) {
+	return window.btoa(unescape(encodeURIComponent(str)));
 };
 
 window.zero = [];
@@ -703,6 +744,10 @@ window.addEventListener('message', function (e) {
 				o[0].apply(null, o[1]);
 		}
 	}
+});
+
+window.addEventListener('hashchange', function () {
+	$(window.location.hash).click();
 });
 
 window.onerror = function (d, p, l, c) {

@@ -17,6 +17,9 @@ Settings.settings = {
 		enablespecial: {
 			default: true
 		},
+		enableuser_script: {
+			default: true
+		},
 		enabledisable: {
 			default: true
 		},
@@ -53,12 +56,6 @@ Settings.settings = {
 		isDisabled: {
 			default: false
 		},
-		custompreScripts: {
-			default: '{}'
-		},
-		custompostScripts: {
-			default: '{}'
-		},
 		unblockedSwitch: {
 			default: 1
 		},
@@ -73,6 +70,15 @@ Settings.settings = {
 		},
 		settingsPageTab: {
 			default: 'for-welcome'
+		},
+		userScriptResources: {
+			default: '{}'
+		},
+		userScriptRequirements: {
+			default: '{}'
+		},
+		userScripts: {
+			default: 'e30='
 		}
 	},
 	ui: {
@@ -132,13 +138,20 @@ Settings.settings = {
 			divider: 1,
 			default: 'blocked'
 		},
+		updateNotify: {
+			label: 'Notify me about new updates',
+			setting: true,
+			default: true,
+			extras: 1,
+			extra: 1,
+			divider: 1
+		},
 		simpleMode: {
-			label: 'Enable expert features to block individual items instead of full hosts',
+			label: 'Enable expert features',
 			setting: true,
 			opposite: 1,
 			default: true,
 			help: 'simpleMode help',
-			extras: 1,
 			extra: 1,
 			ask: {
 				checked: true,
@@ -493,37 +506,15 @@ Settings.settings = {
 			prompt: 'Enter a custom zoom level to use.',
 			setting: [[0, 'Webpage default'], [60, '60%'], [80, '80%'], [100, '100%'], [120, '120%'], [140, '140%'], [160, '160%'], [180, '180%'], [200, '200%'], ['other', 'Other…']],
 			default: '0',
-			extra: 1,
-			divider: 1
-		},
-		switchCustomTab: {
-			classes: 'single-click',
-			label: 'Create a custom injected script:',
-			setting: 'Create Script...',
 			extra: 1
 		}
 	},
 	custom: {
-		enablecustom: {
-			description: 'custom helper description',
+		userScriptsContainer: {
 			extras: 1,
+			description: 'custom helper description',
 		},
-		customPreContainer: {
-			header: 'Before Load',
-			description: 'before load description',
-		},
-		createCustomPre: {
-			classes: 'single-click',
-			setting: 'Create Script',
-			label: '',
-			extra: 1,
-			divider: 1
-		},
-		customPostContainer: {
-			header: 'After Load',
-			description: 'after load description'
-		},
-		createCustomPost: {
+		createUserScript: {
 			classes: 'single-click',
 			setting: 'Create Script',
 			label: '',
@@ -574,10 +565,29 @@ Settings.settings = {
 			classes: 'single-click',
 			divider: 1
 		},
+		user_script_last_update: {
+			id: 'user-script-update',
+			label: '',
+			classes: 'description',
+			extras: 1,
+			extra: 1
+		},
+		userScriptNow: {
+			classes: 'single-click',
+			label: 'Update user scripts now:',
+			setting: 'Update Now',
+			extra: 1
+		},
+		userScriptRedownload: {
+			classes: 'single-click',
+			label: 'Re-download user scripts:',
+			setting: 'Download',
+			divider: 1,
+			extra: 1
+		},
 		createBackup: {
 			label: 'Create a full backup:',
 			setting: 'Create Backup',
-			extras: 1,
 			extra: 1,
 			description: 'Full backup description',
 			classes: 'single-click'

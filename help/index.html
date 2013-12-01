@@ -361,68 +361,130 @@
 	</article>
 
 	<article>
-		<header id="custom-scripts"><h3>Custom Scripts</h3></header>
+		<header id="user-scripts"><h3>User Scripts</h3></header>
 
 		<section>
-			<p class="no-padding">You can can inject custom scripts into webpages to have total control over them. There are
-				two basic types: before load and after load. You'll create your script in one or the other depending on the script's
-				specific needs. When creating a script, there is no need to include the <code>&lt;script&gt;</code> tag.
-			<p>Injected scripts will have a special access token that they can use to communicate with JavaScript Blocker to
-				perform functions you normally wouldn't be able to such as: adding a rule, </p>
+			<p class="no-padding">You can can inject user scripts into webpages to have total control over them. When creating a script, there
+				is no need to include the <code>&lt;script&gt;</code> tag.
+			<p>Injected scripts can communicate with JavaScript Blocker to perform special functions such as adding a rule or
+				creating custom context menu items. Most custom greasemonkey functions (GM_* functions) are supported with the exception of GM_setClipboard.
+				GM_xmlhttpRequest will allow cross-domain requests.</p>
+			<p>When viewing a script ending with <b>.user.js</b>, a prompt will appear to let you add it to JavaScript Blocker.</p>
+			<p>Once a new script is created, rules will be automatically created based on the @match and @include directives. You can also create your own
+				rules to enable it on a per-site basis or create a rule to enable it everywhere.</p>
+			<p>If a script contains both an @updateURL and @downloadURL directive, automatic updating and developer mode can be enabled. New updates will be
+				checked for every 5 days.</p>
+			<p>When developer mode is used, the script (and all of its requirements and resources) are re-downloaded anytime a webpage is loaded, even if it's not a newer version. For
+				technical reasons, changes to any resources or requirements in use by the script will be refelected on the second page reload.</p>
+			<p>View some example user scripts.</p>
 
-			<article>
-				<section>
-					<header><h4>Before Load</h4></header>
+			<section class="help-text">
+				<ul class="no-padding">
+					<li>
+						<p><b>Add a rule to block all HTTPS scripts</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Block HTTPS Scripts
+// @namespace http://javascript-blocker.toggleable.com
+// @run-at document-start
+// ==/UserScript==
 
-					<p>These will be injected before the DOM and other scripts are loaded. You'll be able to manipulate built-in JavaScript
-						functions before any of them are called.</p>
-					<p>View some examples of before load scripts.</p>
+messageExtension('addRule', {
+  kind: 'script',
+  rule: {
+    simple: 'HTTPS:*',
+    expert: '^https:\\/\\/.*$'
+  },
+  action: 0,
+  domain: window.location.host,
+  temporary: true
+}, function (result) {
+  if (result.error)
+    console.log(result.errorText);
+});</code></pre></p>
+					</li>
 
-					<section class="help-text">
-						<ul class="no-padding">
-							<li>
-								<p><b>Prevent webpages from resizing the window</b></p>
-								<p>
-<pre class="javascript"><code>var window_open = window.open;
+					<li>
+						<p><b>Show a notifcation and bind events to elements inside of it</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Notification of Coolness
+// @namespace http://javascript-blocker.toggleable.com
+// ==/UserScript==
+
+messageExtension('notification', {
+  title: GM_info.script.name,
+  body: '&lt;input type="button" value="Do Something Cool" />'
+}, function (detail) {
+  var e = document.getElementById(detail.id);
+
+  e.querySelector('input').addEventListener('click', function () {
+    alert('Something cool.');
+  });
+});</code></pre></p>
+					</li>
+
+					<li>
+						<p><b>Add a context menu item to alert the current host</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Alert Host
+// @namespace http://javascript-blocker.toggleable.com
+// ==/UserScript==
+
+GM_registerMenuCommand('Alert Current Host', function (event) {
+  alert(window.location.host);
+});</code></pre></p>
+					</li>
+
+					<li>
+						<p><b>Prevent webpages from resizing the window</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Prevent Window Resizing
+// @namespace http://javascript-blocker.toggleable.com
+// @run-at document-start
+// ==/UserScript==
+
+var window_open = window.open;
 
 window.resizeBy = function () {};
 window.resizeTo = function () {};
 window.moveTo = function () {};
 window.open = function (URL, name, specs, replace) {
-return window_open(URL, name, undefined, replace);
+  return window_open(URL, name, undefined, replace);
 };</code></pre></p>
-							</li>
-							<li>
-								<p><b>Disable context menu</b></p>
-								<p>
-<pre class="javascript"><code>window.addEventListener('contextmenu', function (event) {
-event.preventDefault();
+					</li>
+
+					<li>
+						<p><b>Disable context menu</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Disable Context Menu
+// @namespace http://javascript-blocker.toggleable.com
+// @run-at document-start
+// ==/UserScript==
+
+window.addEventListener('contextmenu', function (event) {
+  event.preventDefault();
 }, true);
 document.addEventListener('contextmenu', function (event) {
-event.preventDefault();
+  event.preventDefault();
 }, true);</code></pre></p>
-							</li>
-						</ul>
-					</section>
-				</section>
+					</li>
 
-				<section>
-					<header><h4>After Load</h4></header>
+					<li>
+						<p><b>Replace some text</b></p>
+						<p>
+<pre class="javascript"><code>// ==UserScript==
+// @name Make Apples Oranges
+// @namespace http://javascript-blocker.toggleable.com
+// ==/UserScript==
 
-					<p>These will be injected once the DOM and other scripts have loaded. The webpage is ready to be manipulated at this point.</p>
-					<p>View some examples of after load scripts.</p>
-
-					<section class="help-text">
-						<ul class="no-padding">
-							<li>
-								<p><b>Replace some text</b></p>
-								<p>
-<pre class="javascript"><code>document.body.innerHTML = document.body.innerHTML.replace('Apple', 'Orange');</code></pre></p>
-							</li>
-						</ul>
-					</section>
-				</section>
-			</article>
+document.body.innerHTML = document.body.innerHTML.replace('Apple', 'Orange');</code></pre></p>
+					</li>
+				</ul>
+			</section>
 		</section>
 	</article>
 

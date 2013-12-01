@@ -59,7 +59,7 @@ body {
 		color: #666;
 	}
 		body.large #toolbar li {
-			padding-top: 4px;
+			padding: 4px 1px 0 2px;
 			height: 21px;
 		}
 		#toolbar li:first-child {
@@ -68,7 +68,8 @@ body {
 		#toolbar li:active {
 			color: #094e96;
 		}
-		#toolbar #for-welcome {
+		#toolbar #for-welcome,
+		#toolbar #for-user-script-edit {
 			display: none;
 		}
 		#toolbar #for-close {
@@ -132,6 +133,7 @@ body {
 	.divider.small {
 		margin: 5px auto 0px;
 	}
+
 input,
 select,
 button,
@@ -228,12 +230,12 @@ textarea {
 			top: -1px;
 			font-size: 10pt;
 		}
-		input[type="search"]::-webkit-input-placeholder {
+		input::-webkit-input-placeholder {
 			padding-right: 0%;
 			text-align: center;
 			-webkit-transition: padding-right 0.35s ease-in-out;
 		}
-		input[type="search"]:focus::-webkit-input-placeholder {
+		input:focus::-webkit-input-placeholder {
 			padding-right: 48%;
 		}
 		input[type="search"] {
@@ -248,29 +250,32 @@ textarea {
 	}
 	@-webkit-keyframes redPulse {
 		0% {
-			box-shadow: 0 0 2px rgba(255,0,0,0.8);
+			background: #ff3b30;
 		}
 		100% {
-			box-shadow: 0 0 5px rgba(255,0,0,1);
+			background: #fa2025;
 		}
 	}
 	input[type="button"].confirm-click,
 	button.confirm-click {
-		color: #ff3b30;
+		color: #fff !important;
+		text-shadow: none;
 		border-color: #ff3b30;
+		background: #ff3b30;
 		-webkit-animation: redPulse 0.5s linear 0 infinite alternate;
 	}
 		input[type="button"].confirm-click:active,
 		button.confirm-click:active {
-			color: #fa2025;
+			color: #fff !important;
+			background: #fa2025 !important;
 		}
 	input.delete,
-	.settings li.delete .setting input {
+	li.delete .setting input {
 		color: #ff3b30;
 	}
 		input.delete:active,
 		button.delete:active,
-		.settings li.delete .setting input:active {
+		li.delete .setting input:active {
 			color: #fa2025;
 			background: rgba(0,0,0,0.015);
 		}
@@ -439,6 +444,10 @@ ul.small li {
 	text-indent: 0;
 }
 
+ul.padding {
+	padding: 0 5px;
+}
+
 input.edit-custom, input.remove-custom {
 	float: right;
 	width: 60px;
@@ -472,4 +481,43 @@ input.edit-custom, input.remove-custom {
 #welcome p {
 	text-indent: 17px;
 	padding: 4px 15px 3px;
+}
+
+.colon:after {
+	content: ':';
+}
+
+#edit-user-script .setting-header {
+	margin-bottom: 15px;
+}
+
+#user-script-content {
+	width: 619px !important;
+	height: 400px;
+}
+#user-script-actions {
+	text-align: right;
+}
+.user-script-icon {
+	vertical-align: top;
+	margin-right: 5px;
+}
+ul.small .user-script-name {
+	max-width: 190px;
+}
+#custom ul.small li {
+	margin-bottom: 5px;
+}
+.user-script-developer,
+.user-script-auto-update {
+	margin-bottom: 7px;
+}
+
+#setting-userScriptsContainer .custom-header {
+	margin-bottom: 14px !important;
+}
+
+.user-script-toggles {
+	margin-left: 57px;
+	margin-top: -16px;
 }

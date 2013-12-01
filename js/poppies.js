@@ -73,7 +73,7 @@ JB.poppies = {
 					$.get(zoo.url + encodeURIComponent(id) + '&install=' + encodeURIComponent(SettingStore.getItem('installID')))
 					.success(done)
 					.error(function (req) {
-						if (req.status === 0 || req.status === 404) return done(10);
+						if (/.*@.*\..*/.test(did) && (req.status === 0 || req.status === 404)) return done(10);
 
 						var text = req.statusText;
 
@@ -141,7 +141,7 @@ JB.poppies = {
 						'<label for="select-type-hide"> ', _('Hide'), '</label>',
 					'</p>',
 					'<p id="rules-temp">',
-						'<input id="rule-temporary" type="checkbox"', main.collapsed('LastRuleWasTemporary') ? ' checked' : '', ' />',
+						'<input id="rule-temporary" type="checkbox"', main.collapsed('LastRuleWasTemporary') || PrivateBrowsing() ? ' checked' : '', ' />',
 						'<label for="rule-temporary">&thinsp;', _('Temporary rule'), '</label> ',
 						this.real_url ? ['<input class="orange" type="button" id="rule-options-link" value="', _('Options...'), '" /> '].join('') : ' ',
 					'</p>',

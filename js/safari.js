@@ -82,7 +82,8 @@ var SAFARI = true, CHROME = false,
 			active: function (callback) {
 				var activeWindow = BrowserWindows.active();
 
-				callback.call(this, activeWindow ? [activeWindow.activeTab] : []);
+				if (callback) callback.call(this, activeWindow ? [activeWindow.activeTab] : []);
+				else return activeWindow ? activeWindow.activeTab : null;
 			},
 			create: function (object) {
 				var activeWindow = BrowserWindows.active();
@@ -94,12 +95,21 @@ var SAFARI = true, CHROME = false,
 				this.active(function (tab) {
 					if (tab.length && tab[0].page) tab[0].page.dispatchMessage(message, JSON.stringify(data));
 				});
+			},
+			messageAll: function (message, data) {
+				this.all(function (tab) {
+					MessageTarget({ target: tab }, message, data);
+				});
 			}
 		},
 
 		GlobalPage = {
 			page: function () {
-				return safari.extension.globalPage.contentWindow;
+				try {
+					return safari.extension.globalPage.contentWindow;
+				} catch (e) {
+					return null;
+				}
 			},
 			message: function (message, data) {
 				safari.self.tab.dispatchMessage(message, data);

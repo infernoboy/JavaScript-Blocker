@@ -7,10 +7,11 @@
 "use strict";
 
 var blank = window.location.href === 'about:blank',
+		inlineScriptsAllowed = false,
 		Token = {
 			_tokens: {},
 			generate: function () {
-				return Math.random().toString(36).substr(2);
+				return Math.random().toString(36).substr(2, 10);
 			},
 			create: function (value, keep) {
 				var t = this.generate();
@@ -27,8 +28,12 @@ var blank = window.location.href === 'about:blank',
 
 				return t;
 			},
-			valid: function (token, value) {
-				return (token && this._tokens[token] && this._tokens[token].value === value);
+			valid: function (token, value, expire) {
+				var r = (token && this._tokens[token] && this._tokens[token].value === value);
+
+				if (expire) this.expire(token);
+
+				return r;
 			},
 			expire: function (token, not_kept) {
 				if (this._tokens[token] && (!not_kept || !this._tokens[token].keep))
@@ -37,10 +42,20 @@ var blank = window.location.href === 'about:blank',
 		},
 		beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
 		accessToken = Token.generate(),
+		eventToken = Token.generate(),
+		userScriptTokens = [],
+		menuCommand = {},
 		bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
-		parentURL = (window !== window.top && blank) ? (ResourceCanLoad(beforeLoad, 'parentURL') + '-' + Token.generate()) : false,
+		parentURL = (window !== window.top && blank) ? Token.generate() : false,
 		alert_history = {},
-		disabled = ResourceCanLoad(beforeLoad, ['disabled', pageHost()]);
+		info = ResourceCanLoad(beforeLoad, ['info', pageHost()]),
+		disabled = info.disabled,
+		__ = {},
+		_ = function (str, args) {
+			if (!args && str in __) return __[str];
+
+			return ResourceCanLoad(beforeLoad, ['_', str, args]);
+		};;
 
 if (!window.CustomEvent)
 	(function () {
@@ -204,7 +219,6 @@ var alwaysDo = {},
 			AJAX_POST: ['ajax_post'],
 			AJAX_PUT: ['ajax_put'],
 			AJAX_GET: ['ajax_get'],
-			INJECTED: ['injected'],
 			special: ['special'],
 			disable: ['disable']
 		};
@@ -270,7 +284,7 @@ function canLoad(event, exclude, meta) {
 
 	if (!(node in kinds)) return 1;
 
-	var source = getAbsoluteURL(event.url), pathname, host, at, arr, use_source, did_something = 0, kind = kinds[node][0];
+	var source = getAbsoluteURL(event.url ? event.url : el.getAttribute('src')), pathname, host, at, arr, use_source, did_something = 0, kind = kinds[node][0];
 
 	if (!Token.valid(el.getAttribute('data-jsb_auto_allow'), 'auto_allow')) {
 		if (kind in alwaysDo) {
@@ -287,6 +301,7 @@ function canLoad(event, exclude, meta) {
 			if (Token.valid(el.getAttribute('data-jsb_ignore'), 'jsb_ignore')) {
 				Token.expire(el.getAttribute('data-jsb_ignore'));
 
+				el.setAttribute('data-jsb_added', Token.generate());
 				el.setAttribute('data-jsb_added', Token.create(el.outerHTML, true));
 
 				if_setting('hideJSBInjected', false, function (kind, el) {
@@ -294,6 +309,7 @@ function canLoad(event, exclude, meta) {
 				}, null, [kind, el]);
 
 				el.removeAttribute('data-jsb_ignore');
+
 				return 1;
 			}
 
@@ -316,6 +332,7 @@ function canLoad(event, exclude, meta) {
 					case 'EMBED':
 					case 'OBJECT':
 					case 'FRAME':
+					case 'IFRAME':
 						meta = el.getAttribute('type');
 					break;
 				}
@@ -332,9 +349,15 @@ function canLoad(event, exclude, meta) {
 			if (el.innerHTML.length && (!el.getAttribute('data-jsb_added') || !Token.valid(el.getAttribute('data-jsb_added'), el.outerHTML.length))) {
 				did_something = 1;
 
+				el.setAttribute('data-jsb_added', Token.generate());
 				el.setAttribute('data-jsb_added', Token.create(el.outerHTML.length, true));
 
-				jsblocker.unblocked[kind].all.push(el.innerHTML);
+				if (Token.valid(el.getAttribute('data-jsb_ignore'), 'jsb_ignore', true)) {
+					if_setting('hideJSBInjected', false, function (kind, el) {
+						jsblocker.unblocked[kind].all.push(el.innerHTML);
+					}, null, [kind, el]);
+				} else
+					jsblocker.unblocked[kind].all.push(el.innerHTML);
 			
 				if (kinds[node][1]) kinds[node][1].call(el, kind, 1);
 			}
@@ -352,28 +375,35 @@ function ready(event) {
 	if (disabled) return false;
 
 	var l = event.type === 'DOMContentLoaded';
-			
-	clearTimeout(readyTimeout[l]);
-		
-	readyTimeout[l] = setTimeout(function (event) {
-		if (event.type === 'DOMContentLoaded') {
-			var script_tags = document.getElementsByTagName('script'), i, b = script_tags.length;
-			for (i = 0; i < b; i++) {
-				if (!Token.valid(script_tags[i].getAttribute('data-jsb_added'), script_tags[i].outerHTML.length)) {
-					if (!script_tags[i].getAttribute('src') || (script_tags[i].src && script_tags[i].src.length > 0 && /^data/.test(script_tags[i].src))) {
-						script_tags[i].setAttribute('data-jsb_added', Token.create(script_tags[i].outerHTML.length, true));
 
+	if (l) {
+		var script_tags = document.getElementsByTagName('script'), i, b = script_tags.length;
+
+		for (i = 0; i < b; i++) {
+			if (!Token.valid(script_tags[i].getAttribute('data-jsb_added'), script_tags[i].outerHTML.length)) {
+				if (!script_tags[i].getAttribute('src') || script_tags[i].src.length < 1) {
+					script_tags[i].setAttribute('data-jsb_added', Token.generate());
+					script_tags[i].setAttribute('data-jsb_added', Token.create(script_tags[i].outerHTML.length, true));
+
+					if (Token.valid(script_tags[i].getAttribute('data-jsb_ignore'), 'jsb_ignore', true)) {
+						if_setting('hideJSBInjected', false, function (kind, el) {
+							jsblocker.unblocked[kind].all.push(el.innerHTML);
+						}, null, ['script', script_tags[i]]);
+					} else
 						jsblocker.unblocked.script.all.push(script_tags[i].innerHTML);
 
-						kinds.SCRIPT[1].call(script_tags[i], 'script', 1);
-					}
+					kinds.SCRIPT[1].call(script_tags[i], 'script', 1);
 				}
 			}
 		}
+	}
 			
+	clearTimeout(readyTimeout[l]);
+		
+	readyTimeout[l] = setTimeout(function (event) {			
 		try {
 			if (window === window.top)
-				GlobalPage.message(event.name && ~event.name.indexOf('updatePopover') ? event.name : 'updatePopover', jsblocker);
+				GlobalPage.message('updatePopover', jsblocker);
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
 				window._jsblocker_user_warned = true;
@@ -447,6 +477,15 @@ function messageHandler(event) {
 
 				special_actions.alert_dialogs(1, [1])(event.message[0], event.message[1], 1);
 			}
+		break;
+
+		case 'commanderCallback':
+			sendCallback(event.message.key, event.message.callback, event.message.result);
+		break;
+
+		case 'executeMenuCommand':
+			if (event.message.pageToken === accessToken)
+				sendCallback(event.message.scriptToken, event.message.callback, {});
 		break;
 
 		case 'loadElementsOnce':
@@ -611,7 +650,7 @@ function windowMessenger(event) {
 }
 
 function commandHandler(event) {
-	if (event.detail.command && Token.valid(event.detail.token, event.detail.command) && (event.detail.key === window.accessToken || Token.valid(event.detail.key, 'custom'))) {
+	if (event.detail.command && Token.valid(event.detail.token, event.detail.command) && (event.detail.key === window.accessToken || Token.valid(event.detail.key, 'userScript'))) {
 		Token.expire(event.detail.token, true);
 
 		switch (event.detail.command) {
@@ -626,57 +665,136 @@ function commandHandler(event) {
 					setAttribute: function () {}
 				};
 
-				var e = new CustomEvent('jsb_ajax_handler', {
-					detail: {
-						id: event.detail.id,
-						token: Token.create('inlineAlert'),
-						str: event.detail.str,
-						kind: event.detail.kind,
-						source: event.detail.source,
-						meta: event.detail.meta,
-						accessKey: ResourceCanLoad(beforeLoad, ['generateRuleAccessKey']),
-						rule: ResourceCanLoad(beforeLoad, ['arbitrary', 'utils.escape_regexp', event.detail.source]),
-						allowed: canLoad(b, event.detail.exclude, event.detail.meta),
-						domain_parts: ResourceCanLoad(beforeLoad, ['arbitrary', 'domain_parts', parseURL(pageHost()).host])
-					}
-				});
+				var o = {
+					id: 'jsb-alert-' + event.detail.id,
+					meta: event.detail.meta,
+					allowed: canLoad(b, event.detail.exclude, event.detail.meta)
+				};
+
+				if (o.allowed[1] < 0 && enabled_specials.ajax_intercept.value === 1) {
+					o.str = event.detail.str;
+					o.kind = event.detail.kind;
+					o.source = event.detail.source;
+					o.meta = event.detail.meta;
+					o.rule = ResourceCanLoad(beforeLoad, ['arbitrary', 'utils.escape_regexp', event.detail.source]);
+					o.domain_parts = ResourceCanLoad(beforeLoad, ['arbitrary', 'domain_parts', parseURL(pageHost()).host]);
+				}
+
+				sendCallback(event.detail.key, event.detail.callback, o);
+			break;
+
+			case 'generateToken':
+				var regenerate = event.detail.which === 'registerUserScript' || event.detail.which === 'registerSpecial';
+
+				if (regenerate) {
+					var tok = Token.create('userScript', true);
+
+					document.removeEventListener('JSBCommander' + event.detail.key + eventToken, commandHandler, true);
+					document.addEventListener('JSBCommander' + tok + eventToken, commandHandler, true);
+				}
+
+				var token = Token.create(event.detail.which, event.detail.preserve),
+						e = new CustomEvent(event.detail.key + eventToken, {
+							detail: {
+								token: token,
+								generatorToken: Token.create('generateToken'),
+								regeneratedAccessToken: regenerate ? tok : null,
+								which: event.detail.which,
+								command: event.detail.command,
+								callback: event.detail.callback
+							}
+						});
 
 				document.dispatchEvent(e);
 			break;
 
 			case 'pushItem':
+				var p = parseURL(event.detail.data);
+
 				jsblocker[event.detail.action][event.detail.kind].all.push([event.detail.data, event.detail.how[1], false, event.detail.meta]);
 
-				if (event.detail.which === 'hosts' && !~jsblocker[event.detail.action][event.detail.kind].hosts.indexOf(event.detail.data))
-					jsblocker[event.detail.action][event.detail.kind].hosts.push(event.detail.data);
+				if (event.detail.which === 'hosts' && !~jsblocker[event.detail.action][event.detail.kind].hosts.indexOf(p.host))
+					jsblocker[event.detail.action][event.detail.kind].hosts.push(p.host);
 
 				GlobalPage.message('updatePopover', jsblocker);
 			break;
 
-			case 'inlineAlert':
-				special_actions.alert_dialogs(1, [window.accessToken])(event.detail.body, event.detail.title, event.detail.key, event.detail.hkey, event.detail.id);
+			case 'notification':
+				var id = event.detail.id || Date.now();
 
-				var e = new CustomEvent('jsb_alert_ready', {
-					detail: {
-						id: event.detail.id,
-						meta: event.detail.meta,
-						addRuleToken: Token.create('addRule'),
-						pushItemToken: Token.create('pushItem')
-					}
+				special_actions.alert_dialogs(1, [1])(event.detail.body, event.detail.title, 1, id);
+
+				sendCallback(event.detail.key, event.detail.callback, {
+					id: 'jsb-alert-' + id,
+					meta: event.detail.meta
 				});
-
-				document.dispatchEvent(e);
 			break;
 
+			case 'registerSpecial':
+			case 'registerUserScript':
+				if (!~userScriptTokens.indexOf(event.detail.key))
+					userScriptTokens.push(event.detail.key);
+			break;
+
+			case 'registerMenuCommand':
+				if (menuCommand[event.detail.caption]) {
+					console.error('Menu item with caption already exist:', event.detail.caption);
+					break;
+				}
+
+				menuCommand[event.detail.caption] = {
+					scriptToken: event.detail.key,
+					callback: event.detail.callback
+				};
+			break;
+
+			case 'openInTab':
 			case 'addRule':
-				GlobalPage.message('addRule', event.detail);
+			case 'installUserScriptFrom':
+			case 'XMLHttpRequest':
+				GlobalPage.message(event.detail.command, event.detail)
+			break;
+
+			case 'installUserScriptPrompt':
+				var id = Date.now();
+
+				special_actions.alert_dialogs(1, [1])([
+					'<p>', _('Would you like to add this user script to JavaScript Blocker?'), '</p>',
+					'<p><input type="button" id="jsb-install-user-script" value="', _('Create Script'), '" /></p>'
+				].join(''), _('User Script'), 1, id);
+
+				sendCallback(event.detail.key, event.detail.callback, {
+					id: id,
+					strings: {
+						'User script added.': _('User script added.'),
+						'User script could not be added.': _('User script could not be added.'),
+						'Adding...': _('Adding...')
+					}
+				});
+			break;
+
+			case 'inlineScriptsAllowed':
+				inlineScriptsAllowed = true;
 			break;
 		}
 	}
 }
 
 function contextmenu(event) {
-	Events.setContextMenuEventUserInfo(event, event.userInfo || document.querySelectorAll('.jsblocker-placeholder').length);
+	Events.setContextMenuEventUserInfo(event, {
+		pageToken: accessToken,
+		menuCommand: menuCommand,
+		placeholders: document.querySelectorAll('.jsblocker-placeholder').length
+	});
+}
+
+function sendCallback(key, callback, result) {	
+	document.dispatchEvent(new CustomEvent(key + eventToken, {
+		detail: {
+			callback: callback,
+			result: result
+		}
+	}));
 }
 
 Events.addTabListener('message', messageHandler, true);
@@ -722,7 +840,6 @@ if (!disabled) {
 	document.addEventListener('DOMContentLoaded', prepareAnchors, true);
 	document.addEventListener('DOMContentLoaded', prepareFrames, true);
 	document.addEventListener('beforeload', canLoad, true);
-	document.addEventListener('JSBCommander', commandHandler, true);
 
 	window.onerror = function (d, p, l, c) {
 		if (~p.indexOf('JavaScriptBlocker'))

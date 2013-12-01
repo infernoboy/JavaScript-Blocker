@@ -22,7 +22,7 @@ Strings['en-us'] = {
 		'it verified to continue using those features.',
 	'Updated JavaScript Blocker {1}': 'JavaScript Blocker has been updated to version {1}',
 	'Please click the flashing toolbar icon to continue': 'Your attention is required in order for JavaScript Blocker to continue functioning properly. ' +
-	 'All sources will be blocked by default until you click the flashing toolbar icon to complete the update',
+	 'All sources will be blocked by default until you click the flashing toolbar icon to complete the update.',
 	'Donation Required': 'A verified contribution is required to use that feature. Click <b>Unlock</b> at the top-left of the main window to do so.',
 	'You cannot use JavaScript Blocker': 'You cannot use JavaScript Blocker with expert features enabled until you have made a contribution and had it verified.',
 	'Either disable expert': 'Either disable expert features or click <b>{1}</b> below to verify your contribution.',
@@ -42,6 +42,7 @@ Strings['en-us'] = {
 	'View': 'View',
 	'Delete': 'Delete',
 	'Save': 'Save',
+	'Saved': 'Saved',
 	'Close': 'Close',
 	'Back': 'Back',
 	'Continue': 'Continue',
@@ -116,6 +117,11 @@ Strings['en-us'] = {
 	/**/ 'Allowed:': 'Allowed:',
 	/**/ 'Blocked:': 'Blocked:',
 	/**/ 'Unblocked:': 'Unblockable:',
+	/**/
+	/**/ 'host': 'host',
+	/**/ 'hosts': 'hosts',
+	/**/ 'resource': 'resource',
+	/**/ 'resources': 'resources',
 	/**/
 	/*** Displayed next to the hostname in the main window.
 	/**/ 'Main host': 'Main',
@@ -327,6 +333,7 @@ Strings['en-us'] = {
 	/*----*/ 'SAFARI-EXTENSION': 'Safari extension',
 	/*----*/ 'ABOUT': '',
 	/*----*/ 'DATA': 'data URI',
+	/*----*/ 'BLOB': 'blob URI',
 	/*----*/ 'JAVASCRIPT': 'JavaScript URI',
 	/*----*/ 'SPECIAL': 'other',
 	/*----*/ 'FTP': 'file transfer protocol',
@@ -530,6 +537,7 @@ Strings['en-us'] = {
 
 	'Injected pre Script: {1}': 'Before Load: {1}',
 	'Injected post Script: {1}': 'After Load: {1}',
+	'User Script: {1}': 'User Script: {1}',
 	/** /SPECIALS **/
 	
 	/** SETTINGS  **/
@@ -537,13 +545,14 @@ Strings['en-us'] = {
 	'User Interface': 'User Interface',
 	'Keyboard': 'Keyboard',
 	'Other Features': 'Other Features',
-	'Custom': 'Custom',
+	'Custom': 'User Scripts',
 	'Search': 'Search',
 	'About': 'About',
 	
 	'Donator-only features': 'Extra features', // Header displayed above the section containing donator-only features.
 
-	'Last EasyList/EasyPrivacy update was {1}': 'Last blacklist/whitelist update was {1}<br />Update is scheduled to run every 5 days.',
+	'Last EasyList/EasyPrivacy update was {1}': 'Last blacklist/whitelist update was {1}',
+	'Last user scripts update was {1}': 'Last user scripts update was {1}',
 	'Rule List Filter Bars': 'Rule list',
 	'JavaScript Blocker Settings': 'JavaScript Blocker Settings',
 	
@@ -554,9 +563,11 @@ Strings['en-us'] = {
 	'Use a large font': 'Use a large font',
 	'Disabled mode persist across Safari restarts': 'Ensure disabled mode persist across Safari restarts',
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
-	'Hide injected helper scripts': 'Hide injected helper and custom scripts',
+	'Hide injected helper scripts': 'Hide injected helper and user scripts',
+	'Notify me about new updates': 'Notify me about new updates',
+	'Hide Update Notifications': 'Hide Update Notifications',
 	'Temporarily switch to expert mode when clicked': 'Temporarily switch to expert view upon clicking number of allowed/blocked hosts',
-	'Enable expert features to block individual items instead of full hosts': 'Enable expert mode to allow/block items using regexp',
+	'Enable expert features': 'Enable expert mode<br/><span class="aside">Create rules using regular expressions to block or allow individual items rather than hosts.',
 	'A different rule set will be used in this mode.': 'A different rule set will be used in this mode. Would you like to convert your existing rules ' +
 		'to be compatible? Some rules may not be able to be converted automatically.',
 
@@ -595,19 +606,20 @@ Strings['en-us'] = {
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
 
-	'custom helper description': 'This section allows you to create custom scripts that are injected into a webpage. They will appear ' +
-		'under the <b>OTHER</b> section of the main window. Once a new script is created, you can create rules ' +
-		'to enable it on a per-site basis or create a rule to enable it everywhere. Learn more on the <a href="' + ExtensionURL('help/index.html#custom-scripts') + '">help page</a>.',
-	'before load description': 'These scripts will be injected into the webpage before the DOM and other scripts are loaded.',
-	'after load description': 'These scripts will be injected once the content of the webpage is ready to be manipulated.',
+	'custom helper description': 'This section allows you to create user scripts which are injected into a webpage. They will appear ' +
+		'under the <b>OTHER</b> section of the main window. Most greasemonkey functions are supported. Enable developer mode to force scripts to be re-downloaded anytime a webpage is loaded. Keeping this enabled may slow down page loading. Learn more on the <a href="' + ExtensionURL('help/index.html#user-scripts') + '">help page</a>.',
 
-	'Enter a name for the script.': 'Enter a name to use for the script. This will be displayed in the popover under allowed/blocked.',
-	'Enter the contents of the script.': 'Enter the contents of the script. You can use option+return to make a new line.',
-	'User Defined Scripts': 'User Defined Scripts',
-	'No User Defined Scripts': 'No User Defined Scripts',
-	'Create a custom injected script:': 'Create a custom injected script:',
-	'Create Script...': 'Create Script...',
-	'Create Script': 'Create Script',
+	'Would you like to add this user script to JavaScript Blocker?': 'Would you like to add this user script to JavaScript Blocker?',
+	'User script added.': 'User script added.',
+	'User script could not be added.': 'User script could not be added.',
+	'Adding...': 'Adding...',
+	'Enable automatic updating': 'Enable automatic updating',
+	'Enable developer mode': 'Enable developer mode',
+	'Confirm user script navigate away': 'Navigating away from this page will cause all unsaved changes to be lost. Continue?',
+	'User Script': 'User Script',
+	'User Defined Scripts': 'User Scripts',
+	'No User Defined Scripts': 'No User Scripts',
+	'Create Script': 'Add Script',
 	'Before Load': 'Before Load',
 	'After Load': 'After Load',
 
@@ -710,8 +722,12 @@ Strings['en-us'] = {
 		'These actions are permanent and cannot be undone. If you can, create a backup before proceeding.',
 
 	'Update lists now:': 'Update lists now:',
+	'Update user scripts now:': 'Update user scripts now:',
+	'Re-download user scripts:': 'Re-download user scripts',
 	'Update Now': 'Update Now',
 	'Updating...': 'Updating...',
+	'Download': 'Download',
+	'Downloading...': 'Downloading...',
 	
 	'Reset all settings to their default values:': 'Reset settings to their default values:', // label
 	'Reset Settings': 'Reset Settings', // button

@@ -25,6 +25,7 @@
 	<script src="i18n/en-us.js"></script>
 	<script src="js/setting_items.js"></script>
 	<script src="js/settings.js"></script>
+	<script src="js/popover.js"></script>
 </head>
 
 <body>
@@ -51,6 +52,21 @@
 					You'll have to reload any pages you already have open for JavaScript Blocker to start taking effect on them.</p>
 				<div class="divider"></div>
 				<p>Visit the <a href="help/index.html">help page</a> to learn more and get the most out of JavaScript Blocker.</p>
+			</section>
+
+			<section id="user-script-edit">
+				<ul class="padding">
+					<li class="setting-header">
+						<div class="label" data-i18n="User Script"></div>
+						<br style="clear:both;" />
+					</li>
+					<li>
+						<textarea id="user-script-content"></textarea>
+					</li>
+					<li id="user-script-actions">
+						<input id="button-user-script-save" type="button" data-i18n="Save" class="single-click" value=" " />
+					</li>
+				</ul>
 			</section>
 		</div>
 	</div>
