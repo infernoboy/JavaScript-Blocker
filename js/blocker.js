@@ -6,6 +6,8 @@
 
 "use strict";
 
+if (typeof document.hidden === 'undefined') document.hidden = false;
+
 var blank = window.location.href === 'about:blank',
 		inlineScriptsAllowed = false,
 		Token = {
@@ -21,32 +23,31 @@ var blank = window.location.href === 'about:blank',
 					keep: !!keep
 				};
 
-				if (!keep)
-					setTimeout(function (self, to) {
-						delete self._tokens[to];
-					}, 120000, this, t);
-
 				return t;
 			},
 			valid: function (token, value, expire) {
-				var r = (token && this._tokens[token] && this._tokens[token].value === value);
+				if (!(token in this._tokens)) return false;
 
-				if (expire) this.expire(token);
+				var r = this._tokens[token].value === value;
+
+				if (typeof expire !== 'undefined') this.expire(token, expire);
 
 				return r;
 			},
 			expire: function (token, not_kept) {
-				if (this._tokens[token] && (!not_kept || !this._tokens[token].keep))
+				if ((token in this._tokens) && (!not_kept || !this._tokens[token].keep))
 					delete this._tokens[token];
 			}
 		},
-		beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
 		accessToken = Token.generate(),
 		eventToken = Token.generate(),
-		userScriptTokens = [],
+		frameID = Token.generate(),
+		topToken = null,
+		scriptTokens = {},
 		menuCommand = {},
+		onVisible = [],
 		bv = window.navigator.appVersion.split('Safari/')[1].split('.'),
-		parentURL = (window !== window.top && blank) ? Token.generate() : false,
+		parentURL = (window !== window.top && blank) ? ResourceCanLoad(beforeLoad, 'parentURL') : false,
 		alert_history = {},
 		info = ResourceCanLoad(beforeLoad, ['info', pageHost()]),
 		disabled = info.disabled,
@@ -55,7 +56,7 @@ var blank = window.location.href === 'about:blank',
 			if (!args && str in __) return __[str];
 
 			return ResourceCanLoad(beforeLoad, ['_', str, args]);
-		};;
+		};
 
 if (!window.CustomEvent)
 	(function () {
@@ -319,7 +320,6 @@ function canLoad(event, exclude, meta) {
 					isAllowed = allo[0],
 					mo = isAllowed || !event.preventDefault ? 'allowed' : 'blocked';
 
-
 			if (allo[1] === -84) {
 				alwaysDo[kind] = isAllowed;
 				return allo;
@@ -340,9 +340,17 @@ function canLoad(event, exclude, meta) {
 
 			if (!isAllowed && event.preventDefault)	event.preventDefault();
 			
-			if (exclude !== true || allo[1] >= 0) jsblocker[mo][kind].all.push([use_source, allo[1], event.unblockable || false, meta]);
+			if (exclude !== true || allo[1] >= 0) {
+				jsblocker[mo][kind].all.push({
+					name: use_source,
+					rtype: allo[1],
+					unblockable: event.unblockable || false,
+					meta: meta,
+					page: [jsblocker.href]
+				});
 		
-			if (!~jsblocker[mo][kind].hosts.indexOf(host)) jsblocker[mo][kind].hosts.push(host);
+				if (!~jsblocker[mo][kind].hosts.indexOf(host)) jsblocker[mo][kind].hosts.push(host);
+			}
 
 			if (kinds[node][1] && event.preventDefault) kinds[node][1].call(event.target, kind, isAllowed, host, use_source);
 		} else if ((!source || source.length === 0) && !event.target) {
@@ -374,7 +382,7 @@ function canLoad(event, exclude, meta) {
 function ready(event) {
 	if (disabled) return false;
 
-	var l = event.type === 'DOMContentLoaded';
+	var l = event && event.type === 'DOMContentLoaded';
 
 	if (l) {
 		var script_tags = document.getElementsByTagName('script'), i, b = script_tags.length;
@@ -402,7 +410,7 @@ function ready(event) {
 		
 	readyTimeout[l] = setTimeout(function (event) {			
 		try {
-			if (window === window.top)
+			if (window === window.top && !document.hidden)
 				GlobalPage.message('updatePopover', jsblocker);
 		} catch(e) {
 			if (!window._jsblocker_user_warned) {
@@ -475,7 +483,18 @@ function messageHandler(event) {
 					else window.showedUpdateNotification = 1;
 				}
 
-				special_actions.alert_dialogs(1, [1])(event.message[0], event.message[1], 1);
+				special_actions.alert_dialogs(1, [1, { 'Alert': _('Alert'), 'Close': _('Close'), 'via frame': _('via frame') }, window.bv])(event.message[0], event.message[1], 1, event.message[2]);
+			}
+		break;
+
+		case 'topHandler':
+			if (window === window.top) {				
+				document.dispatchEvent(new CustomEvent(topToken + eventToken, {
+					detail: {
+						token: scriptTokens.genericSpecial,
+						topHandler: event.message
+					}
+				}));
 			}
 		break;
 
@@ -666,7 +685,7 @@ function commandHandler(event) {
 				};
 
 				var o = {
-					id: 'jsb-alert-' + event.detail.id,
+					id: event.detail.id,
 					meta: event.detail.meta,
 					allowed: canLoad(b, event.detail.exclude, event.detail.meta)
 				};
@@ -711,7 +730,13 @@ function commandHandler(event) {
 			case 'pushItem':
 				var p = parseURL(event.detail.data);
 
-				jsblocker[event.detail.action][event.detail.kind].all.push([event.detail.data, event.detail.how[1], false, event.detail.meta]);
+				jsblocker[event.detail.action][event.detail.kind].all.push({
+					name: event.detail.data,
+					rtype: event.detail.how[1],
+					unblockable: false,
+					meta: event.detail.meta,
+					page: [jsblocker.href]
+				});
 
 				if (event.detail.which === 'hosts' && !~jsblocker[event.detail.action][event.detail.kind].hosts.indexOf(p.host))
 					jsblocker[event.detail.action][event.detail.kind].hosts.push(p.host);
@@ -722,18 +747,37 @@ function commandHandler(event) {
 			case 'notification':
 				var id = event.detail.id || Date.now();
 
-				special_actions.alert_dialogs(1, [1])(event.detail.body, event.detail.title, 1, id);
+				if (window === window.top || !event.detail.top)
+					var a = function (id, detail) {
+						special_actions.alert_dialogs(1, [1, { 'Alert': _('Alert'), 'Close': _('Close'), 'via frame': _('via frame') }, window.bv, detail.frame])(detail.body, detail.title, detail.no_html ? 0 : 1, id);
 
-				sendCallback(event.detail.key, event.detail.callback, {
-					id: 'jsb-alert-' + id,
-					meta: event.detail.meta
-				});
+						sendCallback(detail.key, detail.callback, {
+							id: 'jsb-alert-' + id,
+							meta: detail.meta,
+							origin: detail.origin || detail.key,
+							frame: !!detail.frame
+						});
+					}.bind(window, id, event.detail);
+				else
+					var a = function (detail) {
+						GlobalPage.message('bounce', {
+							which: 'topHandler',
+							detail: detail
+						});
+					}.bind(window, event.detail);
+
+				if (document.hidden) onVisible.push(a);
+				else a();
 			break;
 
 			case 'registerSpecial':
 			case 'registerUserScript':
-				if (!~userScriptTokens.indexOf(event.detail.key))
-					userScriptTokens.push(event.detail.key);
+				if (!scriptTokens[event.detail.via])
+					scriptTokens[event.detail.via] = event.detail.key;
+			break;
+
+			case 'registerTopToken':
+				topToken = event.detail.key;
 			break;
 
 			case 'registerMenuCommand':
@@ -756,21 +800,32 @@ function commandHandler(event) {
 			break;
 
 			case 'installUserScriptPrompt':
-				var id = Date.now();
-
-				special_actions.alert_dialogs(1, [1])([
-					'<p>', _('Would you like to add this user script to JavaScript Blocker?'), '</p>',
-					'<p><input type="button" id="jsb-install-user-script" value="', _('Create Script'), '" /></p>'
-				].join(''), _('User Script'), 1, id);
-
 				sendCallback(event.detail.key, event.detail.callback, {
-					id: id,
 					strings: {
+						'Add?': _('Add this user script to JavaScript Blocker?'),
+						'Create Script': _('Create Script'),
+						'User Script': _('User Script'),
 						'User script added.': _('User script added.'),
 						'User script could not be added.': _('User script could not be added.'),
 						'Adding...': _('Adding...')
 					}
 				});
+			break;
+
+			case 'beginExecuteCallback':
+				var a = function (detail) {
+					GlobalPage.message('bounce', {
+						which: 'commanderCallback',
+						detail: {
+							key: detail.origin,
+							callback: detail.id,
+							result: detail.detail
+						}
+					});
+				}.bind(window, event.detail);
+
+				if (document.hidden) onVisible.push(a);
+				else a();
 			break;
 
 			case 'inlineScriptsAllowed':
@@ -795,6 +850,15 @@ function sendCallback(key, callback, result) {
 			result: result
 		}
 	}));
+}
+
+function visibilityChange() {
+	if (!document.hidden) {
+		for (var i = 0, b = onVisible.length; i < b; i++)
+			onVisible.shift()();
+
+		ready();
+	}
 }
 
 Events.addTabListener('message', messageHandler, true);
@@ -840,9 +904,10 @@ if (!disabled) {
 	document.addEventListener('DOMContentLoaded', prepareAnchors, true);
 	document.addEventListener('DOMContentLoaded', prepareFrames, true);
 	document.addEventListener('beforeload', canLoad, true);
+	document.addEventListener('visibilitychange', visibilityChange, true);
 
 	window.onerror = function (d, p, l, c) {
-		if (~p.indexOf('JavaScriptBlocker'))
+		if (typeof p === 'string' && ~p.indexOf('JavaScriptBlocker'))
 			GlobalPage.message('errorOccurred', d + ', ' + p + ', ' + l);
 	};
 }

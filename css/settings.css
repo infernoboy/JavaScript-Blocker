@@ -43,24 +43,23 @@ body {
 	left: 0;
 	width: 100%;
 	background: -webkit-linear-gradient(top, #ffffff, #fafafa);
-	height: 23px;
+	height: 24px;
 	border-bottom: 1px solid rgba(0,0,0,.16);
 	color: #0069de;
 	overflow: hidden;
 }
 	#toolbar li {
 		position: relative;
-		padding: 5px 2px 0 3px;
+		padding: 3px 0px 0 1px;
 		float: left;
 		list-style-type: none;
 		-webkit-user-select: none;
 		cursor: default;
-		height: 18px;
-		color: #666;
+		height: 19px;
 	}
 		body.large #toolbar li {
 			padding: 4px 1px 0 2px;
-			height: 21px;
+			height: 22px;
 		}
 		#toolbar li:first-child {
 			margin-left: 5px;
@@ -94,19 +93,16 @@ body {
 		#toolbar li#for-search {
 			float: right;
 		}
-		#toolbar li.selected {
-			color: #0069de;
-		}
 			#toolbar li .left,
 			#toolbar li .right {
 				visibility: hidden;
 				position: relative;
 				margin-right: 2px;
-				top: -5px;
-				left: -3px;
+				top: -3px;
+				left: -1px;
 				float: left;
 				margin: 0;
-				height: 23px;
+				height: 24px;
 				width: 2px;
 				background: -webkit-linear-gradient(left, #0069de, rgba(0,105,222,0));
 				-webkit-mask-image: -webkit-linear-gradient(top, rgba(0,0,0,0), rgba(0,0,0,1) 40%, rgba(0,0,0,1) 60%, rgba(0,0,0,0));
@@ -114,13 +110,29 @@ body {
 			#toolbar li .right {
 				float: right;
 				left: auto;
-				right: -2px;
+				right: 0px;
 				background: -webkit-linear-gradient(right, #0069de, rgba(0,105,222,0));
 			}
 			#toolbar li.selected .left,
 			#toolbar li.selected .right {
 				visibility: visible;
 			}
+	#toolbar input[type="button"] {
+		width: auto;
+		-webkit-appearance: none;
+		border: none;
+		padding: 2px;
+		color: #666;
+	}
+		#toolbar input[type="button"]:focus {
+			background: #0069de;
+			color: #fff;
+			text-shadow: none;
+		}
+		#toolbar li.selected input[type="button"]:not(:focus) {
+			color: #0069de;
+		}
+
 .divider {
 	width: 100%;
 	height: 0;
@@ -146,6 +158,12 @@ textarea {
 	border: 1px solid rgba(0,0,0,0.02);
 	padding: 2px 7px 3px;
 }
+	body.large input,
+	body.large select,
+	body.large button,
+	body.large textarea {
+		font-size: 9pt;
+	}
 	body.windows input,
 	body.windows select,
 	body.windows button,
@@ -223,11 +241,11 @@ textarea {
 		width: 140px;
 		padding: 2px;
 		-webkit-appearance: none;
-		margin-top: -3px;
+		margin-top: 0px;
 		margin-right: 1px;
 	}
 		body.large input[type="search"] {
-			top: -1px;
+			margin-top: -2px;
 			font-size: 10pt;
 		}
 		input::-webkit-input-placeholder {
@@ -407,11 +425,13 @@ section {
 		margin-left: 7px;
 	}
 	
-input[type="checkbox"] {
+input[type="checkbox"],
+input[type="radio"] {
 	position: relative;
 	top: -1px;
 }
-input[type="checkbox"] ~ label {
+input[type="checkbox"] ~ label,
+input[type="radio"] ~ label {
 	margin-bottom: -3px;
 }
 a {
@@ -520,4 +540,8 @@ ul.small .user-script-name {
 .user-script-toggles {
 	margin-left: 57px;
 	margin-top: -16px;
+}
+
+.radio li {
+	margin-bottom: 4px;
 }

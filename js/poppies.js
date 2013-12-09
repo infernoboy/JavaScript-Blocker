@@ -32,6 +32,9 @@ JB.poppies = {
 				did[0].selectionEnd = did.val().length;
 				
 				$$('#donation-confirm').click(function (event) {
+					this.disabled = true;
+					this.value = _('Loading...');
+
 					var id = $$('#donation-id').val().substr(0, 100),
 							done = function (data) {
 						var datai = parseInt(data, 10),
@@ -70,14 +73,16 @@ JB.poppies = {
 							new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], error, id], main));
 					};
 				
-					$.get(zoo.url + encodeURIComponent(id) + '&install=' + encodeURIComponent(SettingStore.getItem('installID')))
-					.success(done)
-					.error(function (req) {
+					$.ajax({
+						url: zoo.url + encodeURIComponent(id) + '&install=' + encodeURIComponent(SettingStore.getItem('installID')),
+						type: 'GET',
+						timeout: 5000
+					})
+					.done(done)
+					.fail(function (req) {
 						if (/.*@.*\..*/.test(did) && (req.status === 0 || req.status === 404)) return done(10);
 
-						var text = req.statusText;
-
-						new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], 'Error ' + req.status + ': ' + text, id], main));
+						new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], 'Error ' + req.status + ': ' + req.statusText, id], main));
 					});
 				}).siblings('#donation-id').keypress(function (e) {
 					if (e.which === 13 || e.which === 3) $$('#donation-confirm').click();
@@ -145,7 +150,7 @@ JB.poppies = {
 						'<label for="rule-temporary">&thinsp;', _('Temporary rule'), '</label> ',
 						this.real_url ? ['<input class="orange" type="button" id="rule-options-link" value="', _('Options...'), '" /> '].join('') : ' ',
 					'</p>',
-					'<div class="inputs">',
+					'<div class="inputs left">',
 						main.rules.simplified && !~this.li.data('kind').indexOf('special') ? '<textarea spellcheck="false" id="rule-proto-input" wrap="off" placeholder="Protocol" class="rule-input orange"></textarea> ' : '',
 						'<textarea spellcheck="false" class="orange" id="rule-input" wrap="off" placeholder="Rule"></textarea> ',
 						'<input type="button" value="', _('Save'), '" id="rule-save" class="onenter orange" />',

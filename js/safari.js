@@ -1,5 +1,6 @@
 if (window.safari !== undefined) {
 var SAFARI = true, CHROME = false,
+		beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
 		ToolbarItems = {
 			badge: function (number, tab) {
 				safari.extension.toolbarItems.forEach(function (toolbarItem) {

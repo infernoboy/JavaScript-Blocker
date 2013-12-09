@@ -96,8 +96,6 @@ $.extend(true, JB.rules.blacklist, {
 			'^https?:\\/\\/platform\.stumbleupon\\.com\\/.*\\/widgets\\.js((\\?|#)+.*)?$': [4,false],
 			'^https?:\\/\\/widgets\\.getpocket\\.com\\/.*\\/btn.js((\\?|#)+.*)?$': [4,false],
 			'^https?:\\/\\/assets\\.pinterest\\.com\\/js\\/pinit.js((\\?|#)+.*)?$': [4,false],
-			'^https?:\\/\\/([^\\/]+\\.)?addthis\\.com\\/.*widget\\.js((\\?|#)+.*)?$': [4,false],
-			'^https?:\\/\\/([^\\/]+\\.)?sharethis\\.com\\/button.*((\\?|#)+.*)?$': [4,false],
 			'^https?:\\/\\/([^\\/]+\\.)?platform\\.linkedin\\.com\\/in\\.js.*((\\?|#)+.*)?$': [4,false]
 		},
 		'.thepiratebay.sx': {
@@ -150,7 +148,9 @@ var bld = {
 			['Advertisements', 'insightexpressai\\.com'],
 			['Advertisements', 'googletagservices.com'],
 			['Layers', 'live.spokenlayer.com'],
-			['Tracks users', 'linksalpha.com']
+			['Tracks users', 'linksalpha.com'],
+			['ShareThis', 'sharethis.com'],
+			['AddThis', 'AddThis.com']
 		]
 	},
 	frame: {

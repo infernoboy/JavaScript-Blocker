@@ -307,7 +307,7 @@ header h1 {
 	
 #domain-script,
 #domain-picker {
-	max-width: 440px;
+	max-width: 235px;
 }
 	#domain-picker[type="text"] {
 		padding-top: 3px;
@@ -315,7 +315,7 @@ header h1 {
 	}
 	body.simple #domain-script,
 	body.simple #domain-picker {
-		max-width: 340px;
+		max-width: 235px;
 	}
 	#which-type {
 		margin-left: 0;
@@ -887,7 +887,7 @@ body:not(.disabled) .main-wrapper li span,
 	body.disabled #main .info-container input {
 		visibility: hidden;
 	}
-	body:not(.disabled) .main-wrapper li span:hover,
+	body:not(.disabled) .main-wrapper li span.item-text:hover,
 	#rules-list li span.rule:hover,
 	#rules-list li span.rule:hover * {
 		color: #0B37B4 !important;
@@ -924,6 +924,19 @@ ul li > span {
 	padding-bottom: 2px;
 	height: 20px;
 }
+	.domain-name > span {
+		height: 23px;
+	}
+	ul li span.domain-description {
+		position: relative;
+		color: #959595;
+		height: 18px;		
+		pointer-events: none;
+		padding-bottom: 0;
+	}
+	ul li span.expanded {
+		height: 35px;
+	}
 	ul li.domain-name span.nodbl {
 		padding-bottom: 0;
 	}
@@ -936,14 +949,20 @@ ul li > span {
 	body.simple #rules-list ul li span {
 		max-width: 349px;
 	}
-	#main ul li span {
+	#rules-list ul li.domain-name:not(.editing) span {
+		max-width: 538px;
+	}
+	body.simple #rules-list ul li.domain-name:not(.editing) span {
+		max-width: 438px;
+	}
+	#main ul li > span {
 		max-width: 93%;
 		margin-left: 20px;
 	}
-		#main .column.expanded ul li span {
+		#main .column.expanded ul li > span {
 			max-width: 96%;
 		}
-		body.simple #main ul li span {
+		body.simple #main ul li > span {
 			max-width: 96%;
 		}
 		body.simple #main ul.show-per-host li span {
@@ -1183,7 +1202,11 @@ p.misc-info {
 		color: #606060;
 		background-position: 100% 1px, 0 0;
 		max-width: 300px !important;
+		margin-right: 23px;
 	}
+		p.misc-info select.no-margin {
+			margin-right: 2px;
+		}
 		body.simple p.misc-info select {
 			font-size: 10pt;
 			color: #606060;
@@ -1238,15 +1261,19 @@ div.divider {
 		display: none;
 	}
 	.domain-name input {
-		margin-top: 2px;
+		margin-top: 4px;
 		display: none;
 	}
+		.domain-name.even input {
+			margin-top: 2px;
+		}
 		.domain-name.editing {
-			padding-top: 4px !important;
-			padding-bottom: 3px !important;
+			padding-top: 5px !important;
+			padding-bottom: 2px !important;
 		}
 		.even.domain-name.editing {
-			padding-bottom: 2px !important;
+			padding-top: 2px !important;
+			padding-bottom: 1px !important;
 		}
 		.domain-name.editing .divider,
 		.domain-name.editing input {
@@ -1339,9 +1366,9 @@ div.divider {
 
 .domain-name {
 	margin-left: -10px;
-	background: url(../images/disclosure-open.png) no-repeat 1px 8px;
+	background: url(../images/disclosure-open.png) no-repeat 1px 10px;
 	background-size: 8px 8px;
-	padding: 3px 0 3px 11px;
+	padding: 5px 0 2px 11px;
 	font-size: 10pt;
 	cursor: default;
 	border-top: 1px solid transparent;
@@ -1351,7 +1378,8 @@ div.divider {
 		background-color: #fdfdfd;
 	}
 	li.even.hidden {
-		padding-bottom: 2px;
+		padding-bottom: 1px;
+		padding-top: 6px;
 	}
 	li.odd.domain-name {
 		border-top: 1px solid rgba(0,0,0,0.09);
@@ -1373,9 +1401,9 @@ div.divider {
 	}
 	.domain-name + li.domain-rules {
 		overflow: hidden;
-		padding-top: 1px;
+		padding-top: 0;
 		margin-left: -15px;
-		margin-top: -5px;
+		margin-top: -3px;
 		padding-left: 5px;
 	}
 	.domain-name.hidden {
@@ -1390,9 +1418,13 @@ div.divider {
 	.domain-name.domain-filter-hidden,
 	.domain-name.visibility-hidden,
 	.domain-name.state-hidden,
+	.domain-name.only-page,
+	.domain-name.only-domain,
 	.domain-name.domain-filter-hidden + li.domain-rules,
 	.domain-name.visibility-hidden + li.domain-rules,
-	.domain-name.state-hidden + li.domain-rules {
+	.domain-name.state-hidden + li.domain-rules,
+	.domain-name.only-page + li.domain-rules,
+	.domain-name.only-domain + li.domain-rules {
 		display: none;
 	}
 	.domain-name.no-disclosure {

@@ -368,11 +368,11 @@
 				is no need to include the <code>&lt;script&gt;</code> tag.
 			<p>Injected scripts can communicate with JavaScript Blocker to perform special functions such as adding a rule or
 				creating custom context menu items. Most custom greasemonkey functions (GM_* functions) are supported with the exception of GM_setClipboard.
-				GM_xmlhttpRequest will allow cross-domain requests.</p>
+				GM_xmlhttpRequest will allow cross-domain requests and is not subjected to the XHR blocker.</p>
 			<p>When viewing a script ending with <b>.user.js</b>, a prompt will appear to let you add it to JavaScript Blocker.</p>
 			<p>Once a new script is created, rules will be automatically created based on the @match and @include directives. You can also create your own
 				rules to enable it on a per-site basis or create a rule to enable it everywhere.</p>
-			<p>If a script contains both an @updateURL and @downloadURL directive, automatic updating and developer mode can be enabled. New updates will be
+			<p>If a script contains an @updateURL, @downloadURL, and @version directive, automatic updating and developer mode can be enabled. New updates will be
 				checked for every 5 days.</p>
 			<p>When developer mode is used, the script (and all of its requirements and resources) are re-downloaded anytime a webpage is loaded, even if it's not a newer version. For
 				technical reasons, changes to any resources or requirements in use by the script will be refelected on the second page reload.</p>
@@ -413,13 +413,26 @@ messageExtension('addRule', {
 // ==/UserScript==
 
 messageExtension('notification', {
+  top: true, // Ensure the notification is displayed on the top-most page (i.e. never within a frame.)
   title: GM_info.script.name,
-  body: '&lt;input type="button" value="Do Something Cool" />'
+  body: '&lt;input type="button" value="Do Something Cool" />',
+  meta: {
+    callback: registerCallback(function (detail) {
+      // This is guaranteed to execute in the original scope it was created in, including all inherited
+      // variables. Detail is any data provided by the executor, executeCallback().
+      alert('Something cool from ' + window.location.href + ' displayed on ' + detail);
+    }, true) // Preserve this callback so it can be used more than once.
+  }
 }, function (detail) {
+  // Since we set top to true, this may not be executed in the scope it was created in. Instead, it is
+  // guaranteed to run on the top-most page since this is where we can interact with the notification.
+
   var e = document.getElementById(detail.id);
 
-  e.querySelector('input').addEventListener('click', function () {
-    alert('Something cool.');
+  e.querySelector('.jsb-alert-text input').addEventListener('click', function () {
+    // Since we cannot be sure if we were executed in the proper scope, we use executeCallback() to
+    // run our callback we registered earlier. detail.origin is the ID of this script.
+    executeCallback(detail.origin, detail.meta.callback, window.location.href);
   });
 });</code></pre></p>
 					</li>

@@ -33,8 +33,8 @@ var globalPage = GlobalPage.page(),
 		if (!element.getAttribute('title') && ~['LABEL', 'SPAN', 'DIV', 'P', 'H1', 'LI', 'A', 'H3'].indexOf(element.nodeName) && i18n) element.innerHTML = window._(i18n, fill);
 	});
 
-	if (window.navigator.platform.match(/Win/)) document.body.className += ' windows';
-	else if (window.navigator.platform.match(/Mac/)) document.body.className += ' macos';
+	if (window.navigator.platform.match(/Win/)) document.body.classList.add('windows');
+	else if (window.navigator.platform.match(/Mac/)) document.body.classList.add('macos');
 	
 	var ctx =	document.getCSSCanvasContext('2d', 'checkbox', 20, 20);
 	ctx.clearRect(0, 0, 20, 20)

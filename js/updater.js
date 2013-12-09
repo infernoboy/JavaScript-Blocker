@@ -399,21 +399,33 @@ JB.updater = function () {
 						Settings.removeItem('custompostScripts');
 						Settings.removeItem('custompreScripts');
 
-						self.donate();
+						this.installedBundle = 177;
 
-						// this.installedBundle = 177;
-
-						// this.updater();
+						this.updater();
 					});
 				}, null, null, true);
-		} else {
+			} else {
+				this.installedBundle = 177;
+
+				this.updater();
+			}
+		break;
+
+		case v < 178: // 4.1.1
+			var all = $.extend({}, UserScript._all);
+
+			for (var ns in all) {
+				UserScript.remove(ns);
+				UserScript.add(all[ns].script);
+			}
+
 			this.donate();
 
 			// this.installedBundle = 177;
 
 			// this.updater();
-		}
 		break;
+
 
 		case v < this.bundleid:
 			this.donate();

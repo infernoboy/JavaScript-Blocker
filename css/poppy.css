@@ -141,6 +141,9 @@
 		margin-top: 3px;
 		float: right;
 	}
+		.poppy .inputs.left {
+			float: left;
+		}
 	.poppy ul {
 		margin-left: 5px;
 	}

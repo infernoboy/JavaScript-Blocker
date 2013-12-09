@@ -100,7 +100,8 @@ var RULE_TOP_HOST = 1,
 		jsblocker: {},
 		messages: { 'false': {}, 'true': {} },
 		rule_regexp: {},
-		rule_actions: {}
+		rule_actions: {},
+		page_regexp: {}
 	},
 	commandKey: !1,
 	optionKey: false,
@@ -328,6 +329,8 @@ var RULE_TOP_HOST = 1,
 		return this._temporaryExpertMode;
 	},
 	set temporaryExpertMode(v) {
+		if (!this.popover) return;
+
 		var prev = this._temporaryExpertMode;
 
 		this._temporaryExpertMode = v;
@@ -925,7 +928,7 @@ var RULE_TOP_HOST = 1,
 		var r = /^([a-zA-Z0-9\-]+):(\/\/)?([^\/]+)\/?/;
 		
 		try {
-			if (!url || typeof url !== 'string') url = this.tab.url;
+			if (!url || typeof url !== 'string') url = this.tab.url || '';
 		} catch (e) { return 'ERROR'; }
 		
 		if (url === 'about:blank') return 'blank';
@@ -945,33 +948,32 @@ var RULE_TOP_HOST = 1,
 		}
 	},
 	
-	/**
-	 * Separates a hostname into its subdomain parts.
-	 *
-	 * @param {string} domain The hostname to separate into pieces.
-	 * @return {Array} Parts of the hostname, including itself and * (All Domains)
-	 */
+
 	domain_parts: function (domain) {
 		if (domain in this.caches.domain_parts) return this.caches.domain_parts[domain].slice(0);
 		if (domain === 'blank') return ['blank', '*'];
+		if (domain.indexOf('^') === 0) return [domain, '*'];
 
 		var ip = /^([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})(:[0-9]{1,7})?$/,
-				s = domain.split(/\./g).reverse(), t = s[0], p = ['*'], i, b,
-				ex = ['co.uk', 'me.uk', 'org.uk', 'com.cn', 'org.cn', 'com.tw', 'org.tw', 'com.mx', 'co.nz', 'net.nz', 'org.nz',
-						'us.com', 'uk.com', 'eu.com', 'de.com', 'co.jp', 'com.au'];
+				s = domain.split(/\./g).reverse(), t = s[0], p = ['*'], i, b, c;
 						
 		if (ip.test(domain)) return [domain, '*'];
-		
+
+		domainLoop:
 		for (i = 1; i < s.length; i++) {
 			t = s[i] + '.' + t;
-			if (!~ex.indexOf(t))
-				p.push(t);
+
+			for (b = 0, c = EffectiveTLDs.length; b < c; b++)
+				if (EffectiveTLDs[b].test(t))
+					continue domainLoop;
+
+			p.push(t);
 		}
-			
+
 		if (p.length === 1) p.push(domain);
 		
 		this.caches.domain_parts[domain] = p.reverse();
-				
+
 		return this.domain_parts(domain);
 	},
 
@@ -1107,13 +1109,12 @@ var RULE_TOP_HOST = 1,
 			this.cache = this.data_types;
 			this.cache_nowlbl = this.data_types;
 
-			return;
-
 			for (var kind in this.rules)
 				this.utils.zero_timeout(function (kind, rules) {
 					for (var domain in rules)
 						this.utils.zero_timeout(function (kind, domain) {
-							this.for_domain(kind, domain, true);
+							this.find(kind, domain, true);
+							this.find(kind, domain, true, true);
 						}.bind(this, kind, domain));
 				}.bind(this, kind, this.rules[kind]));
 		},
@@ -1443,6 +1444,20 @@ var RULE_TOP_HOST = 1,
 				for (var c in this.cache_nowlbl[kind])
 					if (full_regexp.test(c))
 						delete this.cache_nowlbl[kind][c];
+			} else if (d.indexOf('^') === 0) {
+				var reg = new RegExp(d, 'i');
+
+				for (var k in this.caches.rule_actions[kind])
+					if (reg.test(k) || k === d)
+						delete this.caches.rule_actions[kind][k];
+
+				for (var k in this.cache[kind])
+					if (reg.test(k) || k === d)
+						delete this.cache[kind][k];
+
+				for (var k in this.cache_nowlbl[kind])
+					if (reg.test(k) || k === d)
+						delete this.cache_nowlbl[kind][k];
 			} else {
 				delete this.caches.rule_actions[kind][d];
 				delete this.cache[kind][d];
@@ -1531,8 +1546,7 @@ var RULE_TOP_HOST = 1,
 		_easylist_urls: {
 			EasyMalware: 'https://easylist-downloads.adblockplus.org/malwaredomains_full.txt',
 			EasyPrivacy: 'https://easylist-downloads.adblockplus.org/easyprivacy.txt',
-			EasyList: 'https://easylist-downloads.adblockplus.org/easylist.txt',
-			EasySocial: 'https://adversity.googlecode.com/hg/Antisocial.txt'
+			EasyList: 'https://easylist-downloads.adblockplus.org/easylist.txt'
 		},
 		easylist: function (cb) {
 			var fromSettings = function (which) {
@@ -1553,7 +1567,7 @@ var RULE_TOP_HOST = 1,
 				$.ajax({
 					url: this._easylist_urls[key],
 					async: false
-				}).success(function (list) {
+				}).done(function (list) {
 					Settings.setItem(key, list);
 
 					fromSettings(key);
@@ -1562,7 +1576,7 @@ var RULE_TOP_HOST = 1,
 					Settings.setItem('alwaysBlockframe', 'nowhere');
 
 					if (cb) cb();
-				}).error(function () {
+				}).fail(function () {
 					fromSettings(key);
 				});
 
@@ -1587,7 +1601,9 @@ var RULE_TOP_HOST = 1,
 			if (!this.donationVerified || !this.special_enabled(special)) return -1;
 			
 			var host = this.active_host(url),
-					domains = this.for_domain('special', host), domain, rule, spec;
+					domains = this.find('special', url, null, true), domain, rule, spec;
+
+			$.extend(domains, this.find('special', host, null, true));
 			
 			for (domain in domains)
 				for (spec in domains[domain])
@@ -1631,17 +1647,19 @@ var RULE_TOP_HOST = 1,
 				return action_cached.action[0];
 			}
 
-			var domains = this.for_domain('disable', this.active_host(url), false, true);
+			var domains = this.find('disable', url, false, true);
+
+			$.extend(domains, this.find('disable', this.active_host(url), false, true));
 
 			for (var domain in domains)
 				for (var rule in domains[domain])
 					if (domains[domain][rule][0] === 2 || domains[domain][rule][0] === 3) {
-						this.add_to_action_cache('disable', host, '*', [!(domains[domain][rule][0] % 2), domains[domain][rule][0]]);
+						this.add_to_action_cache('disable', url, '*', [!(domains[domain][rule][0] % 2), domains[domain][rule][0]]);
 
 						return !(domains[domain][rule][0] % 2);
 					}
 
-			this.add_to_action_cache('disable', host, '*', [0, 2]);
+			this.add_to_action_cache('disable', url, '*', [0, 2]);
 
 			return false;
 		},
@@ -1651,18 +1669,21 @@ var RULE_TOP_HOST = 1,
 			if (kind.indexOf('hide_') === -1)
 				if ((kind !== 'script' && !this.donationVerified) || !this.enabled(kind)) return [1, -84];
 
-			var rule_found = false, the_rule = -1, do_break = 0, urule,
-					host = this.active_host(message[1]),
-					proto = this.utils.active_protocol(message[2]), protos,
-					domains = this.for_domain(kind, host), action_cached = this.via_action_cache(kind, host, message[2]);
+			var host = this.active_host(message[1]), action_cached = this.via_action_cache(kind, host, message[2]);
 
 			if (action_cached) {
-				action_cached.access = Date.now();
+ 				action_cached.access = Date.now();
 
 				return action_cached.action;
 			}
 
-			var domain, rule,
+			var rule_found = false, the_rule = -1, do_break = 0, urule,
+					proto = this.utils.active_protocol(message[2]), protos,
+					domains = this.find(kind, message[1], false, ~kind.indexOf('hide_'));
+
+			$.extend(domains, this.find(kind, host, false, ~kind.indexOf('hide_')));
+
+			var domain, rule, page_based,
 					alwaysFrom = Settings.getItem('alwaysBlock' + (~kind.indexOf('ajax') ? 'ajax' : kind)) || Settings.getItem('alwaysBlockscript'),
 					hider = ~kind.indexOf('hide_'), ignoreBL = alwaysFrom === 'trueNowhere' || Settings.getItem('ignoreBlacklist'), ignoreWL = Settings.getItem('ignoreWhitelist'),
 					sim = this.simplified || JB.temporaryExpertMode,
@@ -1680,8 +1701,11 @@ var RULE_TOP_HOST = 1,
 					if (do_break) {
 						rule_found = domains[domain][rule][0] % 2;
 						the_rule = domains[domain][rule][0];
+						page_based = domain.indexOf('^') === 0;
 						
-						this.use_tracker.use(kind, domain, rule, the_rule);
+						this.utils.zero_timeout(function (self, kind, domain, rule, the_rule) {
+							self.use_tracker.use(kind, domain, rule, the_rule);
+						}, [this, kind, domain, rule, the_rule]);
 
 						if (the_rule === 5) catch_wl = [rule_found, the_rule];
 						if (the_rule !== 4 && the_rule !== 5) break domainFor;
@@ -1695,13 +1719,15 @@ var RULE_TOP_HOST = 1,
 					the_rule = catch_wl[1];
 				}
 
-				this.add_to_action_cache(kind, host, message[2], [rule_found, the_rule]);
+				if (!page_based)
+					this.add_to_action_cache(kind, host, message[2], [rule_found, the_rule]);
 
 				return [rule_found, the_rule];
 			}
 
 			if (alwaysFrom === 'trueNowhere') {
-				this.add_to_action_cache(kind, host, message[2], [1, -1]);
+				if (!page_based)
+					this.add_to_action_cache(kind, message[1], message[2], [1, -1]);
 
 				return [1, -1];
 			}
@@ -1720,22 +1746,25 @@ var RULE_TOP_HOST = 1,
 							(alwaysFrom === 'domain' && page_parts[page_parts.length - 2] !== script_parts[script_parts.length - 2]) ||
 							(alwaysFrom === 'everywhere') ||
 							(aproto === 'HTTPS' && (Settings.getItem('secureOnly') && sproto !== aproto))) {
-						this.add_to_action_cache(kind, host, message[2], [0, -1]);
+						if (!page_based)
+							this.add_to_action_cache(kind, host, message[2], [0, -1]);
 					
 						return [0, -1];
 					}
 				}
 			}
 
-			this.add_to_action_cache(kind, host, message[2], [1, -1]);
+			if (!page_based)
+				this.add_to_action_cache(kind, message[1], message[2], [1, -1]);
 	
 			return [1, -1];
 		},
-		for_domain: function (kind, domain, one, hide_wlbl) {
+		find: function (kind, domain, one, hide_wlbl) {
 			if (!(kind in this.rules) || (kind !== 'script' && !this.donationVerified)) return {};
 
 			var cached = (hide_wlbl) ? this.cache_nowlbl : this.cache,
-					append_lists = kind.indexOf('hide_') === -1 && kind !== 'special';
+					append_lists = kind.indexOf('hide_') === -1 && kind !== 'special',
+					is_page = /(^[^\^]).*:[^0-9]+/.test(domain);
 
 			if (!('.*' in cached[kind]))
 				cached[kind]['.*'] = { '.*': $.extend(true, {},
@@ -1745,7 +1774,7 @@ var RULE_TOP_HOST = 1,
 					
 			if (domain in cached[kind]) {
 				var rules = {};
-			
+
 				if (one) {
 					if (domain in cached[kind][domain] && typeof cached[kind][domain][domain] === 'object')
 						rules[domain] = cached[kind][domain][domain];
@@ -1759,10 +1788,32 @@ var RULE_TOP_HOST = 1,
 
 				return rules;
 			}
+
+			if (is_page) {
+				var rules = {}, d;
+
+				for (d in this.rules[kind]) {
+					if (d.indexOf('^') === 0 && (this.caches.page_regexp[d] || (this.caches.page_regexp[d] = new RegExp(d, 'i'))).test(domain)) {
+						rules[d] = $.extend({}, this.rules[kind][d]);
+					}
+				}
+				
+				cached[kind][domain] = rules;
+
+				return this.find(kind, domain, one, hide_wlbl);;
+			} else if (domain.indexOf('^') === 0) {
+				var rules = {};
+
+				rules[domain] = $.extend({}, this.rules[kind][domain] || {});
+
+				cached[kind][domain] = rules;
+
+				return this.find(kind, domain, one, hide_wlbl);
+			}
 						
 			var parts = this.utils.domain_parts(domain);
 		
-			if (parts.length === 1 && domain !== '.*') return this.for_domain(kind, '.*', one, hide_wlbl);
+			if (parts.length === 1 && domain !== '.*') return this.find(kind, '.*', one, hide_wlbl);
 		
 			var x = parts.slice(0, 1),
 					y = parts.slice(1),
@@ -1787,7 +1838,7 @@ var RULE_TOP_HOST = 1,
 
 			cached[kind][domain] = o;
 
-			return this.for_domain(kind, domain, one, hide_wlbl);
+			return this.find(kind, domain, one, hide_wlbl);
 		},
 		match: function (kind, rule, url, simplified) {
 			if (rule[0] !== '^' && simplified) {
@@ -1831,7 +1882,7 @@ var RULE_TOP_HOST = 1,
 
 			this.collapsed('LastRuleWasTemporary', temporary);
 		
-			var rules = this.for_domain(kind, domain, true, true);
+			var rules = this.find(kind, domain, true, true);
 
 			action = parseInt(action, 10);
 
@@ -1861,7 +1912,7 @@ var RULE_TOP_HOST = 1,
 
 			JB.lockUpdate = false;
 			
-			var rules = this.for_domain(kind, domain, false, true), key;
+			var rules = this.find(kind, domain, false, true), key;
 
 			if (!(domain in rules)) return false;
 			
@@ -1890,8 +1941,8 @@ var RULE_TOP_HOST = 1,
 		},
 		matching_URLs: function (kind, domain, urls, block_allow, show_wlbl) {
 			if (kind !== 'script' && !this.donationVerified) return false;
-			
-			var rules = this.for_domain(kind, domain), matches = {}, match_tracker = {}, domain, rule, rtype, sim = this.simplified;
+
+			var rules = this.find(kind, domain), matches = {}, match_tracker = {}, domain, rule, rtype, sim = this.simplified;
 		
 			for (domain in rules) {
 				matches[domain] = [];
@@ -2109,7 +2160,7 @@ var RULE_TOP_HOST = 1,
 
 					for (var domain in sorted) {
 						rules = this.view(kind, domain, undefined, null, true);
-						dul = $$('#rule-container li.domain-rules[data-value="' + domain + '"] ul');
+						dul = $$('#rule-container li.domain-rules[data-encoded="' + self.utils.utf8_to_b64(domain) + '"] ul');
 
 						if (dul.length)
 							dul.append(rules.find('.domain-rules ul').contents());
@@ -2125,12 +2176,12 @@ var RULE_TOP_HOST = 1,
 				.prepend('<input type="button" value="' + (this.using_snapshot ? _('Recover') : _('Delete')) + '" class="' + (!this.using_snapshot ? 'delete' : 'purple' ) + '" />')
 				.find('input').click(this.using_snapshot ? this._recover_domain : this._remove_domain);
 
-			var visi = $$('#rules-list .domain-name');
-
-			visi.filter(':not(.floater):odd').next().andSelf().addClass('odd');
-			visi.filter(':not(.floater):even:not(:first)').next().andSelf().addClass('even');
-
 			$$('#filter-type-used li.selected').click();
+
+			var visi = $$('#rules-list .domain-name:not(.only-domain):not(.only-page)');
+
+			visi.filter(':odd').next().andSelf().addClass('odd');
+			visi.filter(':even:not(:first)').next().andSelf().addClass('even');
 
 			this.busy = 0;
 		},
@@ -2143,7 +2194,7 @@ var RULE_TOP_HOST = 1,
 		 * @param {Boolean} no_dbl_click Wether or not to enable double clicking on a rule
 		 */
 		view: function (kind, domain, url, no_dbl_click, hide_wlbl, match_rtype) {
-			var self = this, allowed = this.for_domain(kind, domain, true, hide_wlbl),
+			var self = this, allowed = this.find(kind, domain, true, hide_wlbl),
 					ul = $('<ul class="rules-wrapper"></ul>'), newul,
 					rules = 0, rule, urule, did_match = !1, rtype, artype, temp, proto;
 
@@ -2230,7 +2281,9 @@ var RULE_TOP_HOST = 1,
 	add_disable_rule: function (host, left, top, already, force_new) {
 		if (this.rules.using_snapshot) return new Poppy(left, top, _('Snapshot in use'));
 
-		var self = this, matches = this.rules.matching_URLs('disable', host, ['*'], !already), rs = [], wrapper = $('<div><ul class="rules-wrapper"></ul></div>');
+		var self = this, matches = this.rules.matching_URLs('disable', host, ['*'], !already);
+
+		var rs = [], wrapper = $('<div><ul class="rules-wrapper"></ul></div>');
 
 		for (d in matches) {
 			rs.push(matches[d].length);
@@ -2272,7 +2325,7 @@ var RULE_TOP_HOST = 1,
 				'<label for="domain-script-temporary">&thinsp;', _('Temporary rule'), '</label> ',
 			'</p>',
 			'<p>',
-				Template.create('domain_picker', { page_parts: this.utils.domain_parts(host) }),
+				Template.create('domain_picker', { domain_parts: this.utils.domain_parts(host) }),
 			'</p>',
 			'<p>',
 				'<select id="which-type" class="', force_new ? 'allowed' : 'blocked', '-color">',
@@ -2349,7 +2402,7 @@ var RULE_TOP_HOST = 1,
 					'<label for="domain-script-temporary">&thinsp;', _('Temporary rule'), '</label> ',
 				'</p>',
 				'<p>',
-					Template.create('domain_picker', { page_parts: page_parts }),
+					Template.create('domain_picker', { domain_parts: page_parts, pages: me.parent().data('page') }),
 				'</p>',
 				'<p>',
 					'<select id="which-type" class="', allow ? 'allowed' : 'blocked', '-color">', cs.join(''), '</select> ',
@@ -2415,7 +2468,7 @@ var RULE_TOP_HOST = 1,
 		if (!this.popover) return;
 
 		var add_rule, remove_rule, self = this,
-				alblspan = '.allowed-script-urls ul li:not(.show-me-more) span, .blocked-script-urls ul li:not(.show-me-more) span';
+				alblspan = '.allowed-script-urls ul li:not(.show-me-more) .item-text, .blocked-script-urls ul li:not(.show-me-more) .item-text';
 		
 		function toggle_find_bar (show_only) {
 			var f = $$('#find-bar'),
@@ -2484,7 +2537,7 @@ var RULE_TOP_HOST = 1,
 			}
 			
 			function script_info () {
-				var host = encodeURI(self.useSimpleMode()? t.text() : self.utils.active_host(t.text()));
+				var host = encodeURI(self.useSimpleMode()? pa.data('url') : self.utils.active_host(pa.data('url')));
 				
 				new Poppy(left, off.top + 11, [
 					'<p class="misc-info">', _('Safety Information for {1}', [host]), '</p>',
@@ -2523,9 +2576,14 @@ var RULE_TOP_HOST = 1,
 						}).end()
 						.find('#matched-rules').click(function () {
 							var block_allow = !me.parents('.column').hasClass('blocked-column'),
+									pages = pa.data('page'),
 									matches = self.rules.matching_URLs(pa.data('kind'), me.parents('.host-section').attr('data-host'), pa.data('script'), block_allow, true), d,
 									con = $('<div />'),
 									wrapper = $('<ul class="rules-wrapper" />').appendTo(con);
+
+							if (pages)
+								for (var page in pages)
+									$.extend(matches, self.rules.matching_URLs(pa.data('kind'), pages[page].raw, pa.data('script'), block_allow, true));
 							
 							con.prepend('<p class="misc-info">' + _('Matched ' + me.parents('.main-wrapper').attr('data-kind') + ' Rules') + '</p>');
 
@@ -2867,7 +2925,7 @@ var RULE_TOP_HOST = 1,
 							is_new: is_new,
 							rtype: t.parent().data('type'),
 							header: _((is_new ? 'Adding' : 'Editing') + ' a ' + t.parent().data('kind') + ' Rule For {1}', [Template.create('domain_picker', {
-								page_parts: pts,
+								domain_parts: pts,
 								no_label: true,
 								show_other: true
 							})])
@@ -2929,9 +2987,9 @@ var RULE_TOP_HOST = 1,
 				});
 			});
 		}).on('click', '.domain-name', function () {
-			if (~this.className.indexOf('no-disclosure')) return;
+			if (this.classList.contains('no-disclosure')) return;
 			
-			var me = $(this), d = me.data('domain'), t = me.next(), x;
+			var me = $(this), d = me.data('domain'), t = me.next(), speed = 300, x;
 			
 			if (d === '.*') d = _('All Domains');
 						
@@ -2962,10 +3020,20 @@ var RULE_TOP_HOST = 1,
 				me.toggleClass('hidden');
 				x.toggleClass('hidden');
 			}
+
+			ul.find('li').each(function () {
+				var t = $(this), h = t.height();
+
+				t.height(hid ? 5 : h).animate({
+					height: hid ? h : 5
+				}, speed * self.speedMultiplier, function () {
+					t.height('auto');
+				});
+			});
 										
-			ul.css({ marginTop: hid ? -o : 0 }).animate({
-				marginTop: hid ? 0 : -o
-			}, 200 * self.speedMultiplier, function () {
+			ul.css({ marginTop: hid ? -(o / 3) : 0 }).animate({
+				marginTop: hid ? 0 : -(o / 3)
+			}, speed * self.speedMultiplier, function () {
 				if (!hid) {
 					me.toggleClass('hidden');
 					x.toggleClass('hidden');
@@ -2992,13 +3060,13 @@ var RULE_TOP_HOST = 1,
 				if (bottomView > rulesList.height())
 					rulesList.animate({
 						scrollTop: rulesList.scrollTop() + bottomView - rulesList.height(),
-					}, 200 * self.speedMultiplier);
+					}, speed * self.speedMultiplier);
 			}
 		}).on('mousedown click', 'select.single', function (e) {
 			e.preventDefault();
 		}).on('enter', '.urls-wrapper li', function (e) {
 			self.utils.timer.timeout('trigger_span', function (me, e) {
-				var span = me.find('span'), off = me.offset();
+				var span = me.find('.item-text'), off = me.offset();
 
 				e.pageX = off.left + 30;
 
@@ -3049,7 +3117,7 @@ var RULE_TOP_HOST = 1,
 
 			span.removeClass('triggered').data('quick_add_ignore_timeout', setTimeout(function (span, e) {
 				$$('#main li.pending').removeClass('pending').removeData('pending_index').each(function () {
-					$('span', this).text($(this).data('url'));
+					$('.item-text', this).text($(this).data('url'));
 				});
 
 				var li = span.parents('li:first');
@@ -3099,7 +3167,7 @@ var RULE_TOP_HOST = 1,
 
 			if (Settings.getItem('quickAdd') && !li.hasClass('ignore-quick-add') && (self.useSimpleMode() || (!self.useSimpleMode() && !Settings.getItem('quickAddSimpleOnly')))) {
 				var me = span, parts = self.utils.domain_parts(self.useSimpleMode() ? url : self.utils.active_host(url)),
-						pi = 0, special = ~lid.kind.indexOf('special'), span = $('> span', li);
+						pi = 0, special = ~lid.kind.indexOf('special'), span = $('> .item-text', li);
 
 				parts.splice(-1);
 				span.text(url);
@@ -3201,6 +3269,7 @@ var RULE_TOP_HOST = 1,
 			$$('#quick-add-info').slideUp(200 * self.speedMultiplier);
 			
 			var page_parts = self.utils.domain_parts(for_host), n,
+					pages = li.data('page'),
 					padd = self.poppies.add_rule.call({
 						real_url: ~['HTTP', 'HTTPS', 'FTP'].indexOf(self.utils.active_protocol(script[0])) ? script[0] : null,
 						url: '^' + (self.useSimpleMode() ? self.utils.escape_regexp(script[0].substr(0, script[0].indexOf(url))) : '') + self.utils.escape_regexp(url) + (self.useSimpleMode() ? '\\/.*' : '') + '$',
@@ -3208,9 +3277,13 @@ var RULE_TOP_HOST = 1,
 						li: $(this).parent(),
 						domain: for_host,
 						is_new: 1,
-						header: _('Adding a ' + lid.kind + ' Rule For {1}', [Template.create('domain_picker', { page_parts: page_parts, no_label: true })])
+						header: _('Adding a ' + lid.kind + ' Rule For {1}', [Template.create('domain_picker', { pages: $(this).parent().data('page'), domain_parts: page_parts, no_label: true })])
 				}, self),
 				matches = self.rules.matching_URLs(li.data('kind'), for_host, script, blocked);
+
+			if (pages)
+				for (var page in pages)
+					$.extend(matches, self.rules.matching_URLs(li.data('kind'), pages[page].raw, script, blocked));
 
 			padd.onshowend = function () {
 				$$('#select-type-' + (blocked ? 'block' : 'allow')).click();
@@ -3354,7 +3427,7 @@ var RULE_TOP_HOST = 1,
 			x = visible.find('*:visible');
 					
 			x.each(function (index) {
-				if (!~this.className.indexOf('link-button') && ['MARK', 'OPTION', 'SCRIPT'].indexOf(this.nodeName.toUpperCase()) === -1 && this.innerHTML && this.innerHTML.length)
+				if (!this.classList.contains('link-button') && ['MARK', 'OPTION', 'SCRIPT'].indexOf(this.nodeName.toUpperCase()) === -1 && this.innerHTML && this.innerHTML.length)
 					self.utils.zero_timeout(function (self, e, s) {
 						var $e = $(e),
 								t = $('<div>').text($e.text()).html(),
@@ -3410,7 +3483,7 @@ var RULE_TOP_HOST = 1,
 			}, [self]);
 		}).on('click', '.all-action-link', function () {
 			var page_parts = self.utils.domain_parts($(this).parents('.host-section').attr('data-host')), n, off = self.utils.position_poppy(this, 0, 13),
-					me = this, kinds = [], block = !~this.className.indexOf('block'),
+					me = this, kinds = [], block = this.classList.contains('allowed'),
 					left = off.left, top = off.top;
 
 			if (self.rules.using_snapshot) return new Poppy(left, top, _('Snapshot in use'));
@@ -3419,7 +3492,7 @@ var RULE_TOP_HOST = 1,
 						new Poppy(left, top, [
 							'<p class="misc-info">',
 								_('{1} All', [[
-									'<select id="which-type" class="', !block ? 'allowed' : 'blocked', '-color">',
+									'<select id="which-type" class="', !block ? 'allowed' : 'blocked', '-color no-margin">',
 										'<option value="', !block ? 1 : 0, '">', !block ? _('Allow') : _('Block'), '</option>',
 										'<option value="42">', _('Hide'), '</option>',
 									'</select>'].join('')]),
@@ -3432,7 +3505,7 @@ var RULE_TOP_HOST = 1,
 								'<label for="domain-script-temporary">&nbsp;', _('Make these temporary rules'), '</label> ',
 							'</p>',
 							'<p>',
-								Template.create('domain_picker', { page_parts: page_parts }),
+								Template.create('domain_picker', { domain_parts: page_parts }),
 								' <input class="orange" id="domain-script-continue" type="button" value="', _('Save'), '" />',
 							'</p>'].join(''), function () {
 							$$('#which-type').change(function () {
@@ -3474,7 +3547,7 @@ var RULE_TOP_HOST = 1,
 			var at_least_one = 0, ob = $(me).parents('.column').find('.urls-inner').children();
 
 			for (var x = 0; ob[x]; x++)
-				if (~ob[x].className.indexOf('kind-header') && ob[x].style.display !== 'none') {
+				if (ob[x].classList.contains('kind-header') && ob[x].style.display !== 'none') {
 					at_least_one = 1;
 					break;
 				}
@@ -3496,7 +3569,7 @@ var RULE_TOP_HOST = 1,
 								'<label for="domain-script-temporary-', block ? 0 : 1, '">', _('Make these temporary rules'), '</label>',
 							'</p>',
 							'<p>',
-								Template.create('domain_picker', { page_parts: e.data.pp, id: block ? 0 : 1 }),
+								Template.create('domain_picker', { domain_parts: e.data.pp, id: block ? 0 : 1 }),
 							'</p>',
 							'<p>',
 								_('{1} selected items', [[
@@ -3529,8 +3602,8 @@ var RULE_TOP_HOST = 1,
 							if (head.css('display') === 'none') continue;
 
 							for (var b = 0; (li = hosts[b]); b++) {
-								if (~li.className.indexOf('show-me-more') ||
-										(~li.className.indexOf('hidden-by-rule') && !~li.className.indexOf('show-for-now'))) {
+								if (li.classList.contains('show-me-more') ||
+										(li.classList.contains('hidden-by-rule') && !li.classList.contains('show-for-now'))) {
 									$(li).remove();
 									continue;
 								}
@@ -3551,7 +3624,7 @@ var RULE_TOP_HOST = 1,
 									] : [
 										'<textarea spellcheck="false" placeholder="Rule" wrap="off" class="rule-input orange">^', self.utils.escape_regexp(data.script[0]), '$</textarea>'
 									]).join('')
-								].join('')).hide().insertAfter(li).slideDown(200 * self.speedMultiplier)
+								].join('')).hide().append($li.find('.domain-description')).insertAfter(li).slideDown(200 * self.speedMultiplier)
 									.attr('title', op.length === 1 ? $(op[0]).html() : null);
 							}
 						}
@@ -3606,7 +3679,7 @@ var RULE_TOP_HOST = 1,
 		}).on('click', '#toggle-hidden', function (e) {
 			if ($$('.some-list').length) return;
 
-			$(this).toggleClass('hidden-visible', ~this.className.indexOf('hidden-visible'));
+			$(this).toggleClass('hidden-visible', !this.classList.contains('hidden-visible'));
 
 			self.popover_current = null;
 
@@ -3614,7 +3687,7 @@ var RULE_TOP_HOST = 1,
 		}).on('click', '#show-active-rules', function (event) {
 			var hosts = $$('.host-toggler').map(function () { return this.getAttribute('data-host'); }), host, active = '', all_parts = [];
 
-			if (!~this.className.indexOf('using')) {
+			if (!this.classList.contains('using')) {
 				for (var i = 0; host = hosts[i]; i++) {
 					var parts = self.domain_parts(host),
 							x = parts.slice(0, 1),
@@ -3661,6 +3734,8 @@ var RULE_TOP_HOST = 1,
 					' <input class="purple" type="button" value="', _('Snapshot'), '" id="current-snapshot" />'].join('') : ''
 				].join(''), (function (left, top) {
 				$$('#current-snapshot').click(function () {
+					this.disabled = true;
+
 					var pop = self.poppies.current_snapshot(!self.rules.snapshots.exist(self.rules.using_snapshot));
 
 					new Poppy(left, top, pop);
@@ -3702,8 +3777,13 @@ var RULE_TOP_HOST = 1,
 					}
 
 					$$('.host-section').each(function () {
-						for (var key in self.rules.data_types) {
-							var rules = self.rules.for_domain(key, this.getAttribute('data-host')), domain, rule, make_perm = this.id === 'rules-make-perm';
+						var pages = $(this).data('pages'), key;
+
+						for (key in self.rules.data_types) {
+							var rules = self.rules.find(key, this.getAttribute('data-host'), false, true), page, domain, rule, make_perm = this.id === 'rules-make-perm';
+
+							for (page in pages)
+								$.extend(rules, self.rules.find(key, pages[page].raw, false, true));
 
 							for (domain in rules)
 								for (rule in rules[domain])
@@ -3761,10 +3841,10 @@ var RULE_TOP_HOST = 1,
 			
 			if (e.is(':animated') || column.is(':animated')) return false;
 
-			var adjuster = function (cb) {
+			var speed = 300, adjuster = function (cb) {
 				self.adjust_columns();
 
-				if (cb) self.utils.timer.timeout('adjust_cb', cb, 200 * self.speedMultiplier * (self.useSimpleMode() ? 0 : 1));
+				if (cb) self.utils.timer.timeout('adjust_cb', cb, speed * self.speedMultiplier * (self.useSimpleMode() ? 0 : 1));
 			};
 
 			if (me.hasClass('hidden')) {
@@ -3776,9 +3856,23 @@ var RULE_TOP_HOST = 1,
 				column.removeClass('hidden');
 				
 				adjuster(function () {
-					e.show().css('marginTop', -e.height()).animate({
-						marginTop: 0
-					}, 200 * self.speedMultiplier);
+					e.each(function () {
+						var ee = $(this);
+
+						ee.show().css('marginTop', -(e.height() / 3)).animate({
+							marginTop: 0
+						}, speed * self.speedMultiplier);
+
+						ee.find('header:visible, li:visible').each(function () {
+							var t = $(this), h = t.height();
+
+							t.height(5).animate({
+								height: h
+							}, speed * self.speedMultiplier, function () {
+								t.height('auto');
+							});
+						});
+					});
 				});
 			} else {
 				self.collapsed(which, 1);
@@ -3787,18 +3881,29 @@ var RULE_TOP_HOST = 1,
 				
 				me.addClass('hidden');
 				column.addClass('hidden');
-								
-				e.css('marginTop', 0).animate({
-					marginTop: -e.height()
-				}, 200 * self.speedMultiplier, function () {
-					adjuster();
-					e.hide();
+
+				e.each(function () {
+					var ee = $(this);
+
+					ee.find('header:visible, li:visible').animate({
+						height: 0
+					}, speed * self.speedMultiplier, function () {
+						$(this).height('auto');
+					})
+									
+					ee.css('marginTop', 0).animate({
+						marginTop: -(e.height() / 3)
+					}, speed * self.speedMultiplier, function () {
+						self.utils.timer.timeout('adjuster', function () { adjuster(); }, 50);
+
+						ee.hide();
+					});
 				});
 			}		
 							
 			self.utils.timer.timeout('label_search', function (self) {
 				$$('#find-bar-search:visible').trigger('search');
-			}, 400 * self.speedMultiplier, [self]);
+			}, (speed + 100) * self.speedMultiplier, [self]);
 		}).on('click', '#collapse-all, #expand-all', function () {
 			self.busy = 1;
 						
@@ -3811,17 +3916,14 @@ var RULE_TOP_HOST = 1,
 			if (!self.rules.using_snapshot)
 				self.collapsedDomains($.map($$('#rules-list .domain-name'), function (e) {
 					var d = $.data(e).domain, d = d === '.*' ? _('All Domains') : d;
-					return ~e.className.indexOf('hidden') ? d : null;
+					return e.classList.contains('hidden') ? d : null;
 				}));
 			
 			self.busy = 0;
 		}).on('click', '.host-toggler', function (event) {
-			var pos = self.utils.position_poppy(this, 0, 14),
-					parts = self.domain_parts(this.getAttribute('data-host')),
-					x = parts.slice(0, 1),
-					y = parts.slice(1), active;
+			var pos = self.utils.position_poppy(this, 0, 14);
 
-			return self.add_disable_rule(this.getAttribute('data-host'), pos.left, pos.top, ~this.className.indexOf('disabled'));
+			return self.add_disable_rule(this.getAttribute('data-host'), pos.left, pos.top, this.classList.contains('disabled'));
 		}).on('click', '#edit-domains', function () {
 			$(this).toggleClass('edit-mode');
 						
@@ -3878,7 +3980,7 @@ var RULE_TOP_HOST = 1,
 						
 			for (var key in self.rules.data_types)
 				for (var domain in self.rules.rules[key]) {
-					var rules = self.rules.for_domain(key, domain, true), rule;
+					var rules = self.rules.find(key, domain, true, true), rule;
 					
 					if (domain in rules)
 						for (rule in rules[domain])
@@ -3898,7 +4000,7 @@ var RULE_TOP_HOST = 1,
 						
 			for (var key in self.rules.data_types)
 				for (var domain in self.rules.rules[key]) {
-					var rules = self.rules.for_domain(key, domain, true), rule;
+					var rules = self.rules.find(key, domain, true, true), rule;
 			
 					if (domain in rules)
 						for (rule in rules[domain])
@@ -3919,7 +4021,17 @@ var RULE_TOP_HOST = 1,
 
 			$$('#show-active-rules').toggleClass('using', $(this).data('active') === this.value);
 
-			var d = $$('.domain-name:not(.visibility-hidden,.state-hidden,.visibility-hidden) span'), v;
+			this.placeholder = $$('#filter-type-page .selected').is('#filter-only-domain') ? _('Domains') : _('Pages');
+
+			var counts = { page: 0, domain: 0 }, all_d = $$('#rules-list .domain-name'), d = all_d.filter(':not(.visibility-hidden,.state-hidden,.visibility-hidden,.only-page,.only-domain)').find('span'), v;
+
+			all_d.each(function () {
+				if ($('span', this).html().indexOf('^') === 0) counts.page++;
+				else counts.domain++;
+			});
+
+			$$('#filter-only-domain').text(_('Domain Based {1}', [counts.domain]));
+			$$('#filter-only-page').text(_('Page Based {1}', [counts.page]));
 			
 			try {
 				v = new RegExp(this.value, 'i');
@@ -3950,7 +4062,7 @@ var RULE_TOP_HOST = 1,
 			visi.filter(':even:not(:first)').next().andSelf().addClass('even');
 			
 			$$('#rule-counter').html(
-					_('{1} domain' + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
+					_('{1} ' + ($$('#filter-type-page .selected').is('#filter-only-domain') ? 'domain' : 'page') + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
 			).removeData('orig_html');
 
 			self.busy = 0;
@@ -3974,6 +4086,34 @@ var RULE_TOP_HOST = 1,
 			}
 			
 			if ($$('#rule-container').is(':visible')) $$('#domain-filter').trigger('search');
+		}).on('click', '#filter-type-page li:not(.label)', function () {
+			self.busy = 1;
+			
+			$(this).siblings('li').removeClass('selected').end().addClass('selected');
+			
+			var x = $$('#rules-list .domain-name');
+			
+			x.filter('.only-domain, .only-page').removeClass('only-domain only-page');
+			
+			switch(this.id) {
+				case 'filter-only-domain':
+					x.each(function () {
+						if (this.innerText.indexOf('^') === 0)
+							$(this).addClass('only-domain');
+					});
+				break;
+				
+				case 'filter-only-page':
+					x.each(function () {
+						if (this.innerText.indexOf('^') !== 0)
+							$(this).addClass('only-page');
+					});
+				break;
+			}
+			
+			if ($$('#rule-container').is(':visible')) $$('#domain-filter').trigger('search');
+
+			$$('#filter-type-collapse .selected').click();
 		}).on('click', '#show-temporary-rules', function () {
 			self.busy = 1;
 			
@@ -4034,7 +4174,7 @@ var RULE_TOP_HOST = 1,
 			});
 			
 			if (usedInPast) $$('#filter-type-not-used .selected').click();
-			else $$('#filter-type-collapse .selected').click();
+			else $$('#filter-type-page .selected').click();
 		}).on('click', '.outside', function (e) {
 			e.preventDefault();
 			self.utils.open_url(this.href);
@@ -4070,6 +4210,7 @@ var RULE_TOP_HOST = 1,
 		}).on('click', '.toggle-main', function (event) {
 			var pos = this.className.substr(0, this.className.indexOf(' ')),
 					me = $$('.' + pos), head = me.parent(),
+					speed = 300,
 					e = me.parent().next().find('.main-wrapper').show();
 
 			if (!e.length) e = me.parent().next().next().find('.main-wrapper');
@@ -4083,33 +4224,58 @@ var RULE_TOP_HOST = 1,
 			self.collapsed(pos, a);
 			
 			if (!a) head.removeClass('collapsed');
-			
+
 			head.css('marginBottom', !a ? 3 : 0).animate({
 				marginBottom: a ? 3 : 0
-			}, 200 * self.speedMultiplier);
-
-			e.css({ opacity: 1, marginTop: !a ? -o : 0 }).animate({
-				marginTop: a ? -oT : 0
-			}, 200 * self.speedMultiplier, function () {
-				this.style.display = a ? 'none' : 'block';
-				this.style.opacity = a ? 0 : 1;
-				this.style.marginTop = a ? -(oT * 2) + 'px' : 0;
+			}, speed * self.speedMultiplier);
 			
-				$(this).parent().prev().toggleClass('collapsed', a).css('opacity', 1);
+			e.each(function () {
+				var ee = $(this);
+
+				ee.find('li').each(function () {
+					var t = $(this), h = t.height();
+
+					t.height(a ? h : 5).animate({
+						height: a ? 5 : h
+					}, speed * self.speedMultiplier, function () {
+						t.height('auto');
+					});
+				});
+
+				ee.css({ opacity: 1, marginTop: !a ? -(o / 3) : 0 }).animate({
+					marginTop: a ? -(oT / 3) : 0
+				}, speed * self.speedMultiplier, function () {
+					this.style.display = a ? 'none' : 'block';
+					this.style.opacity = a ? 0 : 1;
+					this.style.marginTop = a ? -(oT * 2) + 'px' : 0;
+				
+					$(this).parent().prev().toggleClass('collapsed', a).css('opacity', 1);
+				});
 			});
 		}).on('click', '.toggle-snapshots', function () {
 			var e = $(this).parent().parent().next().find('ul').show(),
 					a = e.css('opacity') === '1',
+					speed = 300,
 					o = e.outerHeight(), oT = e.outerHeight(true);
 										
 			if (e.is(':animated')) return false;
 										
 			this.innerHTML = a ? _('Show') : _('Hide');
+
+			e.find('li').each(function () {
+				var t = $(this), h = t.height();
+
+				t.height(a ? h : 5).animate({
+					height: a ? 5 : h
+				}, speed * self.speedMultiplier, function () {
+					t.height('auto');
+				})
+			})
 								
-			e.css({ opacity: 1, marginTop: !a ? -o : -3 }).animate({
-				marginTop: a ? -oT : -3,
+			e.css({ opacity: 1, marginTop: !a ? -(o / 3) : -3 }).animate({
+				marginTop: a ? -(oT / 3) : -3,
 				marginBottom: a ? 0 : '6px'
-			}, 200 * self.speedMultiplier, function () {
+			}, speed * self.speedMultiplier, function () {
 				this.style.display = a ? 'none' : 'block';
 				this.style.opacity = a ? 0 : 1;
 				this.style.marginTop = a ? -(oT * 2) + 'px' : -3;
@@ -4371,7 +4537,7 @@ var RULE_TOP_HOST = 1,
 					'<input id="domain-script-temporary" type="checkbox"', self.collapsed('LastRuleWasTemporary') || PrivateBrowsing() ? ' checked' : '', ' />',
 					'<label for="domain-script-temporary">&nbsp;', _('Make these temporary rules'), '</label>',
 				'</p>',
-				'<p>', Template.create('domain_picker', { page_parts: page_parts }), '</p>',
+				'<p>', Template.create('domain_picker', { domain_parts: page_parts }), '</p>',
 				'<div class="inputs">',
 					'<input class="orange" id="hide-these" type="button" value="', _('Hide These'), '" /> ',
 					'<input class="orange" id="allow-these" type="button" value="', _((allowed ? 'Block' : 'Allow') +' These'), '" />',
@@ -4399,14 +4565,15 @@ var RULE_TOP_HOST = 1,
 	},
 
 	merger: function (jsblocker, here) {
-		var new_jsblocker = { allowed: {}, blocked: {}, unblocked: {} }, kind, frame, ref, sref, hold, holder, held, l;
+		var kis = { allowed: {}, blocked: {}, unblocked: {} },
+				new_jsblocker = { allowed: {}, blocked: {}, unblocked: {} },
+				k, kind, frame, ref, sref, hold, holder, name, l;
 
 		for (kind in this.rules.data_types) {
 			if (~kind.indexOf('hide_')) continue;
 
-			new_jsblocker.allowed[kind] = { all: [], hosts: [] };
-			new_jsblocker.blocked[kind] = { all: [], hosts: [] };
-			new_jsblocker.unblocked[kind] = { all: [], hosts: [] };
+			for (k in kis)
+				new_jsblocker[k][kind] = { all: [], hosts: [] };
 
 			for (frame in jsblocker) {
 				ref = jsblocker[frame];
@@ -4417,30 +4584,38 @@ var RULE_TOP_HOST = 1,
 					sref.host = jsblocker[frame].host;
 				}
 
-				$.merge(sref.allowed[kind].all, ref.allowed[kind].all);
-				$.merge(sref.blocked[kind].all, ref.blocked[kind].all);
-				$.merge(sref.unblocked[kind].all, ref.unblocked[kind].all);
+				for (k in kis) {
+					$.merge(sref[k][kind].all, ref[k][kind].all);
+					$.merge(sref[k][kind].hosts, ref[k][kind].hosts);
 
-				$.merge(sref.allowed[kind].hosts, ref.allowed[kind].hosts);
-				$.merge(sref.blocked[kind].hosts, ref.blocked[kind].hosts);
-				$.merge(sref.unblocked[kind].hosts, ref.unblocked[kind].hosts);
-
-				sref.allowed[kind].hosts = sref.allowed[kind].hosts.unique();
-				sref.blocked[kind].hosts = sref.blocked[kind].hosts.unique();
-				sref.unblocked[kind].hosts = sref.unblocked[kind].hosts.unique();
+					sref[k][kind].hosts = sref[k][kind].hosts.unique();
+				}
 
 				if (kind === 'special') {
 					hold = { allowed: {}, blocked: {}, unblocked: {} };
 
 					for (holder in hold) {
-						for (l = 0; l < sref[holder][kind].all.length; l++)
-							hold[holder][sref[holder][kind].all[l][0]] = sref[holder][kind].all[l][1];
+						for (l = 0; l < sref[holder][kind].all.length; l++) {
+							var w = sref[holder][kind].all[l];
+
+							if (!hold[holder][w.name])
+								hold[holder][w.name] = {
+									rtype: w.rtype,
+									page: []
+								};
+							
+							hold[holder][w.name].page.push(w.page[0]);
+						}
 
 						sref[holder][kind].all = [];
 
-						for (held in hold[holder])
-							sref[holder][kind].all.push([held, hold[holder][held]]);
-					}					
+						for (name in hold[holder])
+							sref[holder][kind].all.push({
+								name: name,
+								rtype: hold[holder][name].rtype,
+								page: hold[holder][name].page
+							});
+					}
 				}
 			}
 		}
@@ -4472,13 +4647,69 @@ var RULE_TOP_HOST = 1,
 		var col = $('.' + text + '-column', section), el = $('.urls-inner', col).empty(), use_url, test_url, protocol, poopy, ltype,
 				shost_list = {}, lab = $('.scripts-count', col), cn = 0, key;
 
-		for (key in this.rules.data_types)
-			shost_list[key] = { };
+		$.extend(shost_list, this.rules.data_types);
 			
-		function append_url(index, kind, ul, use_url, script, type, button, protocol, unblockable, meta) {
+		function append_url(index, kind, ul, use_url, script, type, button, protocol, unblockable, meta, page) {
 			if (UserScript.exist(use_url) && kind === 'special') use_url = 'User Script: ' + use_url;
 
-			return ul.append('<li>' + (text !== 'unblocked' ? '<div class="info-link">?</div>' : '') + '<span></span> <small></small><div class="divider"></div></li>')
+			var use_text = use_url, lower = script.toLowerCase(), desc = false, pages = undefined;
+
+			if (text !== 'unblocked' && Settings.getItem('simplifyDomainNames') && self.useSimpleMode())
+				for (var badness in HostMap)
+					if (((HostMap[badness] instanceof Array) && ~HostMap[badness].indexOf(use_url)) || ((HostMap[badness] instanceof RegExp) && HostMap[badness].test(lower))) {
+						desc = badness;
+						break;
+					}
+
+			if (page) {
+				var pages = {}, i, a = document.createElement('a'), paths, cpath;
+
+				for (i = 0; i < page.length; i++) {
+					a.href = page[i];
+					paths = a.pathname.split(/\//g);
+					cpath = '';
+
+					for (var c = 1, b = paths.length - 1; c < b; c++) {
+						cpath += '/' + paths[c];
+
+						pages[a.origin + cpath + '/'] = {
+							regexp: '^' + self.utils.escape_regexp(a.origin + cpath + '/') + '?((\\?|#|\\/)+.*)?$',
+							raw: page[i]
+						};
+					}
+
+					pages[a.origin + a.pathname] = {
+						regexp: '^' + self.utils.escape_regexp(a.origin + a.pathname) + '((\\?|#)+.*)?$',
+						raw: page[i]
+					};
+
+					if (a.search.length)
+						pages[a.origin + a.pathname + a.search] = {
+							regexp: '^' + self.utils.escape_regexp(a.origin + a.pathname + a.search) + '((#)+.*)?$',
+							raw: page[i]
+						};
+
+					if (a.hash.length && !a.search.length)
+						pages[a.origin + a.pathname + a.hash] = {
+							regexp: '^' + self.utils.escape_regexp(a.origin + a.pathname + a.hash) + '$',
+							raw: page[i]
+						};
+
+					if (a.search.length && a.hash.length)
+						pages[a.origin + a.pathname + a.search + a.hash] = {
+							regexp: '^' + self.utils.escape_regexp(a.origin + a.pathname + a.search + a.hash) + '$',
+							raw: page[i]
+						};
+				}
+			}
+
+			var section_pages = section.data('pages');
+
+			if (!section_pages) section_pages = {};
+
+			section.data('pages', $.extend(section_pages, pages || {}));
+
+			return ul.append('<li>' + (text !== 'unblocked' ? '<div class="info-link">?</div>' : '') + '<span class="item-text"></span> <small></small>' + (desc ? '<br/><span class="domain-description"></span>' : '') + '<div class="divider"></div></li>')
 					.find('li:last').attr('id', text.toLowerCase() + '-' + kind + '-' + index + '-' + id)
 					.data({
 						url: use_url,
@@ -4486,34 +4717,36 @@ var RULE_TOP_HOST = 1,
 						kind: kind,
 						protocol: protocol,
 						unblockable: unblockable,
-						meta: meta
+						meta: meta,
+						page: pages
 					}).addClass('visible kind-' + kind).toggleClass('selectable', Settings.getItem('traverseMainItems'))
 					.toggleClass('by-rule', typeof type !== 'string' && type > -1)
 					.toggleClass('rule-type-' + type, type > -1)
 					.toggleClass('unblockable', kind !== 'special' && unblockable && text !== 'unblocked')
-					.find('span').text(use_url).addClass(protocol)
+					.find('.domain-description').text(desc ? desc : '').end()
+					.find('.item-text').text(use_text).addClass(protocol)
 					.attr('title', self.simpleMode && protocol && !self.temporaryExpertMode ? (_(protocol) + ' (' + protocol + ')') : '').parent();
 		}
 		
 		function add_item(index, kind, the_item) {
-			var item = the_item[0], protocol = null, use_list;
+			var item = the_item.name, protocol = null, use_list;
 
 			if (text === 'unblocked') {
 				the_item = [the_item, the_item, the_item];
-				item = the_item[0];
+				item = the_item.name;
 			} else
 				protocol = self.utils.active_protocol(item);
 
 			if (text !== 'unblocked' && self.useSimpleMode()) {
 				use_url = self.utils.active_host(item);
-				test_url = use_url + the_item[1];
+				test_url = use_url + the_item.rtype;
 
 				if (!(protocol in shost_list[kind])) shost_list[kind][protocol] = { blockable: {}, unblockable: {} };
 
-				use_list = the_item[2] ? shost_list[kind][protocol].unblockable : shost_list[kind][protocol].blockable;
+				use_list = the_item.unblockable ? shost_list[kind][protocol].unblockable : shost_list[kind][protocol].blockable;
 
 				if (!(test_url in use_list)) {
-					li = append_url(index, kind, ul, use_url, item, the_item[1], button, protocol, the_item[2]);
+					li = append_url(index, kind, ul, use_url, item, the_item.rtype, button, protocol, the_item.unblockable, null, the_item.page);
 					use_list[test_url] = [1, li.attr('id')];
 				} else {
 					use_list[test_url][0]++;
@@ -4525,7 +4758,7 @@ var RULE_TOP_HOST = 1,
 					}
 				}
 			} else
-				li = append_url(index, kind, ul, item, item, the_item[1], button, protocol, the_item[2], the_item[3]);
+				li = append_url(index, kind, ul, item, item, the_item.rtype, button, protocol, the_item.unblockable, the_item.meta, the_item.page);
 			
 			return li;
 		}
@@ -4570,13 +4803,13 @@ var RULE_TOP_HOST = 1,
 				for (var i = 0, b = jsblocker[text][key].all.length; i < b; i++) {
 					var jitem = jsblocker[text][key].all[i];
 
-					if (key === 'special' && !this.special_enabled(jitem[0])) continue;
-					
-					li = ~key.indexOf('special') ? append_url(i, key, ul, _(jitem[0]), jitem[0], jitem[1], button, key.toUpperCase()) :
+					if (key === 'special' && !this.special_enabled(jitem.name)) continue;
+
+					li = ~key.indexOf('special') ? append_url(i, key, ul, _(jitem.name), jitem.name, jitem.rtype, button, key.toUpperCase(), null, null, jitem.page) :
 							add_item(i, key, jitem);
 
 					if (text !== 'unblocked' && !~key.indexOf('hide_')) {
-						var al = self.rules.allowed(['hide_' + key, jsblocker.href, jitem[0], false]);
+						var al = self.rules.allowed(['hide_' + key, jsblocker.href, jitem.name, false]);
 
 						if (al[1] === 42)
 							li.addClass('hidden-by-rule').toggleClass('show-for-now', $$('#toggle-hidden').hasClass('hidden-visible'));
@@ -5120,7 +5353,7 @@ var RULE_TOP_HOST = 1,
 			break;
 
 			case 'notification':
-				MessageTarget(event, 'notification', [event.message[0], event.message[1]]);
+				MessageTarget(event, 'notification', [event.message[0], event.message[1], event.message[2]]);
 			break;
 
 			case 'openPopover':
@@ -5169,7 +5402,7 @@ var RULE_TOP_HOST = 1,
 			break;
 
 			case 'XMLHttpRequest':
-				var done = function (action, res, status, req) {	
+				var details = event.message.details, done = function (action, res, status, req) {	
 					MessageTarget(event, 'commanderCallback', {
 						key: event.message.key,
 						callback: event.message.callback,
@@ -5200,7 +5433,7 @@ var RULE_TOP_HOST = 1,
 					});
 				};
 
-				event.message.details.xhr = function () {
+				details.xhr = function () {
 					var xhr = new XMLHttpRequest();
 
 					xhr.upload.addEventListener('progress', function (e) {
@@ -5224,7 +5457,7 @@ var RULE_TOP_HOST = 1,
 							key: event.message.key,
 							callback: event.message.callback,
 							result: {
-								action: 'deleteCallback',
+								action: 'XHRComplete',
 								callback: event.message.callback
 							}
 						});
@@ -5233,28 +5466,30 @@ var RULE_TOP_HOST = 1,
 					return xhr;
 				};
 
-				event.message.details.beforeSend = (function (headers) {
+				details.beforeSend = (function (headers) {
 					return function (req) {
 						for (var header in headers)
 							req.setRequestHeader(header, headers[header]);
 					};
-				})(event.message.details.headers ? event.message.details.headers : {});
+				})(details.headers ? details.headers : {});
 
-				event.message.details.cache = !event.message.details.ignoreCache;
+				details.cache = !details.ignoreCache;
 
-				event.message.details.success = function (res, status, req) {
+				details.success = function (res, status, req) {
 					done('onload', res, status, req);
 				};
 
-				event.message.details.error = function (req, status, res) {
+				details.type = details.method || details.type || 'GET';
+
+				details.error = function (req, status, res) {
 					if (res === 'timeout') done('ontimeout', res, status, req);
 					else if (res === 'abort') done('onabort', res, status, req);
 					else done('onerror', res.message ? res.message : res, status, req);
 				};
 
-				event.message.details.dataType = 'text';
+				details.dataType = 'text';
 
-				$.ajax(event.message.details);
+				$.ajax(details);
 			break;
 
 			case 'errorOccurred':
@@ -5264,6 +5499,10 @@ var RULE_TOP_HOST = 1,
 			case 'backupImported':
 				UserScript.unload();
 				this.rules.reload();
+			break;
+
+			case 'bounce':
+				MessageTarget(event, event.message.which, event.message.detail);
 			break;
 			
 			case 'doNothing': break;
@@ -5297,11 +5536,11 @@ var RULE_TOP_HOST = 1,
 					async: false,
 					url: this.longURL + encodeURI(url),
 					dataType: 'json'
-				}).success(function (r) {
+				}).done(function (r) {
 					self.caches.redirects[event.url] = r;
 
 					do_test(event.url, r.title, r['long-url']);
-				}).error(function (er) {
+				}).fail(function (er) {
 					if (er.status !== 400)
 						alert(_('You cannot enable confirmShortURL'));
 					re = 1;
@@ -5381,28 +5620,26 @@ var RULE_TOP_HOST = 1,
 						this.utils.timer.timeout('update_failure', function () {
 							ToolbarItems.badge(0, event.target);
 
-							setTimeout(function (self, url) {
-								var message;
+							var message;
 
-								if (url === 'https://extensions.apple.com/')
-									message = ['<p>', _('Safari extensions website'), '</p>'];
-								else if (url.indexOf(ExtensionURL('settings.html')) === 0)
-									message = ['<p>JavaScript Blocker won\'t block anything on its own settings page.</p>',
-										'<p>If you are seeing a message telling you to allow scripts here or if the page is blank, something went wrong. ',
-										'Please <a href="mailto:travis@toggleable.com?subject=JSB Settings Page Issue&body=', encodeURIComponent(($$('#jsconsolelogger').data('messages') || []).join("\n\n")), '" class="outside">e-mail me</a> ',
-										'to let me know.</p>'];
-								else
-									message = ['<p>', _('Update Failure'), '</p>'];
+							if (url === 'https://extensions.apple.com/')
+								message = ['<p>', _('Safari extensions website'), '</p>'];
+							else if (url.indexOf(ExtensionURL('settings.html')) === 0)
+								message = ['<p>JavaScript Blocker won\'t block anything on its own settings page.</p>',
+									'<p>If you are seeing a message telling you to allow scripts here or if the page is blank, something went wrong. ',
+									'Please <a href="mailto:travis@toggleable.com?subject=JSB Settings Page Issue&body=', encodeURIComponent(($$('#jsconsolelogger').data('messages') || []).join("\n\n")), '" class="outside">e-mail me</a> ',
+									'to let me know.</p>'];
+							else
+								message = ['<p>', _('Update Failure'), '</p>'];
 
-								if (url in self.caches.jsblocker) {
-									new Poppy($(self.popover.body).width() / 2, 2, message.join(''));
-									self.do_update_popover({ message: self.caches.jsblocker[url], target: { url: url } });
-								} else {
-									self.clear_ui();
-									$$('#host-sections').html('<div style="padding:0 15px;">' + message.join('') + '</div>').hide().fadeIn(200 * self.speedMultiplier);
-								}
-							}, 500, self, url);
-						}, 500);
+							if (url in self.caches.jsblocker) {
+								new Poppy($(self.popover.body).width() / 2, 2, message.join(''));
+								self.do_update_popover({ message: self.caches.jsblocker[url], target: { url: url } });
+							} else {
+								self.clear_ui();
+								$$('#host-sections').html('<div style="padding:0 15px;">' + message.join('') + '</div>').hide().fadeIn(200 * self.speedMultiplier);
+							}
+						}, 700);
 
 						Tabs.messageActive('updatePopover');
 					}
@@ -5464,8 +5701,6 @@ var RULE_TOP_HOST = 1,
 				this.utils.floater('#main', '.host-section-host', function (e) {
 					return e.nextAll(':last');
 				});
-
-				this.utils.floater('#rules-list', '.domain-name:visible');
 
 				$(this.popover.body)
 					.toggleClass('simple', this.simpleMode)
@@ -5559,7 +5794,7 @@ UserScript = {
 
 		for (var line = 0; line < lines.length; line++) {
 			if (!parse_lines && /\/\/\s==UserScript==/.test(lines[line])) parse_lines = true;
-			else if (parse_lines && /\/\/\s==\/UserScript==/.test(lines[line])) break;
+			else if (parse_lines && /\/\/\s==\/UserScript==/.test(lines[line])) parse_lines = false;
 			else if (parse_lines) {
 				lines[line].replace(line_match, function (full, key, value) {
 					value = $.trim(value);
@@ -5576,7 +5811,9 @@ UserScript = {
 						} else {
 							if (~['exclude', 'include', 'match'].indexOf(key)) {
 								ukey = key + '_jsb';
-								uvalue = JB.utils.active_host(value).replace(/\*/g, '')
+								uvalue = '^' + JB.utils.escape_regexp(value.replace(/\*\./g, '_SUBDOMAINS_').replace(/\*/, '_ANY_')).replace(/_SUBDOMAINS_/g, '([^\\/]+\\.)?').replace(/_ANY_/g, '.*') + '$';
+
+								if (uvalue === '^.*$') uvalue = '.*';
 								
 								if (!~parsed[ukey].indexOf(uvalue))
 									parsed[ukey].push(uvalue);
@@ -5648,10 +5885,10 @@ UserScript = {
 			res = this._saved_resources[ns];
 			req = this._saved_requirements[ns];
 
-			if (this._all[ns].developerMode)
-				UserScript.autoUpdate($.noop, ns);
-
 			if (!url || (url && (JB.rules.special_allowed(ns, url) % 2))) {
+				if (this._all[ns].developerMode)
+					UserScript.autoUpdate($.noop, ns);
+
 				all[ns] = $.extend({}, this._all[ns]);
 				all[ns].resources = res;
 				all[ns].requirements = req;
@@ -5707,7 +5944,7 @@ UserScript = {
 					metaStr: parsed.metaStr,
 					meta: parsed.data,
 					script: script,
-					autoUpdate: (((re = this.automaticallyUpdate(ns)) !== null) ? re : (parsed.data.updateURL && parsed.data.downloadURL)),
+					autoUpdate: (((re = this.automaticallyUpdate(ns)) !== null) ? re : (parsed.data.updateURL && (parsed.data.downloadURL || parsed.data.installURL) && parsed.data.version)),
 					developerMode: this.developerMode(ns),
 					before: parsed['run-at'] && parsed['run-at'].toLowerCase() === 'document-start'
 				},
@@ -5715,6 +5952,9 @@ UserScript = {
 
 		for (var i = 0; i < allowOn.length; i++)
 			JB.rules.add('special', allowOn[i], ns, 1);
+
+		for (var i = 0; i < parsed.data.exclude_jsb.length; i++)
+			JB.rules.add('special', parsed.data.exclude_jsb[i], ns, 0);
 
 		Strings['en-us'][ns] = _('User Script: {1}', [parsed.data.name]);
 
@@ -5771,8 +6011,8 @@ UserScript = {
 			dataType: 'text',
 			async: false,
 			url: url,
-			timeout: 5
-		}).success(callback).error(function (error) {
+			timeout: 5000
+		}).done(callback).fail(function (error) {
 			
 		});
 	},
@@ -5809,7 +6049,7 @@ UserScript = {
 
 		if (!callback && (!Settings.getItem('userScriptAutoUpdate') || (lastUpdate && Date.now() - lastUpdate < 432000000))) return;
 
-		Settings.setItem('userScriptLastUpdate', Date.now());
+		if (!callback) Settings.setItem('userScriptLastUpdate', Date.now());
 
 		var i = 0, self = this;
 
@@ -5819,9 +6059,9 @@ UserScript = {
 
 			i++;
 
-			if (this._all[ns].meta.updateURL) {
+			if (this._all[ns].meta.updateURL && this._all[ns].meta.version && (this._all[ns].meta.downloadURL || this._all[ns].meta.installURL)) {
 				if (typeof force === 'string') {
-					this.downloadScript(this._all[ns].meta.downloadURL, function (script) {
+					this.downloadScript(this._all[ns].meta.downloadURL || this._all[ns].meta.installURL, function (script) {
 						self.add(script);
 					});
 
@@ -5834,18 +6074,18 @@ UserScript = {
 						dataType: 'text',
 						async: false,
 						url: self._all[ns].meta.updateURL,
-						timeout: 5
-					}).success(function (response) {
+						timeout: 5000
+					}).done(function (response) {
 						var parsed = self._parse(response).data;
 
-						if ((force || self.isNewer(self._all[ns].meta.version, parsed.version)) && parsed.updateURL && parsed.downloadURL) {
+						if ((force || self.isNewer(self._all[ns].meta.version, parsed.version)) && parsed.updateURL && (parsed.downloadURL || parsed.installURL)) {
 							if (parsed.name + ':' + parsed.namespace === self._all[ns].meta.name + ':' + self._all[ns].meta.namespace) {
-								self.downloadScript(self._all[ns].meta.downloadURL, function (script) {
+								self.downloadScript(self._all[ns].meta.downloadURL || self._all[ns].meta.installURL, function (script) {
 									self.add(script);
 								});
 							}
 						}
-					}).error(function (error) {
+					}).fail(function (error) {
 						
 					});
 				})(this, ns);
@@ -5874,7 +6114,7 @@ JB.rules.whitelist = JB.rules.data_types;
 $.ajax({
 	url: 'Info.plist',
 	async: false
-}).success(function (xml) {
+}).done(function (xml) {
 	var $xml = $(xml);
 
 	JB.bundleid = parseInt($xml.find('key:contains("CFBundleVersion")').next().text(), 10),

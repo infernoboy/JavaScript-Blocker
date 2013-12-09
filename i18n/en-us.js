@@ -14,6 +14,7 @@ Strings['en-us'] = {
 	'{1} cannot function when its toolbar icon is hidden.': '{1} cannot function when its toolbar icon is hidden.',
 	'Thanks for using {1}': 'Thanks for using {1}!',
 	'All Domains': 'All Domains',
+	'Pages': 'Pages',
 	'?': '?', // Displayed next to an item to display further helpful information.
 	'{1} matches': '{1} matches', // {1} = Number of items found using the find bar (Cmd+F)
 	'Free trial expired':
@@ -48,6 +49,14 @@ Strings['en-us'] = {
 	'Continue': 'Continue',
 	'Understood': 'Understood',
 	'Done': 'Done',
+	'Alert': 'Alert',
+	'via frame': 'via frame',
+
+	'Origin': 'Origin',
+	'Path': 'Path',
+	'Parameters': 'Parameters',
+	'Cancel': 'Cancel',
+	'Add Rule...': 'Add Rule...',
 
 	date: {
 		days_short: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
@@ -64,6 +73,7 @@ Strings['en-us'] = {
 	/*--*/ 'Unlock': 'Unlock',
 	/*--*/ 'Contribute': 'Contribute',
 	/*--*/  'Donation Verification': 'Payment Verification',
+	/*--*/  'Loading...': 'Loading...',
 	/*--*/  'An email address was not specified.': 'An email address was not specified.',
 	/*--*/  'A donation with that email address was not found.': 'A contribution with that email address was not found.',
 	/*--*/  'The maximum number': 'The maximum number of activations has been used for that email address.',
@@ -185,6 +195,9 @@ Strings['en-us'] = {
 	/*--*/ 'Closing the popover will apply changes.': 'Closing the popover will apply changes.',
 	/*--*/ 'Press and hold for more options.': 'Press and hold for more options.',
 	/*--*/
+	/*--*/ 'Allow Once': 'Allow Once',
+	/*--*/ 'Block Once': 'Block Once',
+	/*--*/
 	/*--*/ 'Allow…': 'Allow/Hide',
 	/*--*/ 'Block…': 'Block/Hide',
 	/*--*/  'Allow/Hide': 'Allow or Hide',
@@ -278,9 +291,13 @@ Strings['en-us'] = {
 	/**/
 	/*** {1} = number of domains in list, {2} = number of rules in list
 	/**/ '{1} domain, {2} rule': '{1} domain, {2} rule',
+	/**/ '{1} page, {2} rule': '{1} page, {2} rule',
 	/**/ '{1} domain, {2} rules': '{1} domain, {2} rules',
+	/**/ '{1} page, {2} rules': '{1} page, {2} rules',
 	/**/ '{1} domains, {2} rule': '{1} domains, {2} rule',
+	/**/ '{1} pages, {2} rule': '{1} pages, {2} rule',
 	/**/ '{1} domains, {2} rules': '{1} domains, {2} rules',
+	/**/ '{1} pages, {2} rules': '{1} pages, {2} rules',
 	/**/
 	/**------ FILTER BARS ------
 	/*--*/ 'Filter:': 'Filter:',
@@ -290,6 +307,10 @@ Strings['en-us'] = {
 	/*--*/  'Any': 'Any',
 	/*--*/  'Collapsed': 'Collapsed',
 	/*--*/  'Expanded': 'Expanded',
+	/*--*/
+	/*--*/ 'Type:': 'Type:',
+	/*--*/  'Domain Based {1}': 'Domain Based ({1})',
+	/*--*/  'Page Based {1}': 'Page Based ({1})',
 	/*--*/
 	/*--*/ 'Not Used Within:': 'Not Used In Past:', // If a rule has or hasn't been used in ...
 	/*--*/ 'Used Within:': 'Used In Past:',
@@ -534,6 +555,9 @@ Strings['en-us'] = {
 	'simple_referrer': 'Links sending referrers',
 		'simple_referrer:0': 'Links will not send referrer information.',
 		'simple_referrer:1': 'Links will be able to send referrer information.',
+	'navigator_override': 'Environmental information',
+		'navigator_override:0': 'Environmental information will be randomized.',
+		'navigator_override:1': 'Environmental information will revealed normally.',
 
 	'Injected pre Script: {1}': 'Before Load: {1}',
 	'Injected post Script: {1}': 'After Load: {1}',
@@ -564,6 +588,7 @@ Strings['en-us'] = {
 	'Disabled mode persist across Safari restarts': 'Ensure disabled mode persist across Safari restarts',
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
 	'Hide injected helper scripts': 'Hide injected helper and user scripts',
+	'Show domain descriptions when possible': 'Show domain descriptions whenever possible',
 	'Notify me about new updates': 'Notify me about new updates',
 	'Hide Update Notifications': 'Hide Update Notifications',
 	'Temporarily switch to expert mode when clicked': 'Temporarily switch to expert view upon clicking number of allowed/blocked hosts',
@@ -603,13 +628,15 @@ Strings['en-us'] = {
 	'Prevent webpages from resizing the window and creating new windows with a custom size': 'Prevent webpages from resizing the window and creating new windows with a custom size<br/><span class="aside">Window resize functions</span>',
 	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete<br/><span class="aside">Autocomplete disablers</span>',
 	'Prevent inline scripts from being executed': 'Prevent inline scripts from being executed<br/><span class="aside">Inline script execution</span>',
+	'Randomize browser information': 'Randomize browser information revealed by window.navigator and window.screen<br/><span class="aside">Environmental information</span>',
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
 
-	'custom helper description': 'This section allows you to create user scripts which are injected into a webpage. They will appear ' +
-		'under the <b>OTHER</b> section of the main window. Most greasemonkey functions are supported. Enable developer mode to force scripts to be re-downloaded anytime a webpage is loaded. Keeping this enabled may slow down page loading. Learn more on the <a href="' + ExtensionURL('help/index.html#user-scripts') + '">help page</a>.',
+	'custom helper description': 'This section lets you add user scripts which are injected into a webpage. They will appear ' +
+		'under the <b>OTHER</b> section of the main window. Most greasemonkey functions are supported. Enable developer mode to force scripts to be re-downloaded before it is injected into a webpage. ' + 
+		'Learn more on the <a href="' + ExtensionURL('help/index.html#user-scripts') + '">help page</a>.',
 
-	'Would you like to add this user script to JavaScript Blocker?': 'Would you like to add this user script to JavaScript Blocker?',
+	'Add this user script to JavaScript Blocker?': 'Add this user script to JavaScript Blocker?',
 	'User script added.': 'User script added.',
 	'User script could not be added.': 'User script could not be added.',
 	'Adding...': 'Adding...',
@@ -635,8 +662,8 @@ Strings['en-us'] = {
 	'Enable Quick Add': 'Enable Quick Add',
 	'only in simple view': 'only in simple view',
 	'Use quicker Quick Add': 'Use quicker Quick Add',
-	'Quick-add rules are temporary': 'Make Quick Added rules temporary',
-	'Create Quick Add rules for:': 'Create Quick Add rules for:',
+	'Quick-add rules are temporary': 'Make these temporary rules',
+	'Create Quick Add rules for:': 'Quick Add rules are created for:',
 	'Same hostname as page host': 'Same domain as page host',
 	'Least domain of page host': 'Root domain of page host',
 	
@@ -762,7 +789,9 @@ Strings['en-us'] = {
 	'inline_scripts help': 'Injects the following meta tag into the webpage:<br/><br/><code>&lt;meta http-equiv="content-security-policy" content="default-src *; script-src *; style-src * \'unsafe-inline\'; object-src *" /&gt;</code><br/><br/>' +
 		'This does <b>not</b> guarantee that all scripts will be prevented from executing. For example: a webpage may send a header that overrides the meta tag, though this is highly unlikely to allow inline scripts. ' +
 		'This feature is available in Safari 6.1 or greater.',
-	'showUnblocked help': 'Some scripts on webpages are embedded in the page itself rather than loaded from an external resource. These scripts cannot be blocked and will always execute.',
+	'showUnblocked help': 'Some scripts on webpages are embedded in the page itself rather than loaded from an external resource. ' +
+		'By default, these scripts cannot be blocked and will always execute. You can enable the inline scripts blocker from the Other Features ' +
+		'tab to try and block these. Safari 6.1 or greater is required.',
 	'alwaysBlock help': [
 		'<p>If you visit "www.example.com"…</p>',
 		'<p><b>Different hostnames</b> will allow "dif.example.com", ',
@@ -773,7 +802,7 @@ Strings['en-us'] = {
 		'<p><b>Anywhere</b> will allow nothing.</p>',
 		'<p><b>Ask when neccessary</b> will ask you to allow or deny the item if a rule was not found.</p>'].join(''),
 	
-	'simpleMode help': 'When enabled, a different rule set will be used.',
+	'simpleMode help': 'A different rule set will be used when enabled.',
 	'simpleReferrer help': 'Adds the attribute <b>rel="noreferrer"</b> to anchor tags.', // <b>rel="noreferrer"</b> = do not localize.
 	'enableimage help': 'This will <b>not</b> prevent the network request from being made on images. It will only hide it in the DOM. ' +
 		'This is a Safari limitation and there is nothing that can be done to prevent it from loading.',

@@ -1,6 +1,6 @@
 "use strict";
 
-var disabled = typeof beforeLoad === 'undefined' ? false : disabled, blank = window.blank ? window.blank : false;
+var disabled = window.disabled || false, blank = window.balnk || false;
 
 if (!disabled && !blank) {
 var special_actions = {
@@ -19,22 +19,34 @@ var special_actions = {
 			return window_open(URL, name, undefined, replace);
 		};
 	},
-	alert_dialogs: function (enabled, args, jsbAccessToken) {
-		window.alert = function (a, text, html_allowed, id) {
-			a = a === null ? '' : (typeof a === 'undefined' ? 'undefined' : a.toString());
-			text = text ? text.toString() : null;
+	alert_dialogs: function (enabled, args, jsbAccessToken, jsbScriptNS) {
+		var strings = args[1], html_verify = args[0], frame = args[3];
+
+		window.alert = function (body, title, html_allowed, id) {
+			if ((typeof document.hidden !== 'undefined' && document.hidden) || (window !== window.top && typeof messageExtension === 'function')) {
+				messageExtension('notification', {
+					title: title,
+					body: body,
+					no_html: html_allowed !== html_verify,
+					top: true
+				});
+
+				return;
+			}
+
+			body = body === null ? '' : (typeof body === 'undefined' ? 'undefined' : body.toString());
+			title = title ? title.toString() : null;
 			
-			var html_verify = args[0],
-					cur_all = document.querySelectorAll('.jsb-alert'), top = 0,
+			var cur_all = document.querySelectorAll('.jsb-alert'), top = 0,
 					ht = document.createElement('div'),
-					more = parseInt(window.navigator.appVersion.split('Safari/')[1].split('.')[0], 10) >= 536,
-					title = (text ? text.replace(/&/g, '&amp;').replace(/</g, '&lt;') : 'alert()'),
-					body = (!text || html_allowed !== html_verify ? a.replace(/&/g, '&amp;').replace(/</g, '&lt;') : a), z;
+					more = parseInt(args[2], 10) >= 536,
+					title = (typeof title === 'string' && title.trim().length ? title.replace(/&/g, '&amp;').replace(/</g, '&lt;') : strings.Alert),
+					body = (!title || html_allowed !== html_verify ? body.replace(/&/g, '&amp;').replace(/</g, '&lt;') : body), z;
 
 			ht.innerHTML = [
 				'<div class="jsb-alert-inner">',
-					'<a href="javascript:void(0);" class="jsblocker-close"></a>',
-					'<div class="jsb-alert-bg">', title, '</div>',
+					'<input type="button" class="jsblocker-close" value="', strings.Close, '" />',
+					'<div class="jsb-alert-bg">', title, frame ? '<span class="jsb-light"> ' + strings['via frame'] + '</span>' : '', '</div>',
 					'<div class="jsb-alert-text">', body, '</div>',
 				'</div>'].join('');
 			ht.className = 'jsb-alert';
@@ -66,15 +78,13 @@ var special_actions = {
 			
 				var inn = ht.querySelector('.jsb-alert-inner'),
 						cl = ht.querySelector('.jsblocker-close');
+
+				setTimeout(function (ht) {
+					ht.querySelector('.jsb-alert-inner').style.setProperty('-webkit-transform', 'none');
+				}, 1000, ht)
 				
-				inn.addEventListener('mouseover', function () {
-					cl.style.opacity = 1;
-				}, true);
-				inn.addEventListener('mouseout', function () {
-					cl.style.opacity = 0;
-				}, true);
 				cl.addEventListener('click', function () {
-					this.parentNode.removeChild(this);
+					this.disabled = true;
 					
 					var all = document.querySelectorAll('.jsb-alert'), all_fixed = [],
 							cur = document.getElementById(ht.id);
@@ -180,7 +190,10 @@ var special_actions = {
 		s.innerText = '*:not(pre):not(code) { font-family: "' + v + '" !important; }';
 		document.documentElement.appendChild(s);
 	},
-	history_fix: function (v, args, jsbAccessToken) {
+	genericSpecial: function (v, args, jsbAccessToken, jsbScriptNS) {
+		if (window === window.top)
+			messageExtension('registerTopToken');
+
 		var my_history = {
 			pushState: window.history.pushState,
 			replaceState: window.history.replaceState
@@ -198,11 +211,11 @@ var special_actions = {
 			window.postMessage('history-state-change', '*');
 		};
 	},
-	ajax_intercept: function (v, args, jsbAccessToken, name, givenName) {
+	ajax_intercept: function (v, args, jsbAccessToken, jsbScriptNS) {
 		var ajax = {
 			open: XMLHttpRequest.prototype.open,
 			send: XMLHttpRequest.prototype.send
-		}, store = {};
+		}, store = {}, strings = args[3] || {};
 
 		XMLHttpRequest.prototype.open = function () {
 			this.intercept = arguments;
@@ -211,16 +224,19 @@ var special_actions = {
 		};
 
 		XMLHttpRequest.prototype.send = function () {
-			var self = this, allow = false, id = (Date.now() + Math.random()).toString(36).replace(/\./, ''), a = document.createElement('a'), path = ((this.intercept[1] instanceof Object) && this.intercept[1].path) ? this.intercept[1].path : this.intercept[1].toString(),
+			var self = this, allow = false, id = (Math.random() * 1e17).toString(36), a = document.createElement('a'), path = ((this.intercept[1] instanceof Object) && this.intercept[1].path) ? this.intercept[1].path : this.intercept[1].toString(),
 					str = [
 						'<div class="jsb-ajax-add jsb-hide" id="jsb-ajax-add-', id, '">',
 							'<input id="jsb-ajax-temp-', id, '" type="checkbox" />',
-							'<label for="jsb-ajax-temp-', id, '"> Make this a temporary rule</label><br/>',
-							'<span class="jsb-label">On: </span>', '<select id="jsb-ajax-select-', id, '">><option>Loading...</option></select><br/>',
-							'<span class="jsb-method-label">???</span> ',
+							'<label for="jsb-ajax-temp-', id, '"> ', strings['Make this a temporary rule'], '</label><br/>',
+							'<span class="jsb-label">', strings['On:'],' </span>', '<select id="jsb-ajax-select-', id, '">><option>Loading...</option></select><br/>',
+							'<select class="jsb-method-label jsb-allow" data-method="1">',
+								'<option value="1">', strings.Allow, '</option>',
+								'<option value="0">', strings.Block, '</option>',
+							'</select> ',
 							'<textarea spellcheck="false" class="jsb-ajax-rule-input" wrap="off">Loading...</textarea> ',
-							'<a href="javascript:void(0);" class="jsb-bold jsb-ajax-rule-save">Save</a><br/>',
-							'<a href="javascript:void(0);" class="jsb-ajax-rule-cancel">Cancel</a><br/>',
+							'<input type="button" class="jsb-bold jsb-ajax-rule-save" value="', strings.Save, '" /><br/>',
+							'<input type="button" class="jsb-ajax-rule-cancel" value="', strings.Cancel, '" /><br/>',
 						'</div>'];
 
 			store['jsb-alert-' + id] = { req: this, args: arguments };
@@ -229,10 +245,14 @@ var special_actions = {
 
 			path = decodeURI(path).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-			str.push('<p class="jsb-info">',
-				'<b class="jsb-label jsb-bold">Path</b><br/>',
-				'<span class="jsb-indent">', path, '</span>',
-			'</p>');
+			str.push('<p class="jsb-info jsb-origin">',
+					'<b class="jsb-label jsb-bold">Origin</b><br/>',
+					'<span class="jsb-indent">Test</span>',
+				'</p>',
+				'<p class="jsb-info">',
+					'<b class="jsb-label jsb-bold">', strings.Path, '</b><br/>',
+					'<span class="jsb-indent">', path, '</span>',
+				'</p>');
 
 			switch(this.intercept[0].toUpperCase()) {
 				case 'POST':
@@ -247,7 +267,7 @@ var special_actions = {
 						}
 					
 					str.push('<p class="jsb-info">',
-						'<b class="jsb-label jsb-bold">Parameters</b><br/>',
+						'<b class="jsb-label jsb-bold">', strings.Parameters, '</b><br/>',
 						'<span class="jsb-indent">', pretty_params.join(''), '</span>',
 					'</p>');
 				break;
@@ -263,10 +283,9 @@ var special_actions = {
 			}
 
 			str.push('<p class="jsb-info">',
-				'<a href="javascript:void(0);" class="jsb-ajax-action jsb-allow jsb-once" data-action="allowed" data-method="1">Allow Once</a> <span class="jsb-divider">|</span> ',
-				'<a href="javascript:void(0);" class="jsb-ajax-action jsb-allow jsb-create-rule" data-action="allowed" data-method="1">Allow...</a> <span class="jsb-divider">|</span> ',
-				'<a href="javascript:void(0);" class="jsb-ajax-action jsb-block jsb-once" data-action="blocked" data-method="0">Block Once</a> <span class="jsb-divider">|</span> ',
-				'<a href="javascript:void(0);" class="jsb-ajax-action jsb-block jsb-create-rule" data-action="blocked" data-method="0">Block...</a> ',
+				'<input type="button" class="jsb-ajax-action jsb-allow jsb-once" data-action="allowed" data-method="1" value="', strings['Allow Once'], '" /> ',
+				'<input type="button" class="jsb-ajax-action jsb-block jsb-once" data-action="blocked" data-method="0" value="', strings['Block Once'], '" /> ',
+				'<input type="button" class="jsb-ajax-action jsb-create-rule" value="', strings['Add Rule...'], '" /> ',
 			'</p>');
 
 			if (!allow) {
@@ -279,26 +298,62 @@ var special_actions = {
 					str: str
 				}, function (detail) {
 					if (detail.allowed[1] < 0 && v === 1) {
+						var actionCallback = registerCallback(function (detail) {
+							var me = store[detail.id];
+
+							if (detail.push)
+								messageExtension('pushItem', {
+									kind: 'ajax_' + me.req.intercept[0].toLowerCase(),
+									meta: detail.meta.meta,
+									data: detail.meta.source,
+									which: 'hosts',
+									action: detail.ac,
+									how: detail.how
+								});
+
+							if (detail.ac === 'allowed')
+								ajax.send.apply(me.req, me.args);
+							else
+								try {
+									me.req.abort();
+								} catch (e) {}
+
+							delete store[detail.id];
+						});
+
 						messageExtension('notification', {
+							top: true,
 							id: detail.id,
 							meta: {
 								parts: detail.domain_parts,
 								rule: detail.rule,
 								source: detail.source,
 								kind: detail.kind,
-								meta: detail.meta
+								meta: detail.meta,
+								strings: strings,
+								actionCallback: actionCallback
 							},
 							body: detail.str.join(''),
 							title: 'XHR ' + detail.kind.substr(5).toUpperCase() + ' Request'
 						}, function (info) {
 							var id = info.id,
+									strings = info.meta.strings,
 									de = document.getElementById(id),
 									al = de.querySelector('select'),
+									a = document.createElement('a'),
 									inp = de.querySelector('.jsb-ajax-rule-input'),
+									origin = de.querySelector('.jsb-origin'),
 									parts = info.meta.parts, o = [];
 
+							a.href = info.meta.source;
+
+							if (info.frame)
+								origin.querySelector('span').innerText = a.origin;
+							else
+								origin.parentNode.removeChild(origin);
+
 							for (var i = 0; i < parts.length; i++)
-								o.push('<option value="', (i > 0 ? '.' : ''), parts[i], '">', parts[i] === '*' ? 'All Domains' : (i > 0 ? '.' : '') + parts[i], '</option>');
+								o.push('<option value="', (i > 0 ? '.' : ''), parts[i], '">', parts[i] === '*' ? strings['All Domains'] : (i > 0 ? '.' : '') + parts[i], '</option>');
 
 							al.innerHTML = o.join('');
 
@@ -334,55 +389,53 @@ var special_actions = {
 									de.querySelector('.jsb-ajax-rule-save').dispatchEvent(clicker);
 								}
 							}, false);
+
+							de.querySelector('.jsb-method-label').addEventListener('change', function (e) {
+								if (this.value === '0') {
+									this.classList.remove('jsb-allow');
+									this.classList.add('jsb-block');
+								} else {
+									this.classList.remove('jsb-block');
+									this.classList.add('jsb-allow');
+								}
+
+								this.setAttribute('data-method', this.value);
+							});
 							
 							[].forEach.call(de.querySelectorAll('.jsb-ajax-action'), function (self) {
 								self.addEventListener('click', function (e) {
 									var de = document.getElementById(id),
 											la = de.querySelector('.jsb-method-label');
 
-									if (~e.target.className.indexOf('jsb-create-rule')) {
+									if (e.target.classList.contains('jsb-create-rule')) {
 										de.style.setProperty('z-index', parseInt(de.getAttribute('data-ozindex') + 20, 10), 'important');
 
-										[].forEach.call(de.querySelectorAll('.jsb-info'), function (me) {
-											me.className += ' jsb-hide';
+										[].forEach.call(de.querySelectorAll('.jsb-info'), function (my) {
+											my.classList.add('jsb-hide');
 										});
 
 										de.querySelector('.jsb-ajax-add').className = 'jsb-ajax-add';
-										
-										la.innerText = e.target.getAttribute('data-method') === '0' ? 'Block' : 'Allow';
-										la.className = 'jsb-method-label jsb-' + (e.target.getAttribute('data-method') === '0' ? 'block' : 'allow');
-										la.setAttribute('data-method', e.target.getAttribute('data-method'));
 
 										la = de = null;
 
 										return;
 									}
 
-									var clicker = document.createEvent('HTMLEvents'), ac = e.target.getAttribute('data-action'), me = store[id];
-									
+									this.disabled = true;
+
+									executeCallback(info.origin, info.meta.actionCallback, {
+										ac: e.target.getAttribute('data-action'),
+										id: id,
+										meta: info.meta,
+										how: [parseInt(e.target.getAttribute('data-method'), 10), -1],
+										push: true
+									});
+
+									var clicker = document.createEvent('HTMLEvents');
+
 									clicker.initEvent('click', true, true);
 
 									de.querySelector('.jsblocker-close').dispatchEvent(clicker);
-
-									la = de = null;
-
-									messageExtension('pushItem', {
-										kind: 'ajax_' + me.req.intercept[0].toLowerCase(),
-										meta: info.meta.meta,
-										data: info.meta.source,
-										which: 'hosts',
-										action: ac,
-										how: [parseInt(e.target.getAttribute('data-method'), 10), -1]
-									});
-
-									if (ac === 'allowed')
-										ajax.send.apply(me.req, me.args);
-									else
-										try {
-											me.req.abort();
-										} catch (e) {}
-
-									delete store[id];
 								}, false);
 							});
 
@@ -393,7 +446,7 @@ var special_actions = {
 
 								[].forEach.call(de.querySelectorAll('.jsb-info'), function (me) {
 									me.className = 'jsb-info';
-									de.querySelector('.jsb-ajax-add').className += ' jsb-hide';
+									de.querySelector('.jsb-ajax-add').classList.add('jsb-hide');
 								});
 
 								setTimeout(function () {
@@ -404,18 +457,22 @@ var special_actions = {
 							de = al = parts = o = null;
 						});
 					} else {
-						if (detail.allowed[0])
+						var id = 'jsb-alert-' + detail.id;
+
+						if (detail.allowed[0]) {
 							try {
-								ajax.send.apply(store[detail.id].req, store[detail.id].args)
+								ajax.send.apply(store[id].req, store[id].args)
 							} catch(e) {}
-						else
+						} else {
 							try {
-								store[detail.id].req.abort();
+								store[id].req.abort();
 							} catch(e) {}
+						}
 					}
 				}, true);				
-			} else
+			} else {
 				ajax.send.apply(this, arguments);
+			}
 		};
 	},
 	inline_scripts: function (v, args, jsbAccessToken) {
@@ -429,6 +486,48 @@ var special_actions = {
 			else
 				document.documentElement.appendChild(meta);
 		}
+	},
+	navigator_override: function (v, args, jsbAccessToken) {
+		var now = Math.random().toString(36), nowInt = Date.now(), my_navigator = window.navigator;
+
+		window.navigator = {
+			geoLocation: window.navigator.geoLocation,
+			cookieEnabled: window.navigator.cookieEnabled,
+			productSub: now,
+			mimeTypes: [],
+			product: now,
+			appCodeName: now,
+			appVersion: now,
+			vendor: now,
+			vendorSub: now,
+			platform: now,
+			appName: now,
+			userAgent: now,
+			language: window.navigator.language,
+			plugins: (function () {
+				var plugins = function () {};
+
+				plugins.prototype.refresh = function () {};
+				plugins.prototype.item = function () {};
+				plugins.prototype.namedItem = function () {};
+
+				return new plugins();
+			})(),
+			onLine: window.navigator.onLine,
+			javaEnabled: window.navigator.javaEnabled.bind(my_navigator),
+			getStorageUpdates: window.navigator.getStorageUpdates.bind(my_navigator)
+		};
+
+		window.screen = {
+			width: nowInt,
+			availWidth: nowInt,
+			height: nowInt,
+			availHeight: nowInt,
+			availLeft: nowInt,
+			availTop: nowInt,
+			pixelDepth: nowInt,
+			colorDepth: nowInt
+		};
 	},
 	simple_referrer: true,
 	inlineScriptsCheck: function (v, args, jsbAccessToken) {
@@ -444,16 +543,24 @@ user_scripts = {
 		metaStr: '',
 		script: function () {
 			messageExtension('installUserScriptPrompt', { url: window.location.href }, function (r) {
-				var al = document.getElementById('jsb-alert-' + r.id);
+				messageExtension('notification', {
+					title: r.strings['User Script'],
+					body: [
+						'<p>', r.strings['Add?'], '</p>',
+						'<p><input type="button" id="jsb-install-user-script" value="', r.strings['Create Script'], '" /></p>'
+					].join(''),
+				}, function (info) {
+					var al = document.getElementById('jsb-alert-' + info.id);
 
-				al.querySelector('#jsb-install-user-script').addEventListener('click', function () {
-					this.value = r.strings['Adding...'];
-					this.disabled = 1;
+					al.querySelector('#jsb-install-user-script').addEventListener('click', function () {
+						this.value = r.strings['Adding...'];
+						this.disabled = 1;
 
-					messageExtension('installUserScriptFrom', { url: window.location.href }, function (result) {
-						al.querySelector('.jsb-alert-text').innerHTML = result ? r.strings['User script added.'] : r.strings['User script could not be added.'];
-					});
-				}, true);
+						messageExtension('installUserScriptFrom', { url: window.location.href }, function (result) {
+							al.querySelector('.jsb-alert-text').innerHTML = result ? r.strings['User script added.'] : r.strings['User script could not be added.'];
+						});
+					}, true);
+				});
 			});
 		}
 	}
@@ -525,7 +632,14 @@ var doSpecial = function (do_append, n, action, priv, name, custom) {
 
 	if (v === true || parseInt(v, 10) || (typeof v === 'string' && v.length)) {
 		if (!((m = enabled_specials[n].allowed) % 2)) {
-			if (!enabled_specials[n].exclude) jsblocker.blocked.special.all.push([n, m]);
+			if (!enabled_specials[n].exclude)
+				jsblocker.blocked.special.all.push({
+					name: n, 
+					rtype: m,
+					unblockable: false,
+					meta: null,
+					page: [jsblocker.href]
+				});
 			
 			if (!custom) {
 				if (do_append) {
@@ -535,7 +649,14 @@ var doSpecial = function (do_append, n, action, priv, name, custom) {
 			}
 		} else
 			if (m !== 84) {
-				if (!enabled_specials[n].exclude) jsblocker.allowed.special.all.push([n, m]);
+				if (!enabled_specials[n].exclude)
+					jsblocker.allowed.special.all.push({
+						name: n, 
+						rtype: m,
+						unblockable: false,
+						meta: null,
+						page: [jsblocker.href]
+					});
 
 				if (custom) appendScript(action, n, true, priv, name, custom);
 			}
@@ -544,15 +665,17 @@ var doSpecial = function (do_append, n, action, priv, name, custom) {
 
 var genericHelpers = {
 	JSBCommander: function JSBCommander (detail, extra, callback, preserve) {
-		var callback_id = Math.random().toString(36),
+		var callback_id = Math.random().toString(36), hasCallback = typeof callback === 'function';
 				o = {
 			key: jsbAccessToken,
 			token: detail.token,
 			command: detail.which,
-			callback: callback ? callback_id : null
+			via: typeof jsbScriptNS !== 'undefined' ? jsbScriptNS : Date.now(),
+			callback: hasCallback ? callback_id : null,
+			callback_func: hasCallback ? callback.toString() : null
 		};
 
-		if (callback)
+		if (hasCallback)
 			jsbEventCallback[callback_id] = {
 				func: callback,
 				preserve: preserve
@@ -563,7 +686,8 @@ var genericHelpers = {
 
 		if (extra)
 			for (var key in extra)
-				o[key] = extra[key];
+				if (!(key in o))
+					o[key] = extra[key];
 
 		document.dispatchEvent(new JSBCustomEvent('JSBCommander' + jsbAccessToken + jsbEventToken, {
 			detail: o
@@ -580,6 +704,36 @@ var genericHelpers = {
 			JSBCommander(detail, meta, callback, preserve);
 		});
 	},
+	registerCallback: function registerCallback (func, preserve) {
+		var callback_id = Math.random().toString(36);
+
+		jsbEventCallback[callback_id] = {
+			func: func,
+			preserve: preserve
+		}
+
+		return callback_id;
+	},
+	executeCallback: function executeCallback (origin, callback_id, detail) {
+		messageExtension('beginExecuteCallback', { origin: origin, id: callback_id, detail: detail });
+	},
+	topHandler: function topHandler (detail) {
+		if (window !== window.top) return;
+
+		switch (detail.command) {
+			case 'notification':
+				messageExtension('notification', {
+					title: detail.title,
+					frame: true,
+					body: detail.body,
+					id: detail.id,
+					meta: detail.meta,
+					origin: detail.key
+				}, eval(detail.callback_func ? '(function () { return ' + detail.callback_func + ' })();' : ''));
+			break;
+		}
+
+	},
 	initEvent: function initEvent (init) {
 		document.removeEventListener(jsbAccessToken + jsbEventToken, initEvent, true);
 
@@ -594,7 +748,7 @@ var genericHelpers = {
 			if (event.detail.generatorToken)
 				jsbGeneratorToken = event.detail.generatorToken;
 			
-			if (event.detail.callback in jsbEventCallback) {
+			if (event.detail.callback && (event.detail.callback in jsbEventCallback)) {
 				jsbEventCallback[event.detail.callback].func(event.detail.result ? event.detail.result : event.detail);
 
 				try {
@@ -603,7 +757,8 @@ var genericHelpers = {
 				} catch (e) {}
 
 				return;
-			}
+			} else if (event.detail.topHandler && event.detail.token === jsbAccessToken)
+				topHandler(event.detail.topHandler);
 		}, true);
 	}
 },
@@ -683,8 +838,12 @@ var genericHelpers = {
 			messageExtension('XMLHttpRequest', {
 				details: serializable
 			}, function (res) {
-				if (res.action === 'deleteCallback') delete jsbEventCallback[res.callback];
-				else if (res.action in details) details[res.action](res.response);
+				if (res.action === 'XHRComplete') {
+					delete jsbEventCallback[res.callback];
+
+					details = serializable = a = key = r = undefined;
+				}	else if (res.action in details)
+					details[res.action](res.response);
 			}, true);
 		})(details, serializable);
 	}
@@ -748,12 +907,12 @@ var parseSpecials = function (pre) {
 	}
 }
 
-special_actions.alert_dialogs.prototype.args = [window.accessToken || 1];
-special_actions.ajax_intercept.prototype.args = [window.accessToken || 1, window.Token ? Token.create('ajaxIntercept', true) : null];
+special_actions.alert_dialogs.prototype.args = [window.accessToken || 1, { 'Alert': _('Alert'), 'Close': _('Close'), 'via frame': _('via frame') }, window.bv];
+special_actions.ajax_intercept.prototype.args = [window.accessToken || 1, window.Token ? Token.create('ajaxIntercept', true) : null, window.bv];
 special_actions.autocomplete_disabler.prototype.args = [window.bv || 0];
 special_actions.inline_scripts.prototype.args = [window.bv || 0];
 
-if (typeof beforeLoad !== 'undefined' && !disabled) {
+if (window.Token && !disabled) {
 	var specials = [], scripts = ResourceCanLoad(beforeLoad, ['userScripts', jsblocker.href]), enabled_specials = {};
 
 	for (var i in scripts) {
@@ -781,8 +940,25 @@ if (typeof beforeLoad !== 'undefined' && !disabled) {
 
 	for (var s in es) enabled_specials[s] = es[s];
 
+	if (enabled_specials.ajax_intercept.value === 1)
+		special_actions.ajax_intercept.prototype.args.push({
+			'Make this a temporary rule': _('Temporary rule'),
+			'Allow': _('Allow'),
+			'Block': _('Block'),
+			'Allow Once': _('Allow Once'),
+			'Block Once': _('Block Once'),
+			'Add Rule...': _('Add Rule...'),
+			'Save': _('Save'),
+			'On:': _('On:'),
+			'Cancel': _('Cancel'),
+			'Origin': _('Origin'),
+			'Path': _('Path'),
+			'Parameters': _('Parameters'),
+			'All Domains': _('All Domains'),
+		});
+
 	appendScript(special_actions.inlineScriptsCheck, 'inlineScriptsCheck');
-	appendScript(special_actions.history_fix, 'history_fix');
+	appendScript(special_actions.genericSpecial, 'genericSpecial');
 
 	parseSpecials(true);
 

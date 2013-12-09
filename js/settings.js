@@ -1,6 +1,6 @@
 "use strict";
 
-var speedMultiplier = 1, firstLoad = true, beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false};
+var speedMultiplier = 1, firstLoad = true;
 
 window._ = function (str, args) {
 	return ResourceCanLoad(beforeLoad, ['_', str, args]);
@@ -118,14 +118,14 @@ $.extend(Settings, {
 					$('#for-search input').val(_(Settings.settings.other.simpleReferrer.label)).trigger('search');
 				break;
 			}
-		}).on('change', 'section select, section input[type="checkbox"], section input[type="number"]', function () {
+		}).on('change', 'section select, section input[type="checkbox"], section input[type="radio"], section input[type="number"]', function () {
 			if (~this.className.indexOf('private')) return;
 
-			var li = $(this).parents('li'),
+			var li = $(this).parents('li.setting-li'),
 					id = li.attr('id'),
 					setting = li.attr('data-setting'),
 					group = li.data('group');
-			
+
 			if (this.value === 'other') {
 				var pr = prompt(Settings.settings[group][setting].prompt).replace(/"/g, ''),
 						t = $('.other-option', this);
@@ -143,7 +143,7 @@ $.extend(Settings, {
 				}
 			}
 
-			if (this.getAttribute('type') === 'checkbox') {
+			if (this.type === 'checkbox') {
 
 				if (Settings.settings[group][setting].confirm && this.checked) {
 					this.checked = false;
@@ -171,6 +171,17 @@ $.extend(Settings, {
 			} else if (~this.className.indexOf('remove-custom')) {
 				var li = $(this).parent();
 
+				li.animate({
+					marginLeft: li.width(),
+					height: 0,
+					opacity: 0
+				}, {
+					duration: 250,
+					complete: function () {
+						$(this).remove();
+					}
+				});
+
 				GlobalPage.message('removeUserScript', li.data('ns'));
 				GlobalPage.message('getAllSettings');
 
@@ -189,6 +200,9 @@ $.extend(Settings, {
 						'// ==UserScript==',
 						'// @name My User Script',
 						'// @namespace ' + Date.now(),
+						'// @version 0.1',
+						'// @updateURL ',
+						'// @downloadURL ',
 						'// ==/UserScript==',
 						' ', ' '
 					].join("\n"));
@@ -462,6 +476,7 @@ $.extend(Settings, {
 		li = $('<li />').attr({
 			'data-setting': setting,
 			'id': 'setting-' + setting,
+			'class': 'setting-li'
 		}).data('group', group)
 			.toggleClass('disabled', setting_item.extra ? this.extras_active() : false)
 			.toggleClass('indent', setting_item.indent === 1)
@@ -498,7 +513,7 @@ $.extend(Settings, {
 
 			if (setting_item.label_after) inp.after($('<span />').addClass('label-after').html(_(setting_item.label_after)));
 		} else if (setting_item.label && setting_item.setting) {
-			select = $('<select />').attr('disabled', (setting_item.extra && this.extras_active())).appendTo(set);
+			select = $('<' + (setting_item.radio ? 'ul' : 'select') + ' />').toggleClass('radio', !!setting_item.radio).attr('disabled', (setting_item.extra && this.extras_active())).appendTo(set);
 			
 			for (var b = 0; setting_item.setting[b]; b++) {
 				if ((typeof current === 'string' || typeof curent === 'number') && setting_item.setting[b][0].toString() === current.toString()) break;
@@ -511,17 +526,37 @@ $.extend(Settings, {
 			}
 			
 			for (var i = 0; setting_item.setting[i]; i++) {
-				var is_other = other && i === setting_item.setting.length - 1;
+				var is_other = other && i === setting_item.setting.length - 1,
+						id = 'choice-' + Math.random().toString(36),
+						str = isNaN(parseInt(setting_item.setting[i][1])) ? (!other ? _(setting_item.setting[i][1]) : setting_item.setting[i][1]) : setting_item.setting[i][1],
+						selected = (typeof current === 'string' || typeof curent === 'string') && (current == setting_item.setting[i][0] || current.toString() === setting_item.setting[i][0]);
 				
-				if (is_other)
+				if (is_other && !setting_item.radio)
 					$('<optgroup />').attr('label', '----------').appendTo(select);
-					
-				$('<option />').attr({
-					'disabled': (setting_item.extra && this.extras_active()),
-					'value': setting_item.setting[i][0],
-					'class': is_other ? 'other-option' : '',
-					'selected': (typeof current === 'string' || typeof curent === 'string') && (current == setting_item.setting[i][0] || current.toString() === setting_item.setting[i][0])
-				}).html(isNaN(parseInt(setting_item.setting[i][1])) ? (!other ? _(setting_item.setting[i][1]) : setting_item.setting[i][1]) : setting_item.setting[i][1]).appendTo(select);
+				
+				if (setting_item.radio) {
+					var radio_li = $('<li />');
+
+					$('<input />').attr({
+						type: 'radio',
+						id: id,
+						'name': 'radio-' + setting,
+						'disabled': (setting_item.extra && this.extras_active()),
+						'value': setting_item.setting[i][0],
+						'class': is_other ? 'other-option' : '',
+						'checked': selected
+					}).appendTo(radio_li);
+
+					$('<label />').attr('for', id).html(' ' + str).appendTo(radio_li);
+
+					radio_li.appendTo(select);
+				} else
+					$('<option />').attr({
+						'disabled': (setting_item.extra && this.extras_active()),
+						'value': setting_item.setting[i][0],
+						'class': is_other ? 'other-option' : '',
+						'selected': selected
+					}).html(str).appendTo(select);
 			}
 
 			if (other)
@@ -568,7 +603,7 @@ $.extend(Settings, {
 			for (var key in scripts) {
 				i++;
 
-				canUpdate = scripts[key].meta.updateURL && scripts[key].meta.downloadURL;
+				canUpdate = scripts[key].meta.updateURL && (scripts[key].meta.downloadURL || scripts[key].meta.installURL);
 
 				var str = [
 					'<li>',
@@ -578,7 +613,7 @@ $.extend(Settings, {
 						'<div class="user-script-toggles">',
 							'<input ', !canUpdate ? 'disabled="disabled"' : '', ' class="user-script-auto-update private" id="user-script-update-', i, '" type="checkbox" ', scripts[key].autoUpdate ? 'checked' : '', '/> <label for="user-script-update-', i, '">', _('Enable automatic updating'), '</label><br />',
 							'<input ', !canUpdate ? 'disabled="disabled"' : '', ' class="user-script-developer private" id="user-script-developer-', i, '" type="checkbox" ', scripts[key].developerMode ? 'checked' : '', '/> <label for="user-script-developer-', i, '">', _('Enable developer mode'), '</label>',
-							!canUpdate ? '<span class="aside">This script does not contain an @updateURL or @downloadURL directive.</span>' : '',
+							!canUpdate ? '<span class="aside">This script does not contain an @updateURL, @downloadURL, or @version directive.</span>' : '',
 						'</div>',
 						'<div class="divider small"></div>',
 					'</li>'
@@ -621,8 +656,6 @@ Settings.toolbar_items = {
 };
 
 if (window == window.top) delete Settings.toolbar_items.close;
-
-appendScript(special_actions.alert_dialogs, 'alert_dialogs', true);
 
 Events.addTabListener('message', function (event) {
 	if (event.message) 
@@ -687,8 +720,11 @@ Events.addTabListener('message', function (event) {
 GlobalPage.message('getAllSettings');
 
 $(function () {
+	appendScript(special_actions.alert_dialogs, 'alert_dialogs', true);
+
 	$('#requirements').remove();
 	$('#container').css('opacity', 0);
+	
 	Settings.bind_events();
 });
 
@@ -707,7 +743,9 @@ function settingsReady() {
 	
 	for (tool in Settings.toolbar_items)
 		$('<li />').attr('id', 'for-' + tool)
-				.html('<div class="left"></div><span>' + (tool !== 'search' ? _(Settings.toolbar_items[tool]) : Settings.toolbar_items[tool]) + '</span><div class="right"></div>').appendTo('#toolbar');
+				.html('<div class="left"></div>' + 
+					(tool === 'search' ? Settings.toolbar_items[tool] : ('<input class="single-click" type="button" value="' +  _(Settings.toolbar_items[tool]) + '" />')) + 
+					'<div class="right"></div>').appendTo('#toolbar');
 
 	var ref, cu = $('#' + Settings.current_value('settingsPageTab'));
 	

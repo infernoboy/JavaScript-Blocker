@@ -88,6 +88,12 @@
 						<li class="orange" id="filter-expanded" data-i18n="Expanded"></li>
 					</ul>
 					<div class="divider"></div>
+					<ul id="filter-type-page">
+						<li class="label" data-i18n="Type:"></li>
+						<li class="selected orange" id="filter-only-domain" data-i18n="Domain Based {1}" data-i18n-fill="[0]"></li>
+						<li class="orange" id="filter-only-page" data-i18n="Page Based {1}" data-i18n-fill="[0]"></li>
+					</ul>
+					<div class="divider"></div>
 					<ul id="filter-type-not-used" class="age-filter">
 						<li class="label" data-i18n="Not Used Within:"></li>
 						<li id="filter-age-all" class="selected orange" data-i18n="All"></li>
@@ -248,13 +254,25 @@
 
 		<textarea id="tmpl_domain_picker">
 			<% if (!self.no_label) { %><label for="domain-picker<%=('id' in self ? '-' + self.id : '')%>"><%=_('On:')%> </label><% } %>
-			<select class="domain-picker" id="domain-picker<%=('id' in self ? '-' + self.id : '')%>" <% if ((self.page_parts.length === 2 && self.no_all) || (self.page_parts[0] === null && !self.no_all)) { %>class="single"<% } %>>
+			<select class="domain-picker" id="domain-picker<%=('id' in self ? '-' + self.id : '')%>" <% if ((self.domain_parts.length === 2 && self.no_all) || (self.domain_parts[0] === null && !self.no_all)) { %>class="single"<% } %>>
 			<%
 				var n;
-				for (n = 0; n < self.page_parts.length; n++) {
-					if (self.page_parts[n] === null || (self.no_all && n === self.page_parts.length - 1)) continue; %>
-					<option value="<%=((n === 0 ? '' : '.') + self.page_parts[n])%>"><%=(self.page_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + JB.utils.escape_html(self.page_parts[n])))%></option>
+				for (n = 0; n < self.domain_parts.length; n++) {
+					if (self.domain_parts[n] === null || (self.no_all && n === self.domain_parts.length - 1)) continue; %>
+					<option value="<%=((n === 0 ? '' : '.') + self.domain_parts[n])%>"><%=(self.domain_parts[n] === '*' ? _('All Domains') : ((n > 0 ? '.' : '') + JB.utils.escape_html(self.domain_parts[n])))%></option>
 			<% } 
+				if (self.pages) {
+					var page, option; %>
+					<optgroup label="<%=_('Pages')%>">
+						<% for (page in self.pages) {
+							option = document.createElement('option');
+							option.value = self.pages[page].regexp;
+							option.innerText = page;
+
+						%><%=option.outerHTML%>
+						<% } %>
+					</optgroup>
+				<% }
 				if (self.show_other) { %>
 					<option value="custom.other"><%=_('Other…')%></option>
 			<% } %>
@@ -273,13 +291,21 @@
 		</textarea>
 
 		<textarea id="tmpl_rule_wrapper_inner">
-			<li id="<%=+ new Date()%>" data-value="<%=self.domain_display%>" class="domain-name <% if (self.collapsed) { %>hidden<% } %>">
-				<span class="<%=self.selectable%>"><%=self.domain_display%></span>
-			</li>
-			<% if (!self.no_list) { %>
-			<li class="domain-rules" data-value="<%=self.domain%>">
-				<ul></ul>
-			</li>
+			<%
+			var li = document.createElement('li');
+			li.id = Math.random().toString(36);
+			li.setAttribute('data-value', self.domain_display);
+			li.className = "domain-name " + (self.collapsed ? 'hidden' : '');
+			li.innerHTML = '<span class="' + self.selectable + '">' + self.domain_display + '</span>';
+			%><%=li.outerHTML%>
+			<% if (!self.no_list) {
+				li = document.createElement('li');
+				li.id = Math.random().toString(36);
+				li.setAttribute('data-value', self.domain);
+				li.setAttribute('data-encoded', JB.utils.utf8_to_b64(self.domain));
+				li.className = "domain-rules";
+				li.innerHTML = '<ul></ul>';
+			%><%=li.outerHTML%>
 			<% } %>
 		</textarea>
 

@@ -116,6 +116,9 @@ body.simple #main ul.show-per-host li span {
 ul li > span {
 	height: 22px;
 }
+ul li span.domain-description {
+	height: 19px;
+}
 
 .scripts-count-type {
 	font-size: 9pt;

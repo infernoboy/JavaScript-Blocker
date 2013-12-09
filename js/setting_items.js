@@ -110,6 +110,12 @@ Settings.settings = {
 			indent: 1,
 			if_setting: { showUnblocked: true }
 		},
+		simplifyDomainNames: {
+			label: 'Show domain descriptions when possible',
+			setting: true,
+			default: true,
+			if_setting: { simpleMode: true }
+		},
 		filterBarAge: {
 			label: 'Show "Not Used In Past" filter bar',
 			setting: true,
@@ -135,6 +141,7 @@ Settings.settings = {
 		toolbarDisplay: {
 			label: 'Toolbar badge shows number of:',
 			setting: [['blocked', 'Blocked items'], ['allowed', 'Allowed items'], ['neither', 'Neither']],
+			radio: true,
 			divider: 1,
 			default: 'blocked'
 		},
@@ -422,9 +429,9 @@ Settings.settings = {
 					async: false,
 					url: u,
 					dataType: 'json'
-				}).success(function (s) {
+				}).done(function (s) {
 					r = s['long-url'] ? confirm(_('confirmShortURL confirm')) : alert(_('You cannot enable confirmShortURL'));
-				}).error(function (er) {
+				}).fail(function (er) {
 					r = alert(_('You cannot enable confirmShortURL'));
 				});
 
@@ -490,6 +497,12 @@ Settings.settings = {
 			default: false,
 			if_setting: { extendedSupport: true },
 			help: 'inline_scripts help',
+			extra: 1
+		},
+		enable_special_navigator_override: {
+			label: 'Randomize browser information',
+			setting: true,
+			default: false,
 			extra: 1
 		},
 		enable_special_font: {
