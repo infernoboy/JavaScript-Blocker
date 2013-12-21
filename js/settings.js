@@ -138,7 +138,7 @@ $.extend(Settings, {
 					t.attr({ 'value': pr, 'selected': 'selected' });
 					t.text(pr);
 				} else {
-					$('<optgroup />').attr('label', '----------').appendTo(this);
+					$('<option />').prop('disabled', true).text('―――――――――').appendTo(this);
 					$('<option />').addClass('other-option').attr({ 'value': pr, 'selected': 'selected' }).text(pr).appendTo(this);
 				}
 			}
@@ -532,7 +532,7 @@ $.extend(Settings, {
 						selected = (typeof current === 'string' || typeof curent === 'string') && (current == setting_item.setting[i][0] || current.toString() === setting_item.setting[i][0]);
 				
 				if (is_other && !setting_item.radio)
-					$('<optgroup />').attr('label', '----------').appendTo(select);
+					$('<option />').prop('disabled', true).text('―――――――――').appendTo(select);
 				
 				if (setting_item.radio) {
 					var radio_li = $('<li />');

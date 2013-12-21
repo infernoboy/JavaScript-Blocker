@@ -379,8 +379,15 @@ Settings.settings = {
 			extra: 1,
 			min: 1,
 			max: 999,
+			divider: 1,
 			if_setting: { enableSnapshots: true }
 		},
+		clearSnapshots: {
+			label: 'Delete all snapshots:',
+			setting: 'Delete Snapshots',
+			extra: 1,
+			classes: 'delete'
+		}
 	},
 	keyboard: {
 		traverseMainActions: {
@@ -609,14 +616,7 @@ Settings.settings = {
 			label: 'Import a full backup:',
 			setting: 'Import Backup',
 			extra: 1,
-			divider: 1,
 			classes: 'single-click'
-		},
-		clearSnapshots: {
-			label: 'Delete all snapshots:',
-			setting: 'Delete Snapshots',
-			extra: 1,
-			classes: 'delete'
 		}
 	},
 	search: {

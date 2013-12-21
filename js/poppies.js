@@ -80,7 +80,7 @@ JB.poppies = {
 					})
 					.done(done)
 					.fail(function (req) {
-						if (/.*@.*\..*/.test(did) && (req.status === 0 || req.status === 404)) return done(10);
+						if (/.+@.+\..+/.test(did.val()) && (req.status === 0 || req.status === 404)) return done(10);
 
 						new Poppy(zoo.me[0], zoo.me[1], JB.poppies.verify_donation.call([zoo.me[0], zoo.me[1], zoo.me[2], 'Error ' + req.status + ': ' + req.statusText, id], main));
 					});

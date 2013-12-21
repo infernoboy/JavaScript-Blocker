@@ -578,10 +578,6 @@ body:not(.simple) .rule.temporary {
 	color: #777;
 }
 
-#rules-list li > ul {
-	padding-left: 5px;
-}
-
 #rule-options-link {
 	margin-left: 10px;
 	display: inline-block;
@@ -1137,9 +1133,6 @@ header h3 {
 		padding-top: 4px;
 		margin-bottom: 0px;
 	}
-		.kind-header.collapsed {
-			margin-bottom: 3px;
-		}
 		.kind-header h3 {
 			margin-left: 3px;
 		}
@@ -1403,7 +1396,6 @@ div.divider {
 		overflow: hidden;
 		padding-top: 0;
 		margin-left: -15px;
-		margin-top: -3px;
 		padding-left: 5px;
 	}
 	.domain-name.hidden {
@@ -1416,15 +1408,17 @@ div.divider {
 	}
 	.domain-name.hidden + li.domain-rules,
 	.domain-name.domain-filter-hidden,
+	.domain-name.active-hidden,
 	.domain-name.visibility-hidden,
 	.domain-name.state-hidden,
-	.domain-name.only-page,
-	.domain-name.only-domain,
+	.domain-name.page-hidden,
+	.domain-name.domain-hidden,
 	.domain-name.domain-filter-hidden + li.domain-rules,
+	.domain-name.active-hidden + li.domain-rules,
 	.domain-name.visibility-hidden + li.domain-rules,
 	.domain-name.state-hidden + li.domain-rules,
-	.domain-name.only-page + li.domain-rules,
-	.domain-name.only-domain + li.domain-rules {
+	.domain-name.page-hidden + li.domain-rules,
+	.domain-name.domain-hidden + li.domain-rules {
 		display: none;
 	}
 	.domain-name.no-disclosure {
@@ -1438,6 +1432,11 @@ div.divider {
 		.poppy .rules-wrapper {
 			margin-left: 15px;
 		}
+
+	.domain-rules > ul {
+		padding-left: 5px;
+		margin-top: -3px;
+	}
 
 .host-section-host {
 	padding: 3px 0;
@@ -1510,19 +1509,6 @@ div.divider {
 	right: 2px;
 }
 
-/*.host-section:only-child .column {
-	min-height: 340px;
-}
-	body.simple .host-section:only-child .column {
-		min-height: 290px;
-	}
-	.host-section:only-child .column.expanded {
-		min-height: 312px;
-	}
-	body.simple .host-section:only-child .column.expanded {
-		min-height: 262px;
-	}*/
-
 .host-section-host .label {
 	margin-left: 6px;
 }
@@ -1534,57 +1520,6 @@ div.divider {
 		color: #004db1;
 	}
 
-#page-lists {
-	position: relative;
-	width: 100%;
-	margin-bottom: 10px;
-}
-	#page-lists > label {
-		max-width: 5%;
-		font-size: 9pt;
-		margin-left: 2px;
-	}
-	#page-list {
-		width: 433px;
-	}
-		body.simple #page-list {
-			width: 333px;
-		}
-	#frame-switcher {
-		position: absolute;
-		top: -9px;
-		right: 0;
-		width: 78px;
-		text-align: left;
-	}
-		#frame-switcher .divider {
-			margin: 0 0 -1px;
-		}
-		#frame-switcher .arrow {
-			position: relative;
-			display: inline-block;
-			background: url(../images/arrow.png) no-repeat left top;
-			background-size: 20px 10px;
-			width: 10px;
-			height: 10px;
-			top: 1px;
-			left: 2px;
-		}
-		#previous-frame .arrow {
-			background: url(../images/arrow.png) no-repeat -10px top;
-			background-size: 20px 10px;
-		}
-	#previous-frame,
-	#next-frame {
-		font-size: 8pt;
-		-webkit-transition: opacity 0.2s;
-	}
-		#previous-frame.disabled,
-		#next-frame.disabled,
-		#frame-switcher .divider.disabled {
-			opacity: 0.13;
-			pointer-events: none;
-		}
 .snapshot-info {
 	display: none;
 	margin-top: -10px;
@@ -1759,69 +1694,69 @@ div.divider {
 					padding-left: 4px !important;
 					-webkit-background-clip: content-box !important;
 				}
-				#rule-list-actions li#collapse-all {
+				#rule-list-actions #collapse-all {
 					background-position: left 0;
 				}
-					#rule-list-actions li#collapse-all:active {
+					#rule-list-actions #collapse-all:active {
 						background-position: -16px 0;
 					}
-				#rule-list-actions li#expand-all {
+				#rule-list-actions #expand-all {
 					background-position: left -16px;
 				}
-					#rule-list-actions li#expand-all:active {
+					#rule-list-actions #expand-all:active {
 						background-position: -16px -16px;
 					}
-				#rule-list-actions li#edit-domains {
+				#rule-list-actions #edit-domains {
 					background-position: 4px -32px;
 				}
-					#rule-list-actions li#edit-domains:active {
+					#rule-list-actions #edit-domains:active {
 						background-position: -12px -32px !important;
 					}
-					#rule-list-actions li#edit-domains.edit-mode {
+					#rule-list-actions #edit-domains.edit-mode {
 						background-position: -28px -32px;
 					}
-				#rule-list-actions li#make-temp-perm {
+				#rule-list-actions #make-temp-perm {
 					background-position: 4px -48px;
 				}
-					#rule-list-actions li#make-temp-perm:active {
+					#rule-list-actions #make-temp-perm:active {
 						background-position: -12px -48px;
 					}
-				#rule-list-actions li#remove-all-temp {
+				#rule-list-actions #remove-all-temp {
 					background-position: left -64px;
 				}
-					#rule-list-actions li#remove-all-temp:active {
+					#rule-list-actions #remove-all-temp:active {
 						background-position: -16px -64px;
 					}
-				#rule-list-actions li#show-temporary-rules {
+				#rule-list-actions #show-temporary-rules {
 					background-position: 4px -80px;
 				}
-					#rule-list-actions li#show-temporary-rules:active {
+					#rule-list-actions #show-temporary-rules:active {
 						background-position: -12px -80px !important;
 					}
-					#rule-list-actions li#show-temporary-rules.using {
+					#rule-list-actions #show-temporary-rules.using {
 						background-position: -28px -80px
 					}
-				#rule-list-actions li#show-active-rules {
+				#rule-list-actions #show-active-rules {
 					background-position: 4px -96px;
 				}
-					#rule-list-actions li#show-active-rules:active {
+					#rule-list-actions #show-active-rules:active {
 						background-position: -12px -96px !important;
 					}
-					#rule-list-actions li#show-active-rules.using {
+					#rule-list-actions #show-active-rules.using {
 						background-position: -28px -96px;
 					}
-				#rule-list-actions li#time-machine {
+				#rule-list-actions #time-machine {
 					background-position: 4px -112px;
 				}
-					#rule-list-actions li#time-machine:active {
+					#rule-list-actions #time-machine:active {
 						background-position: -12px -112px
 					}
-				#rule-list-actions li#reload-rules {
+				#rule-list-actions #reload-rules {
 					background-position: left -129px;
 					position: absolute;
 					right: 0;
 				}
-					#rule-list-actions li#reload-rules:active {
+					#rule-list-actions #reload-rules:active {
 						background-position: -16px -129px
 					}
 

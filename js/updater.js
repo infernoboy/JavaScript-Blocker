@@ -419,13 +419,20 @@ JB.updater = function () {
 				UserScript.add(all[ns].script);
 			}
 
+			this.installedBundle = 178;
+
+			this.updater();
+		break;
+
+		case v < 180: // 4.1.2
+			Settings.removeItem('EasySocial');
+
 			this.donate();
 
-			// this.installedBundle = 177;
+			// this.installedBundle = 179;
 
 			// this.updater();
 		break;
-
 
 		case v < this.bundleid:
 			this.donate();

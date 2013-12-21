@@ -488,7 +488,8 @@ var special_actions = {
 		}
 	},
 	navigator_override: function (v, args, jsbAccessToken) {
-		var now = Math.random().toString(36), nowInt = Date.now(), my_navigator = window.navigator;
+		var now = Math.random().toString(36), nowInt = Date.now(), my_navigator = window.navigator,
+				agent = now + " AppleWebKit/537 (KHTML, like Gecko) Version/7 Safari/537";
 
 		window.navigator = {
 			geoLocation: window.navigator.geoLocation,
@@ -496,13 +497,13 @@ var special_actions = {
 			productSub: now,
 			mimeTypes: [],
 			product: now,
-			appCodeName: now,
-			appVersion: now,
+			appCodeName: 'Mozilla',
+			appVersion: agent,
 			vendor: now,
 			vendorSub: now,
 			platform: now,
-			appName: now,
-			userAgent: now,
+			appName: 'Netscape',
+			userAgent: agent,
 			language: window.navigator.language,
 			plugins: (function () {
 				var plugins = function () {};

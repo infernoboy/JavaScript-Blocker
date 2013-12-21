@@ -7,10 +7,14 @@
 "use strict";
 
 window.critical_timeout = null;
+window.critical_shown = 0;
 
 window.onerror = function (d, p, l, c) {
 	window.critical_timeout = setTimeout(function (d, p, l) {
-		alert('Critical error: ' + d + ',' + p + ',' + l);
+		if (!window.critical_shown) {
+			window.critical_shown = 1;
+			alert('Critical error: ' + d + ',' + p + ',' + l);
+		}
 	}, 1000, d, p, l);
 
 	_d(d + ', ' + p + ', ' + l);
@@ -109,7 +113,7 @@ var RULE_TOP_HOST = 1,
 	displayv: null,
 	bundleid: null,
 	update_attention_required: 161,
-	silent_updates: [174, 176],
+	silent_updates: [174, 176, 179],
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
 	longURL: 'http://api.longurl.org/v2/expand?user-agent=ToggleableJavaScriptBlocker&title=1&format=json&url=',
 	
@@ -1600,7 +1604,7 @@ var RULE_TOP_HOST = 1,
 		special_allowed: function (special, url) {
 			if (!this.donationVerified || !this.special_enabled(special)) return -1;
 			
-			var host = this.active_host(url),
+			var host = this.active_host(url), found = -2,
 					domains = this.find('special', url, null, true), domain, rule, spec;
 
 			$.extend(domains, this.find('special', host, null, true));
@@ -1611,12 +1615,13 @@ var RULE_TOP_HOST = 1,
 						this.utils.zero_timeout(function (self, domain, spec, rtype) {
 							self.use_tracker.use('special', domain, spec, rtype);
 						}, [this, domain, spec, domains[domain][spec][0]]);
-						return domains[domain][spec][0];
+
+						found = domains[domain][spec][0];
 					}
 
 			special = url = host = domains = domain = rule = spec = undefined;
 					
-			return -2;
+			return found;
 		},
 		via_action_cache: function (kind, host, item) {
 			if (PrivateBrowsing()) return null;
@@ -1759,6 +1764,22 @@ var RULE_TOP_HOST = 1,
 	
 			return [1, -1];
 		},
+		_key_prioritize: function (a, b) {
+			if (a === '.*' || b === '.*') return 1;
+			if (a.charAt(0) === '.' || b.charAt(0) === '^' || b > a) return -1;
+			if (a.charAt(0) === '^' || b.charAt(0) === '.' || a > b) return 1;
+			return 0;
+		},
+		prioritize: function (object) {
+			var keys = Object.keys(object), object_sorted = {},
+					keys_sorted = keys.sort(this._key_prioritize);
+
+			for (var i = 0; i < keys.length; i++)
+				object_sorted[keys[i]] = object[keys[i]];
+
+			return object_sorted;
+
+		},
 		find: function (kind, domain, one, hide_wlbl) {
 			if (!(kind in this.rules) || (kind !== 'script' && !this.donationVerified)) return {};
 
@@ -1786,7 +1807,7 @@ var RULE_TOP_HOST = 1,
 					rules['.*'] = cached[kind]['.*']['.*'];
 				}
 
-				return rules;
+				return this.prioritize(rules);
 			}
 
 			if (is_page) {
@@ -2035,9 +2056,9 @@ var RULE_TOP_HOST = 1,
 				message.push(_((rtype % 2 ? 'Enable'[lo]() : 'Disable'[lo]()) + ' JavaScript Blocker'), _('JavaScript Blocker'));
 			} else if (ukind === 'special') {
 				if (rule.length) {
-					if (rule === '^.*$' || rule === '*') message.push('All others')
+					if (rule === '^.*$' || rule === '*') message.push(_('all others'))
 					else {
-						if (rule.charAt(0) === '^') message.push('Others matching');
+						if (rule.charAt(0) === '^') message.push(_('others matching'));
 						message.push((html ? '<b>' : '') + this.utils.escape_html(rule.charAt(0) === '^' ? rule : _(rule, null, 1).toLowerCase()) + (html ? '</b>' : ''));
 					}
 				}
@@ -2094,7 +2115,7 @@ var RULE_TOP_HOST = 1,
 				marginTop: -li.outerHeight(true),
 				marginBottom: 0,
 				opacity: 0
-			}, 200 * self.speedMultiplier, function () {
+			}, 200 * JB.speedMultiplier, function () {
 				$(this).next().remove();
 				$(this).remove()
 				$$('#domain-filter').trigger('search');
@@ -2178,7 +2199,7 @@ var RULE_TOP_HOST = 1,
 
 			$$('#filter-type-used li.selected').click();
 
-			var visi = $$('#rules-list .domain-name:not(.only-domain):not(.only-page)');
+			var visi = $$('#rules-list .domain-name:not(.domain-hidden):not(.page-hidden)');
 
 			visi.filter(':odd').next().andSelf().addClass('odd');
 			visi.filter(':even:not(:first)').next().andSelf().addClass('even');
@@ -2939,6 +2960,7 @@ var RULE_TOP_HOST = 1,
 										type: 'text',
 										id: 'domain-picker',
 										'class': 'domain-picker orange',
+										value: padd.me.domain === '.*' ? _('All Domains') : padd.me.domain,
 										placeholder: padd.me.domain === '.*' ? _('All Domains') : padd.me.domain
 									}).width(w);
 
@@ -3025,14 +3047,14 @@ var RULE_TOP_HOST = 1,
 				var t = $(this), h = t.height();
 
 				t.height(hid ? 5 : h).animate({
-					height: hid ? h : 5
+					height: hid ? h : 4
 				}, speed * self.speedMultiplier, function () {
 					t.height('auto');
 				});
 			});
 										
-			ul.css({ marginTop: hid ? -(o / 3) : 0 }).animate({
-				marginTop: hid ? 0 : -(o / 3)
+			ul.css({ marginTop: hid ? -(o / 3) : -3 }).animate({
+				marginTop: hid ? -3 : -(o / 3)
 			}, speed * self.speedMultiplier, function () {
 				if (!hid) {
 					me.toggleClass('hidden');
@@ -3046,7 +3068,7 @@ var RULE_TOP_HOST = 1,
 				}
 			
 				t.css('display', '');
-				ul.css('marginTop', 0);
+				ul.css('marginTop', '-3px');
 			
 				self.collapsedDomains(c);
 	
@@ -3685,35 +3707,9 @@ var RULE_TOP_HOST = 1,
 
 			Tabs.messageActive('updatePopover');
 		}).on('click', '#show-active-rules', function (event) {
-			var hosts = $$('.host-toggler').map(function () { return this.getAttribute('data-host'); }), host, active = '', all_parts = [];
+			this.classList.toggle('using');
 
-			if (!this.classList.contains('using')) {
-				for (var i = 0; host = hosts[i]; i++) {
-					var parts = self.domain_parts(host),
-							x = parts.slice(0, 1),
-							y = parts.slice(1);
-
-					x.push(x[0]);
-
-					parts = x.concat(y);
-					parts = parts.slice(0, -1);
-
-					$.merge(all_parts, parts);
-
-					parts = parts.map(function (v) { return self.utils.escape_regexp(v); })
-
-					active += '^' + parts.join('$|^\\.') + '$|';
-				}
-
-				active += '^' + _('All Domains') + '$';
-			}
-						
-			var df = $$('#domain-filter').val(active).data({
-				parts: all_parts,
-				active: active.length ? active : false
-			});
-
-			if (!event.isTrigger) df.trigger('search');
+			if (!event.isTrigger) $$('#domain-filter').trigger('search');
 		}).on('click', '#view-rules', function (e) {
 			if (!self.methodAllowed) return false;
 			
@@ -3747,26 +3743,25 @@ var RULE_TOP_HOST = 1,
 					this.disabled = 1;
 					
 					$$('#view-all').click();
-					$$('#show-active-rules').removeClass('using').click();
+					$$('#show-active-rules').addClass('using');
 
 					left = top = undefined;
 				}).siblings('#view-all').click(function (event) {
 					if (this.disabled) return false;
+
+					$$('#show-active-rules').removeClass('using');
 
 					this.disabled = 1;
 					
 					self.busy = 1;
 															
 					if ('srcElement' in event)
-						$$('#domain-filter').val('').data('parts', []);
+						$$('#domain-filter').val('');
 
 					self.rules.show();
 
-					self.utils.zoom($$('#rules-list'), null, null, function() {
-						var parts = $$('#domain-filter').trigger('search').data('parts') || [];
-						
-						for (var i = 0; i < parts.length; i++)
-							$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + parts[i] + '"].hidden').click();
+					self.utils.zoom($$('#rules-list'), null, null, function () {
+						$$('#domain-filter').trigger('search');
 					});
 
 					left = top = undefined;
@@ -3886,7 +3881,7 @@ var RULE_TOP_HOST = 1,
 					var ee = $(this);
 
 					ee.find('header:visible, li:visible').animate({
-						height: 0
+						height: 4
 					}, speed * self.speedMultiplier, function () {
 						$(this).height('auto');
 					})
@@ -4019,19 +4014,53 @@ var RULE_TOP_HOST = 1,
 		}).on('search', '#domain-filter', function () {
 			self.busy = 1;
 
-			$$('#show-active-rules').toggleClass('using', $(this).data('active') === this.value);
+			this.placeholder = $$('#filter-type-page .selected').is('#filter-domain-hidden') ? _('Domains') : _('Pages');
 
-			this.placeholder = $$('#filter-type-page .selected').is('#filter-only-domain') ? _('Domains') : _('Pages');
-
-			var counts = { page: 0, domain: 0 }, all_d = $$('#rules-list .domain-name'), d = all_d.filter(':not(.visibility-hidden,.state-hidden,.visibility-hidden,.only-page,.only-domain)').find('span'), v;
+			var counts = { page: 0, domain: 0 },
+					sections = $$('.host-section'),
+					show_active = $$('#show-active-rules').hasClass('using'),
+					all_d = $$('#rules-list .domain-name'), d = all_d.filter(':not(.visibility-hidden,.state-hidden,.visibility-hidden,.page-hidden,.domain-hidden)').find('span'), v;
 
 			all_d.each(function () {
-				if ($('span', this).html().indexOf('^') === 0) counts.page++;
+				var dt = $('span', this).html(), dp = dt.indexOf('^') === 0, me = this;
+
+				if (dp) counts.page++;
 				else counts.domain++;
+
+				if (show_active && dt !== _('All Domains')) {
+					this.classList.add('active-hidden');
+
+					sections.each(function () {
+						var pages = $(this).data('pages');
+
+						if (dp) {
+							for (var key in pages) {
+								if ((new RegExp(dt, 'i')).test(pages[key].raw)) {
+									me.classList.remove('active-hidden');
+									break;
+								}
+							}
+						} else {
+							var parts = self.utils.domain_parts(self.utils.active_host()), it = '';
+
+							parts.pop();
+
+							for (var i = 0; i < parts.length; i++) {
+								it = (i === 0 ? '' : '.') + parts[i];
+
+								if (dt === it) {
+									me.classList.remove('active-hidden');
+									break;
+								}
+							}
+						}
+					});
+				} else
+					this.classList.remove('active-hidden');
 			});
 
-			$$('#filter-only-domain').text(_('Domain Based {1}', [counts.domain]));
-			$$('#filter-only-page').text(_('Page Based {1}', [counts.page]));
+			$$('#filter-domain-hidden').text(_('Domain Based {1}', [counts.domain]));
+			$$('#filter-page-hidden').text(_('Page Based {1}', [counts.page]));
 			
 			try {
 				v = new RegExp(this.value, 'i');
@@ -4062,14 +4091,14 @@ var RULE_TOP_HOST = 1,
 			visi.filter(':even:not(:first)').next().andSelf().addClass('even');
 			
 			$$('#rule-counter').html(
-					_('{1} ' + ($$('#filter-type-page .selected').is('#filter-only-domain') ? 'domain' : 'page') + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
+					_('{1} ' + ($$('#filter-type-page .selected').is('#filter-domain-hidden') ? 'domain' : 'page') + (d === 1 ? '' : 's') + ', {2} rule' + (r === 1 ? '' : 's'), [d, r])
 			).removeData('orig_html');
 
 			self.busy = 0;
 		}).on('click', '#filter-type-collapse li:not(.label)', function () {
 			self.busy = 1;
 			
-			$(this).siblings('li').removeClass('selected').end().addClass('selected');
+			$(this).siblings().removeClass('selected').end().addClass('selected');
 			
 			var x = $$('#rules-list .domain-name');
 			
@@ -4089,24 +4118,24 @@ var RULE_TOP_HOST = 1,
 		}).on('click', '#filter-type-page li:not(.label)', function () {
 			self.busy = 1;
 			
-			$(this).siblings('li').removeClass('selected').end().addClass('selected');
+			$(this).siblings().removeClass('selected').end().addClass('selected');
 			
 			var x = $$('#rules-list .domain-name');
 			
-			x.filter('.only-domain, .only-page').removeClass('only-domain only-page');
+			x.filter('.domain-hidden, .page-hidden').removeClass('domain-hidden page-hidden');
 			
 			switch(this.id) {
-				case 'filter-only-domain':
+				case 'filter-domain-hidden':
 					x.each(function () {
 						if (this.innerText.indexOf('^') === 0)
-							$(this).addClass('only-domain');
+							$(this).addClass('domain-hidden');
 					});
 				break;
 				
-				case 'filter-only-page':
+				case 'filter-page-hidden':
 					x.each(function () {
 						if (this.innerText.indexOf('^') !== 0)
-							$(this).addClass('only-page');
+							$(this).addClass('page-hidden');
 					});
 				break;
 			}
@@ -4130,7 +4159,7 @@ var RULE_TOP_HOST = 1,
 		}).on('click', '.age-filter li:not(.label)', function () {
 			self.busy = 1;
 						
-			$(this).siblings('li').removeClass('selected').end().addClass('selected');
+			$(this).siblings().removeClass('selected').end().addClass('selected');
 			
 			var usedInPast = $(this).parents('ul').attr('id') === 'filter-type-used',
 					which = usedInPast ? 'used-none' : 'old-none',
@@ -4224,10 +4253,6 @@ var RULE_TOP_HOST = 1,
 			self.collapsed(pos, a);
 			
 			if (!a) head.removeClass('collapsed');
-
-			head.css('marginBottom', !a ? 3 : 0).animate({
-				marginBottom: a ? 3 : 0
-			}, speed * self.speedMultiplier);
 			
 			e.each(function () {
 				var ee = $(this);
@@ -4236,7 +4261,7 @@ var RULE_TOP_HOST = 1,
 					var t = $(this), h = t.height();
 
 					t.height(a ? h : 5).animate({
-						height: a ? 5 : h
+						height: a ? 4 : h
 					}, speed * self.speedMultiplier, function () {
 						t.height('auto');
 					});
@@ -4266,7 +4291,7 @@ var RULE_TOP_HOST = 1,
 				var t = $(this), h = t.height();
 
 				t.height(a ? h : 5).animate({
-					height: a ? 5 : h
+					height: a ? 4 : h
 				}, speed * self.speedMultiplier, function () {
 					t.height('auto');
 				})
@@ -4508,10 +4533,7 @@ var RULE_TOP_HOST = 1,
 					self.rules.show();
 				});
 			}, function () {
-				var parts = $$('#domain-filter').trigger('search').data('parts');
-												
-				for (var i = 0; i < parts.length; i++)
-					$$('.domain-name[data-value="' + (i > 0 ? '.' : '') + parts[i] + '"].hidden').click();
+				$$('#domain-filter').trigger('search');
 			});
 		}).on('click', 'body > *:not(#poppy,#poppy-secondary,#modal)', function (event) {
 			if (event.isTrigger) return;
@@ -4732,7 +4754,7 @@ var RULE_TOP_HOST = 1,
 			var item = the_item.name, protocol = null, use_list;
 
 			if (text === 'unblocked') {
-				the_item = [the_item, the_item, the_item];
+				the_item = { name: the_item, rtype: -1, unblockable: true };
 				item = the_item.name;
 			} else
 				protocol = self.utils.active_protocol(item);
