@@ -750,7 +750,7 @@ Strings['en-us'] = {
 
 	'Update lists now:': 'Update lists now:',
 	'Update user scripts now:': 'Update user scripts now:',
-	'Re-download user scripts:': 'Re-download user scripts',
+	'Re-download user scripts:': 'Re-download user scripts:',
 	'Update Now': 'Update Now',
 	'Updating...': 'Updating...',
 	'Download': 'Download',

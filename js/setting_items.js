@@ -344,8 +344,19 @@ Settings.settings = {
 			if_setting: { enableimage: true },
 			help: Settings._alwaysBlockHelp,
 			default: 'nowhere',
-			extra: 1
-		}
+			extra: 1,
+			divider: 1
+		},
+		easy_list_last_update: {
+			id: 'easy-list-update',
+			label: '',
+			classes: 'description'
+		},
+		easyListNow: {
+			classes: 'single-click',
+			label: 'Update lists now:',
+			setting: 'Update Now'
+		},
 	},
 	snapshots: {
 		enableSnapshots: {
@@ -538,6 +549,25 @@ Settings.settings = {
 			classes: 'single-click',
 			setting: 'Create Script',
 			label: '',
+			extra: 1,
+			divider: 1
+		},
+		user_script_last_update: {
+			id: 'user-script-update',
+			label: '',
+			classes: 'description',
+			extra: 1
+		},
+		userScriptNow: {
+			classes: 'single-click',
+			label: 'Update user scripts now:',
+			setting: 'Update Now',
+			extra: 1
+		},
+		userScriptRedownload: {
+			classes: 'single-click',
+			label: 'Re-download user scripts:',
+			setting: 'Download',
 			extra: 1
 		}
 	},
@@ -557,17 +587,6 @@ Settings.settings = {
 			classes: 'description',
 			divider: 1
 		},
-		easy_list_last_update: {
-			id: 'easy-list-update',
-			label: '',
-			classes: 'description'
-		},
-		easyListNow: {
-			classes: 'single-click',
-			label: 'Update lists now:',
-			setting: 'Update Now',
-			divider: 1
-		},
 		resetSettings: {
 			label: 'Reset all settings to their default values:',
 			setting: 'Reset Settings',
@@ -584,26 +603,6 @@ Settings.settings = {
 			setting: 'Show Welcome',
 			classes: 'single-click',
 			divider: 1
-		},
-		user_script_last_update: {
-			id: 'user-script-update',
-			label: '',
-			classes: 'description',
-			extras: 1,
-			extra: 1
-		},
-		userScriptNow: {
-			classes: 'single-click',
-			label: 'Update user scripts now:',
-			setting: 'Update Now',
-			extra: 1
-		},
-		userScriptRedownload: {
-			classes: 'single-click',
-			label: 'Re-download user scripts:',
-			setting: 'Download',
-			divider: 1,
-			extra: 1
 		},
 		createBackup: {
 			label: 'Create a full backup:',

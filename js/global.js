@@ -272,7 +272,7 @@ var RULE_TOP_HOST = 1,
 
 			for (var host in this.caches.rule_actions[key]) {
 				for (var action_item in this.caches.rule_actions[key][host]) {
-					if (this.caches.rule_actions[key][host][action_item].access < (Date.now() - 1000 * 60 * 20))
+					if (this.caches.rule_actions[key][host][action_item].access < (Date.now() - 1000 * 60 * 120))
 						delete this.caches.rule_actions[key][host][action_item];
 				}
 
@@ -3854,7 +3854,7 @@ var RULE_TOP_HOST = 1,
 					e.each(function () {
 						var ee = $(this);
 
-						ee.show().css('marginTop', -(e.height() / 3)).animate({
+						ee.show().css('marginTop', -(ee.height() / 3)).animate({
 							marginTop: 0
 						}, speed * self.speedMultiplier);
 
@@ -3887,7 +3887,7 @@ var RULE_TOP_HOST = 1,
 					})
 									
 					ee.css('marginTop', 0).animate({
-						marginTop: -(e.height() / 3)
+						marginTop: -(ee.height() / 3)
 					}, speed * self.speedMultiplier, function () {
 						self.utils.timer.timeout('adjuster', function () { adjuster(); }, 50);
 
@@ -4244,7 +4244,7 @@ var RULE_TOP_HOST = 1,
 
 			if (!e.length) e = me.parent().next().next().find('.main-wrapper');
 			
-			var o = e.outerHeight(), oT = e.outerHeight(true), a = e.css('opacity') === '1';
+			var a = e.css('opacity') === '1';
 						
 			if (e.is(':animated')) return false;
 					
@@ -4255,7 +4255,7 @@ var RULE_TOP_HOST = 1,
 			if (!a) head.removeClass('collapsed');
 			
 			e.each(function () {
-				var ee = $(this);
+				var ee = $(this), o = ee.outerHeight(), oT = ee.outerHeight(true);
 
 				ee.find('li').each(function () {
 					var t = $(this), h = t.height();
@@ -5716,7 +5716,7 @@ var RULE_TOP_HOST = 1,
 
 			var pop = Popover.window();
 
-			if (pop.document && pop.document.body) {
+			if (pop && pop.document && pop.document.body) {
 				this.popover = pop.document;
 				this.set_theme();
 

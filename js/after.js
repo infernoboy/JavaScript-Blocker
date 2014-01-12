@@ -551,7 +551,7 @@ user_scripts = {
 						'<p><input type="button" id="jsb-install-user-script" value="', r.strings['Create Script'], '" /></p>'
 					].join(''),
 				}, function (info) {
-					var al = document.getElementById('jsb-alert-' + info.id);
+					var al = document.getElementById(info.id);
 
 					al.querySelector('#jsb-install-user-script').addEventListener('click', function () {
 						this.value = r.strings['Adding...'];
