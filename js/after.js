@@ -215,16 +215,32 @@ var special_actions = {
 		var ajax = {
 			open: XMLHttpRequest.prototype.open,
 			send: XMLHttpRequest.prototype.send
-		}, store = {}, strings = args[3] || {};
+		}, store = {}, strings = args[3] || {}, storeKey = Math.random().toString(36);
 
 		XMLHttpRequest.prototype.open = function () {
-			this.intercept = arguments;
+			if (!this[storeKey]) this[storeKey] = {};
+
+			this[storeKey].JSONIntercept = JSON.stringify(arguments);
+			this[storeKey].intercept = arguments;
 
 			ajax.open.apply(this, arguments);
 		};
 
 		XMLHttpRequest.prototype.send = function () {
-			var self = this, allow = false, id = (Math.random() * 1e17).toString(36), a = document.createElement('a'), path = ((this.intercept[1] instanceof Object) && this.intercept[1].path) ? this.intercept[1].path : this.intercept[1].toString(),
+			var JSONArguments = JSON.stringify(arguments);
+
+			if (this[storeKey].sentArguments === JSONArguments && JSON.stringify(this[storeKey].intercept) === this[storeKey].JSONIntercept)
+				try {
+					return this[storeKey].wasSent ? ajax.send.apply(this, arguments) : this.abort();
+				} catch (e) {
+
+				} finally {
+					return;
+				}
+
+			this[storeKey].sentArguments = JSONArguments
+
+			var self = this, allow = false, id = (Math.random() * 1e17).toString(36), a = document.createElement('a'), path = ((this[storeKey].intercept[1] instanceof Object) && this[storeKey].intercept[1].path) ? this[storeKey].intercept[1].path : this[storeKey].intercept[1].toString(),
 					str = [
 						'<div class="jsb-ajax-add jsb-hide" id="jsb-ajax-add-', id, '">',
 							'<input id="jsb-ajax-temp-', id, '" type="checkbox" />',
@@ -254,7 +270,7 @@ var special_actions = {
 					'<span class="jsb-indent">', path, '</span>',
 				'</p>');
 
-			switch(this.intercept[0].toUpperCase()) {
+			switch(this[storeKey].intercept[0].toUpperCase()) {
 				case 'POST':
 					var raw_params = Array.prototype.slice.call(arguments).join(' '),
 							params = raw_params.split(/&/g),
@@ -290,7 +306,7 @@ var special_actions = {
 
 			if (!allow) {
 				messageExtension('ajaxIntercept', {
-					kind: 'ajax_' + this.intercept[0].toLowerCase(),
+					kind: 'ajax_' + this[storeKey].intercept[0].toLowerCase(),
 					source: a.href,
 					id: id,
 					exclude: v === 1,
@@ -303,7 +319,7 @@ var special_actions = {
 
 							if (detail.push)
 								messageExtension('pushItem', {
-									kind: 'ajax_' + me.req.intercept[0].toLowerCase(),
+									kind: 'ajax_' + me.req[storeKey].intercept[0].toLowerCase(),
 									meta: detail.meta.meta,
 									data: detail.meta.source,
 									which: 'hosts',
@@ -311,10 +327,14 @@ var special_actions = {
 									how: detail.how
 								});
 
-							if (detail.ac === 'allowed')
+							if (detail.ac === 'allowed') {
+								me.req[storeKey].wasSent = true;
+
 								ajax.send.apply(me.req, me.args);
-							else
+							} else
 								try {
+									me.req[storeKey].wasSent = false;
+
 									me.req.abort();
 								} catch (e) {}
 
@@ -461,16 +481,22 @@ var special_actions = {
 
 						if (detail.allowed[0]) {
 							try {
+								store[id].req[storeKey].wasSent = true;
+
 								ajax.send.apply(store[id].req, store[id].args)
 							} catch(e) {}
 						} else {
 							try {
+								store[id].req[storeKey].wasSent = false;
+
 								store[id].req.abort();
 							} catch(e) {}
 						}
 					}
 				}, true);				
 			} else {
+				this[storeKey].wasSent = true;
+
 				ajax.send.apply(this, arguments);
 			}
 		};
@@ -733,7 +759,6 @@ var genericHelpers = {
 				}, eval(detail.callback_func ? '(function () { return ' + detail.callback_func + ' })();' : ''));
 			break;
 		}
-
 	},
 	initEvent: function initEvent (init) {
 		document.removeEventListener(jsbAccessToken + jsbEventToken, initEvent, true);

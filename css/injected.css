@@ -247,7 +247,7 @@
 		padding: 0 !important;
 	}
 		.jsb-alert-text .jsb-info {
-			max-height: 135px !important;
+			max-height: 65px !important;
 			overflow: auto !important;
 		}
 		.jsb-alert-text p.jsb-info:last-child {

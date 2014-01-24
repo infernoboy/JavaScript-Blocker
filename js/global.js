@@ -1576,8 +1576,10 @@ var RULE_TOP_HOST = 1,
 
 					fromSettings(key);
 
-					Settings.setItem('alwaysBlockscript', 'nowhere');
-					Settings.setItem('alwaysBlockframe', 'nowhere');
+					if (!JB.setupDone) {
+						Settings.setItem('alwaysBlockscript', 'nowhere');
+						Settings.setItem('alwaysBlockframe', 'nowhere');
+					}
 
 					if (cb) cb();
 				}).fail(function () {
