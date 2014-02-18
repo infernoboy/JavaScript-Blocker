@@ -207,6 +207,7 @@ Strings['en-us'] = {
 	/*--*/   'Some': 'Some',
 	/*--*/    'Make these temporary rules': 'Make these temporary rules', // Also appears when adding the above All... rule
 	/*--*/    '{1} selected items': '{1} selected items',
+	/*--*/    '{1} these {2}': '{1} these {2}',
 	/*--*/
 	/*--*/ 'On:': 'On:', // The domain in which a rule is to be created for (On: google.com)
 	/*****  These are also used in a select box before a domain name (Allow google.com)
@@ -729,7 +730,7 @@ Strings['en-us'] = {
 	'Holding option rule': 'Holding alt/option while hitting enter/return will trigger the standard add-a-rule UI if Quick Add is enabled.',
 	
 	'EXPERIMENTAL: Enable full referer blocking':
-		'EXPERIMENTAL: Enable full referrer blocking',
+		'EXPERIMENTAL: Enable extended referrer blocking',
 	'blockReferrer help': 'This will only work on GET requests in the main window. Inline frames will not ' +
 		'have referrer headers blocked due to a limitation of Safari. This setting may cause a loop when trying to navigate back/forward. ' +
 		'It may also break any extensions that modify link or tab behavior. If you are experiencing any unexpected behavior, turn this ' +

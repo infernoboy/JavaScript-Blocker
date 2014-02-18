@@ -1,0 +1,70 @@
+body {
+	background: #010101;
+	text-shadow: 0 1px 0 rgba(0,0,0,0.8);
+	color: #eee;
+}
+
+.allowed-column {
+	border-right-color: #333;
+}
+
+.blocked-column {
+	border-left-color: #222;
+	background: rgba(255,255,255,0.06);
+}
+
+#update-warn,
+#quick-add-info {
+	background: #111;
+}
+
+.embossed {
+	color: rgba(255,255,255,0.4);
+	text-shadow: 0 1px 1px #222, 0 0 0 rgba(0,0,0,0.2), 0 0 1px #222;
+}
+
+select.single {
+	text-shadow: 0 1px 0 rgba(0,0,0,0.8);
+}
+
+input,
+select,
+button,
+textarea {
+	text-shadow: 0 1px 0 rgba(0,0,0,0.7);
+}
+
+select {
+	background: url(../images/select-arrows.png) no-repeat right top, -webkit-linear-gradient(top, rgb(15,15,15), rgb(0,0,0));
+}
+	select:active {
+		background: url(../images/select-arrows.png) no-repeat right top, -webkit-linear-gradient(top, rgb(0,0,0), rgb(15,15,15));
+	}
+
+.host-section {
+	background: #111;
+	border-bottom-color: rgba(255,255,255,0.14);
+}
+	.host-section-host {
+		background: -webkit-linear-gradient(top, #2a2a2a, #222);
+		border-bottom-color: rgba(255,255,255,0.05);
+	}
+		.host-section-host .host-divider {
+			border-right-color: #444;
+		}
+	.section-host {
+		color: #ddd;
+	}
+
+.filter-bar,
+#find-bar,
+.actions-bar {
+	background: -webkit-linear-gradient(top, #000, #111) !important;
+	border-bottom-color: #111;
+}
+	#main .actions-bar {
+		color: #999;
+	}
+	#main .actions-bar li {
+		text-shadow: 0 1px 0 rgba(0,0,0,0.8);
+	}

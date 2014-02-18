@@ -113,12 +113,17 @@ var RULE_TOP_HOST = 1,
 	displayv: null,
 	bundleid: null,
 	update_attention_required: 161,
-	silent_updates: [174, 176, 179],
+	silent_updates: [174, 176, 179, 184],
+	konami: {
+		code: [38, 38, 40, 40, 37, 39, 37, 39, 66, 65],
+		index: 0,
+	},
 	baseURL: 'http://lion.toggleable.com:160/jsblocker/',
 	longURL: 'http://api.longurl.org/v2/expand?user-agent=ToggleableJavaScriptBlocker&title=1&format=json&url=',
 	
 	set_theme: function () {
 		$('#main-large-style', this.popover.head).attr('href', Settings.getItem('largeFont') ? 'css/main.large.css' : '');
+		// $('#main-theme-style', this.popover.head).attr('href', Settings.getItem('nightMode') ? 'css/main.night.css' : '');
 	},
 
 	donate: function () {
@@ -272,7 +277,7 @@ var RULE_TOP_HOST = 1,
 
 			for (var host in this.caches.rule_actions[key]) {
 				for (var action_item in this.caches.rule_actions[key][host]) {
-					if (this.caches.rule_actions[key][host][action_item].access < (Date.now() - 1000 * 60 * 120))
+					if (this.caches.rule_actions[key][host][action_item].access < (Date.now() - 1000 * 60 * 90))
 						delete this.caches.rule_actions[key][host][action_item];
 				}
 
@@ -467,13 +472,32 @@ var RULE_TOP_HOST = 1,
 		}
 	},
 	utils: {
+		object_to_array: function (object) {
+			var a = [], o;
+
+			for (var key in object) {
+				o = {
+					sortKey: key
+				};
+
+				o[key] = object[key];
+
+				a.push(o);
+			}
+
+			return a;
+		},
 		blobURL: function (text) {
 			if (!window.Blob) return '';
 			
 			return (window.URL ? window.URL : window.webkitURL).createObjectURL(new Blob([text]));
 		},
 		b64_to_utf8: function (str) {
-			return decodeURIComponent(escape(window.atob(str)));
+			try {
+				return decodeURIComponent(escape(window.atob(str)));
+			} catch (e) {
+				return str;
+			}
 		},
 		utf8_to_b64: function (str) {
 			return window.btoa(unescape(encodeURIComponent(str)));
@@ -1671,9 +1695,9 @@ var RULE_TOP_HOST = 1,
 			return false;
 		},
 		allowed: function (message) {
-			var kind = message[0];
+			var kind = message[0], isHide = ~kind.indexOf('hide_');
 
-			if (kind.indexOf('hide_') === -1)
+			if (!isHide)
 				if ((kind !== 'script' && !this.donationVerified) || !this.enabled(kind)) return [1, -84];
 
 			var host = this.active_host(message[1]), action_cached = this.via_action_cache(kind, host, message[2]);
@@ -1686,13 +1710,13 @@ var RULE_TOP_HOST = 1,
 
 			var rule_found = false, the_rule = -1, do_break = 0, urule,
 					proto = this.utils.active_protocol(message[2]), protos,
-					domains = this.find(kind, message[1], false, ~kind.indexOf('hide_'));
+					domains = this.find(kind, message[1], false, isHide);
 
-			$.extend(domains, this.find(kind, host, false, ~kind.indexOf('hide_')));
+			$.extend(domains, this.find(kind, host, false, isHide));
 
-			var domain, rule, page_based,
+			var domain, rule, page_based = false,
 					alwaysFrom = Settings.getItem('alwaysBlock' + (~kind.indexOf('ajax') ? 'ajax' : kind)) || Settings.getItem('alwaysBlockscript'),
-					hider = ~kind.indexOf('hide_'), ignoreBL = alwaysFrom === 'trueNowhere' || Settings.getItem('ignoreBlacklist'), ignoreWL = Settings.getItem('ignoreWhitelist'),
+					ignoreBL = alwaysFrom === 'trueNowhere' || Settings.getItem('ignoreBlacklist'), ignoreWL = Settings.getItem('ignoreWhitelist'),
 					sim = this.simplified || JB.temporaryExpertMode,
 					catch_wl = null;
 
@@ -1734,7 +1758,7 @@ var RULE_TOP_HOST = 1,
 
 			if (alwaysFrom === 'trueNowhere') {
 				if (!page_based)
-					this.add_to_action_cache(kind, message[1], message[2], [1, -1]);
+					this.add_to_action_cache(kind, host, message[2], [1, -1]);
 
 				return [1, -1];
 			}
@@ -1762,7 +1786,7 @@ var RULE_TOP_HOST = 1,
 			}
 
 			if (!page_based)
-				this.add_to_action_cache(kind, message[1], message[2], [1, -1]);
+				this.add_to_action_cache(kind, host, message[2], [1, -1]);
 	
 			return [1, -1];
 		},
@@ -1773,8 +1797,7 @@ var RULE_TOP_HOST = 1,
 			return 0;
 		},
 		prioritize: function (object) {
-			var keys = Object.keys(object), object_sorted = {},
-					keys_sorted = keys.sort(this._key_prioritize);
+			var keys = Object.keys(object).sort(this._key_prioritize), object_sorted = {};
 
 			for (var i = 0; i < keys.length; i++)
 				object_sorted[keys[i]] = object[keys[i]];
@@ -2157,7 +2180,7 @@ var RULE_TOP_HOST = 1,
 						new Poppy(left, top, _('Domain replaced in current rule set.'));
 					}).bind(this, left, top, domain));
 
-					li = kind = domain = off = left = top = undefined
+					li = domain = off = left = top = undefined
 			}).bind(JB, (li = $(this.parentNode)), li.data('domain'), off, off.left, off.top));
 
 			li = off = event = undefined;
@@ -2660,7 +2683,7 @@ var RULE_TOP_HOST = 1,
 		}
 
 		$(this.popover.body).keydown(function (e) {
-			var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39;
+			var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39, editing_focused = $$('input:not([type="button"]):focus, textarea:focus, select:focus').length;
 
 			switch (e.which) {
 				case 9: // TAB
@@ -2764,7 +2787,50 @@ var RULE_TOP_HOST = 1,
 						$$('#time-machine').click();
 					}
 				break;
-			} 
+			}
+
+			if (e.which === self.konami.code[self.konami.index] && !editing_focused) {
+				e.preventDefault();
+
+				if (++self.konami.index === self.konami.code.length) {
+					new Poppy($(self.popover.body).width() / 2, 0, [
+						'<p class="misc-info">Winner!</p>',
+						'<p>Congratulations, you win!</p>',
+						'<p class="inputs"><input type="button" id="konami-continue" value="Collect Prize" /></p>'
+					].join(''), function () {
+						var status = Settings.getItem('donationVerified');
+
+						$$('#konami-continue').click(function () {
+							if (!self.donationVerified || status === 777) {
+								self.donationVerified = 'konamiWinner';
+
+								self.trialStart = -1;
+								self.popover_current = null;
+
+								new Poppy($(self.popover.body).width() / 20, 0, 
+									'<p>All features have been unlocked as if you had a made a contribution.</p>' +
+									'<p>A new tab will now open where you can thank me.</p>'
+								, function () {
+									setTimeout(function () {
+										Popover.window().location.reload();
+
+										self.utils.open_url('http://javascript-blocker.toggleable.com/donate');
+									}, 8000);
+								}, null, null, true);								
+							} else if (status === 'konamiWinner') {
+								new Poppy($(self.popover.body).width() / 2, 0, 'You have already collected your prize.');
+							} else {
+								new Poppy($(self.popover.body).width() / 2, 0, 'No prize for you!');
+							}
+						});
+					}, null, null, true);
+				}
+
+				self.utils.timer.timeout('reset_konami', function (self) {
+					self.konami.index = 0;
+				}, 800, [self]);
+			} else
+				self.konami.index = 0;
 
 			if (~[UP, DOWN, LEFT, RIGHT].indexOf(e.which) && !$$('.poppy').length) {
 				var	which = $$('.whoop:not(#disabled):visible:first'),
@@ -2774,7 +2840,7 @@ var RULE_TOP_HOST = 1,
 						prev = all.slice(0, all.index(cs)).filter('.selectable:not(.disabled):visible:last'),
 						selected = [];
 
-				if ($$('input:not([type="button"]):focus, textarea:focus, select:focus').length) return;
+				if (editing_focused) return;
 
 				e.preventDefault();
 
@@ -4548,12 +4614,13 @@ var RULE_TOP_HOST = 1,
 					allowed = split[0] === 'allowed',
 					kind = split[1],
 					me = $(this), off = me.offset(), left = event.pageX, top = off.top + 12,
-					page_parts = self.utils.domain_parts($(this).parents('.host-section').attr('data-host'));
+					page_parts = self.utils.domain_parts($(this).parents('.host-section').attr('data-host')),
+					misc_info = _((allowed ? 'Allowed' : 'Blocked') + ' ' + kind + 's');
 
 			if (self.rules.using_snapshot) return new Poppy(event.pageX, off.top + 12, _('Snapshot in use'));
 
 			new Poppy(left, top, [
-				'<p class="misc-info">', _((allowed ? 'Allowed' : 'Blocked') + ' ' + kind + 's'), '</p>',
+				'<p class="misc-info">', misc_info, '</p>',
 				'<p>',
 					'<input type="checkbox" id="excluding-list" checked /> ',
 					'<label for="excluding-list">', _('Exclude ' + (allowed ? 'whitelist' : 'blacklist')), '</label>',
@@ -4562,14 +4629,23 @@ var RULE_TOP_HOST = 1,
 					'<label for="domain-script-temporary">&nbsp;', _('Make these temporary rules'), '</label>',
 				'</p>',
 				'<p>', Template.create('domain_picker', { domain_parts: page_parts }), '</p>',
-				'<div class="inputs">',
-					'<input class="orange" id="hide-these" type="button" value="', _('Hide These'), '" /> ',
-					'<input class="orange" id="allow-these" type="button" value="', _((allowed ? 'Block' : 'Allow') +' These'), '" />',
-				'</div>',
+				'<p>',
+					_('{1} these {2}', [[
+						'<select id="which-type" class="', allowed ? 'blocked' : 'allowed', '-color">',
+							'<option value="', allowed ? 0 : 1, '">', allowed ? _('Block') : _('Allow'), '</option>',
+							'<option value="42">', _('Hide'), '</option>',
+						'</select>'].join(''), misc_info.toLowerCase()]),
+					' <input type="button" class="orange" id="save-these" value="', _('Save'), '" />',
+				'</p>'
 			].join(''), function () {
-				$$('#allow-these, #hide-these').click(function () {
+				$$('#which-type').change(function () {
+					$(this).toggleClass((allowed ? 'blocked' : 'allowed') + '-color', this.value !== '42');
+				});
+
+				$$('#save-these').click(function () {
 					var temp = $$('#domain-script-temporary').is(':checked'),
-							hide = this.id === 'hide-these',
+							type = $$('#which-type').val(),
+							hide = type === '42',
 							host = $$('#domain-picker').val(), disallow_predefined = $$('#excluding-list').is(':checked');
 
 					me.parent().next().find('li:visible').each(function () {
@@ -4579,7 +4655,7 @@ var RULE_TOP_HOST = 1,
 								ind = data.script[0].indexOf('?'), rr = (~kind.indexOf('special')) ? data.script[0] : '^' + self.utils.escape_regexp(~ind ? data.script[0].substr(0, data.script[0].indexOf('?')) : data.script[0]) + '((\\?|#)+.*)?$',
 								rule = (self.useSimpleMode() && !~kind.indexOf('special')) ? proto + ':' + (~['DATA', 'JAVASCRIPT'].indexOf(proto) ? '*' : data.url) : rr;
 
-						self.rules.add((hide ? 'hide_' : '') + kind, host, rule, hide ? 42 : (allowed ? 0 : 1), false, temp);
+						self.rules.add((hide ? 'hide_' : '') + kind, host, rule, type, false, temp);
 					});
 
 					Tabs.messageActive('reload');
@@ -5389,7 +5465,7 @@ var RULE_TOP_HOST = 1,
 
 				if (event.message.kind in this.rules.data_types) {
 					if (which)
-						this.rules.add(event.message.kind, event.message.domain, which, event.message.action, null, event.message.temporary);
+						this.rules.add(event.message.kind, event.message.domain, which, (event.message.action === true || (typeof event.message.action === 'number' && event.message.action % 2)) ? 1 : 0, null, event.message.temporary);
 				} else
 					MessageTarget(event, 'commanderCallback', {
 						key: event.message.key,
@@ -5970,7 +6046,7 @@ UserScript = {
 					script: script,
 					autoUpdate: (((re = this.automaticallyUpdate(ns)) !== null) ? re : (parsed.data.updateURL && (parsed.data.downloadURL || parsed.data.installURL) && parsed.data.version)),
 					developerMode: this.developerMode(ns),
-					before: parsed['run-at'] && parsed['run-at'].toLowerCase() === 'document-start'
+					before: parsed.data['run-at'] && parsed.data['run-at'].toLowerCase() === 'document-start'
 				},
 				allowOn = parsed.data.match_jsb.concat(parsed.data.include_jsb), self = this;
 

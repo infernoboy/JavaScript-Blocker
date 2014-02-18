@@ -137,7 +137,7 @@ Poppy.prototype = {
 				cC = '<div id="' + this.c.substr(1) + '" class="poppy-content"></div>',
 				aC = '<div id="' + this.a.substr(1) + '" class="poppy-arrow"></div>';
 				
-		if (this.modal) mo.fadeIn(this._time * 1000);
+		if (this.modal) mo.stop(true).fadeIn(this._time * 1000);
 		
 		$(this.s, this.p).one('scroll', function () {
 			new Poppy(null, null, null, null, null, 0.5);

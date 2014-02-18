@@ -787,6 +787,10 @@ label {
 			padding-left: 1px !important;
 		}
 
+.main-wrapper .divider {
+	padding-right: 2px;
+}
+
 .blocked-script-urls,
 .allowed-script-urls,
 .unblocked-script-urls {
@@ -1629,9 +1633,13 @@ div.divider {
 				pointer-events: none;
 				opacity: 0.45;
 			}
-				#toggle-hidden.hidden-visible {
-					color: #0069de;
-					background: #f0f7ff;
+				li#toggle-hidden.hidden-visible {
+					color: #fff;
+					background: #3484ff;
+					text-shadow: 0 1px 0 rgba(0,0,0,0.13);
+				}
+				li#toggle-hidden.hidden-visible:active {
+					color: #eee !important;
 				}
 		#main li.divider {
 			margin-left: 2px;

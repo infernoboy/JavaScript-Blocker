@@ -187,6 +187,7 @@ function createPlaceholder(e, url) {
 		if (!ev.isTrigger) {
 			ev.preventDefault();
 			ev.stopImmediatePropagation();
+			e.setAttribute('data-jsb_was_placeholder', Token.create('placeholder'));
 			e.setAttribute('data-jsb_auto_allow', Token.create('auto_allow'));
 			pl.parentNode.replaceChild(e, pl);
 		}
@@ -370,8 +371,15 @@ function canLoad(event, exclude, meta) {
 				if (kinds[node][1]) kinds[node][1].call(el, kind, 1);
 			}
 		}
-	} else
+	} else {
 		Token.expire(el.getAttribute('data-jsb_auto_allow'));
+
+		if (el === event && Token.valid(el.getAttribute('data-jsb_was_placeholder'), 'placeholder'))
+			Token.expire(el.getAttribute('data-jsb_was_placeholder'));
+		
+			el.removeAttribute('data-jsb_was_placeholder');
+			el.setAttribute('data-jsb_auto_allow', Token.create('auto_allow'));
+	}
 
 	if (did_something)
 		ready(event);

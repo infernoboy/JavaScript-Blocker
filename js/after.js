@@ -1,8 +1,8 @@
 "use strict";
 
-var disabled = window.disabled || false, blank = window.balnk || false;
+var disabled = window.disabled || false, blank = window.blank || false;
 
-if (!disabled && !blank) {
+if (!disabled) {
 var special_actions = {
 	zoom: function (v, args, jsbAccessToken) {
 		document.addEventListener('DOMContentLoaded', function () {
@@ -149,7 +149,7 @@ var special_actions = {
 			document.addEventListener('mousedown', jsblocker_stop_md, true);
 		};
 		
-		setInterval(jsblocker_block_context_override, 1500);
+		setInterval(jsblocker_block_context_override, 20000);
 		
 		jsblocker_block_context_override();
 	},
@@ -875,9 +875,9 @@ var genericHelpers = {
 	}
 };
 
-var generic_helpers = [], user_helpers = [];
+var generic_helpers = [], user_helpers = [], helper;
 
-for (var helper in genericHelpers)
+for (helper in genericHelpers)
 	generic_helpers.push(genericHelpers[helper].toString() + ';');
 
 generic_helpers.push('	window[jsbEventToken].call(document, jsbAccessToken + jsbEventToken, initEvent, true);');
@@ -899,6 +899,8 @@ var parseSpecials = function (pre) {
 	for (n in user_scripts) {
 		if (pre && !user_scripts[n].before) continue;
 		if (!pre && user_scripts[n].before) continue;
+
+		console.log(user_scripts[n], n)
 
 		lines = [];
 

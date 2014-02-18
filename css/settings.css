@@ -521,9 +521,12 @@ input.edit-custom, input.remove-custom {
 .user-script-icon {
 	vertical-align: top;
 	margin-right: 5px;
+	float: left;
 }
 ul.small .user-script-name {
-	max-width: 190px;
+	max-width: 187px;
+	display: block;
+	padding-left: 3px;
 }
 #custom ul.small li {
 	margin-bottom: 5px;
@@ -539,7 +542,7 @@ ul.small .user-script-name {
 
 .user-script-toggles {
 	margin-left: 57px;
-	margin-top: -16px;
+	margin-top: 13px;
 }
 
 .radio li {

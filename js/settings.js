@@ -607,9 +607,9 @@ $.extend(Settings, {
 
 				var str = [
 					'<li>',
+						'<input type="button" class="remove-custom delete" value="', _('Delete'), '" /> <input type="button" class="edit-custom single-click" value="', _('Edit'), '" />',
 						'<img class="user-script-icon" width="48" height="48" src="', encodeURI(scripts[key].meta.icon || scripts[key].meta.icon64 || 'images/null.gif'), '" /> ',
 						'<span class="user-script-name">', scripts[key].meta.name.replace(/&/g, '&amp;').replace(/</g, '&lt;'), '</span> ',
-						'<input type="button" class="remove-custom delete" value="', _('Delete'), '" /> <input type="button" class="edit-custom single-click" value="', _('Edit'), '" />',
 						'<div class="user-script-toggles">',
 							'<input ', !canUpdate ? 'disabled="disabled"' : '', ' class="user-script-auto-update private" id="user-script-update-', i, '" type="checkbox" ', scripts[key].autoUpdate ? 'checked' : '', '/> <label for="user-script-update-', i, '">', _('Enable automatic updating'), '</label><br />',
 							'<input ', !canUpdate ? 'disabled="disabled"' : '', ' class="user-script-developer private" id="user-script-developer-', i, '" type="checkbox" ', scripts[key].developerMode ? 'checked' : '', '/> <label for="user-script-developer-', i, '">', _('Enable developer mode'), '</label>',
@@ -761,7 +761,11 @@ function settingsReady() {
 };
 
 function b64_to_utf8 (str) {
-	return decodeURIComponent(escape(window.atob(str)));
+	try {
+		return decodeURIComponent(escape(window.atob(str)));
+	} catch (e) {
+		return str;
+	}
 };
 
 function utf8_to_b64 (str) {

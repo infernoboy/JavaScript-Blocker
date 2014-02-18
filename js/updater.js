@@ -342,7 +342,7 @@ JB.updater = function () {
 
 			if (!Settings.getItem('simpleReferrer')) Settings.setItem('enable_special_simple_referrer', false);
 
-			Settings.removeItem('simpleReferrer')
+			Settings.removeItem('simpleReferrer');
 
 			if (with_no_donation)
 				new Poppy($(this.popover.body).width() / 2, 0, [
@@ -427,9 +427,22 @@ JB.updater = function () {
 		case v < 180: // 4.1.2
 			Settings.removeItem('EasySocial');
 
+			this.installedBundle = 180;
+
+			this.updater();
+		break;
+
+		case v < 184: // 4.1.6
+			var all = $.extend({}, UserScript._all);
+
+			for (var ns in all) {
+				UserScript.remove(ns);
+				UserScript.add(all[ns].script);
+			}
+
 			this.donate();
 
-			// this.installedBundle = 179;
+			// this.installedBundle = 184;
 
 			// this.updater();
 		break;
