@@ -38,7 +38,6 @@
 			<p>
 				<input class="orange" type="button" id="apply-quick-add" data-i18n="Apply Changes" value=" " />
 				<input type="button" id="clear-quick-add" data-i18n="Clear Selection" value=" " />
-				<span class="label" data-i18n="Closing the popover will apply changes."></span>
 			</p>
 		</div>
 
@@ -198,6 +197,7 @@
 				<div class="host-section-host">
 					<span class="label"><% if(self.is_main) { %><%=_('Main host')%><% } else { %><%=_('Frame host')%><% } %></span><span class="host-divider">&nbsp;</span>
 					<span class="section-host"><%=(self.host === 'blank' && !self.is_main ? 'blank - ' + self.host_host : self.host)%></span>
+					<span class="host-divider">&nbsp;</span><span class="section-hidden section-host">0 hidden</span>
 					<input type="button" class="host-toggler <%=(self.disabled ? 'disabled' : '')%>" value="<%=(self.disabled ? _('Enable') : _('Disable'))%>" data-host="<%=(self.host === 'blank' && !self.is_main ? self.host_host : self.host)%>" />
 				</div>
 

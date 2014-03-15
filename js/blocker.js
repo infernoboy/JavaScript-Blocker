@@ -133,7 +133,7 @@ function createPlaceholder(e, url) {
 			se = parsed.search.replace(/</g, '&lt;').replace(/\//g, '/<wbr />').replace(/\?/g, '?<wbr />').replace(/&(?!lt;)/g, '&<wbr />').replace(/=/g, '=<wbr />'),
 			place =  [
 				'<div class="jsblocker-node-wrap">',
-					'<p class="jsblocker-node">', e.nodeName.toLowerCase(), type ? '<br/>' + (types[type] || type) : '', '</p>',
+					'<p class="jsblocker-node">', type ? (types[type] || type) + '<br/>' : '', e.nodeName.toLowerCase(), '</p>',
 				'</div>',
 				'<p class="jsblocker-url">',
 					'<span class="jsblocker-protocol">', proto, ~['about', 'javascript', 'data'].indexOf(proto) ? ':' : '://', '</span>',

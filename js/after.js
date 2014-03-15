@@ -692,22 +692,15 @@ var doSpecial = function (do_append, n, action, priv, name, custom) {
 
 var genericHelpers = {
 	JSBCommander: function JSBCommander (detail, extra, callback, preserve) {
-		var callback_id = Math.random().toString(36), hasCallback = typeof callback === 'function';
+		var callback_id = registerCallback(callback, preserve),
 				o = {
 			key: jsbAccessToken,
 			token: detail.token,
 			command: detail.which,
 			via: typeof jsbScriptNS !== 'undefined' ? jsbScriptNS : Date.now(),
-			callback: hasCallback ? callback_id : null,
-			callback_func: hasCallback ? callback.toString() : null
+			callback: callback_id ? callback_id : null,
+			callback_func: callback_id ? callback.toString() : null
 		};
-
-		if (hasCallback)
-			jsbEventCallback[callback_id] = {
-				func: callback,
-				preserve: preserve
-			};
-
 
 		if (!(extra instanceof Object)) extra = { data: extra };
 
@@ -732,14 +725,16 @@ var genericHelpers = {
 		});
 	},
 	registerCallback: function registerCallback (func, preserve) {
-		var callback_id = Math.random().toString(36);
+		if (typeof func !== 'function') return null;
 
-		jsbEventCallback[callback_id] = {
+		var id = Math.random().toString(36);
+
+		jsbEventCallback[id] = {
 			func: func,
 			preserve: preserve
 		}
 
-		return callback_id;
+		return id;
 	},
 	executeCallback: function executeCallback (origin, callback_id, detail) {
 		messageExtension('beginExecuteCallback', { origin: origin, id: callback_id, detail: detail });
@@ -860,18 +855,16 @@ var genericHelpers = {
 		a.href = serializable.url;
 		serializable.url = a.href;
 
-		(function (details, serializable) {
-			messageExtension('XMLHttpRequest', {
-				details: serializable
-			}, function (res) {
-				if (res.action === 'XHRComplete') {
-					delete jsbEventCallback[res.callback];
+		messageExtension('XMLHttpRequest', {
+			details: serializable
+		}, function (res) {
+			if (res.action === 'XHRComplete') {
+				delete jsbEventCallback[res.callback];
 
-					details = serializable = a = key = r = undefined;
-				}	else if (res.action in details)
-					details[res.action](res.response);
-			}, true);
-		})(details, serializable);
+				details = serializable = a = key = r = undefined;
+			}	else if (res.action in details)
+				details[res.action](res.response);
+		}, true);
 	}
 };
 
@@ -899,8 +892,6 @@ var parseSpecials = function (pre) {
 	for (n in user_scripts) {
 		if (pre && !user_scripts[n].before) continue;
 		if (!pre && user_scripts[n].before) continue;
-
-		console.log(user_scripts[n], n)
 
 		lines = [];
 

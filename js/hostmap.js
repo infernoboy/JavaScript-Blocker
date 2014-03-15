@@ -1,6 +1,6 @@
 var HostMap = {
 	'Advertisements': /(^.*\?file=ads&.*$)|(^https?:\/\/([^\/]+\.)?(adsafeprotected|bkrtx)\.com\/.*$)|(^.*\/recommendations\/ad\..*$)|(^.*\/smartbanner\/.*$)|(^https?:\/\/([^\/]+\.)?ads\.[^\.]+\..*\/.*$)|(^.*:\/\/ads\..*$)|(^.*_(160x600|728x90|320x250)_?\..*$)|(^.*(160x600|728x90)\.html?.*$)|(^.*=300x250&.*$)/,
-	'Tracking': ['a.wikia-beacon.com'],
+	'Tracking': /^(https?:\/\/([^\/]+\.)?a\.wikia-beacon\.com\/.*)|(.*\/analytics\/js\/.*)$/,
 
 	'Google Tracking': /^(.*\/google-analytics-.*)|(https?:\/\/([^\/]+\.)?(google-analytics|googletagservices)\.com\/.*)$/,
 	'Twitter': ['platform.twitter.com', 'www.twitter.com'],
@@ -8,7 +8,7 @@ var HostMap = {
 	'Facebook': /^https?:\/\/([^\/]+\.)?facebook\.(com|net)\/.*$/,
 	'Chartbeat Tracking': ['static.chartbeat.com'],
 	'Google+': /(^https?:\/\/apis\.google\.com\/js\/plusone\.js$)|(^.*\/googleplus\..*$)/,
-	'Google Advertisements': ['partner.googleadservices.com', 'pagead2.googlesyndication.com', 'stats.g.doubleclick.net', 'survey.g.doubleclick.net', 'stats.doubleclick.net', 'doubleclick.net', 'ad.doubleclick.net'],
+	'Google Advertisements': ['partner.googleadservices.com', 'www.googleadservices.com', 'pagead2.googlesyndication.com', 'stats.g.doubleclick.net', 'survey.g.doubleclick.net', 'stats.doubleclick.net', 'doubleclick.net', 'ad.doubleclick.net'],
 	'IntelliTXT Advertisements': /^https?:\/\/([^\/]+\.)?intellitxt\.com\/intellitxt\/.*$/,
 	'Scorecard Research Tracking': ['a.scorecardresearch.com', 'b.scorecardresearch.com'],
 	'CPMStar Advertisements': ['server.cpmstar.com', 'cpmstar.com'],
@@ -82,4 +82,10 @@ var HostMap = {
 	'StatCounter Tracking': /^https?:\/\/([^\/]+\.)?statcounter\.com\/.*$/,
 	'AdExcite Advertisements': /^https?:\/\/([^\/]+\.)?adexcite\.com\/.*$/,
 	'NetShelter Advertisements': /^https?:\/\/([^\/]+\.)?netshelter\.net\/.*$/,
+	'Monetate Tracking': /^https?:\/\/([^\/]+\.)?monetate\.net\/.*$/,
+	'Foresee Tracking': /^.*\/foresee\/.*$/,
+	'WebTrends Tracking': /^.*\/wt(base|init)\.js.*$/,
+	'24/7 RealMedia Advertisements': /^(https?:\/\/([^\/]+\.)?247realmedia\.com\/.*)|(.*\/adstream_.*)|(.*\/realmedia\/ads\/.*)$/,
+	'OwnerIQ Tracking': /^https?:\/\/([^\/]+\.)?owneriq\.net\/.*$/,
+	'MIG Advertisements': /^https?:\/\/([^\/]+\.)?mookie1\.com\/.*$/,
 };

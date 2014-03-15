@@ -2,3 +2,10 @@
 	padding-left: 1px !important;
 	padding-right: 1px !important;
 }
+
+.section-host {
+	max-width: 345px;
+}
+	body.simple .section-host {
+		max-width: 245px;
+	}

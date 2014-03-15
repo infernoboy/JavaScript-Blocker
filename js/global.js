@@ -92,6 +92,7 @@ var RULE_TOP_HOST = 1,
 
 		clearTimeout(window.critical_timeout);
 	},
+	XHR = {},
 	JB = {
 	updating: !1,
 	finding: !1,
@@ -2913,30 +2914,6 @@ var RULE_TOP_HOST = 1,
 					Settings.setItem(self.useSimpleMode() ? 'popoverSimpleHeight' : 'popoverHeight', height);
 				}, 400, [height]);
 			}
-		}).on('blur', function () {
-			var lis = $$('#main li.pending');
-
-			lis.each(function () {
-				var li = $(this), lid = $.data(li[0]), rtype = li.parents('.urls-wrapper').is('.blocked-script-urls'),
-						use_host = li.parents('.host-section').attr('data-host'),
-						host_parts = self.utils.domain_parts(use_host);
-
-				switch (Settings.getItem('quickAddType')) {
-					case '0':
-						use_host = host_parts[0]; break;
-					case '1':
-						use_host = (host_parts.length > 2 ? '.' : '') + host_parts[host_parts.length - 2]; break;
-					case '2':
-						use_host = '.*'; break;
-				}
-
-				self.rules.add(lid.kind, use_host, lid.pending_data, rtype ? 1 : 0, true, Settings.getItem('quickAddTemporary') || PrivateBrowsing());
-
-				self.utils.timer.timeout('quick_add_reload', function (lis) {
-					lis.addClass('allow-update').removeClass('pending');
-					Tabs.messageActive('reload');
-				}, 50, [lis]);
-			});
 		});
 		
 		$(this.popover).on('click', '.rules-wrapper li input', function () {	
@@ -3184,7 +3161,29 @@ var RULE_TOP_HOST = 1,
 		}).on('click', '#apply-quick-add', function () {
 			this.disabled = true;
 
-			$$(Popover.window()).trigger('blur');
+			var lis = $$('#main li.pending');
+
+			lis.each(function () {
+				var li = $(this), lid = $.data(li[0]), rtype = li.parents('.urls-wrapper').is('.blocked-script-urls'),
+						use_host = li.parents('.host-section').attr('data-host'),
+						host_parts = self.utils.domain_parts(use_host);
+
+				switch (Settings.getItem('quickAddType')) {
+					case '0':
+						use_host = host_parts[0]; break;
+					case '1':
+						use_host = (host_parts.length > 2 ? '.' : '') + host_parts[host_parts.length - 2]; break;
+					case '2':
+						use_host = '.*'; break;
+				}
+
+				self.rules.add(lid.kind, use_host, lid.pending_data, rtype ? 1 : 0, true, Settings.getItem('quickAddTemporary') || PrivateBrowsing());
+
+				self.utils.timer.timeout('quick_add_reload', function (lis) {
+					lis.addClass('allow-update').removeClass('pending');
+					Tabs.messageActive('reload');
+				}, 50, [lis]);
+			});
 		}).on('click', '#clear-quick-add', function () {
 			this.disabled = true;
 
@@ -3318,15 +3317,38 @@ var RULE_TOP_HOST = 1,
 					
 					if (!Settings.getItem('quickAddQuicker'))
 						new Poppy(left, off.top + 12, [
-							'<p class="quick-add-more">', _('Press and hold for more options.'), '</p>',
-							'<p id="quick-add-rule"><span class="bubble bubble-', allow ? 0 : 1, Settings.getItem('quickAddTemporary') || PrivateBrowsing() ? ' temporary' : '', '"></span>', begin[0].outerHTML, ' ', select[0].outerHTML, '</p>'].join(''), function () {
+							'<p id="quick-add-rule"><span class="bubble bubble-', allow ? 0 : 1, Settings.getItem('quickAddTemporary') || PrivateBrowsing() ? ' temporary' : '', '"></span>', begin[0].outerHTML, ' ', select[0].outerHTML, '</p>',
+							'<p class="inputs">',
+								'<input type="button" id="quick-add-switch" value="', _('More Options...'), '" />',
+								$$('li.pending').length > 0 ? '<input type="button" id="quick-cancel-all-changes" value="' + _('Clear Selection') + '" />' : '',
+								'<input type="button" id="quick-cancel-change" value="', _('Cancel'), '" />',
+								'<input class="orange" type="button" id="quick-save-changes" value="', _('Apply Changes'), '" />',
+							'</p>'].join(''), function () {
 							$$('#quick-add-rule select').change(function () {
 								li.data('pending_index', this.selectedIndex).data('pending_data', this.value);
 
 								var to_do = $(this).find('option:selected').attr('data-part');
 
 								span.html(url.replace(new RegExp((special ? url : self.utils.escape_regexp(to_do)) + '$', 'i'), '<mark class="quick-add">' + self.utils.escape_html(special ? url : to_do) + '</mark>'));
-							})
+							});
+
+							$$('#quick-save-changes').click(function () {
+								$$('#apply-quick-add').click();
+							}).siblings('#quick-cancel-change').click(function () {
+								span.click();
+							}).siblings('#quick-add-switch').click(function () {
+								$$('li.pending').removeClass('pending').removeData('pending_index').each(function () {
+									$('.item-text', this).text($(this).data('url'));
+								});
+
+								li.addClass('ignore-quick-add');
+
+								span.trigger('click', e);
+							}).siblings('#quick-cancel-all-changes').click(function () {
+								new Poppy();
+								
+								$$('#clear-quick-add').click();
+							});
 						}, null, 0.15);
 
 					var first = select.find('option:eq(' + li.data('pending_index') + ')'), to_do = first.attr('data-part');
@@ -4722,6 +4744,14 @@ var RULE_TOP_HOST = 1,
 
 		return new_jsblocker;
 	},
+
+	get_domain_description: function (use_url, script) {
+		if (Settings.getItem('simplifyDomainNames') && this.useSimpleMode())
+			for (var badness in HostMap)
+				if (((HostMap[badness] instanceof Array) && ~HostMap[badness].indexOf(use_url)) || ((HostMap[badness] instanceof RegExp) && HostMap[badness].test(script.toLowerCase())))
+					return badness;
+		return '';
+	},
 	
 	make_list: function (text, button, jsblocker, host_host, id) {
 		var is_main = !!jsblocker.host;
@@ -4752,14 +4782,10 @@ var RULE_TOP_HOST = 1,
 		function append_url(index, kind, ul, use_url, script, type, button, protocol, unblockable, meta, page) {
 			if (UserScript.exist(use_url) && kind === 'special') use_url = 'User Script: ' + use_url;
 
-			var use_text = use_url, lower = script.toLowerCase(), desc = false, pages = undefined;
+			var use_text = use_url, desc = false, pages = undefined;
 
-			if (text !== 'unblocked' && Settings.getItem('simplifyDomainNames') && self.useSimpleMode())
-				for (var badness in HostMap)
-					if (((HostMap[badness] instanceof Array) && ~HostMap[badness].indexOf(use_url)) || ((HostMap[badness] instanceof RegExp) && HostMap[badness].test(lower))) {
-						desc = badness;
-						break;
-					}
+			if (text !== 'unblocked')
+				desc = self.get_domain_description(use_url, script);
 
 			if (page) {
 				var pages = {}, i, a = document.createElement('a'), paths, cpath;
@@ -4809,7 +4835,7 @@ var RULE_TOP_HOST = 1,
 
 			section.data('pages', $.extend(section_pages, pages || {}));
 
-			return ul.append('<li>' + (text !== 'unblocked' ? '<div class="info-link">?</div>' : '') + '<span class="item-text"></span> <small></small>' + (desc ? '<br/><span class="domain-description"></span>' : '') + '<div class="divider"></div></li>')
+			return ul.append('<li>' + (text !== 'unblocked' ? '<div class="info-link">?</div>' : '') + '<span class="item-text"></span> <small></small><br/><span class="domain-description"></span><div class="divider"></div></li>')
 					.find('li:last').attr('id', text.toLowerCase() + '-' + kind + '-' + index + '-' + id)
 					.data({
 						url: use_url,
@@ -4823,7 +4849,7 @@ var RULE_TOP_HOST = 1,
 					.toggleClass('by-rule', typeof type !== 'string' && type > -1)
 					.toggleClass('rule-type-' + type, type > -1)
 					.toggleClass('unblockable', kind !== 'special' && unblockable && text !== 'unblocked')
-					.find('.domain-description').text(desc ? desc : '').end()
+					.find('.domain-description').data('descriptions', desc ? [desc] : []).text(desc ? desc : '').toggle(!!desc).end()
 					.find('.item-text').text(use_text).addClass(protocol)
 					.attr('title', self.simpleMode && protocol && !self.temporaryExpertMode ? (_(protocol) + ' (' + protocol + ')') : '').parent();
 		}
@@ -4852,7 +4878,12 @@ var RULE_TOP_HOST = 1,
 					use_list[test_url][0]++;
 					
 					try {
-						$('li#' + use_list[test_url][1], ul).data('script').push(item);
+						var li = $('li#' + use_list[test_url][1], ul), desc_span = li.find('.domain-description'), desc = self.get_domain_description(use_url, item);
+						
+						li.data('script').push(item);
+
+						if (desc && !~desc_span.data('descriptions').indexOf(desc))
+							desc_span.show().append(', ' + desc).data('descriptions').push(desc);
 					} catch (e) {
 						return self.make_list(text, button, jsblocker, host_host, id);
 					}
@@ -4913,6 +4944,13 @@ var RULE_TOP_HOST = 1,
 
 						if (al[1] === 42)
 							li.addClass('hidden-by-rule').toggleClass('show-for-now', $$('#toggle-hidden').hasClass('hidden-visible'));
+
+						$$('.host-section').each(function () {
+							var c = $('.hidden-by-rule', this).length,
+									t = _('{1} hidden', [c]);
+
+							$('.section-hidden', this).text(t).toggle(c !== 0).prev().toggle(c !== 0);
+						});
 					}
 
 					ccheck = $('li:not(.show-me-more,.hidden-by-rule).kind-' + key, ul).length;
@@ -5502,11 +5540,12 @@ var RULE_TOP_HOST = 1,
 			break;
 
 			case 'XMLHttpRequest':
-				var details = event.message.details, done = function (action, res, status, req) {	
+				var id = this.utils.id(), details = event.message.details, done = function (action, res, status, req) {	
 					MessageTarget(event, 'commanderCallback', {
 						key: event.message.key,
 						callback: event.message.callback,
 						result: {
+							refID: id,
 							action: action,
 							response: {
 								readyState: req.readyState,
@@ -5557,6 +5596,7 @@ var RULE_TOP_HOST = 1,
 							key: event.message.key,
 							callback: event.message.callback,
 							result: {
+								refID: id,
 								action: 'XHRComplete',
 								callback: event.message.callback
 							}
@@ -5589,7 +5629,7 @@ var RULE_TOP_HOST = 1,
 
 				details.dataType = 'text';
 
-				$.ajax(details);
+				XHR[id] = $.ajax(details);
 			break;
 
 			case 'errorOccurred':
@@ -6174,7 +6214,10 @@ UserScript = {
 						dataType: 'text',
 						async: false,
 						url: self._all[ns].meta.updateURL,
-						timeout: 5000
+						timeout: 5000,
+						headers: {
+							'Accept': 'text/x-userscript-meta'
+						}
 					}).done(function (response) {
 						var parsed = self._parse(response).data;
 
@@ -6186,7 +6229,6 @@ UserScript = {
 							}
 						}
 					}).fail(function (error) {
-						
 					});
 				})(this, ns);
 			}

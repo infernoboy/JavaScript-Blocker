@@ -136,6 +136,7 @@ Strings['en-us'] = {
 	/*** Displayed next to the hostname in the main window.
 	/**/ 'Main host': 'Main',
 	/**/ 'Frame host': 'Frame',
+	/**/ '{1} hidden': '{1} hidden',
 	/**/
 	/**/ 'Disable': 'Disable',
 	/**/ 'Enable': 'Enable',
@@ -190,9 +191,10 @@ Strings['en-us'] = {
 	/**/ 'Unblocked Script': 'Unblockable Script', // A header in a window displaying the contents of an unblockable script.
 	/**/
 	/**------ RULE CREATION ------
-	/*--*/ 'Apply Changes': 'Apply Changes',
-	/*--*/ 'Clear Selection': 'Clear Selection',
-	/*--*/ 'Closing the popover will apply changes.': 'Closing the popover will apply changes.',
+	/*--*/ 'Apply Changes': 'Save Changes',
+	/*--*/ 'Clear Selection': 'Cancel All Changes',
+	/*--*/ 'Closing the popover will apply changes.': 'Closing the popover will save changes.',
+	/*--*/ 'More Options...': 'More Options...',
 	/*--*/ 'Press and hold for more options.': 'Press and hold for more options.',
 	/*--*/
 	/*--*/ 'Allow Once': 'Allow Once',

@@ -1,5 +1,5 @@
 if (window.safari !== undefined) {
-var SAFARI = true, CHROME = false,
+var SAFARI = true,
 		beforeLoad = {'url':'','returnValue':true,'timeStamp':1334608269228,'eventPhase':0,'target':null,'defaultPrevented':false,'srcElement':null,'type':'beforeload','cancelable':false,'currentTarget':null,'bubbles':false,'cancelBubble':false},
 		ToolbarItems = {
 			badge: function (number, tab) {
@@ -166,5 +166,5 @@ var SAFARI = true, CHROME = false,
 			return safari.self.tab.canLoad(beforeLoad, data);
 		}
 } else {
-	console.error('safari object is unavailable in a frame on this page. This is a bug with Safari that has existed ever since extentions were available. If you\'re an extension developer, please file a bug report at http://bugreport.apple.com/ The issue occurs when a frame\'s source is not originally a document, such as when it is javascript:"". Changing the source of the frame causes the newly loaded webpage to not have access to the safari object.')
+	console.error('safari object is unavailable in a frame on this page. This is a bug with Safari that has existed ever since extentions were available. If you\'re an extension developer, you can file a bug report at http://bugreport.apple.com/ The issue occurs when a frame\'s source is not originally a document, such as when it is javascript:"". Changing the source of the frame causes the newly loaded webpage to not have access to the safari object.')
 }

@@ -254,7 +254,7 @@ header h1 {
 		text-align: right;
 	}
 	.quick-add-more {
-		color: #999;
+		color: #888;
 	}
 	#quick-add-select {
 		max-width: 310px;
@@ -930,9 +930,11 @@ ul li > span {
 	ul li span.domain-description {
 		position: relative;
 		color: #959595;
-		height: 18px;		
-		pointer-events: none;
+		height: 20px;
+		margin-top: -2px;
+		display: block;
 		padding-bottom: 0;
+		cursor: default !important;
 	}
 	ul li span.expanded {
 		height: 35px;
@@ -1459,7 +1461,8 @@ div.divider {
 		border-top-color: rgba(0,0,0,0.16);
 		border-bottom: none;
 	}
-	.host-section-host .label {
+	.host-section-host .label,
+	.host-section-host .section-hidden {
 		color: #888;
 	}
 	.host-section-host .host-divider {
@@ -1476,12 +1479,12 @@ div.divider {
 	.section-host {
 		display: inline-block;
 		overflow: auto;
-		max-width: 440px;
+		max-width: 370px;
 		white-space: pre;
 		color: #4a4a4a;
 	}
 		body.simple .section-host {
-			max-width: 340px;
+			max-width: 270px;
 		}
 		body.windows .section-host {
 			padding-right: 4px;
