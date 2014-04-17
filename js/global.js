@@ -1894,15 +1894,17 @@ var RULE_TOP_HOST = 1,
 				if (rrule.protos && !~rrule.protos.indexOf(this.utils.active_protocol(url))) return 0;
 
 				return (rrule.rule === '*' ||
-						(~kind.indexOf('special') && rrule.rule === url) ||
 						(rrule.rule.indexOf('.') === 0 && ~parts.indexOf(rrule.rule.substr(1))) || 
-						(parts[0] === rrule.rule))
+						(parts[0] === rrule.rule));
 			}
 
-			var ref;
+			var ref = this.caches.rule_regexp[rule];
+
+			if (!ref)
+				ref = this.caches.rule_regexp[rule] = new RegExp(rule, 'i');
 
 			try {
-				return ((ref = this.caches.rule_regexp[rule]) ? ref : this.caches.rule_regexp[rule] = new RegExp(rule, 'i')).test(url);
+				return ref.test(url);
 			} catch (e) {
 				return false;
 			}

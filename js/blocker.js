@@ -374,11 +374,12 @@ function canLoad(event, exclude, meta) {
 	} else {
 		Token.expire(el.getAttribute('data-jsb_auto_allow'));
 
-		if (el === event && Token.valid(el.getAttribute('data-jsb_was_placeholder'), 'placeholder'))
+		if (el === event && Token.valid(el.getAttribute('data-jsb_was_placeholder'), 'placeholder')) {
 			Token.expire(el.getAttribute('data-jsb_was_placeholder'));
 		
 			el.removeAttribute('data-jsb_was_placeholder');
 			el.setAttribute('data-jsb_auto_allow', Token.create('auto_allow'));
+		}
 	}
 
 	if (did_something)
@@ -575,7 +576,7 @@ function prepareAnchor(anchor, i) {
 
 		anchor.setAttribute('data-jsb_prepared', Token.create('anchor', 1));
 		
-		if (!(enabled_specials.simple_referrer.allowed % 2)) {
+		if (enabled_specials.simple_referrer.value && !(enabled_specials.simple_referrer.allowed % 2)) {
 			if (anchor.getAttribute('href') && anchor.getAttribute('href').length && anchor.getAttribute('href').charAt(0) !== '#')
 				if ((!anchor.getAttribute('rel') || !anchor.getAttribute('rel').length))
 					anchor.setAttribute('rel', 'noreferrer');

@@ -629,17 +629,16 @@ var appendScript = function (script, which, v, priv, name, custom, m) {
 		document.addEventListener('JSBCommander' + tok + eventToken, commandHandler, true);
 
 	if (m) {
-		if (window.Blob && (window.URL || window.webkitURL)) {
-			var	url = (window.URL ? window.URL : window.webkitURL)['createObjectURL'](new Blob([newScript], { type: 'application/javascript' }));
+		if (window.Blob && (window.webkitURL || window.URL)) {
+			var	url = (window.webkitURL || window.URL)['createObjectURL'](new Blob([newScript], { type: 'application/javascript' }));
 
 			s.setAttribute('src', url);
+
+			s.onload = function () {
+				(window.webkitURL || window.URL)['revokeObjectURL'](url);
+			};
 		} else
 			s.src = 'data:text/javascript,' + encodeURI(newScript);
-
-		if ((window.info && !info.beta) && (!user_scripts[which] || (user_scripts[which] && !user_scripts[which].developerMode)))
-			s.onload = function () {
-				document.documentElement.removeChild(this);
-			};
 	} else {
 		if (!window.enabled_specials || !enabled_specials.inline_scripts.value || (enabled_specials.inline_scripts.value && enabled_specials.inline_scripts.allowed % 2))
 			s.appendChild(document.createTextNode(newScript));
@@ -648,9 +647,9 @@ var appendScript = function (script, which, v, priv, name, custom, m) {
 			if (!window.inlineScriptsAllowed || (enabled_specials.inline_scripts.value && !(enabled_specials.inline_scripts.allowed % 2)))
 				appendScript(script, which, v, priv, name, custom, s.id);
 			else if (!info.beta && (!user_scripts[which] || (user_scripts[which] && !user_scripts[which].developerMode)))
-				document.documentElement.removeChild(s);
+				s.innerHTML = '';
 		} else if (!info.beta && (!user_scripts[which] || (user_scripts[which] && !user_scripts[which].developerMode)))
-			document.documentElement.removeChild(s);
+			s.innerHTML = '';
 	}
 }
 
@@ -813,7 +812,7 @@ var genericHelpers = {
 
 			for (var i = 0; i < ch.length; i++) bn[i] = ch.charCodeAt(i);
 
-			return (window.URL ? window.URL : window.webkitURL).createObjectURL(new Blob([new Uint8Array(bn)], { type: GM_resources[name].type }));
+			return (window.webkitURL || window.URL).createObjectURL(new Blob([new Uint8Array(bn)], { type: GM_resources[name].type }));
 		} else
 			return 'data:' + GM_resources[name].type + ';base64,' + GM_resources[name].data;
 	},
