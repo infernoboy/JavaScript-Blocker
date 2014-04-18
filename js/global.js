@@ -2916,6 +2916,8 @@ var RULE_TOP_HOST = 1,
 					Settings.setItem(self.useSimpleMode() ? 'popoverSimpleHeight' : 'popoverHeight', height);
 				}, 400, [height]);
 			}
+		}).on('blur', function () {
+			$$('#apply-quick-add:visible').click();
 		});
 		
 		$(this.popover).on('click', '.rules-wrapper li input', function () {	
