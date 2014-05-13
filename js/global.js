@@ -114,7 +114,7 @@ var RULE_TOP_HOST = 1,
 	displayv: null,
 	bundleid: null,
 	update_attention_required: 161,
-	silent_updates: [174, 176, 179, 184],
+	silent_updates: [174, 176, 179, 184, 188],
 	konami: {
 		code: [38, 38, 40, 40, 37, 39, 37, 39, 66, 65],
 		index: 0,

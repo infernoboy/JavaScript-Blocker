@@ -786,7 +786,12 @@ var genericHelpers = {
 	GM_getValue: function GM_getValue (name, def) {
 		var c = window.localStorage.getItem(jsbScriptNS + name);
 
-		return c === null ? (def !== undefined ? def : null) : c;
+		if (c === 'true')
+			c = true;
+		else if (c === 'false')
+			c = false;
+
+		return c === null ? (def !== undefined ? def : undefined) : c;
 	},
 	GM_setValue: function GM_setValue (name, value) {
 		window.localStorage.setItem(jsbScriptNS + name, value);
