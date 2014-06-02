@@ -5503,11 +5503,12 @@ var RULE_TOP_HOST = 1,
 			break;
 
 			case 'addRule':
-				var which = this.simpleMode ? event.message.rule.simple : event.message.rule.expert;
+				var which = this.simpleMode ? event.message.rule.simple : event.message.rule.expert,
+						action = typeof event.message.action === 'boolean' ? (event.message.action ? 1 : 0) : ((parseInt(event.message.action, 10) % 2) ? 1 : 0);
 
 				if (event.message.kind in this.rules.data_types) {
 					if (which)
-						this.rules.add(event.message.kind, event.message.domain, which, (event.message.action === true || (typeof event.message.action === 'number' && event.message.action % 2)) ? 1 : 0, null, event.message.temporary);
+						this.rules.add(event.message.kind, event.message.domain, which, action, null, event.message.temporary);
 				} else
 					MessageTarget(event, 'commanderCallback', {
 						key: event.message.key,
