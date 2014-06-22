@@ -1653,7 +1653,7 @@ var RULE_TOP_HOST = 1,
 		via_action_cache: function (kind, host, item) {
 			if (PrivateBrowsing()) return null;
 
-			if (host in this.caches.rule_actions[kind])
+			if (typeof host === 'string' && (host in this.caches.rule_actions[kind]))
 				return this.caches.rule_actions[kind][host][item];
 			return null;
 		},
@@ -4946,7 +4946,7 @@ var RULE_TOP_HOST = 1,
 					if (text !== 'unblocked' && !~key.indexOf('hide_')) {
 						var al = self.rules.allowed(['hide_' + key, jsblocker.href, jitem.name, false]);
 
-						if (al[1] === 42)
+						if (al[1] === 42 || (Settings.getItem('hideWhitelistBlacklistItems') && (jitem.rtype === 4 || jitem.rtype === 5)))
 							li.addClass('hidden-by-rule').toggleClass('show-for-now', $$('#toggle-hidden').hasClass('hidden-visible'));
 
 						$$('.host-section').each(function () {

@@ -116,6 +116,11 @@ Settings.settings = {
 			default: true,
 			if_setting: { simpleMode: true }
 		},
+		hideWhitelistBlacklistItems: {
+			label: 'Automatically hide whitelisted and blacklisted items',
+			setting: true,
+			default: false
+		},
 		filterBarAge: {
 			label: 'Show "Not Used In Past" filter bar',
 			setting: true,

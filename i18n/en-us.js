@@ -592,6 +592,7 @@ Strings['en-us'] = {
 	'Show scripts that can\'t be blocked': 'Show scripts that can\'t be blocked',
 	'Hide injected helper scripts': 'Hide injected helper and user scripts',
 	'Show domain descriptions when possible': 'Show domain descriptions whenever possible',
+	'Automatically hide whitelisted and blacklisted items': 'Automatically hide whitelisted and blacklisted items',
 	'Notify me about new updates': 'Notify me about new updates',
 	'Hide Update Notifications': 'Hide Update Notifications',
 	'Temporarily switch to expert mode when clicked': 'Temporarily switch to expert view upon clicking number of allowed/blocked hosts',

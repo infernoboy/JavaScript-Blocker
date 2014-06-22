@@ -399,9 +399,9 @@ JB.updater = function () {
 						Settings.removeItem('custompostScripts');
 						Settings.removeItem('custompreScripts');
 
-						this.installedBundle = 177;
+						self.installedBundle = 177;
 
-						this.updater();
+						self.updater();
 					});
 				}, null, null, true);
 			} else {
@@ -440,11 +440,31 @@ JB.updater = function () {
 				UserScript.add(all[ns].script);
 			}
 
-			this.donate();
+			this.installedBundle = 184;
 
-			// this.installedBundle = 184;
+			this.updater();
+		break;
 
-			// this.updater();
+		case v < 192: // 4.1.13
+			new Poppy($(this.popover.body).width() / 2, 0, [
+				'<p class="misc-info">Update 4.1.14</p>',
+				'<p>A new setting is available that lets you hide whitelisted and blacklisted items. Once enabled, you can temporarily ',
+					'view the hidden items by clicking <b>Show Hidden</b> from the toolbar.</p>',
+				'<p><input type="checkbox" id="hide-wl-bl"> <label for="hide-wl-bl">', _('Automatically hide whitelisted and blacklisted items'), '</label></p>',
+				'<p><input type="button" id="do-continue" value="', _('Continue'), '" /></p>'
+			].join(''), function () {
+				$$('#do-continue').click(function () {
+					Settings.setItem('hideWhitelistBlacklistItems', $$('#hide-wl-bl').is(':checked'));
+
+					new Poppy();
+
+					self.donate();
+
+					// this.installedBundle = 192;
+
+					// this.updater();
+				});
+			}, null, null, true);
 		break;
 
 		case v < this.bundleid:
