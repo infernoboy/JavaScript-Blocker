@@ -1901,7 +1901,11 @@ var RULE_TOP_HOST = 1,
 			var ref = this.caches.rule_regexp[rule];
 
 			if (!ref)
-				ref = this.caches.rule_regexp[rule] = new RegExp(rule, 'i');
+				try {
+					ref = this.caches.rule_regexp[rule] = new RegExp(rule, 'i');
+				} catch (e) {
+					return false;
+				}
 
 			try {
 				return ref.test(url);

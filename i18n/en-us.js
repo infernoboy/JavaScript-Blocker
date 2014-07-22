@@ -561,6 +561,9 @@ Strings['en-us'] = {
 	'navigator_override': 'Environmental information',
 		'navigator_override:0': 'Environmental information will be randomized.',
 		'navigator_override:1': 'Environmental information will revealed normally.',
+	'canvas_fingerprinting': 'Canvas fingerprinting',
+		'canvas_fingerprinting:0': 'Canvases will not automatically expose their URL.',
+		'canvas_fingerprinting:1': 'Canvases will always be able to expose their URL.',
 
 	'Injected pre Script: {1}': 'Before Load: {1}',
 	'Injected post Script: {1}': 'After Load: {1}',
@@ -633,8 +636,10 @@ Strings['en-us'] = {
 	'Prevent webpages from disabling autocomplete': 'Prevent webpages from disabling autocomplete<br/><span class="aside">Autocomplete disablers</span>',
 	'Prevent inline scripts from being executed': 'Prevent inline scripts from being executed<br/><span class="aside">Inline script execution</span>',
 	'Randomize browser information': 'Randomize browser information revealed by window.navigator and window.screen<br/><span class="aside">Environmental information</span>',
+	'Canvas fingerprinting protection': '<br/><span class="aside">Canvas fingerprinting protection</span>',
 	'Custom zoom level for webpages:': 'Custom zoom level for webpages:',
 	'Custom font for webpages:': 'Custom font for webpages:',
+	'Canvas fingerprinting protection:': 'Canvas fingerprinting protection:',
 
 	'custom helper description': 'This section lets you add user scripts which are injected into a webpage. They will appear ' +
 		'under the <b>OTHER</b> section of the main window. Most greasemonkey functions are supported. Enable developer mode to force scripts to be re-downloaded before it is injected into a webpage. ' + 
@@ -659,6 +664,10 @@ Strings['en-us'] = {
 
 	'Search Results': 'Search Results', // Header displayed in the search panel.
 	'No Results': 'No Results',
+
+	'Off': 'Off',
+	'Always prevent URL exposure': 'Always protect',
+	'Enabling Always protect': '<b>Ask when neccessary</b> will let you see the generated image beforehand. Using <b>Always protect</b> may cause some webpages to behave unexpectedly. Use your best judgement when allowing on these pages.',
 	
 	'Other…': 'Other…', // Generic option
 

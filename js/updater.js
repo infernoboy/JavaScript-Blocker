@@ -458,9 +458,29 @@ JB.updater = function () {
 
 					new Poppy();
 
+					this.installedBundle = 192;
+
+					this.updater();
+				});
+			}, null, null, true);
+		break;
+
+		case v < 194: // 4.1.16
+			new Poppy($(this.popover.body).width() / 2, 0, [
+				'<p class="misc-info">Update 4.1.16</p>',
+				'<p>Would you like to enable canvas fingerprinting protection? It works by allowing you to confirm if a canvas ',
+					'may expose its data URL or not.',
+				'<p><input type="checkbox" id="enable-canvas"> <label for="enable-canvas">Canvas fingerprinting protection</label></p>',
+				'<p><input type="button" id="do-continue" value="', _('Continue'), '" /></p>'
+			].join(''), function () {
+				$$('#do-continue').click(function () {
+					Settings.setItem('enable_special_canvas_fingerprinting', $$('#enable-canvas').is(':checked') ? '1' : '0');
+
+					new Poppy();
+
 					self.donate();
 
-					// this.installedBundle = 192;
+					// this.installedBundle = 196;
 
 					// this.updater();
 				});

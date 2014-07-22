@@ -5,7 +5,7 @@
 	<key>Author</key>
 	<string>Travis Roman</string>
 	<key>Builder Version</key>
-	<string>9537.77.4</string>
+	<string>9537.85.5</string>
 	<key>CFBundleDisplayName</key>
 	<string>JavaScript Blocker</string>
 	<key>CFBundleIdentifier</key>
@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleShortVersionString</key>
-	<string>4.1.14</string>
+	<string>4.1.16</string>
 	<key>CFBundleVersion</key>
-	<string>192</string>
+	<string>193</string>
 	<key>Chrome</key>
 	<dict>
 		<key>Database Quota</key>
@@ -71,6 +71,8 @@
 	</dict>
 	<key>Description</key>
 	<string>Controls the loading of external resources on webpages.</string>
+	<key>DeveloperIdentifier</key>
+	<string>6S8J5HV3H4</string>
 	<key>ExtensionInfoDictionaryVersion</key>
 	<string>1.0</string>
 	<key>Permissions</key>

@@ -1,6 +1,7 @@
 "use strict";
 
-var disabled = window.disabled || false, blank = window.blank || false;
+var disabled = window.disabled || false, blank = window.blank || false,
+		isXMLPage = typeof document.xmlVersion === 'string';
 
 if (!disabled) {
 var special_actions = {
@@ -555,6 +556,57 @@ var special_actions = {
 			pixelDepth: nowInt,
 			colorDepth: nowInt
 		};
+
+		Date.prototype.getTimezoneOffset = function () {
+			return 0;
+		};
+	},
+	canvas_fingerprinting: function (v, args, jsbAccessToken) {
+		var toDataURL = HTMLCanvasElement.prototype.toDataURL;
+
+		HTMLCanvasElement.prototype.toDataURL = function () {
+			var dataURL = toDataURL.apply(this, arguments);
+
+			var frame = document.createElement('iframe');
+
+			frame.src = 'about:blank';
+
+			document.documentElement.appendChild(frame);
+
+			var frameDocument = frame.contentWindow.document,
+					img = new Image();
+
+			img.src = dataURL;
+
+			frameDocument.body.appendChild(img);
+
+			frame.style.setProperty('width', '100%');
+			frame.style.setProperty('height', '100%');
+			frame.style.setProperty('position', 'fixed');
+			frame.style.setProperty('top', '0');
+			frame.style.setProperty('left', '0');
+			frame.style.setProperty('z-index', '99999999999999');
+
+			frameDocument.body.style.setProperty('background', 'white');
+			frameDocument.body.style.setProperty('text-align', 'center');
+			frameDocument.body.style.setProperty('padding-top', '20px');
+
+			for (var i = 0; i < 1000000; i++) {
+				Math.random();
+			}
+
+			var confirmString = 'This page may be attempting to use canvas fingerprinting to identify you. ' +
+				'If the image displayed looks suspicious or out of place, do not allow this operation.';
+
+			var shouldContinue = v === '2' ? false : confirm(confirmString);
+
+			frame.parentNode.removeChild(frame);
+
+			if (shouldContinue)
+				return dataURL;
+			else
+				return Math.random().toString();
+		};
 	},
 	simple_referrer: true,
 	inlineScriptsCheck: function (v, args, jsbAccessToken) {
@@ -594,6 +646,9 @@ user_scripts = {
 };
 
 var appendScript = function (script, which, v, priv, name, custom, m) {
+	if (isXMLPage)
+		return;
+	
 	var s = document.createElement('script'), string_script = script.toString();
 
 	if (m) {
@@ -887,6 +942,9 @@ for (helper in userScriptHelpers)
 user_helpers = user_helpers.join("\n");
 
 var parseSpecials = function (pre) {
+	if (isXMLPage)
+		return;
+
 	var lines, helper, script, z, n, i, b;
 
 	if (pre)

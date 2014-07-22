@@ -528,6 +528,14 @@ Settings.settings = {
 			default: false,
 			extra: 1
 		},
+		enable_special_canvas_fingerprinting: {
+			label: 'Canvas fingerprinting protection:',
+			label_after: 'Canvas fingerprinting protection',
+			help: 'Enabling Always protect',
+			setting: [[0, 'Off'], [1, 'Ask when neccessary'], [2, 'Always prevent URL exposure']],
+			default: '0',
+			extra: 1
+		},
 		enable_special_font: {
 			label: 'Custom font for webpages:',
 			prompt: 'Enter a custom font name to use.',
